@@ -2,7 +2,8 @@
 
 ## Phase 0 — Foundation
 
-Status: implementation and Phase 0 validation complete; first commit and push pending.
+Status: complete. Foundation commit `847a744` is on `main`, and GitHub Actions CI passed on
+2026-07-18.
 
 Scope: pnpm TypeScript monorepo, web/API skeletons, shared contracts, quality tooling, CI, security-safe
 environment contract, documentation, and GitHub repository.
