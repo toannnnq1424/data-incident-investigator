@@ -16,9 +16,9 @@ Last updated: 2026-07-18.
   `6890ms` on ports `63576`/`63577`, with no listener or launcher-runtime leak.
 - Managed dependency bootstrap required the bundled Node directory in process `PATH`, created an
   untracked repository-local `.pnpm-store`, and needed scoped access for Vitest to read `esbuild`.
-  PR #4 (`codex/stabilize-managed-worktree-bootstrap`, commit
-  `99dfc5f7a086808b25d8a57988524769bca0cf87`) is separately green but was intentionally not integrated
-  into the Phase 1 product-validation branch.
+  PR #4 (`codex/stabilize-managed-worktree-bootstrap`) is now merge-forwarded onto Phase 1-complete
+  `main` for standalone merge readiness; post-merge macOS QA and the new CI run remain required before
+  the draft can become ready.
 - The GitHub repository is private during development and must become public before submission.
 - Slice 1.2 stores incident lifecycle and completed reports only in API process memory. Restarting the
   API removes existing incident IDs; durable persistence remains deferred.
@@ -32,3 +32,13 @@ Last updated: 2026-07-18.
   Codex opens or reloads the trusted repository.
 - Slice 1.3 adds one checked-in Playwright browser test for the canonical fixture report. A broader
   cross-browser matrix remains deferred until the Phase 1 integration or release checkpoint.
+- Codex desktop is the only documented writer for the shared Local Environment file, and the current
+  callable app tools expose no create/update API. This repository therefore provides verified Windows
+  and macOS/POSIX bootstrap scripts plus UI wiring instructions, but intentionally does not commit a
+  guessed Local Environment schema. An app-generated, secret-free file under `.codex/` remains a
+  follow-up.
+- The Windows bootstrap is validated against the current Codex bundled runtime, and the macOS
+  bootstrap is validated end to end with Homebrew Node/pnpm on `PATH`. The macOS Codex-bundled runtime
+  location/fallback remains unexercised and must fail with the script's actionable prerequisite error
+  if neither compatible host tools nor the verified relative cache layout is available. The recorded
+  macOS result predates the merge-forward from `main`; fresh QA of the post-merge PR head is pending.

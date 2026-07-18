@@ -151,6 +151,74 @@ Fixture incident state is process-local and only the removed-schema-column scena
 
 create a new project-scoped task for Phase 1 Slice 1.3 — Evidence display, starting from this Slice 1.2 branch/commit; do not continue Slice 1.3 here.
 
+## 2026-07-18 — Codex managed-worktree bootstrap stabilization
+
+### Objective
+
+Stabilize dependency bootstrap for future Codex managed worktrees without changing product code or
+starting Slice 1.3/Phase 2.
+
+### Completed
+
+Reproduced the Windows runtime failure where bundled `pnpm.cmd` was available but bundled `node.exe`
+was absent from `PATH`, causing the esbuild lifecycle script to fail. Confirmed that a new worktree had
+no root dependencies and that the ignored Windows portable GitHub CLI was not inherited. Added tracked
+Windows and macOS/POSIX bootstrap scripts that verify the manifest runtime contract, refuse unpinned
+package-manager activation, install from the frozen lockfile, and validate a root static tool. Added
+verified Local Environment UI wiring and documented why no unverified app-generated schema or
+`.worktreeinclude` file was committed.
+
+### Files changed
+
+Managed-worktree bootstrap scripts; local-environment documentation; Codex operating guidance;
+implementation plan, repository map, known issues, session log, and the pnpm-store ignore rule.
+
+### Decisions
+
+Use host or dynamically discovered Codex-bundled Node/pnpm without storing a username or absolute
+machine path. Keep exact pnpm `11.9.0` as a prerequisite to avoid missing offline metadata. Keep GitHub
+CLI as a per-host prerequisite; do not copy ignored `work/tools/` or Windows binaries into managed
+worktrees/macOS. Leave `.worktreeinclude` absent because all required setup inputs are tracked. Do not
+invent a Local Environment filename/schema when the desktop app exposes no callable writer API and UI
+automation is prohibited.
+
+Preserve all existing Codex Project task history unless the user explicitly requests archive, deletion,
+or hiding. Do not pin a task if doing so removes it from the Project group. Every new implementation
+task must use `target.type=project`, `projectId=a43a7aaa-fc63-48e9-867e-c9d9cae6784d`, and an
+appropriate `local` or `worktree` environment; projectless implementation tasks are prohibited.
+
+### Validation performed
+
+From an empty dependency state, Windows bootstrap discovered Node `v24.14.0` and pnpm `11.9.0`, ran
+`pnpm install --frozen-lockfile` for 257 packages with lockfile resolution skipped, resolved Prettier
+`3.9.5` through `pnpm exec`, and passed the static package formatting check. The PowerShell parser,
+`bash -n`, TOML parser plus required policy assertions, changed-document Prettier, `git diff --check`,
+secret/absolute-path scan, and scoped diff review passed. The first changed-document Prettier attempt
+hit sandboxed pnpm-store access and the identical scoped retry passed. A clean detached macOS
+worktree at commit `5e75b72b21c01290afaa4f89dadf01c591ea803a` then passed
+`bash scripts/bootstrap-worktree.sh` with Homebrew Node `v26.3.0`, pnpm `11.9.0`, a 257-package frozen
+install with lockfile resolution skipped, Prettier `3.9.5`, the static check, the completion marker,
+and a clean final Git status.
+
+### Validation intentionally deferred
+
+No full product suite was run. The macOS host `PATH` route is validated; the macOS Codex-bundled
+runtime location/fallback remains unexercised. Creating and checking in the shared Local Environment
+file requires a human to save the verified setup commands through Codex desktop settings.
+
+### Known issues
+
+The current host's ignored portable `gh.exe` exists only in the local checkout and its `gh auth`
+session is invalid. It remains a host prerequisite and is not copied or committed. See
+`docs/KNOWN_ISSUES.md` for the persistent Local Environment and macOS bundled-runtime follow-ups.
+
+### Exact next step
+
+In Codex desktop settings, create the repository Local Environment with the documented Windows and
+macOS setup commands and share the app-generated secret-free file under `.codex/`. Review draft PR
+[#4](https://github.com/toannnnq1424/data-incident-investigator/pull/4); after it is accepted, start
+Slice 1.3 from the updated Slice 1.2 branch. Do not implement it here.
+
 ## 2026-07-18 — Phase 1 Slice 1.3 evidence display trên macOS
 
 ### Objective
@@ -478,3 +546,59 @@ Không có blocker cục bộ mới; commit/push/CI còn pending tại thời đ
 
 Review diff/secret, commit `test: harden Windows pnpm shim fallback`, push thường lên PR #5 và theo dõi
 đúng một CI run mới. Không merge PR và không chạm PR #6.
+
+## 2026-07-18 — PR #4 merge-forward to Phase 1-complete main
+
+### Objective
+
+Merge exact `origin/main` `c3f1830c77f4eda4da7cf1ce729439aa1fd0fd12` into the bootstrap branch
+without rebase/force, preserve Phase 1 and bootstrap evidence, and prepare draft PR #4 for fresh CI and
+macOS QA without merging it or starting Phase 2.
+
+### Completed
+
+Verified clean PR head `99dfc5f7a086808b25d8a57988524769bca0cf87` and merge-base
+`b7a3e699198f7ebae187a5485d0a540a7127cb75`, then merged `origin/main` with `--no-ff --no-commit`.
+Resolved conflicts only in `docs/KNOWN_ISSUES.md`, `docs/REPOSITORY_MAP.md`, and
+`docs/SESSION_LOG.md` by retaining all Phase 1 Slice 1.3/Level D/launcher history from main and all
+bootstrap/local-environment decisions from PR #4. The prospective tree is identical to `main` for
+product, launcher, tests, manifest, lockfile, and test strategy.
+
+### Files changed
+
+Merge history imports the already-green Phase 1 files from `main`. Conflict-resolution edits affect
+only the three project-memory documents above; `docs/IMPLEMENTATION_PLAN.md` records this gate. No new
+product, launcher, dependency, lockfile, or repository-structure edit was made.
+
+### Decisions
+
+Keep a normal merge commit with both exact parents; do not rebase, force-push, integrate PR #6, or
+re-authenticate local `gh`. Keep PR #4 draft and delegate base/CI metadata fallback to the authenticated
+controller thread. Do not rerun browser E2E or full product validation because those inputs are
+unchanged from green `main`.
+
+### Validation performed
+
+The prospective PR diff against `main` contains only bootstrap/local-environment files and merged
+project memory. A fresh dependency-free temporary export retained the Phase 1 launcher. PowerShell
+parsing passed; Windows bootstrap selected Node `v24.14.0` and pnpm `11.9.0`, installed 259 packages
+with lockfile resolution skipped, resolved root Prettier `3.9.5`, passed its static check, and completed
+in `6.893s`. Changed-file Prettier, `git diff --check`, conflict-marker, secret, absolute-path, and
+product-reversal checks passed.
+
+### Validation intentionally deferred
+
+Fresh macOS QA of the post-merge head is pending. Browser E2E and the full product suite were not rerun;
+the new PR CI run covers repository validation.
+
+### Known issues
+
+The shared Local Environment file still requires a human-generated, secret-free desktop configuration,
+and the macOS Codex-bundled runtime fallback remains unexercised. PR #4 must remain draft until fresh
+macOS QA passes.
+
+### Exact next step
+
+Create and push the merge commit normally. The authenticated controller should retarget draft PR #4 to
+`main`, verify exactly one new CI run passes, and run the documented bootstrap command in a clean macOS
+worktree at the new head. Do not mark ready or merge until that Mac QA passes.

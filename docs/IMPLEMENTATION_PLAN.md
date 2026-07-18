@@ -148,6 +148,110 @@ deferred.
 Exact next slice: create a new project-scoped task for Phase 1 Slice 1.3 — Evidence display, starting
 from this Slice 1.2 branch/commit; do not continue Slice 1.3 here.
 
+### Infrastructure stabilization - Codex managed-worktree bootstrap
+
+Status: complete on `codex/stabilize-managed-worktree-bootstrap` from exact Slice 1.2 commit
+`b7a3e699198f7ebae187a5485d0a540a7127cb75`. This is an infrastructure-only objective and does not
+start Slice 1.3 or Phase 2.
+
+Objective: make a newly created Codex managed worktree install the locked workspace dependencies with
+the required Node and pnpm versions on Windows and macOS, while documenting the verified Local
+Environment UI wiring when the desktop app exposes no callable configuration API.
+
+Root-cause classification:
+
+- Codex's bundled `pnpm.cmd` is on the Windows agent `PATH`, but the sibling bundled `node.exe`
+  directory is not. Dependency lifecycle scripts that invoke `node` therefore fail even though pnpm
+  itself starts.
+- A new managed worktree contains tracked files but no root `node_modules`, so `pnpm exec` cannot rely
+  on root tool binaries until a frozen install completes.
+- Invoking package-manager shims that need uncached Corepack/pnpm metadata can fail offline; bootstrap
+  must use the exact `packageManager` version already exposed by the host and must not silently
+  download or activate another pnpm version.
+- The checksum-verified Windows portable `gh.exe` is intentionally ignored under `work/tools/` and is
+  absent from managed worktrees. GitHub CLI remains a host prerequisite and must not be copied into
+  worktrees or into macOS setup.
+
+Minimum files:
+
+- Platform-specific, tracked bootstrap scripts under `scripts/`.
+- `docs/LOCAL_ENVIRONMENT.md` with verified desktop-app setup instructions, prerequisites, failure
+  diagnostics, and the exact schema/API blocker.
+- `CODEX.md`, repository map, known issues, and session log for durable handoff.
+- `.worktreeinclude` only if validation identifies a safe ignored setup file that is genuinely
+  required; otherwise leave it absent.
+
+Acceptance criteria:
+
+- Windows bootstrap discovers a compatible host or Codex-bundled Node without a username or absolute
+  machine path, exposes it to dependency lifecycle scripts, verifies Node `>=24`, and invokes exact
+  pnpm `11.9.0` without relying on missing online package-manager metadata.
+- macOS bootstrap verifies Node `>=24` and exact pnpm `11.9.0` from the host environment before using
+  them; it contains no Windows binary or path.
+- Both platform scripts run `pnpm install --frozen-lockfile`, then prove `node`, `pnpm`,
+  `pnpm exec`, and one static repository command work.
+- Official Codex behavior and the current callable-tool boundary are documented. If the Local
+  Environment file can only be generated through desktop UI, no unverified schema is committed; the
+  documented UI setup points to the tracked platform scripts.
+- Existing `.codex/config.toml` still parses and retains `workspace-write`, `on-request`,
+  `auto_review`, approved network access, and the existing secret-safe optional MCP configuration.
+- No product source, dependency version, lockfile, credential, auth state, portable `gh`, or secret is
+  changed or copied.
+
+Deferred: Slice 1.3, Phase 2, product tests, full Level D validation, global installation of Node/pnpm,
+and installation or authentication of GitHub CLI on contributor hosts.
+
+Validation commands:
+
+- Parse `.codex/config.toml` and every new structured config with a standard parser.
+- Run the Windows bootstrap from a clean dependency state or equivalent disposable copy and capture
+  versions plus frozen-install evidence.
+- Run `bash scripts/bootstrap-worktree.sh` from a clean macOS managed worktree and capture versions,
+  frozen-install evidence, the static check, and final Git status.
+- Run `pnpm exec prettier --check` on the changed documentation/scripts and one affected static command
+  only; do not run the full product suite.
+- Scan the diff for secrets, generated artifacts, absolute machine paths, dependency/lockfile changes,
+  and unintended `.worktreeinclude` entries.
+
+Validation result: passed on Windows and macOS 2026-07-18. From an empty Windows dependency state, the bootstrap found
+Codex-bundled Node `v24.14.0` and pnpm `11.9.0`, completed the frozen install of 257 packages with the
+lockfile resolution skipped, resolved root Prettier `3.9.5` through `pnpm exec`, and passed its static
+format check. PowerShell parsing, POSIX `bash -n`, TOML parsing/policy assertions, changed-document
+Prettier, `git diff --check`, secret/absolute-path scans, and the scoped diff review passed. The first
+changed-document Prettier attempt was classified as a sandbox restriction because pnpm could not
+access its host store; the identical targeted check passed once with scoped access.
+
+From a clean detached macOS worktree at commit `5e75b72b21c01290afaa4f89dadf01c591ea803a`,
+`bash scripts/bootstrap-worktree.sh` selected Homebrew Node `v26.3.0` and pnpm `11.9.0`, completed the
+frozen install of 257 packages with lockfile resolution skipped, resolved Prettier `3.9.5` through
+`pnpm exec`, passed the static Prettier check, printed `Managed-worktree bootstrap completed.`, and
+left `git status` clean. No product source, dependency, lockfile, Local Environment schema,
+`.worktreeinclude`, credential, or portable binary changed.
+
+Merge-readiness update (2026-07-18): merge exact `origin/main`
+`c3f1830c77f4eda4da7cf1ce729439aa1fd0fd12` into PR #4 without rebase or history rewrite, preserving
+all Phase 1 product/launcher completion evidence and the bootstrap/local-environment contract.
+
+Acceptance and validation:
+
+- The merge commit is a descendant of both `origin/main` and PR #4 head
+  `99dfc5f7a086808b25d8a57988524769bca0cf87`.
+- Conflict resolution is limited to project memory and retains the Phase 1 E2E/Level D evidence plus
+  the Windows/macOS bootstrap decisions and commands.
+- The PR diff against `main` contains only bootstrap/local-environment changes and merge-resolution
+  documentation; no Phase 1 product, launcher, manifest, lockfile, or test is reversed or deleted.
+- Run changed-file formatting, `git diff --check`, a secret/absolute-path scan, PowerShell parsing, and
+  the Windows bootstrap from a fresh temporary export with frozen-lockfile/root-tool evidence.
+- Do not rerun browser E2E or the full product suite because their inputs come unchanged from green
+  `main`; CI covers repository validation. Fresh macOS QA of the post-merge head remains pending.
+
+Windows merge-readiness result: a fresh temporary export of the prospective merge index contained no
+dependencies or local pnpm store and retained the Phase 1 launcher. PowerShell parsing passed, then
+`powershell -NoProfile -ExecutionPolicy Bypass -File scripts/bootstrap-worktree.ps1` selected Node
+`v24.14.0` and pnpm `11.9.0`, installed 259 packages with lockfile resolution skipped, resolved root
+Prettier `3.9.5`, passed the static check, and completed in `6.893s`. Post-merge macOS QA remains the
+only platform validation pending before PR #4 can leave draft.
+
 ### Slice 1.3 — Evidence display
 
 Status: complete on `codex-mac/slice-1-3-evidence-display`, stacked on exact Slice 1.2 commit
