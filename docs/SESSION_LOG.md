@@ -374,3 +374,62 @@ trước và được defer ngoài checkpoint. Xem `docs/KNOWN_ISSUES.md`.
 
 Hoàn tất merge-readiness review cho stacked draft PR #5. Không bắt đầu Phase 2 trong task này, không
 đổi product code và không tích hợp PR #4.
+
+## 2026-07-18 — Phase 1 stacked-base merge readiness
+
+### Objective
+
+Merge-forward exact advanced Slice 1.3 base `edd0ed510d4cc4799d1c130415d8e79cb0ff78a5` vào closure
+`c4f20c66d9c7351be8bbf0cdf4e23fe0355ef7f1` mà không rebase/rewrite, resolve conflict E2E duy nhất,
+và chứng minh Phase 1 browser acceptance vẫn giữ nguyên trước khi push PR #5.
+
+### Completed
+
+Fetch xác minh advanced base, closure remote và merge-base
+`c020a4c056527b0711cb07840be2446e23a00b43`. Merge `--no-ff --no-commit` chỉ conflict tại
+`tests/e2e/report-display.spec.mjs`. Resolution giữ nguyên launcher dynamic ports, synchronized HTTP
+readiness/browser URLs, current-Node pnpm invocation và descendant-only cleanup. Behavior của base
+commit về styled Vite readiness được bảo toàn về mục tiêu vì launcher mới không parse log Vite; ANSI
+styling không thể ảnh hưởng HTTP readiness.
+
+### Files changed
+
+`docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md`, `docs/SESSION_LOG.md`; merge history nhận exact
+base `edd0ed510d4cc4799d1c130415d8e79cb0ff78a5`. Resolved
+`tests/e2e/report-display.spec.mjs` trùng nội dung closure đã PASS. Không đổi product/UI/API, manifest,
+lockfile, `docs/REPOSITORY_MAP.md` hoặc PR #4.
+
+### Decisions
+
+Không phục hồi bare pnpm spawn, fixed ports, log regex hoặc per-process cleanup cũ từ base commit.
+HTTP readiness là superseding implementation cho cả plain và styled Vite output. Không dừng process
+ngoài launcher. Duplicate sibling PR #6/commit `8d75932` không được merge, cherry-pick hoặc tích hợp.
+Incident worktree `6219` và exact PID history vẫn được giữ nguyên trong entry trước.
+
+### Validation performed
+
+- Changed-file Prettier PASS trong 1.715 giây; affected ESLint PASS trong 3.690 giây.
+- `pnpm exec vitest run tests/integration/report-launcher.test.ts` PASS 3/3; Vitest 1.94 giây, wall
+  6.076 giây, gồm process-tree cleanup contract thật.
+- Đúng một `pnpm test:e2e:report` chọn API `http://127.0.0.1:63576` và web
+  `http://127.0.0.1:63577`, PASS canonical fixture flow trong `6890ms` (`13.097s` wall), dưới ba phút,
+  evidence references thật và console sạch.
+- Post-run check xác nhận 0 listener trên hai selected ports và 0 Node/cmd/Chromium runtime process của
+  launcher. Một PowerShell từ tác vụ khác đang chạy `git show 8d75932…` được nhận diện là unrelated,
+  không bị dừng và đã tự kết thúc trước probe tiếp theo.
+
+### Validation intentionally deferred
+
+Không rerun core Level D vì input product/core không đổi. Không có Phase 2, DataHub, Stitch,
+deployment hoặc cross-browser expansion.
+
+### Known issues
+
+Không còn local acceptance blocker. Merge commit chưa push tại thời điểm ghi entry; PR conflict/CI sẽ
+được xác minh sau push. Process-local persistence, single fixture và broader cross-browser coverage
+vẫn deferred như trước.
+
+### Exact next step
+
+Tạo merge commit không rewrite, push cùng branch, xác minh draft PR #5 hết conflict và theo dõi đúng
+một CI run mới. Dừng sau PR/CI evidence; không bắt đầu Phase 2 và không tích hợp PR #4.

@@ -327,8 +327,47 @@ Follow-up validation result on Windows managed worktree, 2026-07-18:
 - Phase 1 Level D therefore passes. The previously passing core gate was not rerun because its inputs
   did not change; only the controller-authorized browser gate was repeated after Chromium provisioning.
 
-Exact next action: complete merge-readiness review for stacked draft PR #5. Do not begin Phase 2 in
-this task, change product code, or integrate PR #4.
+Merge-readiness follow-up status: passed locally against exact advanced stacked base
+`edd0ed510d4cc4799d1c130415d8e79cb0ff78a5` (`test(e2e): tolerate styled vite readiness logs`), whose
+parent is the original Slice 1.3 base `c020a4c056527b0711cb07840be2446e23a00b43`. Merge the advanced
+base forward without rebase or history rewrite and resolve only the direct conflict in
+`tests/e2e/report-display.spec.mjs`.
+
+Merge-readiness acceptance and validation:
+
+- Preserve the proven dynamic-port, synchronized-URL, descendant-only cleanup launcher while also
+  preserving the advanced base's tolerance for ANSI-styled Vite readiness output where applicable.
+- Run changed-file Prettier and affected ESLint, then
+  `pnpm exec vitest run tests/integration/report-launcher.test.ts` and exactly one
+  `pnpm test:e2e:report`; do not rerun unchanged core Level D commands.
+- The browser flow must remain under three minutes with clean console output, resolved evidence
+  references, and no selected-port or launcher-descendant leak.
+- Update the three project-memory documents, create one merge commit, push without force, verify draft
+  PR #5 no longer conflicts, and follow exactly one CI run created by that push.
+
+Merge-readiness local validation result on Windows, 2026-07-18:
+
+- Fetch verified closure HEAD `c4f20c66d9c7351be8bbf0cdf4e23fe0355ef7f1`, advanced base
+  `edd0ed510d4cc4799d1c130415d8e79cb0ff78a5`, and merge-base
+  `c020a4c056527b0711cb07840be2446e23a00b43`. The only conflict was
+  `tests/e2e/report-display.spec.mjs`.
+- The resolution keeps the proven dynamic-port launcher, HTTP URL readiness, current-Node pnpm
+  invocation, and descendant-only cleanup. Because readiness no longer parses Vite logs, ANSI-styled
+  output from the advanced base cannot prevent readiness; the obsolete regex/fixed-port launcher was
+  not restored.
+- Changed-file Prettier passed in 1.715 seconds and affected ESLint passed in 3.690 seconds. Launcher
+  contracts passed 3/3 in 1.94 seconds (6.076 seconds wall), including real descendant-tree cleanup.
+- The one authorized `pnpm test:e2e:report` selected API `http://127.0.0.1:63576` and web
+  `http://127.0.0.1:63577`, then passed in `6890ms` (`13.097s` wall). It retained the under-three-minute,
+  clean-console, resolved-evidence-reference, and full-report assertions. Post-run checks found zero
+  listeners on both ports and zero Node/cmd/Chromium runtime processes belonging to this launcher.
+
+Deferred: all product/UI/API work, manifest or lockfile changes, PR #4 integration, duplicate sibling
+PR #6/commit `8d75932`, and Phase 2.
+
+Exact next action: create and push the non-rewriting merge commit, verify draft PR #5 is conflict-free,
+and follow exactly one CI run created by that push. Stop after PR/CI evidence; do not begin Phase 2,
+change product code, or integrate PR #4.
 
 Phase completion: a clean clone can select a demo incident and receive a complete report.
 

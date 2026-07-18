@@ -9,6 +9,11 @@ Last updated: 2026-07-18.
   `9361ms` on dynamic ports `51439`/`51440`, with evidence-reference resolution and clean-console
   assertions enabled. Both ports and the launcher process tree were clean afterward. The Phase 1
   browser gate is no longer a blocker.
+- The advanced stacked base commit `edd0ed510d4cc4799d1c130415d8e79cb0ff78a5` changed the legacy E2E
+  launcher to tolerate ANSI-styled Vite logs and initially conflicted with the closure launcher. The
+  merge-forward resolution retains HTTP readiness at synchronized dynamic URLs, which is independent
+  of styled logs. Targeted contracts passed 3/3 and the canonical browser flow passed again in
+  `6890ms` on ports `63576`/`63577`, with no listener or launcher-runtime leak.
 - Managed dependency bootstrap required the bundled Node directory in process `PATH`, created an
   untracked repository-local `.pnpm-store`, and needed scoped access for Vitest to read `esbuild`.
   PR #4 (`codex/stabilize-managed-worktree-bootstrap`, commit
