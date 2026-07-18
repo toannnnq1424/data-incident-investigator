@@ -120,7 +120,9 @@ Keep fixture mode as the credential-free default; load fixture JSON only inside 
 bound one lineage hop, four entities, four recent changes, four adapter calls, and two seconds of runner
 duration; use report evidence as facts and hypotheses as evidence-linked inferences; store lifecycle
 state only in API memory; expose only the compact report subset in Slice 1.2 and defer detailed evidence
-presentation to Slice 1.3.
+presentation to Slice 1.3. Maintained the repository rule that user-facing commentary, progress/error
+classification, validation summaries, and final reporting use Vietnamese while technical source and API
+contracts remain unchanged.
 
 ### Validation performed
 
