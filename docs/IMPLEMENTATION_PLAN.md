@@ -1519,6 +1519,134 @@ Validation result on the Windows managed worktree, 2026-07-19:
   is unchanged, so `docs/REPOSITORY_MAP.md` remains untouched. Level D and live DataHub smoke were
   intentionally not run.
 
+### Slice 3.3 — Evidence-linked hypothesis scoring
+
+Status: Level C passed locally on `codex/phase-3-3-evidence-linked-scoring` from exact Slice 3.2 final
+commit `96476f8834fbd6af8e0fdef9ceeae6b2c8c40a33`.
+
+Objective: after factual context and suspicious-change detection complete, generate at most three
+provider-neutral candidate hypotheses, link each inference to exact existing factual evidence, and
+rank them with a deterministic code-owned confidence formula whose ordered factor contributions are
+auditable. Preserve the legacy report contract while removing arbitrary fixture confidence; do not
+build an evidence-chain narrative, recommendation/remediation, fallback reasoning, controller, or
+model integration.
+
+Minimum files:
+
+- `packages/shared-types/src/index.ts` and `tests/integration/contracts.test.ts` for strict scored-
+  hypothesis, score-factor, terminal-result, and lifecycle schemas with bounds, canonical precision,
+  ordering, score-sum, uniqueness, forbidden-field, and evidence cross-reference invariants.
+- `packages/agent-core/src/index.ts` and `tests/integration/hypothesis-scorer.test.ts` for a pure
+  deterministic generator/scorer over completed context plus completed suspicious changes, exact
+  basis-point arithmetic, stable tie-breaks, deduplication, cap-three behavior, insufficient outcomes,
+  canonical evidence mapping, and zero provider/model/network-call proof.
+- `apps/api/src/index.ts` and `tests/integration/incidents-api.test.ts` for additive
+  `hypothesisScoringStage: scoring | completed | insufficient | unavailable`, no additional adapter
+  calls, safe upstream/validation failure, and schema-valid completed reports using scored hypotheses.
+- `apps/web/src/App.tsx`, `apps/web/src/styles.css`, and
+  `tests/integration/web-hypothesis-scoring.test.ts` for compact accessible ranked inference,
+  confidence, factor, evidence-link, loading/insufficient/unavailable, and stale-request presentation.
+- Existing context, suspicious-change, runner, report, and combined E2E tests for direct regression,
+  resolved report evidence references, and exactly one metadata-to-scored-report browser flow.
+- `docs/AGENT_DESIGN.md`, `docs/API_CONTRACTS.md`, `docs/DATA_MODEL.md`, this plan,
+  `docs/KNOWN_ISSUES.md`, and `docs/SESSION_LOG.md` for the formula, lifecycle, validation evidence,
+  deferred scope, and handoff. `docs/REPOSITORY_MAP.md` remains unchanged unless structure moves.
+
+Acceptance criteria:
+
+- The pure scorer accepts only validated completed factual context and completed suspicious results;
+  it has no adapter/provider/network/model/Stitch/credential/environment input, retry, fallback seed,
+  or iteration-order dependency. Invalid/gathering/failed upstream states never produce a hypothesis.
+- Every hypothesis has a stable unique ID, explicit plausible-contributor/inference wording, a
+  canonical confidence in `[0,1]`, one or more unique exact evidence IDs, and the same four ordered
+  allowlisted factors: incident-window recency, lineage position/distance, symptom/category fit, and
+  evidence quality/completeness. Integer basis-point contributions sum exactly to confidence after an
+  explicit `0..10000` clamp; no legacy `0.92` or model-authored confidence survives.
+- Evidence IDs resolve first to exact context change facts and then to evidence present in the final
+  `InvestigationReportSchema`. Dangling or duplicate references, duplicate hypotheses, causal or
+  unsupported input, factor/order/rank mismatch, score mismatch, unknown fields, and more than three
+  hypotheses are rejected or produce a safe insufficient result at the composition boundary.
+- Ranking is deterministic by confidence descending, factual observation timestamp descending,
+  change ID ascending, then hypothesis ID ascending; ranks are contiguous from one. Canonical JSON
+  serialization uses bounded two-decimal confidence precision.
+- Empty/insufficient suspicious results, materially truncated or incomplete context, and unresolved
+  report-evidence mapping yield `insufficient` with zero hypotheses plus explicit missing information,
+  not a fabricated low-confidence root cause. Failed or invalid upstream input yields only a safe
+  normalized `unavailable` error.
+- The removed-column fixture produces a stable top inference identifying the removed schema change on
+  exact upstream `raw.orders` as a plausible contributor, cites the exact factual change/evidence ID,
+  and exposes reproducible factor contributions without saying confirmed cause.
+- Incident retrieval adds the scoring lifecycle without extra adapter calls. The web keeps the compact
+  top hypothesis/full report and adds semantic ranked scoring details with accessible factors and
+  evidence links; stale responses cannot overwrite a newer request.
+- Focused contract/scorer/API/web/regression tests, five affected typechecks and builds, and exactly
+  one combined browser flow pass with clean console, responsive overflow, under-three-minute duration,
+  selected-port release, and launcher cleanup.
+
+Deferred: evidence-chain prose, recommendations, remediation, fallback reasoning, Slice 3.4, impact
+analysis, generic controller/model integration, provider expansion, authentication, persistence, live
+DataHub smoke, dependency changes, UI redesign, Phase 3 closure, and Level D validation.
+
+Exact Level C commands (run once as one coherent sequence after implementation; rerun only a
+classified affected failure):
+
+- `pnpm exec prettier --write packages/shared-types/src/index.ts packages/agent-core/src/index.ts apps/api/src/index.ts apps/web/src/App.tsx apps/web/src/styles.css tests/integration/contracts.test.ts tests/integration/hypothesis-scorer.test.ts tests/integration/suspicious-change-detector.test.ts tests/integration/incident-context-gatherer.test.ts tests/integration/investigation-runner.test.ts tests/integration/incidents-api.test.ts tests/integration/web-incident-context.test.ts tests/integration/web-suspicious-changes.test.ts tests/integration/web-hypothesis-scoring.test.ts tests/integration/web-report.test.ts tests/e2e/report-display.spec.mjs docs/AGENT_DESIGN.md docs/API_CONTRACTS.md docs/DATA_MODEL.md docs/IMPLEMENTATION_PLAN.md docs/KNOWN_ISSUES.md docs/SESSION_LOG.md`
+- `pnpm exec prettier --check packages/shared-types/src/index.ts packages/agent-core/src/index.ts apps/api/src/index.ts apps/web/src/App.tsx apps/web/src/styles.css tests/integration/contracts.test.ts tests/integration/hypothesis-scorer.test.ts tests/integration/suspicious-change-detector.test.ts tests/integration/incident-context-gatherer.test.ts tests/integration/investigation-runner.test.ts tests/integration/incidents-api.test.ts tests/integration/web-incident-context.test.ts tests/integration/web-suspicious-changes.test.ts tests/integration/web-hypothesis-scoring.test.ts tests/integration/web-report.test.ts tests/e2e/report-display.spec.mjs docs/AGENT_DESIGN.md docs/API_CONTRACTS.md docs/DATA_MODEL.md docs/IMPLEMENTATION_PLAN.md docs/KNOWN_ISSUES.md docs/SESSION_LOG.md`
+- `pnpm exec eslint packages/shared-types/src packages/agent-core/src apps/api/src apps/web/src tests/integration/contracts.test.ts tests/integration/hypothesis-scorer.test.ts tests/integration/suspicious-change-detector.test.ts tests/integration/incident-context-gatherer.test.ts tests/integration/investigation-runner.test.ts tests/integration/incidents-api.test.ts tests/integration/web-incident-context.test.ts tests/integration/web-suspicious-changes.test.ts tests/integration/web-hypothesis-scoring.test.ts tests/integration/web-report.test.ts tests/e2e/report-display.spec.mjs`
+- `pnpm --filter @dii/shared-types typecheck`
+- `pnpm --filter @dii/datahub-client typecheck`
+- `pnpm --filter @dii/agent-core typecheck`
+- `pnpm --filter @dii/api typecheck`
+- `pnpm --filter @dii/web typecheck`
+- `pnpm exec vitest run tests/integration/contracts.test.ts tests/integration/fixture-adapter.test.ts tests/integration/incident-context-gatherer.test.ts tests/integration/suspicious-change-detector.test.ts tests/integration/hypothesis-scorer.test.ts tests/integration/investigation-runner.test.ts tests/integration/incidents-api.test.ts tests/integration/web-incident-context.test.ts tests/integration/web-suspicious-changes.test.ts tests/integration/web-hypothesis-scoring.test.ts tests/integration/web-report.test.ts`
+- `pnpm --filter @dii/shared-types --filter @dii/datahub-client --filter @dii/agent-core --filter @dii/api --filter @dii/web build`
+- Exactly one `pnpm test:e2e:report` run proving metadata tools -> completed context facts -> suspicious
+  candidate/signals -> ranked scored inference/factors/resolved evidence links -> processing ->
+  completed/full report, plus accessibility/focus, clean console, responsive overflow, three-minute
+  duration, selected-port release, and launcher cleanup.
+- `git diff --check`, tracked-plus-untracked secret/conflict/causal/debug/raw-provider/model/generated-
+  artifact scans, changed-file and full scoped diff review, `git diff --stat`,
+  `git diff --name-status`, manifest/lockfile and ancestry review, and
+  `git status --short --branch` before the single conventional commit; only final status is repeated
+  after commit/push.
+
+Validation result on the Windows managed worktree, 2026-07-19:
+
+- The tracked bootstrap ran before repository work. Direct PowerShell execution reproduced the known
+  execution-policy block; process-scoped bypass completed the frozen 259-package install and
+  supply-chain check, then reproduced the known fallback-pnpm root-Prettier resolution failure.
+  Prepending the verified bundled Node, exact pnpm fallback, and root `.bin` paths only to the process
+  completed bootstrap/static formatting without a script, manifest, or lockfile change.
+- Final-input Prettier write/check and affected ESLint passed. All five affected typechecks passed:
+  shared-types, datahub-client, agent-core, API, and web. The first focused Vitest reproducer stopped
+  before tests at the known managed-worktree esbuild ancestor-directory denial; its exact scoped retry
+  passed 6 files/35 tests. After the final rank/order, duplicate-evidence, low-quality, and unresolved-
+  evidence assertions, the combined scoped Level C suite passed 11/11 files and 62/62 tests in `6.62s`
+  Vitest time.
+- Coverage proves strict unknown-field/bounds/score-sum/rank/order/reference contracts, exact 8,500-bp
+  canonical formula, multiple-candidate confidence/timestamp/ID ranking, cap/dedup, missing time and
+  symptom, lineage quality reduction, material recent-change truncation, insufficient suspicious
+  input, gathering/failed upstream rejection, unresolved evidence, zero provider/environment work,
+  API lifecycle/safe failures, web loading/completed/insufficient/unavailable/stale copy, and preserved
+  context/suspicious/report compatibility.
+- All five affected production builds passed. Web transformed 109 modules and built in `5.04s`;
+  shared-types, datahub-client, agent-core, and API builds also completed successfully.
+- The first browser attempt reached completed scoring but its new assertion rejected the required safe
+  disclaimer because it searched the whole stage for `confirmed cause`, including the phrase
+  `not a confirmed cause`. This was classified as a test false positive; product output, API score,
+  evidence mapping, console, and cleanup were not changed. Focused E2E Prettier/check/lint passed after
+  narrowing the assertion to the hypothesis row and requiring the disclaimer. The one final recovery
+  flow selected API `http://127.0.0.1:63866` and web `http://127.0.0.1:63867`, then passed the combined
+  metadata tools -> context -> suspicious candidate/signals -> ranked `0.85` inference with all four
+  factor contributions and exact evidence link -> completed/full report in `16150ms`. Accessibility,
+  clean console, desktop/mobile overflow, three-minute duration, selected-port release, and launcher
+  cleanup assertions all passed.
+- Level D and live DataHub smoke were intentionally not run. Final tracked/untracked diff, secret,
+  conflict, causal/debug/raw-provider/model, generated-artifact, manifest/lockfile, ancestry, and full
+  scoped patch review passed before the single conventional commit. The 18 intended files comprise 16
+  modified tracked files plus two new focused integration tests; no unrelated or generated file is
+  present. The worktree is intentionally dirty only with that reviewed commit payload.
+
 Slices: parse and gather; suspicious-change detection; evidence-linked hypothesis scoring; remediation
 and fallback. Completion requires fact/inference/missing-information separation and deterministic limits.
 

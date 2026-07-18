@@ -2,6 +2,19 @@
 
 Last updated: 2026-07-19.
 
+- Slice 3.3 evidence-linked scoring is implemented locally on exact Slice 3.2 commit `96476f8`.
+  The scorer is pure over validated context/suspicious/report-evidence inputs, emits at most three
+  exact evidence-linked plausible-contributor inferences, and owns a four-factor 10,000-basis-point
+  formula. The canonical removed-column score is `0.85`; arbitrary legacy `0.92` is removed from the
+  runner/browser path. Recent-change truncation, candidate-cap incompleteness, insufficient suspicious
+  input, and unresolved evidence yield zero scored hypotheses. Final Level C passes format/lint, five
+  typechecks, 11 files/62 tests, five builds, and one final browser recovery flow in `16150ms` on ports
+  `63866`/`63867` with ranked factors/evidence links plus clean console/overflow/teardown. The first
+  browser attempt exposed and then narrowed only a false-positive assertion against the required
+  `not a confirmed cause` disclaimer. Final tracked/untracked diff, secret, conflict, causal/debug/raw-
+  provider/model, generated-artifact, manifest/lockfile, ancestry, and scoped patch review pass;
+  publication and CI evidence are pending. Slice 3.4, Level D, live DataHub smoke, model/controller
+  work, evidence-chain prose, remediation, and fallback remain deferred.
 - Slice 3.2 suspicious-change detection Level C passes locally from exact Slice 3.1 final commit
   `c0d765ed57b00c17d957eb62e3e84984897af48f`. The detector is pure over validated completed context,
   uses five allowlisted deterministic signals, returns at most five exact change/entity candidates,

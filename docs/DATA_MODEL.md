@@ -117,6 +117,36 @@ The model rejects unknown fields, duplicate IDs/signals, invalid ordering, inven
 references, and any hypothesis, confidence, root-cause, recommendation, remediation, or raw provider
 payload field.
 
+## Evidence-linked hypothesis scoring
+
+Incident retrieval includes additive `hypothesisScoringStage` owned by the same request and factual
+report evidence. Its lifecycle is `scoring` while upstream facts or the legacy report evidence catalog
+are still assembling, `completed | insufficient` after valid terminal inputs, or safe `unavailable`
+when context, suspicious detection, or scoring validation cannot complete.
+
+A completed result contains one to three strictly ordered scored hypotheses. Each hypothesis has:
+
+- a stable unique hypothesis ID, contiguous rank, exact source change ID, and factual observation time;
+- an inference statement beginning `Plausible contributor:` and containing no confirmed-cause,
+  recommendation, remediation, action, or raw provider/model field;
+- a confidence in `[0,1]` with at most two decimal places;
+- one to six unique evidence IDs, including the source change ID, all resolving to report evidence; and
+- exactly four ordered allowlisted factors with fixed label, integer basis-point contribution, and
+  fixed maximum weight.
+
+Factor order and weights are `change_recency` 3,000, `lineage_position` 2,000,
+`symptom_category_fit` 3,000, and `evidence_quality` 2,000. Contributions use 100-basis-point
+precision, never exceed their weight, and their clamped sum must equal `confidence * 10,000` exactly.
+Ranking is confidence descending, observation time descending, source change ID ascending, then
+hypothesis ID ascending. Duplicate IDs/source changes, score or rank mismatch, invalid factor order,
+and more than three hypotheses are rejected.
+
+The cross-reference contract verifies the suspicious candidate against completed context first, then
+requires its change evidence to have the same ID, normalized category, statement, source entity, and
+observation time. Unresolved evidence, incomplete recent-change rank inputs, or an insufficient
+suspicious result yields zero hypotheses plus explicit missing information. It does not generate a
+low-confidence fallback.
+
 ## Evidence
 
 Evidence is an observed fact with:
@@ -130,9 +160,10 @@ Inference is not stored as evidence. An inference belongs in a hypothesis and ci
 
 ## Hypothesis
 
-A hypothesis has an ID, summary, confidence from 0 to 1, and at least one evidence ID. Confidence will
-be derived from explicit signals such as change recency, lineage distance, symptom match, and provider
-reliability rather than arbitrary model output.
+A legacy hypothesis has an ID, summary, confidence from 0 to 1, and at least one evidence ID. A Slice
+3.3 scored hypothesis adds rank, source change/time, and the four exact factor contributions described
+above. The report accepts either the legacy shape or a uniformly scored list for compatibility, never a
+mixture; completed scoring requires the report list to equal the lifecycle output exactly.
 
 ## Investigation report
 
@@ -157,4 +188,7 @@ persistent storage is deferred.
 - Suspicious-change candidates are capped at five, use unique exact recent-change/entity references,
   and contain only ordered allowlisted factual signals; insufficient output contains no candidate and
   explicit missing information.
+- Scored hypotheses are capped at three, use unique exact source changes and resolved report evidence,
+  expose four ordered factor contributions whose exact sum equals canonical confidence, and cannot mix
+  with legacy hypotheses in one report.
 - `inconclusive` reports include missing information and avoid unsupported root-cause claims.

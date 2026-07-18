@@ -8,6 +8,7 @@ import {
   type EntityKind,
   type EntityRef,
   type Evidence,
+  type HypothesisScoringStage,
   IncidentAcceptedResponseSchema,
   type IncidentContextStage,
   IncidentRequestSchema,
@@ -862,6 +863,139 @@ function SuspiciousChangeStage({ stage }: { stage: SuspiciousChangeDetectionStag
   );
 }
 
+export function getHypothesisScoringPresentation(stage: HypothesisScoringStage) {
+  if (stage.status === 'scoring') {
+    return {
+      heading: 'Scoring evidence-linked hypotheses',
+      message: 'Applying the deterministic basis-point formula to resolved factual evidence…',
+      tone: 'loading' as const,
+    };
+  }
+
+  if (stage.status === 'unavailable') {
+    return {
+      heading: 'Hypothesis scoring unavailable',
+      message: stage.error.message,
+      tone: 'error' as const,
+    };
+  }
+
+  if (stage.status === 'insufficient') {
+    return {
+      heading: 'Insufficient evidence for hypothesis scoring',
+      message: 'No ranked inference was produced from the bounded factual inputs.',
+      tone: 'missing' as const,
+    };
+  }
+
+  return {
+    heading: 'Ranked evidence-linked hypotheses',
+    message: `${stage.hypotheses.length} plausible-contributor inference${stage.hypotheses.length === 1 ? '' : 's'} scored by transparent factors.`,
+    tone: 'success' as const,
+  };
+}
+
+function evidenceDomId(evidenceId: string) {
+  return `evidence-${evidenceId.replace(/[^a-zA-Z0-9_-]/g, '-')}`;
+}
+
+function HypothesisScoringStage({ stage }: { stage: HypothesisScoringStage }) {
+  const presentation = getHypothesisScoringPresentation(stage);
+
+  return (
+    <section
+      className={`hypothesis-scoring-stage scoring-${presentation.tone}`}
+      aria-labelledby="hypothesis-scoring-heading"
+      data-hypothesis-scoring-status={stage.status}
+    >
+      <p className="report-label">Candidate hypotheses · code-owned scoring</p>
+      <h3 id="hypothesis-scoring-heading" tabIndex={-1}>
+        {presentation.heading}
+      </h3>
+      <p>{presentation.message}</p>
+
+      {stage.status === 'unavailable' && (
+        <p className="hypothesis-scoring-error" role="alert">
+          <code>{stage.error.code}</code>
+        </p>
+      )}
+
+      {(stage.status === 'completed' || stage.status === 'insufficient') && (
+        <div className="hypothesis-scoring-content">
+          {stage.status === 'completed' ? (
+            <ol className="scored-hypothesis-list">
+              {stage.hypotheses.map((hypothesis) => (
+                <li
+                  key={hypothesis.id}
+                  data-hypothesis-id={hypothesis.id}
+                  data-hypothesis-rank={hypothesis.rank}
+                >
+                  <div className="scored-hypothesis-heading">
+                    <div>
+                      <span>Inference #{hypothesis.rank}</span>
+                      <strong>{hypothesis.summary}</strong>
+                    </div>
+                    <b>{formatConfidence(hypothesis.confidence)} confidence</b>
+                  </div>
+                  <p>
+                    Source change <code>{hypothesis.sourceChangeId}</code> ·{' '}
+                    <time dateTime={hypothesis.observedAt}>
+                      {formatObservedAt(hypothesis.observedAt)}
+                    </time>
+                  </p>
+                  <p className="score-factor-label">Ordered score factors</p>
+                  <ol className="score-factor-list">
+                    {hypothesis.factors.map((factor) => (
+                      <li key={factor.code}>
+                        <code>{factor.code}</code>
+                        <span>{factor.label}</span>
+                        <strong>
+                          {factor.contributionBasisPoints} / {factor.weightBasisPoints} bp
+                        </strong>
+                      </li>
+                    ))}
+                  </ol>
+                  <p className="scored-evidence-label">Resolved evidence</p>
+                  <ul className="scored-evidence-list">
+                    {hypothesis.evidenceIds.map((evidenceId) => (
+                      <li key={evidenceId}>
+                        <a href={`#${evidenceDomId(evidenceId)}`}>
+                          <code>{evidenceId}</code>
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <EmptyState message="No evidence-linked hypothesis crossed the scoring boundary." />
+          )}
+
+          {stage.missingInformation.length > 0 && (
+            <section aria-labelledby="hypothesis-scoring-missing-heading">
+              <h4 id="hypothesis-scoring-missing-heading">Scoring missing information</h4>
+              <ul className="hypothesis-scoring-missing-list">
+                {stage.missingInformation.map((item) => (
+                  <li key={item.code}>
+                    <code>{item.code}</code>
+                    <span>{item.message}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          <p className="hypothesis-scoring-boundary">
+            Confidence is the exact sum of bounded code-owned factors. Each item is an inference and
+            plausible contributor, not a confirmed cause or recommendation.
+          </p>
+        </div>
+      )}
+    </section>
+  );
+}
+
 function EmptyState({ message }: { message: string }) {
   return <p className="empty-state">{message}</p>;
 }
@@ -906,7 +1040,15 @@ function EntityList({ entities }: { entities: EntityRef[] }) {
   );
 }
 
-function EvidenceList({ evidence, emptyMessage }: { evidence: Evidence[]; emptyMessage: string }) {
+function EvidenceList({
+  evidence,
+  emptyMessage,
+  linkTargets = false,
+}: {
+  evidence: Evidence[];
+  emptyMessage: string;
+  linkTargets?: boolean;
+}) {
   if (evidence.length === 0) {
     return <EmptyState message={emptyMessage} />;
   }
@@ -914,7 +1056,7 @@ function EvidenceList({ evidence, emptyMessage }: { evidence: Evidence[]; emptyM
   return (
     <ol className="evidence-list">
       {evidence.map((item) => (
-        <li key={item.id}>
+        <li key={item.id} id={linkTargets ? evidenceDomId(item.id) : undefined}>
           <div className="evidence-meta">
             <code>{item.id}</code>
             <span>{item.category}</span>
@@ -985,6 +1127,7 @@ function ProcessingStatus({ incident }: { incident: ProcessingIncident }) {
       <span>{incident.incidentId}</span>
       <IncidentContextStage stage={incident.contextStage} />
       <SuspiciousChangeStage stage={incident.suspiciousChangeStage} />
+      <HypothesisScoringStage stage={incident.hypothesisScoringStage} />
       <EmptyState message="Report details will appear after fixture evidence is gathered." />
     </div>
   );
@@ -1008,6 +1151,7 @@ export function CompletedReport({ incident }: { incident: CompletedIncident }) {
       </dl>
       <IncidentContextStage stage={incident.contextStage} />
       <SuspiciousChangeStage stage={incident.suspiciousChangeStage} />
+      <HypothesisScoringStage stage={incident.hypothesisScoringStage} />
       <section className="report-summary" aria-labelledby="report-summary-heading">
         <p className="report-label">Incident report</p>
         <h3 id="report-summary-heading">Summary</h3>
@@ -1021,7 +1165,11 @@ export function CompletedReport({ incident }: { incident: CompletedIncident }) {
         </ReportSection>
 
         <ReportSection id="facts-heading" label="Facts" title="Evidence">
-          <EvidenceList evidence={content.facts} emptyMessage="No factual evidence was returned." />
+          <EvidenceList
+            evidence={content.facts}
+            emptyMessage="No factual evidence was returned."
+            linkTargets
+          />
         </ReportSection>
 
         <ReportSection id="lineage-heading" label="Lineage" title="Relevant lineage">
@@ -1490,6 +1638,7 @@ export function App() {
           ...parsedResponse.data,
           contextStage: { status: 'gathering' },
           suspiciousChangeStage: { status: 'detecting' },
+          hypothesisScoringStage: { status: 'scoring' },
         },
       });
       await retrieveIncident(parsedResponse.data, requestId, controller);

@@ -1644,3 +1644,78 @@ Format/check final docs evidence, review diff/secret/generated/ancestry, tạo c
 `feat: detect suspicious metadata changes`, push branch, mở stacked Draft PR base
 `codex/phase-3-1-parse-gather-20260719-e7b053c`, rồi theo dõi đúng một final-HEAD CI run tới terminal và
 xác minh conflict-free/merge-ready. Không bắt đầu Slice 3.3.
+
+## 2026-07-19 — Phase 3 Slice 3.3 evidence-linked hypothesis scoring
+
+### Objective
+
+Từ exact Slice 3.2 final commit `96476f8834fbd6af8e0fdef9ceeae6b2c8c40a33`, tạo tối đa ba
+hypothesis deterministic, evidence-linked và ranked bằng confidence formula minh bạch do code sở hữu;
+hiển thị inference, factor contributions và exact evidence links. Không làm evidence-chain narrative,
+recommendation/remediation, fallback, controller, model integration hoặc Slice 3.4.
+
+### Completed
+
+Đã chạy tracked Windows bootstrap trước repository work bằng execution-policy/PATH workaround chỉ
+trong process cho known fallback-pnpm shim. Đã xác minh clean detached handoff HEAD, direct Slice 3.1
+ancestry, không có branch/task Slice 3.3 khác cần tiếp quản, tạo branch
+`codex/phase-3-3-evidence-linked-scoring`, và ghi plan trước source. Shared lifecycle/cross-reference
+schemas, pure scorer, additive API composition, accessible web presentation, focused/regression/E2E
+coverage và scoring docs đã được triển khai. Level C đã xanh trên final coherent inputs.
+
+### Files changed
+
+Shared types; agent-core; API; web App/styles; contract, scorer, runner, API, web report/scoring và
+combined browser tests; cùng `AGENT_DESIGN.md`, `API_CONTRACTS.md`, `DATA_MODEL.md`,
+`IMPLEMENTATION_PLAN.md`, `KNOWN_ISSUES.md` và entry này. Không đổi provider/fixture, repository map,
+manifest, lockfile, dependency, auth hay persistence.
+
+### Decisions
+
+Confidence dùng bốn factor theo thứ tự với tổng weight 10.000 basis points: recency 3.000, lineage
+position 2.000, symptom/category fit 3.000 và evidence quality 2.000. Canonical fixture nhận
+`3000 + 2000 + 1500 + 2000 = 8500`, serialize thành `0.85`. Rank tie-break là confidence giảm dần,
+factual timestamp giảm dần, change ID rồi hypothesis ID tăng dần; cap ba. Exact report change evidence
+phải resolve trước scoring. Recent-change truncation/candidate cap/unresolved evidence trả
+`insufficient` với zero hypothesis. Legacy report shape vẫn tương thích ở upstream-unavailable path,
+nhưng completed scoring thay report hypotheses bằng exact scored output và không tạo fallback mới.
+
+### Validation performed
+
+- Tracked bootstrap PASS sau process-scoped workaround; frozen install/supply-chain/static format
+  check hoàn tất, không sửa bootstrap/manifest/lockfile.
+- Final-input Prettier write/check và affected ESLint PASS. Năm affected typechecks PASS cho
+  shared-types, datahub-client, agent-core, API và web.
+- Sandboxed focused Vitest bị chặn trước test bởi known esbuild ancestor metadata denial. Exact scoped
+  retry PASS 6 files, `35/35` tests. Sau final assertions, combined scoped suite PASS 11 files,
+  `62/62` tests trong `6.62s`, bao phủ exact formula/rank/dedup/cap, strict score/reference invariants,
+  missing inputs, low-quality/material truncation, insufficient/unavailable, zero provider work, API,
+  web stale/accessibility và context/suspicious/report regressions.
+- Năm affected builds PASS; web transformed 109 modules và build trong `5.04s`.
+- Browser attempt đầu tới completed scoring nhưng false-positive vì assertion cấm `confirmed cause`
+  trên toàn stage, trong đó có required disclaimer `not a confirmed cause`. Sau khi chỉ narrow test
+  assertion và focused format/check/lint PASS, final recovery flow PASS `16150ms` trên API `63866`, web
+  `63867`: metadata tools → context → suspicious candidate/signals → ranked `0.85` inference với bốn
+  factor contributions và exact evidence link → completed/full report. Clean console, accessibility,
+  desktop/mobile overflow, three-minute bound, selected-port release và launcher cleanup đều PASS.
+
+### Validation intentionally deferred
+
+Level D, live DataHub smoke, evidence-chain synthesis, recommendations, remediation/fallback, generic
+controller/model integration, auth/persistence, provider/dependency expansion, Phase 3 closure và Slice
+3.4.
+
+### Known issues
+
+Managed Windows fallback-pnpm workspace-binary và sandbox esbuild ancestor-path limitations vẫn cần
+process-scoped workaround, không phải product defect. Không có credential hoặc live provider cần dùng.
+Final review PASS cho 18 intended files: tracked/untracked diff, full scoped patch, conflict marker,
+secret, causal/debug/raw-provider/model output, generated artifact, manifest/lockfile, exact ancestry và
+branch. Worktree chỉ còn reviewed commit payload; publication/CI evidence đang chờ sau commit.
+
+### Exact next step
+
+Format/check final docs evidence; review tracked/untracked diff/secret/generated/ancestry/worktree; tạo
+conventional commit `feat: score evidence-linked hypotheses`, push branch, mở stacked Draft PR base
+`codex/phase-3-2-suspicious-changes`, theo dõi đúng một final-HEAD CI run và xác minh conflict-free/
+merge-ready. Không bắt đầu Slice 3.4.

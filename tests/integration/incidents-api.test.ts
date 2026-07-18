@@ -86,6 +86,7 @@ describe('incident API', () => {
       status: 'processing',
       contextStage: { status: 'gathering' },
       suspiciousChangeStage: { status: 'detecting' },
+      hypothesisScoringStage: { status: 'scoring' },
     });
   });
 
@@ -128,8 +129,29 @@ describe('incident API', () => {
     });
     expect(completed.contextStage).not.toHaveProperty('hypotheses');
     expect(completed.suspiciousChangeStage).not.toHaveProperty('confidence');
+    expect(completed.hypothesisScoringStage).toMatchObject({
+      status: 'completed',
+      hypotheses: [
+        {
+          rank: 1,
+          sourceChangeId: 'change-removed-gross-revenue',
+          confidence: 0.85,
+          evidenceIds: ['change-removed-gross-revenue'],
+          factors: [
+            { code: 'change_recency', contributionBasisPoints: 3_000 },
+            { code: 'lineage_position', contributionBasisPoints: 2_000 },
+            { code: 'symptom_category_fit', contributionBasisPoints: 1_500 },
+            { code: 'evidence_quality', contributionBasisPoints: 2_000 },
+          ],
+        },
+      ],
+    });
     expect(completed.report.incidentId).toBe(incidentId);
     expect(completed.report.hypotheses[0]?.evidenceIds).toContain('change-removed-gross-revenue');
+    if (completed.hypothesisScoringStage.status !== 'completed') {
+      throw new Error('Expected completed hypothesis scoring.');
+    }
+    expect(completed.report.hypotheses).toEqual(completed.hypothesisScoringStage.hypotheses);
   });
 
   it('uses the same provider-neutral context contracts in DataHub mode', async () => {
@@ -208,6 +230,65 @@ describe('incident API', () => {
         expect.objectContaining({ code: 'recent_changes_not_found' }),
       ]),
     });
+    expect(completed.hypothesisScoringStage).toMatchObject({
+      status: 'insufficient',
+      hypotheses: [],
+      missingInformation: expect.arrayContaining([
+        expect.objectContaining({ code: 'suspicious_changes_insufficient' }),
+      ]),
+    });
+  });
+
+  it('returns insufficient scoring when suspicious changes do not resolve to report evidence', async () => {
+    const server = buildServer({
+      logger: false,
+      runner: {
+        async investigate(_request, context) {
+          return {
+            incidentId: context.incidentId,
+            summary: 'Legacy fixture report retained for compatibility.',
+            entities: [],
+            evidence: [
+              {
+                id: 'metadata-seed',
+                category: 'metadata',
+                statement: 'Fixture metadata was available.',
+              },
+            ],
+            hypotheses: [
+              {
+                id: 'legacy-metadata-hypothesis',
+                summary: 'Available metadata is insufficient for a scored change inference.',
+                confidence: 0.2,
+                evidenceIds: ['metadata-seed'],
+              },
+            ],
+            recommendations: [],
+            assumptions: [],
+            missingInformation: ['The exact suspicious change is absent from report evidence.'],
+          };
+        },
+      },
+    });
+    servers.push(server);
+    const accepted = await server.inject({
+      method: 'POST',
+      url: '/incidents',
+      payload: IncidentRequestSchema.parse(canonicalIncident.request),
+    });
+
+    const completed = await waitForCompleted(
+      server,
+      accepted.json<{ incidentId: string }>().incidentId,
+    );
+
+    expect(completed.suspiciousChangeStage.status).toBe('completed');
+    expect(completed.hypothesisScoringStage).toMatchObject({
+      status: 'insufficient',
+      hypotheses: [],
+      missingInformation: [expect.objectContaining({ code: 'evidence_reference_unresolved' })],
+    });
+    expect(completed.report.hypotheses[0]?.id).toBe('legacy-metadata-hypothesis');
   });
 
   it('returns a safe context-stage timeout without exposing provider errors or breaking the report', async () => {
@@ -255,6 +336,13 @@ describe('incident API', () => {
       },
     });
     expect(detectorCalls).toBe(0);
+    expect(completed.hypothesisScoringStage).toEqual({
+      status: 'unavailable',
+      error: {
+        code: 'CONTEXT_UNAVAILABLE',
+        message: 'Hypothesis scoring is unavailable because incident context did not complete.',
+      },
+    });
     expect(completed.report.hypotheses).toHaveLength(1);
   });
 
@@ -289,6 +377,51 @@ describe('incident API', () => {
     expect(JSON.stringify(completed.suspiciousChangeStage)).not.toMatch(
       /provider\.invalid|secret/i,
     );
+    expect(completed.hypothesisScoringStage).toEqual({
+      status: 'unavailable',
+      error: {
+        code: 'SUSPICIOUS_CHANGES_UNAVAILABLE',
+        message:
+          'Hypothesis scoring is unavailable because suspicious-change detection did not complete.',
+      },
+    });
+    expect(completed.report.hypotheses).toHaveLength(1);
+  });
+
+  it('normalizes scorer validation failure without leaking details or adding provider work', async () => {
+    let scorerCalls = 0;
+    const server = buildServer({
+      logger: false,
+      hypothesisScorer: {
+        score() {
+          scorerCalls += 1;
+          throw new Error('raw model/provider details https://provider.invalid secret-token');
+        },
+      },
+    });
+    servers.push(server);
+    const accepted = await server.inject({
+      method: 'POST',
+      url: '/incidents',
+      payload: IncidentRequestSchema.parse(canonicalIncident.request),
+    });
+
+    const completed = await waitForCompleted(
+      server,
+      accepted.json<{ incidentId: string }>().incidentId,
+    );
+
+    expect(scorerCalls).toBe(1);
+    expect(completed.hypothesisScoringStage).toEqual({
+      status: 'unavailable',
+      error: {
+        code: 'SCORING_INVALID',
+        message: 'Hypothesis scoring could not validate the factual evidence mapping.',
+      },
+    });
+    expect(JSON.stringify(completed.hypothesisScoringStage)).not.toMatch(
+      /provider\.invalid|secret|model/i,
+    );
     expect(completed.report.hypotheses).toHaveLength(1);
   });
 
@@ -321,6 +454,10 @@ describe('incident API', () => {
       },
     });
     expect(JSON.stringify(completed.contextStage)).not.toContain('urn:provider:invalid');
+    expect(completed.hypothesisScoringStage).toMatchObject({
+      status: 'unavailable',
+      error: { code: 'CONTEXT_UNAVAILABLE' },
+    });
   });
 
   it('returns the stable not-found error for an unknown incident', async () => {

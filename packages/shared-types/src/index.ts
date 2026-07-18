@@ -981,20 +981,396 @@ export const ApiErrorSchema = z.object({
   }),
 });
 
-export const EvidenceSchema = z.object({
-  id: z.string().min(1),
-  category: z.enum(['metadata', 'lineage', 'schema-change', 'pipeline', 'ownership']),
-  statement: z.string().min(1),
-  sourceEntity: EntityRefSchema.optional(),
-  observedAt: z.iso.datetime().optional(),
-});
+export const EvidenceSchema = z
+  .object({
+    id: z.string().min(1),
+    category: z.enum(['metadata', 'lineage', 'schema-change', 'pipeline', 'ownership']),
+    statement: z.string().min(1),
+    sourceEntity: EntityRefSchema.optional(),
+    observedAt: z.iso.datetime().optional(),
+  })
+  .strict();
 
-export const HypothesisSchema = z.object({
-  id: z.string().min(1),
-  summary: z.string().min(1),
-  confidence: z.number().min(0).max(1),
-  evidenceIds: z.array(z.string().min(1)).min(1),
-});
+export const HYPOTHESIS_SCORING_MAX_HYPOTHESES = 3;
+export const HYPOTHESIS_SCORE_BASIS_POINTS = 10_000;
+
+export const HYPOTHESIS_SCORE_FACTOR_ORDER = [
+  'change_recency',
+  'lineage_position',
+  'symptom_category_fit',
+  'evidence_quality',
+] as const;
+
+export const HYPOTHESIS_SCORE_FACTOR_LABELS = {
+  change_recency: 'Change recency within the supplied incident window.',
+  lineage_position: 'Adapter-evidenced selected or upstream lineage position.',
+  symptom_category_fit: 'Bounded incident symptom or category fit.',
+  evidence_quality: 'Resolved factual evidence quality and context completeness.',
+} as const;
+
+export const HYPOTHESIS_SCORE_FACTOR_WEIGHTS = {
+  change_recency: 3_000,
+  lineage_position: 2_000,
+  symptom_category_fit: 3_000,
+  evidence_quality: 2_000,
+} as const;
+
+export const HypothesisScoreFactorCodeSchema = z.enum(HYPOTHESIS_SCORE_FACTOR_ORDER);
+
+export const HypothesisScoreFactorSchema = z
+  .object({
+    code: HypothesisScoreFactorCodeSchema,
+    label: z.string().trim().min(1).max(120),
+    contributionBasisPoints: z.number().int().min(0).max(HYPOTHESIS_SCORE_BASIS_POINTS),
+    weightBasisPoints: z.number().int().min(1).max(HYPOTHESIS_SCORE_BASIS_POINTS),
+  })
+  .strict()
+  .superRefine((factor, context) => {
+    if (factor.label !== HYPOTHESIS_SCORE_FACTOR_LABELS[factor.code]) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Hypothesis score-factor labels must match the shared allowlist.',
+        path: ['label'],
+      });
+    }
+    if (factor.weightBasisPoints !== HYPOTHESIS_SCORE_FACTOR_WEIGHTS[factor.code]) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Hypothesis score-factor weights must match the code-owned formula.',
+        path: ['weightBasisPoints'],
+      });
+    }
+    if (factor.contributionBasisPoints > factor.weightBasisPoints) {
+      context.addIssue({
+        code: 'custom',
+        message: 'A hypothesis score-factor contribution cannot exceed its weight.',
+        path: ['contributionBasisPoints'],
+      });
+    }
+    if (factor.contributionBasisPoints % 100 !== 0) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Hypothesis score-factor contributions use canonical 100-basis-point precision.',
+        path: ['contributionBasisPoints'],
+      });
+    }
+  });
+
+export const ScoredHypothesisSchema = z
+  .object({
+    id: z.string().trim().min(1).max(240),
+    rank: z.number().int().min(1).max(HYPOTHESIS_SCORING_MAX_HYPOTHESES),
+    sourceChangeId: z.string().trim().min(1).max(200),
+    observedAt: CanonicalUtcTimestampSchema,
+    summary: z.string().trim().min(1).max(500),
+    confidence: z.number().min(0).max(1),
+    evidenceIds: z.array(z.string().trim().min(1).max(200)).min(1).max(6),
+    factors: z.array(HypothesisScoreFactorSchema).length(HYPOTHESIS_SCORE_FACTOR_ORDER.length),
+  })
+  .strict()
+  .superRefine((hypothesis, context) => {
+    if (
+      !hypothesis.summary.startsWith('Plausible contributor:') ||
+      /\b(?:confirmed cause|root cause|caused the incident|recommendation|remediation|action)\b/i.test(
+        hypothesis.summary,
+      )
+    ) {
+      context.addIssue({
+        code: 'custom',
+        message: 'A scored hypothesis must be labeled as a non-causal plausible contributor.',
+        path: ['summary'],
+      });
+    }
+
+    const evidenceIds = new Set<string>();
+    hypothesis.evidenceIds.forEach((evidenceId, index) => {
+      if (evidenceIds.has(evidenceId)) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Scored hypothesis evidence references must be unique.',
+          path: ['evidenceIds', index],
+        });
+      }
+      evidenceIds.add(evidenceId);
+    });
+    if (!evidenceIds.has(hypothesis.sourceChangeId)) {
+      context.addIssue({
+        code: 'custom',
+        message: 'A scored hypothesis must cite its exact source change as evidence.',
+        path: ['evidenceIds'],
+      });
+    }
+
+    hypothesis.factors.forEach((factor, index) => {
+      if (factor.code !== HYPOTHESIS_SCORE_FACTOR_ORDER[index]) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Hypothesis score factors must follow the shared deterministic order.',
+          path: ['factors', index, 'code'],
+        });
+      }
+    });
+    const totalBasisPoints = hypothesis.factors.reduce(
+      (total, factor) => total + factor.contributionBasisPoints,
+      0,
+    );
+    if (totalBasisPoints > HYPOTHESIS_SCORE_BASIS_POINTS) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Hypothesis score-factor contributions exceed the confidence clamp.',
+        path: ['factors'],
+      });
+    }
+    if (hypothesis.confidence !== totalBasisPoints / HYPOTHESIS_SCORE_BASIS_POINTS) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Hypothesis confidence must equal the exact factor-contribution sum.',
+        path: ['confidence'],
+      });
+    }
+    if (Number(hypothesis.confidence.toFixed(2)) !== hypothesis.confidence) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Hypothesis confidence must use at most two decimal places.',
+        path: ['confidence'],
+      });
+    }
+  });
+
+function compareScoredHypotheses(
+  left: z.infer<typeof ScoredHypothesisSchema>,
+  right: z.infer<typeof ScoredHypothesisSchema>,
+) {
+  if (left.confidence !== right.confidence) {
+    return right.confidence - left.confidence;
+  }
+  if (left.observedAt !== right.observedAt) {
+    return left.observedAt > right.observedAt ? -1 : 1;
+  }
+  if (left.sourceChangeId !== right.sourceChangeId) {
+    return left.sourceChangeId < right.sourceChangeId ? -1 : 1;
+  }
+  return left.id < right.id ? -1 : left.id > right.id ? 1 : 0;
+}
+
+export const HypothesisScoringMissingInformationCodeSchema = z.enum([
+  'suspicious_changes_insufficient',
+  'incident_time_not_supplied',
+  'symptom_not_supplied',
+  'context_changes_truncated',
+  'evidence_reference_unresolved',
+  'hypothesis_limit_reached',
+]);
+
+export const HypothesisScoringMissingInformationSchema = z
+  .object({
+    code: HypothesisScoringMissingInformationCodeSchema,
+    message: z.string().trim().min(1).max(300),
+  })
+  .strict();
+
+function refineHypothesisScoringResult(
+  result: {
+    hypotheses: z.infer<typeof ScoredHypothesisSchema>[];
+    missingInformation: z.infer<typeof HypothesisScoringMissingInformationSchema>[];
+  },
+  context: z.RefinementCtx,
+) {
+  const hypothesisIds = new Set<string>();
+  const sourceChangeIds = new Set<string>();
+  result.hypotheses.forEach((hypothesis, index) => {
+    if (hypothesisIds.has(hypothesis.id)) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Scored hypothesis IDs must be unique.',
+        path: ['hypotheses', index, 'id'],
+      });
+    }
+    if (sourceChangeIds.has(hypothesis.sourceChangeId)) {
+      context.addIssue({
+        code: 'custom',
+        message: 'A factual source change can produce at most one scored hypothesis.',
+        path: ['hypotheses', index, 'sourceChangeId'],
+      });
+    }
+    if (hypothesis.rank !== index + 1) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Scored hypothesis ranks must be contiguous from one.',
+        path: ['hypotheses', index, 'rank'],
+      });
+    }
+    const previous = result.hypotheses[index - 1];
+    if (previous && compareScoredHypotheses(previous, hypothesis) > 0) {
+      context.addIssue({
+        code: 'custom',
+        message:
+          'Scored hypotheses must follow deterministic confidence and factual tie-break order.',
+        path: ['hypotheses', index],
+      });
+    }
+    hypothesisIds.add(hypothesis.id);
+    sourceChangeIds.add(hypothesis.sourceChangeId);
+  });
+
+  const missingCodes = new Set<string>();
+  result.missingInformation.forEach((item, index) => {
+    if (missingCodes.has(item.code)) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Hypothesis-scoring missing-information codes must be unique.',
+        path: ['missingInformation', index, 'code'],
+      });
+    }
+    missingCodes.add(item.code);
+  });
+}
+
+export const HypothesisScoringCompletedSchema = z
+  .object({
+    status: z.literal('completed'),
+    hypotheses: z.array(ScoredHypothesisSchema).min(1).max(HYPOTHESIS_SCORING_MAX_HYPOTHESES),
+    missingInformation: z.array(HypothesisScoringMissingInformationSchema).max(6),
+  })
+  .strict()
+  .superRefine(refineHypothesisScoringResult);
+
+export const HypothesisScoringInsufficientSchema = z
+  .object({
+    status: z.literal('insufficient'),
+    hypotheses: z.array(ScoredHypothesisSchema).max(0),
+    missingInformation: z.array(HypothesisScoringMissingInformationSchema).min(1).max(6),
+  })
+  .strict()
+  .superRefine(refineHypothesisScoringResult);
+
+export const HypothesisScoringResultSchema = z.discriminatedUnion('status', [
+  HypothesisScoringCompletedSchema,
+  HypothesisScoringInsufficientSchema,
+]);
+
+export const HypothesisScoringUnavailableCodeSchema = z.enum([
+  'CONTEXT_UNAVAILABLE',
+  'SUSPICIOUS_CHANGES_UNAVAILABLE',
+  'SCORING_INVALID',
+]);
+
+export const HypothesisScoringStageSchema = z.union([
+  z.object({ status: z.literal('scoring') }).strict(),
+  HypothesisScoringCompletedSchema,
+  HypothesisScoringInsufficientSchema,
+  z
+    .object({
+      status: z.literal('unavailable'),
+      error: z
+        .object({
+          code: HypothesisScoringUnavailableCodeSchema,
+          message: z.string().trim().min(1).max(300),
+        })
+        .strict(),
+    })
+    .strict(),
+]);
+
+function expectedEvidenceCategory(category: MetadataRecentChangeCategory) {
+  if (category === 'schema') return 'schema-change' as const;
+  if (category === 'pipeline') return 'pipeline' as const;
+  if (category === 'ownership') return 'ownership' as const;
+  return 'metadata' as const;
+}
+
+export const IncidentHypothesisScoringSchema = z
+  .object({
+    contextStage: IncidentContextCompletedStageSchema,
+    suspiciousChangeResult: SuspiciousChangeDetectionCompletedSchema,
+    evidence: z.array(EvidenceSchema).max(100),
+    result: HypothesisScoringCompletedSchema,
+  })
+  .strict()
+  .superRefine((value, context) => {
+    if (
+      !IncidentSuspiciousChangeDetectionSchema.safeParse({
+        contextStage: value.contextStage,
+        result: value.suspiciousChangeResult,
+      }).success
+    ) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Scoring input must resolve to completed suspicious-change facts.',
+        path: ['suspiciousChangeResult'],
+      });
+      return;
+    }
+
+    const candidatesByChangeId = new Map(
+      value.suspiciousChangeResult.candidates.map((candidate) => [candidate.changeId, candidate]),
+    );
+    const evidenceById = new Map(value.evidence.map((evidence) => [evidence.id, evidence]));
+    if (evidenceById.size !== value.evidence.length) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Hypothesis-scoring evidence IDs must be unique.',
+        path: ['evidence'],
+      });
+    }
+    const entitiesByUrn = new Map([
+      ...value.contextStage.facts.candidateEntities.map((entity) => [entity.urn, entity] as const),
+      ...(value.contextStage.facts.lineage?.nodes.map((entity) => [entity.urn, entity] as const) ??
+        []),
+    ]);
+
+    value.result.hypotheses.forEach((hypothesis, hypothesisIndex) => {
+      const candidate = candidatesByChangeId.get(hypothesis.sourceChangeId);
+      if (!candidate || candidate.observedAt !== hypothesis.observedAt) {
+        context.addIssue({
+          code: 'custom',
+          message: 'A scored hypothesis must resolve to one exact suspicious-change candidate.',
+          path: ['result', 'hypotheses', hypothesisIndex, 'sourceChangeId'],
+        });
+        return;
+      }
+
+      hypothesis.evidenceIds.forEach((evidenceId, evidenceIndex) => {
+        if (!evidenceById.has(evidenceId)) {
+          context.addIssue({
+            code: 'custom',
+            message: `Scored hypothesis evidence reference does not exist: ${evidenceId}`,
+            path: ['result', 'hypotheses', hypothesisIndex, 'evidenceIds', evidenceIndex],
+          });
+        }
+      });
+
+      const changeEvidence = evidenceById.get(candidate.changeId);
+      const entity = entitiesByUrn.get(candidate.entityUrn);
+      if (
+        !changeEvidence ||
+        !entity ||
+        changeEvidence.category !== expectedEvidenceCategory(candidate.category) ||
+        changeEvidence.statement !== candidate.summary ||
+        changeEvidence.observedAt !== candidate.observedAt ||
+        changeEvidence.sourceEntity?.urn !== candidate.entityUrn ||
+        changeEvidence.sourceEntity.name !== candidate.entityName ||
+        changeEvidence.sourceEntity.kind !== entity.kind
+      ) {
+        context.addIssue({
+          code: 'custom',
+          message: 'The scored source change must resolve to exact factual report evidence.',
+          path: ['evidence'],
+        });
+      }
+    });
+  });
+
+export const LegacyHypothesisSchema = z
+  .object({
+    id: z.string().min(1),
+    summary: z.string().min(1),
+    confidence: z.number().min(0).max(1),
+    evidenceIds: z.array(z.string().min(1)).min(1),
+  })
+  .strict();
+
+export const HypothesisSchema = z.union([ScoredHypothesisSchema, LegacyHypothesisSchema]);
 
 export const InvestigationReportSchema = z
   .object({
@@ -1007,10 +1383,29 @@ export const InvestigationReportSchema = z
     assumptions: z.array(z.string().min(1)),
     missingInformation: z.array(z.string().min(1)),
   })
+  .strict()
   .superRefine((report, context) => {
     const evidenceIds = new Set(report.evidence.map((evidence) => evidence.id));
 
+    if (evidenceIds.size !== report.evidence.length) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Investigation report evidence IDs must be unique.',
+        path: ['evidence'],
+      });
+    }
+
+    const hypothesisIds = new Set<string>();
+
     report.hypotheses.forEach((hypothesis, hypothesisIndex) => {
+      if (hypothesisIds.has(hypothesis.id)) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Investigation report hypothesis IDs must be unique.',
+          path: ['hypotheses', hypothesisIndex, 'id'],
+        });
+      }
+      hypothesisIds.add(hypothesis.id);
       hypothesis.evidenceIds.forEach((evidenceId, evidenceIndex) => {
         if (!evidenceIds.has(evidenceId)) {
           context.addIssue({
@@ -1020,6 +1415,32 @@ export const InvestigationReportSchema = z
           });
         }
       });
+    });
+
+    const scoredHypotheses = report.hypotheses.filter((hypothesis) => 'rank' in hypothesis);
+    if (scoredHypotheses.length > 0 && scoredHypotheses.length !== report.hypotheses.length) {
+      context.addIssue({
+        code: 'custom',
+        message: 'A report cannot mix legacy and scored hypotheses.',
+        path: ['hypotheses'],
+      });
+    }
+    scoredHypotheses.forEach((hypothesis, index) => {
+      if (hypothesis.rank !== index + 1) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Report scored-hypothesis ranks must be contiguous from one.',
+          path: ['hypotheses', index, 'rank'],
+        });
+      }
+      const previous = scoredHypotheses[index - 1];
+      if (previous && compareScoredHypotheses(previous, hypothesis) > 0) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Report scored hypotheses must use deterministic rank ordering.',
+          path: ['hypotheses', index],
+        });
+      }
     });
   });
 
@@ -1031,6 +1452,7 @@ export const IncidentRetrievalResponseSchema = z
         status: z.literal('processing'),
         contextStage: IncidentContextStageSchema,
         suspiciousChangeStage: SuspiciousChangeDetectionStageSchema,
+        hypothesisScoringStage: HypothesisScoringStageSchema,
       })
       .strict(),
     z
@@ -1042,12 +1464,95 @@ export const IncidentRetrievalResponseSchema = z
           IncidentContextFailedStageSchema,
         ]),
         suspiciousChangeStage: SuspiciousChangeDetectionStageSchema,
+        hypothesisScoringStage: HypothesisScoringStageSchema,
         report: InvestigationReportSchema,
       })
       .strict(),
   ])
   .superRefine((response, context) => {
     const detection = response.suspiciousChangeStage;
+    const scoring = response.hypothesisScoringStage;
+    if (response.contextStage.status === 'gathering' && scoring.status !== 'scoring') {
+      context.addIssue({
+        code: 'custom',
+        message: 'A gathering context requires an active hypothesis-scoring stage.',
+        path: ['hypothesisScoringStage'],
+      });
+    }
+    if (
+      response.contextStage.status === 'failed' &&
+      (scoring.status !== 'unavailable' || scoring.error.code !== 'CONTEXT_UNAVAILABLE')
+    ) {
+      context.addIssue({
+        code: 'custom',
+        message: 'A failed context requires safe context-unavailable hypothesis scoring.',
+        path: ['hypothesisScoringStage'],
+      });
+    }
+    if (
+      response.contextStage.status === 'completed' &&
+      detection.status === 'unavailable' &&
+      (scoring.status !== 'unavailable' || scoring.error.code !== 'SUSPICIOUS_CHANGES_UNAVAILABLE')
+    ) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Unavailable suspicious changes require safe unavailable hypothesis scoring.',
+        path: ['hypothesisScoringStage'],
+      });
+    }
+    if (
+      response.status === 'completed' &&
+      response.contextStage.status === 'completed' &&
+      detection.status === 'insufficient' &&
+      scoring.status !== 'insufficient'
+    ) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Insufficient suspicious changes require insufficient hypothesis scoring.',
+        path: ['hypothesisScoringStage'],
+      });
+    }
+    if (response.status === 'completed' && scoring.status === 'scoring') {
+      context.addIssue({
+        code: 'custom',
+        message: 'A completed incident cannot retain an active hypothesis-scoring stage.',
+        path: ['hypothesisScoringStage'],
+      });
+    }
+    if (scoring.status === 'completed') {
+      if (
+        response.contextStage.status !== 'completed' ||
+        detection.status !== 'completed' ||
+        response.status !== 'completed'
+      ) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Completed scoring requires completed factual, suspicious, and report stages.',
+          path: ['hypothesisScoringStage'],
+        });
+      } else {
+        const scoringReferences = IncidentHypothesisScoringSchema.safeParse({
+          contextStage: response.contextStage,
+          suspiciousChangeResult: detection,
+          evidence: response.report.evidence,
+          result: scoring,
+        });
+        if (!scoringReferences.success) {
+          context.addIssue({
+            code: 'custom',
+            message: 'Scored hypotheses do not resolve to exact context and report evidence.',
+            path: ['hypothesisScoringStage'],
+          });
+        }
+        if (JSON.stringify(response.report.hypotheses) !== JSON.stringify(scoring.hypotheses)) {
+          context.addIssue({
+            code: 'custom',
+            message: 'Completed reports must use the exact ranked scored hypotheses.',
+            path: ['report', 'hypotheses'],
+          });
+        }
+      }
+    }
     if (response.contextStage.status === 'gathering' && detection.status !== 'detecting') {
       context.addIssue({
         code: 'custom',
@@ -1138,6 +1643,14 @@ export type SuspiciousChangeMissingInformation = z.infer<
 >;
 export type SuspiciousChangeDetectionResult = z.infer<typeof SuspiciousChangeDetectionResultSchema>;
 export type SuspiciousChangeDetectionStage = z.infer<typeof SuspiciousChangeDetectionStageSchema>;
+export type HypothesisScoreFactorCode = z.infer<typeof HypothesisScoreFactorCodeSchema>;
+export type HypothesisScoreFactor = z.infer<typeof HypothesisScoreFactorSchema>;
+export type ScoredHypothesis = z.infer<typeof ScoredHypothesisSchema>;
+export type HypothesisScoringMissingInformation = z.infer<
+  typeof HypothesisScoringMissingInformationSchema
+>;
+export type HypothesisScoringResult = z.infer<typeof HypothesisScoringResultSchema>;
+export type HypothesisScoringStage = z.infer<typeof HypothesisScoringStageSchema>;
 export type IncidentStatus = z.infer<typeof IncidentStatusSchema>;
 export type IncidentAcceptedResponse = z.infer<typeof IncidentAcceptedResponseSchema>;
 export type IncidentRetrievalResponse = z.infer<typeof IncidentRetrievalResponseSchema>;
