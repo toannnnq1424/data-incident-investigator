@@ -602,3 +602,58 @@ macOS QA passes.
 Create and push the merge commit normally. The authenticated controller should retarget draft PR #4 to
 `main`, verify exactly one new CI run passes, and run the documented bootstrap command in a clean macOS
 worktree at the new head. Do not mark ready or merge until that Mac QA passes.
+
+## 2026-07-18 — Phase 1 launcher port-race CI hotfix
+
+### Objective
+
+Fix only the integration-test port-allocation race reported by main CI run `29649047565`, job
+`88092112833`, after PR #4 merged, without reverting bootstrap, changing product/browser behavior, or
+starting Phase 2.
+
+### Completed
+
+Created `fix/phase1-launcher-port-race` from exact `origin/main`
+`f86dc552c6cb5805eb1a6b032a1b90a683a9a84f`. The readiness contract now keeps its server bound to
+OS-assigned port `0` for its full use. The cleanup descendant binds its own port `0`, reports the actual
+bound port after `listen` succeeds, and is probed and cleaned through that port. This removes the
+find-close-rebind TOCTOU window without retry, sleep, or a random fixed range.
+
+### Files changed
+
+`tests/integration/report-launcher.test.ts`, `docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md`, and
+this session entry. No product, launcher helper/runtime, manifest, lockfile, bootstrap, or repository
+structure changed.
+
+### Decisions
+
+Classified the main failure as a flaky test defect: the exact CI log reports descendant
+`EADDRINUSE`, while one focused pre-fix run passed locally in `13.103s`. Keep PR #4 merged and preserve
+the existing launcher cleanup implementation; only test-owned listener allocation changes.
+
+### Validation performed
+
+- The first direct pre-fix attempt did not enter Vitest because Node was absent from process `PATH`.
+  The merged managed-worktree bootstrap restored Node `v24.14.0`, pnpm `11.9.0`, and the frozen
+  dependency state; the subsequent single pre-fix focused run passed locally.
+- Changed-file Prettier passed in `1.971s`; affected ESLint passed in `3.355s`.
+- `pnpm exec vitest run tests/integration/report-launcher.test.ts` passed 1 file/3 tests in `2.61s`
+  (`5.079s` wall). Five additional consecutive focused runs passed 1 file/3 tests each in `22.681s`
+  total.
+
+### Validation intentionally deferred
+
+Browser E2E, the full suite, build, and smoke are not rerun because the browser-launcher runtime and
+product inputs are unchanged. CI will provide the one repository-level validation run for the draft
+fix PR. No Phase 2 work is included.
+
+### Known issues
+
+No local blocker remains. Draft PR publication and its single new CI run are pending. Existing
+process-local persistence, single fixture, and cross-browser deferrals remain unchanged.
+
+### Exact next step
+
+Format the final changed docs, review diff/secrets/conflict markers, commit conventionally, push the
+fix branch, open one draft PR against `main`, and follow exactly one CI run. Do not rerun the failed main
+run, merge the new PR, or begin Phase 2.

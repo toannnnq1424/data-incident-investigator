@@ -14,11 +14,12 @@ Last updated: 2026-07-18.
   merge-forward resolution retains HTTP readiness at synchronized dynamic URLs, which is independent
   of styled logs. Targeted contracts passed 3/3 and the canonical browser flow passed again in
   `6890ms` on ports `63576`/`63577`, with no listener or launcher-runtime leak.
-- Managed dependency bootstrap required the bundled Node directory in process `PATH`, created an
-  untracked repository-local `.pnpm-store`, and needed scoped access for Vitest to read `esbuild`.
-  PR #4 (`codex/stabilize-managed-worktree-bootstrap`) is now merge-forwarded onto Phase 1-complete
-  `main` for standalone merge readiness; post-merge macOS QA and the new CI run remain required before
-  the draft can become ready.
+- PR #4 (`codex/stabilize-managed-worktree-bootstrap`) is merged into `main` at exact
+  `f86dc552c6cb5805eb1a6b032a1b90a683a9a84f`; it is not being reverted. The resulting main CI run
+  `29649047565`, job `88092112833`, exposed a test-only port-allocation race: the cleanup integration
+  fixture closed a free-port probe before its descendant rebound the port and intermittently received
+  `EADDRINUSE`. The focused hotfix uses atomic OS-assigned port `0` binding and the reported actual port;
+  six consecutive post-fix focused runs passed locally. Draft-PR CI remains pending.
 - The GitHub repository is private during development and must become public before submission.
 - Slice 1.2 stores incident lifecycle and completed reports only in API process memory. Restarting the
   API removes existing incident IDs; durable persistence remains deferred.

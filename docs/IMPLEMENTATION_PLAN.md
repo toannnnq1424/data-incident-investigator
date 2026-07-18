@@ -473,6 +473,52 @@ Exact next action: create and push the non-rewriting merge commit, verify draft 
 and follow exactly one CI run created by that push. Stop after PR/CI evidence; do not begin Phase 2,
 change product code, or integrate PR #4.
 
+### Phase 1 launcher port-race CI hotfix
+
+Status: local validation passed from exact `origin/main`
+`f86dc552c6cb5805eb1a6b032a1b90a683a9a84f` after main CI run `29649047565`, job `88092112833`,
+failed with `EADDRINUSE` in `tests/integration/report-launcher.test.ts`. Draft-PR CI remains pending.
+
+Objective: remove the integration-test TOCTOU window between finding, closing, and rebinding a free
+port without changing product behavior, browser-launcher runtime behavior, or beginning Phase 2.
+
+Minimum files:
+
+- `tests/integration/report-launcher.test.ts` for atomic `port: 0` binding and the focused regression.
+- `docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md`, and `docs/SESSION_LOG.md` for CI evidence and
+  handoff.
+
+Acceptance criteria:
+
+- Test-owned HTTP listeners bind atomically to port `0` and use the actual bound port reported by the
+  server; no close-then-rebind free-port probe remains in the failing cleanup contract.
+- The managed descendant-tree cleanup contract still reaches HTTP readiness, terminates only its own
+  process tree, and proves the selected listener is released.
+- Changed-file Prettier, affected ESLint, and
+  `pnpm exec vitest run tests/integration/report-launcher.test.ts` pass. After the first post-fix pass,
+  run the focused file at most five additional consecutive times to assess flakiness.
+- Diff, conflict-marker, secret, and worktree reviews pass; one conventional commit is pushed to a
+  draft PR based on `main`, followed by exactly one new CI run without rerunning the failed main run.
+
+Deferred: browser E2E, the full suite, builds, product/UI/API changes, PR #4 reversal, and all Phase 2
+work. Browser E2E remains deferred because the launcher runtime contract is unchanged; this fix only
+changes test-owned listener allocation.
+
+Validation result on Windows, 2026-07-18:
+
+- The focused pre-fix file passed locally once in `13.103s`, so the defect is classified as test
+  flakiness from the exact CI `EADDRINUSE` evidence rather than a deterministic local failure.
+- The readiness contract keeps its HTTP server bound to OS-assigned port `0` while the port is used.
+  The cleanup descendant now binds its own port `0`, reports the actual bound port through stdout, and
+  is probed only after that atomic bind succeeds; no retry, sleep, or random fixed range was added.
+- Changed-file Prettier passed in `1.971s` and affected ESLint passed in `3.355s`.
+- The first post-fix focused run passed 3/3 in `2.61s` (`5.079s` wall). Five additional consecutive
+  focused runs also passed 3/3 each in `22.681s` total.
+
+Exact next action: update project memory, review the scoped diff and secret/conflict markers, create one
+conventional commit, push the fix branch, open a draft PR against `main`, and follow exactly one CI run.
+Do not rerun the failed main run, merge the fix PR, or begin Phase 2.
+
 Phase completion: a clean clone can select a demo incident and receive a complete report.
 
 ## Phase 2 — DataHub integration
