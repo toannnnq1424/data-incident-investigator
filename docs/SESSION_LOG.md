@@ -151,6 +151,74 @@ Fixture incident state is process-local and only the removed-schema-column scena
 
 create a new project-scoped task for Phase 1 Slice 1.3 — Evidence display, starting from this Slice 1.2 branch/commit; do not continue Slice 1.3 here.
 
+## 2026-07-18 — Codex managed-worktree bootstrap stabilization
+
+### Objective
+
+Stabilize dependency bootstrap for future Codex managed worktrees without changing product code or
+starting Slice 1.3/Phase 2.
+
+### Completed
+
+Reproduced the Windows runtime failure where bundled `pnpm.cmd` was available but bundled `node.exe`
+was absent from `PATH`, causing the esbuild lifecycle script to fail. Confirmed that a new worktree had
+no root dependencies and that the ignored Windows portable GitHub CLI was not inherited. Added tracked
+Windows and macOS/POSIX bootstrap scripts that verify the manifest runtime contract, refuse unpinned
+package-manager activation, install from the frozen lockfile, and validate a root static tool. Added
+verified Local Environment UI wiring and documented why no unverified app-generated schema or
+`.worktreeinclude` file was committed.
+
+### Files changed
+
+Managed-worktree bootstrap scripts; local-environment documentation; Codex operating guidance;
+implementation plan, repository map, known issues, session log, and the pnpm-store ignore rule.
+
+### Decisions
+
+Use host or dynamically discovered Codex-bundled Node/pnpm without storing a username or absolute
+machine path. Keep exact pnpm `11.9.0` as a prerequisite to avoid missing offline metadata. Keep GitHub
+CLI as a per-host prerequisite; do not copy ignored `work/tools/` or Windows binaries into managed
+worktrees/macOS. Leave `.worktreeinclude` absent because all required setup inputs are tracked. Do not
+invent a Local Environment filename/schema when the desktop app exposes no callable writer API and UI
+automation is prohibited.
+
+Preserve all existing Codex Project task history unless the user explicitly requests archive, deletion,
+or hiding. Do not pin a task if doing so removes it from the Project group. Every new implementation
+task must use `target.type=project`, `projectId=a43a7aaa-fc63-48e9-867e-c9d9cae6784d`, and an
+appropriate `local` or `worktree` environment; projectless implementation tasks are prohibited.
+
+### Validation performed
+
+From an empty dependency state, Windows bootstrap discovered Node `v24.14.0` and pnpm `11.9.0`, ran
+`pnpm install --frozen-lockfile` for 257 packages with lockfile resolution skipped, resolved Prettier
+`3.9.5` through `pnpm exec`, and passed the static package formatting check. The PowerShell parser,
+`bash -n`, TOML parser plus required policy assertions, changed-document Prettier, `git diff --check`,
+secret/absolute-path scan, and scoped diff review passed. The first changed-document Prettier attempt
+hit sandboxed pnpm-store access and the identical scoped retry passed. A clean detached macOS
+worktree at commit `5e75b72b21c01290afaa4f89dadf01c591ea803a` then passed
+`bash scripts/bootstrap-worktree.sh` with Homebrew Node `v26.3.0`, pnpm `11.9.0`, a 257-package frozen
+install with lockfile resolution skipped, Prettier `3.9.5`, the static check, the completion marker,
+and a clean final Git status.
+
+### Validation intentionally deferred
+
+No full product suite was run. The macOS host `PATH` route is validated; the macOS Codex-bundled
+runtime location/fallback remains unexercised. Creating and checking in the shared Local Environment
+file requires a human to save the verified setup commands through Codex desktop settings.
+
+### Known issues
+
+The current host's ignored portable `gh.exe` exists only in the local checkout and its `gh auth`
+session is invalid. It remains a host prerequisite and is not copied or committed. See
+`docs/KNOWN_ISSUES.md` for the persistent Local Environment and macOS bundled-runtime follow-ups.
+
+### Exact next step
+
+In Codex desktop settings, create the repository Local Environment with the documented Windows and
+macOS setup commands and share the app-generated secret-free file under `.codex/`. Review draft PR
+[#4](https://github.com/toannnnq1424/data-incident-investigator/pull/4); after it is accepted, start
+Slice 1.3 from the updated Slice 1.2 branch. Do not implement it here.
+
 ## 2026-07-18 — Phase 1 Slice 1.3 evidence display trên macOS
 
 ### Objective
@@ -870,3 +938,519 @@ Commit duy nhất `feat: add recent metadata changes`, push fast-forward, mở s
 `codex/phase-2-3-bounded-lineage` và theo dõi đúng một CI run tới terminal. Nếu CI fail, chỉ sửa targeted
 blocker trong task này. Sau green handoff, tạo task riêng cho Phase 2 integration checkpoint; không bắt
 đầu impact analysis, correlation, agent reasoning hoặc checkpoint trong task này.
+
+## 2026-07-18 — PR #4 merge-forward to Phase 1-complete main
+
+### Objective
+
+Merge exact `origin/main` `c3f1830c77f4eda4da7cf1ce729439aa1fd0fd12` into the bootstrap branch
+without rebase/force, preserve Phase 1 and bootstrap evidence, and prepare draft PR #4 for fresh CI and
+macOS QA without merging it or starting Phase 2.
+
+### Completed
+
+Verified clean PR head `99dfc5f7a086808b25d8a57988524769bca0cf87` and merge-base
+`b7a3e699198f7ebae187a5485d0a540a7127cb75`, then merged `origin/main` with `--no-ff --no-commit`.
+Resolved conflicts only in `docs/KNOWN_ISSUES.md`, `docs/REPOSITORY_MAP.md`, and
+`docs/SESSION_LOG.md` by retaining all Phase 1 Slice 1.3/Level D/launcher history from main and all
+bootstrap/local-environment decisions from PR #4. The prospective tree is identical to `main` for
+product, launcher, tests, manifest, lockfile, and test strategy.
+
+### Files changed
+
+Merge history imports the already-green Phase 1 files from `main`. Conflict-resolution edits affect
+only the three project-memory documents above; `docs/IMPLEMENTATION_PLAN.md` records this gate. No new
+product, launcher, dependency, lockfile, or repository-structure edit was made.
+
+### Decisions
+
+Keep a normal merge commit with both exact parents; do not rebase, force-push, integrate PR #6, or
+re-authenticate local `gh`. Keep PR #4 draft and delegate base/CI metadata fallback to the authenticated
+controller thread. Do not rerun browser E2E or full product validation because those inputs are
+unchanged from green `main`.
+
+### Validation performed
+
+The prospective PR diff against `main` contains only bootstrap/local-environment files and merged
+project memory. A fresh dependency-free temporary export retained the Phase 1 launcher. PowerShell
+parsing passed; Windows bootstrap selected Node `v24.14.0` and pnpm `11.9.0`, installed 259 packages
+with lockfile resolution skipped, resolved root Prettier `3.9.5`, passed its static check, and completed
+in `6.893s`. Changed-file Prettier, `git diff --check`, conflict-marker, secret, absolute-path, and
+product-reversal checks passed.
+
+### Validation intentionally deferred
+
+Fresh macOS QA of the post-merge head is pending. Browser E2E and the full product suite were not rerun;
+the new PR CI run covers repository validation.
+
+### Known issues
+
+The shared Local Environment file still requires a human-generated, secret-free desktop configuration,
+and the macOS Codex-bundled runtime fallback remains unexercised. PR #4 must remain draft until fresh
+macOS QA passes.
+
+### Exact next step
+
+Create and push the merge commit normally. The authenticated controller should retarget draft PR #4 to
+`main`, verify exactly one new CI run passes, and run the documented bootstrap command in a clean macOS
+worktree at the new head. Do not mark ready or merge until that Mac QA passes.
+
+## 2026-07-18 — Phase 1 launcher port-race CI hotfix
+
+### Objective
+
+Fix only the integration-test port-allocation race reported by main CI run `29649047565`, job
+`88092112833`, after PR #4 merged, without reverting bootstrap, changing product/browser behavior, or
+starting Phase 2.
+
+### Completed
+
+Created `fix/phase1-launcher-port-race` from exact `origin/main`
+`f86dc552c6cb5805eb1a6b032a1b90a683a9a84f`. The readiness contract now keeps its server bound to
+OS-assigned port `0` for its full use. The cleanup descendant binds its own port `0`, reports the actual
+bound port after `listen` succeeds, and is probed and cleaned through that port. This removes the
+find-close-rebind TOCTOU window without retry, sleep, or a random fixed range.
+
+### Files changed
+
+`tests/integration/report-launcher.test.ts`, `docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md`, and
+this session entry. No product, launcher helper/runtime, manifest, lockfile, bootstrap, or repository
+structure changed.
+
+### Decisions
+
+Classified the main failure as a flaky test defect: the exact CI log reports descendant
+`EADDRINUSE`, while one focused pre-fix run passed locally in `13.103s`. Keep PR #4 merged and preserve
+the existing launcher cleanup implementation; only test-owned listener allocation changes.
+
+### Validation performed
+
+- The first direct pre-fix attempt did not enter Vitest because Node was absent from process `PATH`.
+  The merged managed-worktree bootstrap restored Node `v24.14.0`, pnpm `11.9.0`, and the frozen
+  dependency state; the subsequent single pre-fix focused run passed locally.
+- Changed-file Prettier passed in `1.971s`; affected ESLint passed in `3.355s`.
+- `pnpm exec vitest run tests/integration/report-launcher.test.ts` passed 1 file/3 tests in `2.61s`
+  (`5.079s` wall). Five additional consecutive focused runs passed 1 file/3 tests each in `22.681s`
+  total.
+
+### Validation intentionally deferred
+
+Browser E2E, the full suite, build, and smoke are not rerun because the browser-launcher runtime and
+product inputs are unchanged. CI will provide the one repository-level validation run for the draft
+fix PR. No Phase 2 work is included.
+
+### Known issues
+
+No local blocker remains. Draft PR publication and its single new CI run are pending. Existing
+process-local persistence, single fixture, and cross-browser deferrals remain unchanged.
+
+### Exact next step
+
+Format the final changed docs, review diff/secrets/conflict markers, commit conventionally, push the
+fix branch, open one draft PR against `main`, and follow exactly one CI run. Do not rerun the failed main
+run, merge the new PR, or begin Phase 2.
+
+## 2026-07-18 — Phase 1 post-merge Level D closure
+
+### Objective
+
+Run the final Phase 1 Level D checkpoint on exact integrated `origin/main`
+`ab1559e3a8364e8c65aeed7407fd4ddfb2390cec`, preserving merged PR #4 bootstrap and PR #8 port-race
+fix, and publish closure evidence without beginning Phase 2.
+
+### Completed
+
+Created `phase/phase1-post-merge-closure` from the exact main commit. Verified supplied main CI run
+`29649987430`, job `88094568246`, as green. Ran the merged bootstrap, the complete repository Level D
+components, exactly one canonical browser E2E, and read-only post-run leak probes. Phase 1 is fully
+integrated and closed on this main tree.
+
+### Files changed
+
+`docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md`, and this session entry only. No product, test,
+launcher, bootstrap, manifest, lockfile, generated artifact, repository map, or Phase 2 source changed.
+
+### Decisions
+
+The single `pnpm validate` wrapper stopped before lint because the newly added checkpoint plan section
+needed Prettier formatting. Applied only that docs formatting fix, reran repository format, then ran
+each not-yet-started wrapper component once. Classified two later API test timeouts as transient
+environment contention: health returned `200` in `15.49ms`, the exact failing pair passed immediately,
+and the full-suite recovery passed without a code change. No retry/sleep/timeout increase or product
+fix was added.
+
+### Validation performed
+
+- Bootstrap: Node `v24.14.0`, pnpm `11.9.0`, frozen dependencies already current, Prettier `3.9.5`,
+  PASS in `5.356s`.
+- Initial `pnpm validate`: stopped at format after `8.734s`; targeted repository format recovery PASS
+  in `2.798s`.
+- `pnpm lint`: PASS in `31.434s`.
+- `pnpm typecheck`: PASS for 6/7 workspace projects in `36.859s`.
+- First `pnpm test`: 15/17 PASS with two transient `5s` API timeouts. Targeted reproducer PASS 2
+  files/5 tests in `1.88s` (`3.731s` wall). One full-suite recovery PASS 7 files/17 tests in `2.64s`
+  (`4.568s` wall).
+- `pnpm build`: PASS for 6/7 projects in `15.967s`; web transformed 109 modules.
+- `pnpm smoke`: PASS for `apps/api/dist/index.js` and `apps/web/dist/index.html` in `0.905s`.
+- Exactly one `pnpm test:e2e:report`: API `61369`, web `61370`, canonical flow PASS in `32.400s`
+  (`43.082s` wall), under three minutes, with processing/completed/full-evidence, evidence-reference,
+  and clean-console assertions. Post-run probes found 0 listeners and 0 launcher-related processes.
+
+### Validation intentionally deferred
+
+No DataHub credential or real provider call was needed for the fixture-backed Phase 1 gate. Broader
+cross-browser coverage, additional scenarios, durable persistence, deployment, and all Phase 2 work
+remain deferred.
+
+### Known issues
+
+No Phase 1 acceptance blocker remains. The repository remains private during development; process-local
+incident persistence, one canonical fixture, and broader cross-browser coverage remain known
+limitations.
+
+### Exact next step
+
+Format and review the docs-only closure diff, commit conventionally, push the checkpoint branch, open a
+draft PR against `main`, and follow exactly one CI run. After that PR is reviewed and merged, create a
+separate project task for Phase 2 Slice 2.1 — DataHub client health/error normalization from the
+then-current exact main. Do not begin Phase 2 here.
+
+## 2026-07-18 — Slice 2.1 sync to integrated main
+
+### Objective
+
+Merge exact green `origin/main` `54945b80a27685ce81e476173a3466e585f42112` into draft PR #7 head
+`325b21c5d4ca106e3b01b3926d4eecd5378dedd7` without rebase, force-push, feature expansion, or changes
+to stacked PR #10. Retarget PR #7 to `main` while preserving feature commit
+`95ad76d4b02ab4c5bd005b2389b17034af3fd957` and all integrated Phase 1 history.
+
+### Completed
+
+Fetched and verified the locked local, upstream, and main heads. The merge has one append-only conflict
+in this file; union resolution retains the earlier Slice 2.1 merge-readiness record and the integrated
+bootstrap, port-race, and post-merge closure records from main. No product source conflicts, Slice 2.2
+code, manifest, or lockfile changes are introduced.
+
+### Files changed
+
+The merge imports the already-green Phase 1 bootstrap, port-race test, closure docs, and repository
+guidance from main. Conflict resolution and sync evidence affect only `docs/IMPLEMENTATION_PLAN.md`,
+`docs/KNOWN_ISSUES.md`, and this session entry. The prospective PR diff against main remains the 15
+Slice 2.1 implementation, test, and documentation files.
+
+### Decisions
+
+Keep a normal two-parent merge commit and push normally. Defer another browser E2E because the
+prospective merge tree is byte-identical to validated head `325b21c…` for `apps/api/src`,
+`apps/web/src`, `packages/shared-types/src`, `packages/datahub-client/src`, and the complete
+`tests/e2e` tree; the main-side change is a focused integration-test-only atomic port allocation fix,
+not a launcher runtime or UI/E2E input change.
+
+### Validation performed
+
+- Changed-file Prettier write PASS in `9.351s`; only this new session entry needed formatting. Affected
+  ESLint PASS in `101.748s`.
+- Four type-checks PASS: shared-types `15.356s`, datahub-client `15.361s`, API `17.677s`, and web
+  `18.680s`.
+- The first focused Vitest attempt was blocked before test collection by managed-worktree ancestor
+  access, so one scoped retry ran 8 files/35 tests. It passed 33 tests; two first-request API cases hit
+  the already-documented transient `5s` parallel-load timeout while every other health, fake-server,
+  web, compatibility, and launcher test passed. One exact two-file recovery PASS 2/2 files and 7/7
+  tests in `1.88s` (`3.084s` wall), with no product/test/timeout change.
+- Four affected builds PASS in `15.251s`; web transformed 109 modules and built in `4.58s`.
+- `git diff --check` and conflict-marker scans PASS. The prospective PR diff against main contains
+  exactly the 15 Slice 2.1 files; main-owned bootstrap, launcher regression, closure docs, repository
+  guidance, manifests, lockfile, and `.env.example` are identical to main. Feature `95ad76d…` remains
+  an ancestor of the first parent. High-risk token/private-key scans report zero matches. The four
+  ignored build `dist` directories were verified inside the worktree and removed; no generated junk
+  remains.
+
+### Validation intentionally deferred
+
+Full Level D/release validation, a duplicate browser flow, and live DataHub smoke are deferred. No
+credential is read or required. PR #10 and all Slice 2.2/2.3 work remain untouched.
+
+### Known issues
+
+No local product conflict is known. Merge commit, push, PR #7 retarget/mergeability, and exactly one
+new CI run for the final head remain pending at the time of this entry.
+
+### Exact next step
+
+Run the documented affected checks once, review ancestry/diff/secrets/conflict markers/generated junk,
+create and push the merge commit, retarget draft PR #7 to `main`, and follow exactly one new final-head
+CI run. Keep PR #7 draft/open and do not modify PR #10.
+
+## 2026-07-18 — Phase 1 launcher cleanup-ownership CI hotfix
+
+### Objective
+
+Fix only the main-owned integration-test cleanup race from PR #7 CI run `29651498475`, job
+`88098488706`, on exact `origin/main` `54945b80a27685ce81e476173a3466e585f42112`, without changing
+PR #7, launcher runtime behavior, product/API/DataHub code, or beginning Phase 2.
+
+### Completed
+
+Created `fix/phase1-launcher-cleanup-ownership` from exact main. Kept the cleanup descendant's atomic
+`port: 0` bind and pre-cleanup HTTP readiness proof, changed its report to include the actual PID and
+bound port, removed the post-cleanup `assertPortAvailable` rebind, and asserted that the exact
+descendant PID disappears through a bounded cross-platform signal-0 liveness wait.
+
+### Files changed
+
+`tests/integration/report-launcher.test.ts`, `docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md`, and
+this session entry only. No launcher helper/runtime, product, API, DataHub, manifest, lockfile, browser
+test, bootstrap, or repository-structure file changed.
+
+### Decisions
+
+Classified the exact `EADDRINUSE` result as a test-ownership TOCTOU defect: after managed cleanup,
+another process is free to claim the old port before the test probes it. Prove ownership through the
+managed descendant's PID instead. Do not add retry, sleep around port allocation, random port ranges,
+or wider test timeouts.
+
+### Validation performed
+
+- The first two command attempts did not enter Vitest because the worktree lacked resolved executable
+  dependencies and then exposed a sandbox-inaccessible pnpm hardlink. Frozen install state was repaired
+  without manifest/lockfile changes, and the single real pre-fix baseline passed 1 file/3 tests in
+  `6.80s` (`17.546s` wall).
+- Changed-file Prettier passed in `6.401s`. A `30s` harness limit interrupted the first affected ESLint
+  process without a result; the identical command passed in `7.568s` under a sufficient command budget.
+- The primary post-fix focused run passed 1 file/3 tests in `1.74s` (`4.739s` wall).
+- Five permitted assessment runs produced one fixture-startup failure before PID/port reporting and
+  four consecutive 1-file/3-test passes in `12.549s` total. A read-only PID/CommandLine/listener probe
+  after the startup failure found no fixture descendant or listener leak. The replaced port-rebind
+  assertion cannot recur because it no longer exists.
+
+### Validation intentionally deferred
+
+Browser E2E, full suite, build, and smoke remain deferred because product and launcher runtime inputs
+did not change. CI supplies the single repository-level validation run for the draft fix PR. PR #7 and
+all Phase 2 implementation remain out of scope.
+
+### Known issues
+
+No local implementation blocker remains. The one non-repeating fixture-startup failure above is
+recorded transparently for CI observation; draft PR publication and its one CI run are pending.
+Existing product limitations remain unchanged.
+
+### Exact next step
+
+Format and review the four-file diff, commit conventionally, push the fix branch, open one draft PR
+against `main`, and follow exactly one new CI run. Do not rerun the failed PR #7 CI, merge the fix PR,
+modify PR #7, or begin Phase 2.
+
+## 2026-07-18 — Slice 2.1 merge-forward after launcher hotfix
+
+### Objective
+
+Merge exact green `origin/main` `1649fd7657a55eee3ce2198a2f7bc38ad5c16c3d` into draft PR #7
+head `e6c34e65bcce0c39dee216d0ab66236deffb4365` without rebase, rewrite, Slice 2.1 behavior changes,
+or changes to PR #10/Slice 2.2.
+
+### Completed
+
+Verified clean local/upstream state and confirmed hotfix `ba358a936541d0ea930e7ccbb76540d4e07595e5`
+is integrated in main. Merge-forward has one append-only conflict in this file; union resolution keeps
+the earlier Slice 2.1 sync evidence and the complete launcher cleanup-ownership hotfix evidence.
+
+### Files changed
+
+The merge imports main's focused launcher integration-test hotfix and its three project-memory files.
+Only this session entry is added by the PR #7 merge resolution. No product, DataHub, UI, manifest,
+lockfile, or environment-contract file changes.
+
+### Decisions
+
+Run changed-doc Prettier and exactly one focused `tests/integration/report-launcher.test.ts`. Defer
+DataHub tests, browser E2E, builds, and type-checks because their input trees remain unchanged from the
+already-recorded PR #7 validation and CI.
+
+### Validation performed
+
+- Changed-doc Prettier PASS in `1.396s`; only this entry required formatting.
+- Exactly one `tests/integration/report-launcher.test.ts` run PASS 1/1 file and 3/3 tests in `1.95s`
+  (`5.542s` wall), including exact descendant-PID cleanup.
+- Slice 2.1 API, web, shared-types, and datahub-client source trees are byte-identical to first parent
+  `e6c34e6…`; the launcher test is byte-identical to main. The prospective PR diff against main remains
+  exactly 15 Slice 2.1 files.
+- `git diff --check`, conflict-marker, manifest/lock/env, high-risk secret, and generated-junk scans
+  PASS. No secret pattern or generated artifact remains.
+
+### Validation intentionally deferred
+
+DataHub/API/web tests, browser E2E, builds, type-checks, live DataHub smoke, and full Level D remain
+deferred. PR #10 and all Slice 2.2 work remain untouched.
+
+### Known issues
+
+Merge commit, push, and exactly one new PR #7 CI run remain pending at the time of this entry.
+
+### Exact next step
+
+Run the two authorized local checks, review ancestry/diff/secrets/conflict markers/generated junk,
+create and push the merge commit, then follow exactly one final-head CI run. Keep PR #7 draft/open and
+do not merge it in this turn.
+
+## 2026-07-19 — Slice 2.2 retarget after Slice 2.1 merge
+
+### Objective
+
+Merge exact green `origin/main` `a9ef2907d8772a12c4694cd5cc3db395e9eebe8d` into draft PR #10
+head `65657aa7d06ad0a3457b16289a6e5311bb056592` without rebase, rewrite, entity-search behavior
+changes, or any Slice 2.3 work; then retarget the draft PR to `main` and observe one new CI run.
+
+### Completed
+
+Verified clean local/upstream state, fetched authoritative main, and confirmed the merge-base remains
+final Slice 2.1 `325b21c5d4ca106e3b01b3926d4eecd5378dedd7`. The non-rewriting merge-forward has only two
+append-only conflicts in `docs/IMPLEMENTATION_PLAN.md` and this file; union resolution preserves the
+complete Phase 1, Slice 2.1, launcher-hotfix, and Slice 2.2 histories. All 13 Slice 2.2
+source/API/UI/fixture/test blobs match feature head `65657aa…` exactly after resolution.
+
+### Files changed
+
+The merge imports main's bootstrap/environment documentation and scripts, repository instructions,
+ignore rules, and focused launcher-test hardening. The two append-only project-memory resolutions and
+this entry are the only local resolution changes. No entity-search product, API, UI, fixture, or test
+file changed; no manifest, lockfile, or `.env.example` changed.
+
+### Decisions
+
+Preserve both append-only histories instead of choosing either conflict side. Run only changed-doc
+Prettier and the launcher integration test advanced by main; defer entity-search tests, browser E2E,
+builds, and type-checks because byte equality proves their validated inputs are unchanged and CI will
+run repository validation once for the final merge head.
+
+### Validation performed
+
+- Changed-doc Prettier PASS in `1.658s`; only this appended session entry required formatting.
+- The first focused-test command stopped before Vitest because `node` was absent from process `PATH`;
+  zero tests ran. The one actual bundled-runtime execution passed 1/1 file and 3/3 launcher tests in
+  `2.34s` (`7.2s` wall), including exact descendant-PID cleanup.
+- Conflict-marker scan is `0`; all 13 Slice 2.2 source/API/UI/fixture/test blob hashes match
+  `65657aa…`.
+
+### Validation intentionally deferred
+
+Entity-search tests, browser E2E, builds, type-checks, live DataHub smoke, and Level D remain deferred.
+CI supplies the single repository-level validation run. Slice 2.3 and merging PR #10 remain out of
+scope.
+
+### Known issues
+
+No local product or test blocker. Merge commit, normal push, PR #10 retarget, mergeability review, and
+one new final-head CI run remain pending at the time of this entry.
+
+### Exact next step
+
+Format and review the merged documentation, prove the prospective PR diff is Slice 2.2-only, create
+and push the merge commit, retarget draft PR #10 to `main`, and follow exactly one new CI run to
+terminal. Keep the PR draft/open and do not merge it or begin Slice 2.3.
+
+## 2026-07-19 — Slice 2.3 retarget after Slice 2.2 merge
+
+### Objective
+
+Merge exact green `origin/main` `b940915b6da9fffcd8ce3e36061074d528372fde` into draft PR #12
+head `a5339fbaca1c855720bb6df1377b233db30924ac` without rebase, rewrite, lineage behavior changes,
+or any Slice 2.4 work; then retarget the draft PR to `main` and observe one new CI run.
+
+### Completed
+
+Verified clean local/upstream state and fetched authoritative main after PR #10 merged. The
+non-rewriting merge-forward has only two append-only conflicts in `docs/KNOWN_ISSUES.md` and this
+file; union resolution preserves the complete Phase 1, Slice 2.1, Slice 2.2, launcher/bootstrap
+hotfix, and Slice 2.3 histories. All 12 Slice 2.3 source/API/UI/fixture/test blobs match feature head
+`a5339fb…` exactly after resolution, and the prospective PR diff against main remains exactly the 17
+Slice 2.3 lineage files.
+
+### Files changed
+
+The merge imports main's bootstrap/environment documentation and scripts, repository instructions,
+ignore rules, and focused launcher-test hardening. The two append-only project-memory resolutions and
+this entry are the only local resolution changes. No lineage product, API, UI, fixture, or test file
+changed; no manifest, lockfile, or `.env.example` changed.
+
+### Decisions
+
+Preserve both append-only histories instead of choosing either conflict side. Run only changed-doc
+Prettier and the launcher integration test advanced by main; defer lineage tests, browser E2E,
+builds, and type-checks because byte equality proves their validated inputs are unchanged and CI
+will run repository validation once for the final merge head.
+
+### Validation performed
+
+- Changed-doc Prettier PASS in `0.889s`.
+- Exactly one `tests/integration/report-launcher.test.ts` run PASS 1/1 file and 3/3 tests; Vitest
+  `1.38s`, `3.504s` wall, including exact descendant-PID cleanup.
+- Conflict-marker scan is `0`; all 12 Slice 2.3 source/API/UI/fixture/test blobs match `a5339fb…`, and
+  the prospective PR diff against main is exactly 17 Slice 2.3 files.
+
+### Validation intentionally deferred
+
+Lineage tests, browser E2E, builds, type-checks, live DataHub smoke, and Level D remain deferred. CI
+supplies the single repository-level validation run. Slice 2.4 and merging PR #12 remain out of scope.
+
+### Known issues
+
+No local product or test blocker. Merge commit, normal push, PR #12 retarget, mergeability review, and
+one new final-head CI run remain pending at the time of this entry.
+
+### Exact next step
+
+Format and review the merged documentation, create and push the merge commit, retarget draft PR #12
+to `main`, and follow exactly one new CI run to terminal. Keep the PR draft/open and do not merge it
+or begin Slice 2.4.
+
+## 2026-07-19 — Slice 2.4 merge-forward sau khi Slice 2.3 vào main
+
+### Objective
+
+Giữ nguyên feature commit `9afc729bbe92625d8b92a3dfc943ad7134363666`, merge current
+`origin/main` `7d9e99ee7b365e972b2a5011e70a0a5318db8e29` vào branch Slice 2.4 theo lịch sử
+không-rewrite, retarget draft PR #13 sang `main` và theo dõi đúng một CI run của final HEAD mà không
+merge PR hoặc bắt đầu slice kế tiếp.
+
+### Completed
+
+Fetch xác nhận Slice 2.3 đã merge vào `main`. Merge-forward chỉ conflict ở
+`docs/KNOWN_ISSUES.md` và `docs/SESSION_LOG.md`; union resolution giữ đầy đủ lịch sử phía main và entry
+Slice 2.4. Toàn bộ 12 blob source/UI/fixture/test của Slice 2.4 vẫn byte-identical với feature commit
+`9afc729…`. Prospective diff so với `origin/main` vẫn đúng 17 file Slice 2.4.
+
+### Files changed
+
+Merge nhập lịch sử đã tích hợp từ `main`; resolution chỉ tác động hai tài liệu persistent nêu trên và
+entry này. Không đổi thêm behavior recent changes, contract, provider, API, UI, fixture, browser flow,
+manifest, lockfile hoặc `.env.example`.
+
+### Decisions
+
+Giữ normal two-parent merge commit; không rebase, force-push hoặc merge PR. Không rerun Level C, browser
+flow hay targeted product test vì source/test feature blob không đổi; CI final HEAD cung cấp validation
+repository-level duy nhất. Chỉ chạy formatter cho hai docs bị conflict cùng diff/conflict/blob review.
+
+### Validation performed
+
+- Feature blob equality, `git diff --check`, conflict-marker scan và prospective 17-file PR scope PASS
+  trong `0.8s`; conflict marker `0`.
+- Changed-doc Prettier write PASS trong `0.475s`; final format check, diff/conflict/scope và worktree
+  review PASS trước merge commit.
+
+### Validation intentionally deferred
+
+Không rerun validation Slice 2.4 đã xanh, browser E2E, live DataHub smoke hoặc Level D. CI run/job của
+final merge HEAD được ghi trong handoff terminal để tránh tạo thêm commit và CI run thứ hai.
+
+### Known issues
+
+Không có product/test blocker. Live DataHub smoke vẫn credential-gated; DataHub timeline vẫn không có
+public paging/window input.
+
+### Exact next step
+
+Format/review hai docs resolution, tạo normal merge commit, push fast-forward, retarget draft PR #13
+sang `main`, rồi theo dõi đúng một CI run của final HEAD tới terminal. Giữ PR draft/open; không merge PR
+hoặc bắt đầu Phase 2 integration checkpoint.
