@@ -10,12 +10,39 @@ describe('completed report presentation', () => {
       report: {
         incidentId: 'ba4ec0e8-da23-4f34-a3c7-9f25c44da800',
         summary: 'The removed source column is the strongest evidence-backed inference.',
-        entities: [],
+        entities: [
+          {
+            urn: 'urn:li:dataset:(urn:li:dataPlatform:snowflake,analytics.daily_revenue,PROD)',
+            name: 'analytics.daily_revenue',
+            kind: 'dataset',
+          },
+          {
+            urn: 'urn:li:dataset:(urn:li:dataPlatform:snowflake,raw.orders,PROD)',
+            name: 'raw.orders',
+            kind: 'dataset',
+          },
+        ],
         evidence: [
           {
             id: 'change-1',
             category: 'schema-change',
             statement: 'The fixture records a removed source column.',
+            sourceEntity: {
+              urn: 'urn:li:dataset:(urn:li:dataPlatform:snowflake,raw.orders,PROD)',
+              name: 'raw.orders',
+              kind: 'dataset',
+            },
+            observedAt: '2026-07-18T08:20:00.000Z',
+          },
+          {
+            id: 'lineage-upstream-1',
+            category: 'lineage',
+            statement: 'Fixture lineage shows raw.orders upstream of analytics.daily_revenue.',
+            sourceEntity: {
+              urn: 'urn:li:dataset:(urn:li:dataPlatform:snowflake,raw.orders,PROD)',
+              name: 'raw.orders',
+              kind: 'dataset',
+            },
           },
         ],
         hypotheses: [
@@ -23,7 +50,7 @@ describe('completed report presentation', () => {
             id: 'hypothesis-1',
             summary: 'A schema change caused the incident.',
             confidence: 0.92,
-            evidenceIds: ['change-1'],
+            evidenceIds: ['change-1', 'lineage-upstream-1'],
           },
         ],
         recommendations: ['Restore or intentionally replace the source field.'],
@@ -39,6 +66,65 @@ describe('completed report presentation', () => {
       status: 'completed',
       summary: 'The removed source column is the strongest evidence-backed inference.',
       topHypothesis: 'A schema change caused the incident.',
+      relatedEntities: [
+        {
+          urn: 'urn:li:dataset:(urn:li:dataPlatform:snowflake,analytics.daily_revenue,PROD)',
+          name: 'analytics.daily_revenue',
+          kind: 'dataset',
+        },
+        {
+          urn: 'urn:li:dataset:(urn:li:dataPlatform:snowflake,raw.orders,PROD)',
+          name: 'raw.orders',
+          kind: 'dataset',
+        },
+      ],
+      facts: [
+        {
+          id: 'change-1',
+          category: 'schema-change',
+          statement: 'The fixture records a removed source column.',
+          sourceEntity: {
+            urn: 'urn:li:dataset:(urn:li:dataPlatform:snowflake,raw.orders,PROD)',
+            name: 'raw.orders',
+            kind: 'dataset',
+          },
+          observedAt: '2026-07-18T08:20:00.000Z',
+        },
+        {
+          id: 'lineage-upstream-1',
+          category: 'lineage',
+          statement: 'Fixture lineage shows raw.orders upstream of analytics.daily_revenue.',
+          sourceEntity: {
+            urn: 'urn:li:dataset:(urn:li:dataPlatform:snowflake,raw.orders,PROD)',
+            name: 'raw.orders',
+            kind: 'dataset',
+          },
+        },
+      ],
+      lineageEvidence: [
+        {
+          id: 'lineage-upstream-1',
+          category: 'lineage',
+          statement: 'Fixture lineage shows raw.orders upstream of analytics.daily_revenue.',
+          sourceEntity: {
+            urn: 'urn:li:dataset:(urn:li:dataPlatform:snowflake,raw.orders,PROD)',
+            name: 'raw.orders',
+            kind: 'dataset',
+          },
+        },
+      ],
+      inferences: [
+        {
+          id: 'hypothesis-1',
+          summary: 'A schema change caused the incident.',
+          confidence: 0.92,
+          confidenceLabel: '92%',
+          evidenceIds: ['change-1', 'lineage-upstream-1'],
+        },
+      ],
+      recommendations: ['Restore or intentionally replace the source field.'],
+      assumptions: ['The fixture snapshot covers the incident window.'],
+      missingInformation: ['Runtime query logs are unavailable.'],
     });
   });
 });

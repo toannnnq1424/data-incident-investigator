@@ -1,6 +1,8 @@
-import { useState, type FormEvent } from 'react';
+import { useState, type FormEvent, type ReactNode } from 'react';
 import {
   ApiErrorSchema,
+  type EntityRef,
+  type Evidence,
   IncidentAcceptedResponseSchema,
   IncidentRequestSchema,
   IncidentRetrievalResponseSchema,
@@ -9,6 +11,9 @@ import {
 } from '@dii/shared-types';
 
 type CompletedIncident = Extract<IncidentRetrievalResponse, { status: 'completed' }>;
+type ReportInference = CompletedIncident['report']['hypotheses'][number] & {
+  confidenceLabel: string;
+};
 
 type SubmissionState =
   | { kind: 'idle' }
@@ -31,17 +36,161 @@ function delay(milliseconds: number) {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
+function formatConfidence(confidence: number) {
+  return `${Math.round(confidence * 100)}%`;
+}
+
+function formatObservedAt(timestamp: string) {
+  return timestamp.replace('T', ' ').replace(/\.000Z$/, 'Z');
+}
+
 export function getCompletedReportContent(incident: CompletedIncident) {
-  const topHypothesis = incident.report.hypotheses[0];
-  if (!topHypothesis) {
+  const topInference = incident.report.hypotheses[0];
+  if (!topInference) {
     throw new Error('A completed investigation report must include a ranked hypothesis.');
   }
 
   return {
     status: incident.status,
     summary: incident.report.summary,
-    topHypothesis: topHypothesis.summary,
+    topHypothesis: topInference.summary,
+    relatedEntities: incident.report.entities,
+    facts: incident.report.evidence,
+    lineageEvidence: incident.report.evidence.filter((evidence) => evidence.category === 'lineage'),
+    inferences: incident.report.hypotheses.map((hypothesis) => ({
+      ...hypothesis,
+      confidenceLabel: formatConfidence(hypothesis.confidence),
+    })),
+    recommendations: incident.report.recommendations,
+    assumptions: incident.report.assumptions,
+    missingInformation: incident.report.missingInformation,
   };
+}
+
+function EmptyState({ message }: { message: string }) {
+  return <p className="empty-state">{message}</p>;
+}
+
+function ReportSection({
+  id,
+  label,
+  title,
+  children,
+}: {
+  id: string;
+  label: string;
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className="report-section" aria-labelledby={id} data-testid={id}>
+      <p className="report-label">{label}</p>
+      <h3 id={id}>{title}</h3>
+      {children}
+    </section>
+  );
+}
+
+function EntityList({ entities }: { entities: EntityRef[] }) {
+  if (entities.length === 0) {
+    return <EmptyState message="No related entities were returned." />;
+  }
+
+  return (
+    <ul className="entity-list">
+      {entities.map((entity) => (
+        <li key={entity.urn}>
+          <span className="entity-kind">{entity.kind}</span>
+          <div>
+            <strong>{entity.name}</strong>
+            <code>{entity.urn}</code>
+          </div>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function EvidenceList({ evidence, emptyMessage }: { evidence: Evidence[]; emptyMessage: string }) {
+  if (evidence.length === 0) {
+    return <EmptyState message={emptyMessage} />;
+  }
+
+  return (
+    <ol className="evidence-list">
+      {evidence.map((item) => (
+        <li key={item.id}>
+          <div className="evidence-meta">
+            <code>{item.id}</code>
+            <span>{item.category}</span>
+            {item.observedAt && (
+              <time dateTime={item.observedAt}>{formatObservedAt(item.observedAt)}</time>
+            )}
+          </div>
+          <p>{item.statement}</p>
+          {item.sourceEntity && (
+            <span className="source-entity">
+              Source: {item.sourceEntity.name} ({item.sourceEntity.kind})
+            </span>
+          )}
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+function InferenceList({ inferences }: { inferences: ReportInference[] }) {
+  if (inferences.length === 0) {
+    return <EmptyState message="No evidence-backed inferences were returned." />;
+  }
+
+  return (
+    <ol className="inference-list">
+      {inferences.map((hypothesis) => (
+        <li key={hypothesis.id}>
+          <div className="inference-heading">
+            <div>
+              <code>{hypothesis.id}</code>
+              <h4>{hypothesis.summary}</h4>
+            </div>
+            <strong>{hypothesis.confidenceLabel} confidence</strong>
+          </div>
+          <p className="evidence-reference-label">Evidence IDs</p>
+          <ul className="evidence-reference-list">
+            {hypothesis.evidenceIds.map((evidenceId) => (
+              <li key={evidenceId}>
+                <code>{evidenceId}</code>
+              </li>
+            ))}
+          </ul>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+function TextList({ items, emptyMessage }: { items: string[]; emptyMessage: string }) {
+  if (items.length === 0) {
+    return <EmptyState message={emptyMessage} />;
+  }
+
+  return (
+    <ul className="text-list">
+      {items.map((item) => (
+        <li key={item}>{item}</li>
+      ))}
+    </ul>
+  );
+}
+
+function ProcessingStatus({ incident }: { incident: IncidentAcceptedResponse }) {
+  return (
+    <div className="status-progress processing-status" role="status">
+      <p>Investigation processing</p>
+      <span>{incident.incidentId}</span>
+      <EmptyState message="Report details will appear after fixture evidence is gathered." />
+    </div>
+  );
 }
 
 export function CompletedReport({ incident }: { incident: CompletedIncident }) {
@@ -67,6 +216,55 @@ export function CompletedReport({ incident }: { incident: CompletedIncident }) {
         <h4>Top ranked hypothesis</h4>
         <p>{content.topHypothesis}</p>
       </section>
+      <div className="report-detail-grid">
+        <ReportSection id="related-entities-heading" label="Entity impact" title="Related entities">
+          <EntityList entities={content.relatedEntities} />
+        </ReportSection>
+
+        <ReportSection id="facts-heading" label="Facts" title="Evidence">
+          <EvidenceList evidence={content.facts} emptyMessage="No factual evidence was returned." />
+        </ReportSection>
+
+        <ReportSection id="lineage-heading" label="Lineage" title="Relevant lineage">
+          <EvidenceList
+            evidence={content.lineageEvidence}
+            emptyMessage="No lineage evidence was returned."
+          />
+        </ReportSection>
+
+        <ReportSection id="inferences-heading" label="Inferences" title="Hypotheses">
+          <InferenceList inferences={content.inferences} />
+        </ReportSection>
+
+        <ReportSection id="assumptions-heading" label="Assumptions" title="Assumptions">
+          <TextList
+            items={content.assumptions}
+            emptyMessage="No assumptions were returned with this report."
+          />
+        </ReportSection>
+
+        <ReportSection
+          id="missing-information-heading"
+          label="Missing information"
+          title="Missing information"
+        >
+          <TextList
+            items={content.missingInformation}
+            emptyMessage="No missing information was returned with this report."
+          />
+        </ReportSection>
+
+        <ReportSection
+          id="recommendations-heading"
+          label="Recommended actions"
+          title="Recommended actions"
+        >
+          <TextList
+            items={content.recommendations}
+            emptyMessage="No recommended actions were returned with this report."
+          />
+        </ReportSection>
+      </div>
     </div>
   );
 }
@@ -289,12 +487,7 @@ export function App() {
               Creating the incident…
             </p>
           )}
-          {state.kind === 'processing' && (
-            <div className="status-progress processing-status" role="status">
-              <p>Investigation processing</p>
-              <span>{state.incident.incidentId}</span>
-            </div>
-          )}
+          {state.kind === 'processing' && <ProcessingStatus incident={state.incident} />}
           {state.kind === 'completed' && <CompletedReport incident={state.incident} />}
           {(state.kind === 'validation-error' || state.kind === 'api-error') && (
             <p className="status-error" role="alert">
