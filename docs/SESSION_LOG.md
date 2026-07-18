@@ -90,3 +90,61 @@ Incident IDs are not persisted and no report is generated yet. See `docs/KNOWN_I
 Inside the Codex Project for this repository, create a new project-scoped task for Slice 1.2 — Mock
 investigation. Read the persisted state, add a deterministic fixture-backed investigation through the
 existing provider-neutral adapter, and do not reuse a projectless chat.
+
+## 2026-07-18 — Phase 1 Slice 1.2 fixture-backed mock investigation
+
+### Objective
+
+Deliver a canonical removed-schema-column incident from web submission through the provider-neutral
+fixture adapter and deterministic runner to a retrieved, compact completed report without credentials.
+
+### Completed
+
+Added the single canonical incident and metadata fixture, a bounded fixture `MetadataAdapter`, and a
+deterministic evidence-linked runner whose output is validated by the shared report schema. Extended
+the shared lifecycle contract with completed retrieval and typed not-found errors, while preserving
+the Slice 1.1 HTTP `202`/UUID/`processing` response. Added in-memory API lifecycle storage and
+`GET /incidents/:incidentId`, then updated the web to poll and render completed status, summary, and
+the top ranked hypothesis. Kept processing visible for a short deterministic transition and added
+focused contract, adapter, runner, API, and web behavior coverage.
+
+### Files changed
+
+Canonical fixture JSON; shared-types, datahub-client, agent-core, API, and web source; affected package
+manifests and lockfile; targeted integration tests; API contracts, implementation plan, repository map,
+known issues, and this session log.
+
+### Decisions
+
+Keep fixture mode as the credential-free default; load fixture JSON only inside the provider package;
+bound one lineage hop, four entities, four recent changes, four adapter calls, and two seconds of runner
+duration; use report evidence as facts and hypotheses as evidence-linked inferences; store lifecycle
+state only in API memory; expose only the compact report subset in Slice 1.2 and defer detailed evidence
+presentation to Slice 1.3.
+
+### Validation performed
+
+Changed-file Prettier checks and affected lint passed. Type checks passed for shared-types,
+datahub-client, agent-core, API, and web. Five targeted test files passed with 13 tests; after the
+processing-transition adjustment, the four affected API integration tests passed again. Builds passed
+for all five affected packages/apps, and the affected API build passed again after the adjustment. A
+real Vite-to-Fastify browser flow showed a generated UUID in `processing`, transitioned to `completed`,
+rendered the report summary and top ranked hypothesis, and produced no browser console warnings or
+errors. The first Vitest attempt failed only because sandboxed esbuild could not read ancestor metadata;
+the identical targeted suite passed with scoped access.
+
+### Validation intentionally deferred
+
+Full phase/release Level D validation is deferred to the Phase 1 integration checkpoint. Detailed
+evidence/entity/confidence/assumption/recommendation UI, checked-in cross-browser automation, real
+DataHub access, durable persistence, and additional fixture scenarios remain deferred to their defined
+slices or phases.
+
+### Known issues
+
+Fixture incident state is process-local and only the removed-schema-column scenario exists. See
+`docs/KNOWN_ISSUES.md`.
+
+### Exact next step
+
+create a new project-scoped task for Phase 1 Slice 1.3 — Evidence display, starting from this Slice 1.2 branch/commit; do not continue Slice 1.3 here.

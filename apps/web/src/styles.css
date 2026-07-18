@@ -56,6 +56,8 @@ textarea {
 
 h1,
 h2,
+h3,
+h4,
 p {
   margin-top: 0;
 }
@@ -229,6 +231,22 @@ button:disabled {
   color: #a5eee3;
 }
 
+.processing-status {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.processing-status p {
+  font-weight: 800;
+}
+
+.processing-status span {
+  overflow-wrap: anywhere;
+  color: #8ba1a8;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.8rem;
+}
+
 .status-error {
   padding: 0.8rem 0.9rem;
   border: 1px solid #824a4a;
@@ -241,6 +259,47 @@ button:disabled {
   margin-bottom: 0.8rem;
   color: #94eddf;
   font-weight: 800;
+}
+
+.report-summary {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid #294149;
+  border-radius: 0.75rem;
+  background: #071b21;
+}
+
+.report-summary h3,
+.report-summary h4,
+.report-summary p {
+  margin: 0;
+}
+
+.report-summary h3 {
+  font-size: 1.25rem;
+}
+
+.report-summary h4 {
+  margin-top: 0.4rem;
+  color: #9ceade;
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.report-summary p:not(.report-label) {
+  color: #c8d8dc;
+  line-height: 1.6;
+}
+
+.report-label {
+  color: #75e5d3;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
 dl {

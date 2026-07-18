@@ -63,12 +63,79 @@ Validation response `400`:
 
 `IncidentRequestSchema`, `IncidentAcceptedResponseSchema`, and `ApiErrorSchema` in
 `packages/shared-types` are the source of truth. Optional request fields are omitted when blank. The
-current slice accepts an incident but does not persist it; retrieval is added with Slice 1.2.
+accepted response remains compatible with Slice 1.1: it always uses HTTP `202` and `processing` even
+though fixture investigation begins immediately in the background.
 
-## Planned report retrieval
+### `GET /incidents/:incidentId`
 
-`GET /api/incidents/:incidentId` returns lifecycle state and, when completed, a validated
-`InvestigationReport`. Unknown IDs return `404`; provider failures use a sanitized stable error code.
+The browser calls `/api/incidents/:incidentId`; direct API clients use
+`/incidents/:incidentId`. Fixture incidents are held in process memory and transition from
+`processing` to `completed`.
+
+Processing response `200`:
+
+```json
+{
+  "incidentId": "576982bc-da91-4d69-a5ad-52206b3e17e2",
+  "status": "processing"
+}
+```
+
+Completed response `200` (abridged values, complete shape shown):
+
+```json
+{
+  "incidentId": "576982bc-da91-4d69-a5ad-52206b3e17e2",
+  "status": "completed",
+  "report": {
+    "incidentId": "576982bc-da91-4d69-a5ad-52206b3e17e2",
+    "summary": "The strongest evidence-backed inference is: ...",
+    "entities": [],
+    "evidence": [
+      {
+        "id": "change-removed-gross-revenue",
+        "category": "schema-change",
+        "statement": "Column gross_revenue was removed from raw.orders."
+      }
+    ],
+    "hypotheses": [
+      {
+        "id": "hypothesis-recent-change",
+        "summary": "A recent schema change likely caused the reported incident.",
+        "confidence": 0.92,
+        "evidenceIds": ["change-removed-gross-revenue"]
+      }
+    ],
+    "recommendations": ["Confirm the schema contract and restore or replace the field."],
+    "assumptions": ["The fixture snapshot represents the incident window."],
+    "missingInformation": ["Runtime query logs are not included in the fixture."]
+  }
+}
+```
+
+The actual fixture report contains at least one hypothesis and its cited evidence. Shared report
+validation rejects any hypothesis evidence ID that is absent from `report.evidence`. Evidence
+statements are fixture facts; hypotheses are ranked inferences; assumptions, missing information, and
+recommendations remain separate report fields.
+
+Unknown incident response `404`:
+
+```json
+{
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "The requested incident was not found."
+  }
+}
+```
+
+If background investigation fails, retrieval returns HTTP `500` with the sanitized
+`INTERNAL_ERROR` envelope. Logs include only the generated incident ID, fixture mode, bounded result
+counts, and an error class; incident text and credentials are not logged.
+
+`IncidentRetrievalResponseSchema`, `InvestigationReportSchema`, and `ApiErrorSchema` in
+`packages/shared-types` are the source of truth. In-memory fixture state is intentionally not durable
+across API restarts.
 
 ## Compatibility
 

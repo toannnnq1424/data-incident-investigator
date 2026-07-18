@@ -3,6 +3,7 @@ import {
   ApiErrorSchema,
   IncidentAcceptedResponseSchema,
   IncidentRequestSchema,
+  IncidentRetrievalResponseSchema,
   InvestigationReportSchema,
 } from '../../packages/shared-types/src/index.js';
 
@@ -47,7 +48,7 @@ describe('shared investigation contracts', () => {
           id: 'hypothesis-1',
           summary: 'A source column was removed.',
           confidence: 0.8,
-          evidenceIds: [],
+          evidenceIds: ['missing-evidence'],
         },
       ],
       recommendations: ['Restore the source column.'],
@@ -56,5 +57,37 @@ describe('shared investigation contracts', () => {
     });
 
     expect(result.success).toBe(false);
+  });
+
+  it('accepts a completed incident only when hypothesis references resolve', () => {
+    const result = IncidentRetrievalResponseSchema.safeParse({
+      incidentId: 'ba4ec0e8-da23-4f34-a3c7-9f25c44da800',
+      status: 'completed',
+      report: {
+        incidentId: 'ba4ec0e8-da23-4f34-a3c7-9f25c44da800',
+        summary: 'A removed source column is the strongest inference.',
+        entities: [],
+        evidence: [
+          {
+            id: 'change-1',
+            category: 'schema-change',
+            statement: 'The fixture records a removed column.',
+          },
+        ],
+        hypotheses: [
+          {
+            id: 'hypothesis-1',
+            summary: 'The removed column caused the incident.',
+            confidence: 0.9,
+            evidenceIds: ['change-1'],
+          },
+        ],
+        recommendations: ['Restore or intentionally replace the column.'],
+        assumptions: ['The fixture snapshot covers the incident window.'],
+        missingInformation: ['Runtime query logs are unavailable.'],
+      },
+    });
+
+    expect(result.success).toBe(true);
   });
 });
