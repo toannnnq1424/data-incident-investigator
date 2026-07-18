@@ -4,11 +4,13 @@ import {
   DEFAULT_INCIDENT_CONTEXT_LIMITS,
   DeterministicIncidentContextGatherer,
   DeterministicInvestigationRunner,
+  DeterministicSuspiciousChangeDetector,
   FIXTURE_INVESTIGATION_LIMITS,
   type IncidentContextGatherer,
   type IncidentContextGatheringLimits,
   type InvestigationLimits,
   type InvestigationRunner,
+  type SuspiciousChangeDetector,
 } from '@dii/agent-core';
 import {
   createDataHubHealthClient,
@@ -37,10 +39,12 @@ import {
   MetadataRecentChangesRequestSchema,
   MetadataRecentChangesResponseSchema,
   MetadataSourceModeSchema,
+  SuspiciousChangeDetectionStageSchema,
   type IncidentContextStage,
   type InvestigationReport,
   type MetadataHealthResponse,
   type MetadataSourceMode,
+  type SuspiciousChangeDetectionStage,
 } from '@dii/shared-types';
 import Fastify from 'fastify';
 
@@ -55,13 +59,23 @@ interface BuildServerOptions {
   mode?: MetadataSourceMode;
   contextGatherer?: IncidentContextGatherer;
   contextLimits?: IncidentContextGatheringLimits;
+  suspiciousChangeDetector?: SuspiciousChangeDetector;
   runner?: InvestigationRunner;
   limits?: InvestigationLimits;
 }
 
 type StoredIncident =
-  | { status: 'processing'; contextStage: IncidentContextStage }
-  | { status: 'completed'; contextStage: IncidentContextStage; report: InvestigationReport }
+  | {
+      status: 'processing';
+      contextStage: IncidentContextStage;
+      suspiciousChangeStage: SuspiciousChangeDetectionStage;
+    }
+  | {
+      status: 'completed';
+      contextStage: IncidentContextStage;
+      suspiciousChangeStage: SuspiciousChangeDetectionStage;
+      report: InvestigationReport;
+    }
   | { status: 'failed' };
 
 const fixtureProcessingDelayMs = 250;
@@ -226,6 +240,21 @@ function failedIncidentContext(error: unknown): IncidentContextStage {
   });
 }
 
+function unavailableSuspiciousChanges(
+  code: 'CONTEXT_UNAVAILABLE' | 'DETECTION_INVALID',
+): SuspiciousChangeDetectionStage {
+  return SuspiciousChangeDetectionStageSchema.parse({
+    status: 'unavailable',
+    error: {
+      code,
+      message:
+        code === 'CONTEXT_UNAVAILABLE'
+          ? 'Suspicious-change detection is unavailable because incident context did not complete.'
+          : 'Suspicious-change detection could not validate the gathered context.',
+    },
+  });
+}
+
 export function buildServer(options: BuildServerOptions = {}) {
   const server = Fastify({ logger: options.logger ?? true });
   const environment = options.environment ?? process.env;
@@ -265,6 +294,8 @@ export function buildServer(options: BuildServerOptions = {}) {
         }));
   const contextGatherer = options.contextGatherer ?? new DeterministicIncidentContextGatherer();
   const contextLimits = options.contextLimits ?? DEFAULT_INCIDENT_CONTEXT_LIMITS;
+  const suspiciousChangeDetector =
+    options.suspiciousChangeDetector ?? new DeterministicSuspiciousChangeDetector();
   const contextMetadata = {
     healthCheck: metadataHealth.healthCheck.bind(metadataHealth),
     searchEntities: metadataSearch.searchEntities.bind(metadataSearch),
@@ -491,19 +522,30 @@ export function buildServer(options: BuildServerOptions = {}) {
     incidents.set(response.incidentId, {
       status: 'processing',
       contextStage: IncidentContextStageSchema.parse({ status: 'gathering' }),
+      suspiciousChangeStage: SuspiciousChangeDetectionStageSchema.parse({ status: 'detecting' }),
     });
     server.log.info({ incidentId: response.incidentId, mode }, 'Investigation accepted');
 
     setTimeout(() => {
       void (async () => {
         let contextStage: IncidentContextStage;
+        let suspiciousChangeStage: SuspiciousChangeDetectionStage;
         try {
           contextStage = await contextGatherer.gather(parsedRequest.data, {
             metadata: contextMetadata,
             mode,
             limits: contextLimits,
           });
-          incidents.set(response.incidentId, { status: 'processing', contextStage });
+          try {
+            suspiciousChangeStage = suspiciousChangeDetector.detect(contextStage);
+          } catch {
+            suspiciousChangeStage = unavailableSuspiciousChanges('DETECTION_INVALID');
+          }
+          incidents.set(response.incidentId, {
+            status: 'processing',
+            contextStage,
+            suspiciousChangeStage,
+          });
           server.log.info(
             {
               incidentId: response.incidentId,
@@ -515,12 +557,22 @@ export function buildServer(options: BuildServerOptions = {}) {
                 0,
               ),
               missingInformationCount: contextStage.missingInformation.length,
+              suspiciousChangeStatus: suspiciousChangeStage.status,
+              suspiciousChangeCandidateCount:
+                suspiciousChangeStage.status === 'completed'
+                  ? suspiciousChangeStage.candidates.length
+                  : 0,
             },
-            'Incident context gathered',
+            'Incident context gathered and suspicious changes classified',
           );
         } catch (error: unknown) {
           contextStage = failedIncidentContext(error);
-          incidents.set(response.incidentId, { status: 'processing', contextStage });
+          suspiciousChangeStage = unavailableSuspiciousChanges('CONTEXT_UNAVAILABLE');
+          incidents.set(response.incidentId, {
+            status: 'processing',
+            contextStage,
+            suspiciousChangeStage,
+          });
           server.log.warn(
             {
               incidentId: response.incidentId,
@@ -538,7 +590,12 @@ export function buildServer(options: BuildServerOptions = {}) {
             metadata,
             limits,
           });
-          incidents.set(response.incidentId, { status: 'completed', contextStage, report });
+          incidents.set(response.incidentId, {
+            status: 'completed',
+            contextStage,
+            suspiciousChangeStage,
+            report,
+          });
           server.log.info(
             {
               incidentId: response.incidentId,
@@ -598,9 +655,15 @@ export function buildServer(options: BuildServerOptions = {}) {
                 incidentId,
                 status: 'completed',
                 contextStage: incident.contextStage,
+                suspiciousChangeStage: incident.suspiciousChangeStage,
                 report: incident.report,
               }
-            : { incidentId, status: 'processing', contextStage: incident.contextStage },
+            : {
+                incidentId,
+                status: 'processing',
+                contextStage: incident.contextStage,
+                suspiciousChangeStage: incident.suspiciousChangeStage,
+              },
         ),
       );
     },

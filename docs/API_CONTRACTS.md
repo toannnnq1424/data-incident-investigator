@@ -351,8 +351,8 @@ Validation response `400`:
 accepted response remains compatible with Slice 1.1: it always uses HTTP `202` and `processing` even
 though fixture investigation begins immediately in the background.
 
-The accepted body intentionally remains unchanged in Slice 3.1. Clients retrieve the additive
-parse-and-gather lifecycle through `GET /incidents/:incidentId`.
+The accepted body intentionally remains unchanged through Slice 3.2. Clients retrieve the additive
+parse-and-gather and suspicious-change lifecycles through `GET /incidents/:incidentId`.
 
 ### `GET /incidents/:incidentId`
 
@@ -368,6 +368,9 @@ Processing response `200`:
   "status": "processing",
   "contextStage": {
     "status": "gathering"
+  },
+  "suspiciousChangeStage": {
+    "status": "detecting"
   }
 }
 ```
@@ -464,6 +467,57 @@ URL, token, Authorization header, GraphQL/error body, exception, and stack are n
 and DataHub modes use the same health/search/lineage/recent-change interfaces; default execution makes
 at most four calls under one two-second timeout/AbortSignal, with no retry or unbounded fan-out.
 
+`suspiciousChangeStage` is additive and follows context ownership. While context is `gathering`, it is
+`detecting`. A failed context produces a safe `unavailable` stage with code `CONTEXT_UNAVAILABLE`; the
+detector is not invoked. A completed context synchronously produces a pure `completed` or
+`insufficient` result. Unexpected detection validation becomes safe `DETECTION_INVALID`; it does not
+expose a provider URL, token, payload, exception, or stack and does not prevent the legacy report from
+completing.
+
+A completed result has at most five unique candidates. Every candidate exactly resolves to a change
+fact and entity URN/name in the completed context and copies only normalized factual fields:
+
+```json
+{
+  "status": "completed",
+  "candidates": [
+    {
+      "changeId": "change-removed-gross-revenue",
+      "entityUrn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,raw.orders,PROD)",
+      "entityName": "raw.orders",
+      "category": "schema",
+      "operation": "removed",
+      "observedAt": "2026-07-18T07:45:00.000Z",
+      "summary": "Column gross_revenue was removed from raw.orders.",
+      "field": "gross_revenue",
+      "signals": [
+        {
+          "code": "incident_window",
+          "label": "Change was observed within the supplied incident window."
+        },
+        {
+          "code": "upstream_lineage",
+          "label": "Change belongs to an adapter-evidenced upstream entity."
+        },
+        {
+          "code": "disruptive_operation",
+          "label": "Change operation is removed or modified."
+        }
+      ]
+    }
+  ],
+  "missingInformation": []
+}
+```
+
+Allowed signal codes are `category_intent_match`, `incident_window`, `selected_entity`,
+`upstream_lineage`, and `disruptive_operation`, with shared fixed factual labels and ordering. Results
+are ranked by fixed bounded signal priority, then newest timestamp and change ID; no numeric score or
+confidence crosses the boundary. An `insufficient` result contains `candidates: []` and at least one
+missing-information item explaining absent incident time/symptom, empty/truncated history, no matching
+incident-specific signal, or output-cap omission. Neither result permits hypothesis, confidence,
+root-cause, recommendation, remediation, or raw-provider fields.
+
 Completed response `200` (legacy report values abridged; context contracts described above):
 
 ```json
@@ -487,6 +541,16 @@ Completed response `200` (legacy report values abridged; context contracts descr
       {
         "code": "entity_not_found",
         "message": "The metadata source returned no candidate entity for the normalized intake."
+      }
+    ]
+  },
+  "suspiciousChangeStage": {
+    "status": "insufficient",
+    "candidates": [],
+    "missingInformation": [
+      {
+        "code": "recent_changes_not_found",
+        "message": "No recent metadata change facts were available for deterministic detection."
       }
     ]
   },

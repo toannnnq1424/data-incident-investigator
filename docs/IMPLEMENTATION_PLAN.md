@@ -1395,6 +1395,130 @@ affected failures):
   `git status --short --branch` before the single conventional commit; only final status is repeated
   after commit/push.
 
+### Slice 3.2 — Suspicious-change detection
+
+Status: Level C passed locally on `codex/phase-3-2-suspicious-changes` from exact Slice 3.1 final commit
+`c0d765ed57b00c17d957eb62e3e84984897af48f`.
+
+Objective: after a factual `IncidentContextStage` completes, classify and display a bounded,
+deterministically ordered list of recent metadata changes that have transparent signals of potential
+relevance to the incident intent. Preserve the existing context and completed-report lifecycle without
+declaring a cause, generating or scoring hypotheses, synthesizing an evidence chain, or recommending
+remediation.
+
+Minimum files:
+
+- `packages/shared-types/src/index.ts` and `tests/integration/contracts.test.ts` for strict
+  suspicious-change candidate/result/lifecycle schemas, allowlisted signal codes and labels, hard
+  bounds, deterministic ordering, forbidden-field rejection, and context cross-reference invariants.
+- `packages/agent-core/src/index.ts` and
+  `tests/integration/suspicious-change-detector.test.ts` for a pure detector over a validated completed
+  context, bounded token/category rules, incident-window and known-lineage signals, stable rank/dedup,
+  hard-cap behavior, insufficient outcomes, and explicit zero-provider-call proof.
+- `apps/api/src/index.ts` and `tests/integration/incidents-api.test.ts` for additive
+  `suspiciousChangeStage` lifecycle composition after context gathering, safe unavailable behavior,
+  no extra provider calls, and preserved processing/completed report compatibility.
+- `apps/web/src/App.tsx`, `apps/web/src/styles.css`, and
+  `tests/integration/web-suspicious-changes.test.ts` for a compact accessible loading/completed/
+  insufficient/unavailable presentation, factual signal reasons, non-causal copy, and existing
+  stale-request ownership.
+- `tests/integration/incident-context-gatherer.test.ts`,
+  `tests/integration/investigation-runner.test.ts`, `tests/integration/web-incident-context.test.ts`,
+  `tests/integration/web-report.test.ts`, and `tests/e2e/report-display.spec.mjs` for direct regression
+  coverage and exactly one combined fixture browser flow.
+- `docs/AGENT_DESIGN.md`, `docs/API_CONTRACTS.md`, `docs/DATA_MODEL.md`,
+  `docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md`, and `docs/SESSION_LOG.md` for the durable
+  contract, validation evidence, deferred scope, and next-slice handoff. The repository map remains
+  unchanged because no entrypoint or directory moves.
+
+Acceptance criteria:
+
+- The pure detector accepts only a validated completed context and performs no adapter, DataHub,
+  fixture, network, model, Stitch, or retry call. Gathering, failed, malformed, or empty factual input
+  cannot become a fabricated suspicious-change candidate.
+- Every candidate references an exact recent-change ID and entity URN already present in the completed
+  context, copies only normalized factual labels, and includes only ordered allowlisted signals. Entity
+  references resolve to the selected candidate or returned lineage graph; duplicate change IDs are
+  rejected or deduplicated before output.
+- Candidate eligibility uses only bounded deterministic category-term, supplied incident-window,
+  selected/upstream entity, and removed/modified operation rules. Internal rank weights and stable
+  timestamp/change-ID tie-breaks are documented, hard bounded, and never exposed as hypothesis
+  confidence or made model-overridable.
+- At most five candidates cross the boundary. Missing incident time or symptom reduces available
+  signals and is explicit; empty recent history or no qualifying incident-specific signal yields
+  `insufficient` with no candidate instead of an invented match. Context truncation and candidate-cap
+  omissions remain explicit.
+- The canonical fixture marks exact change `change-removed-gross-revenue` on adapter-evidenced upstream
+  `raw.orders` as potentially relevant with transparent incident-window, upstream-lineage, and
+  disruptive-operation signals. API/UI copy says potentially relevant or suspicious signal and never
+  says the change caused the incident or is the root cause.
+- Incident retrieval adds a schema-valid suspicious-change lifecycle after context gathering. A
+  gathering context remains `detecting`; a safe failed context becomes `unavailable` without invoking
+  the detector or leaking provider details; a completed context yields `completed` or `insufficient`.
+  The accepted `202` body and legacy processing/completed report remain compatible.
+- Focused contract/detector/API/web/regression tests, five affected typechecks and builds, and exactly
+  one combined browser flow pass with accessible headings/list/status, clean console, no horizontal
+  overflow, the three-minute bound, and clean selected-port/process teardown.
+
+Deferred: hypothesis generation or scoring, numeric root-cause confidence, evidence-chain synthesis,
+impact analysis, remediation/fallback reasoning, controller work, Slice 3.3, live DataHub smoke,
+additional providers, authentication, persistence, model integration, dependency changes, UI redesign,
+and Level D validation.
+
+Exact Level C commands (run as one coherent sequence after implementation; rerun only a classified
+affected failure):
+
+- `pnpm exec prettier --write packages/shared-types/src/index.ts packages/agent-core/src/index.ts apps/api/src/index.ts apps/web/src/App.tsx apps/web/src/styles.css tests/integration/contracts.test.ts tests/integration/suspicious-change-detector.test.ts tests/integration/incident-context-gatherer.test.ts tests/integration/investigation-runner.test.ts tests/integration/incidents-api.test.ts tests/integration/web-incident-context.test.ts tests/integration/web-suspicious-changes.test.ts tests/integration/web-report.test.ts tests/e2e/report-display.spec.mjs docs/AGENT_DESIGN.md docs/API_CONTRACTS.md docs/DATA_MODEL.md docs/IMPLEMENTATION_PLAN.md docs/KNOWN_ISSUES.md docs/SESSION_LOG.md`
+- `pnpm exec prettier --check packages/shared-types/src/index.ts packages/agent-core/src/index.ts apps/api/src/index.ts apps/web/src/App.tsx apps/web/src/styles.css tests/integration/contracts.test.ts tests/integration/suspicious-change-detector.test.ts tests/integration/incident-context-gatherer.test.ts tests/integration/investigation-runner.test.ts tests/integration/incidents-api.test.ts tests/integration/web-incident-context.test.ts tests/integration/web-suspicious-changes.test.ts tests/integration/web-report.test.ts tests/e2e/report-display.spec.mjs docs/AGENT_DESIGN.md docs/API_CONTRACTS.md docs/DATA_MODEL.md docs/IMPLEMENTATION_PLAN.md docs/KNOWN_ISSUES.md docs/SESSION_LOG.md`
+- `pnpm exec eslint packages/shared-types/src packages/agent-core/src apps/api/src apps/web/src tests/integration/contracts.test.ts tests/integration/suspicious-change-detector.test.ts tests/integration/incident-context-gatherer.test.ts tests/integration/investigation-runner.test.ts tests/integration/incidents-api.test.ts tests/integration/web-incident-context.test.ts tests/integration/web-suspicious-changes.test.ts tests/integration/web-report.test.ts tests/e2e/report-display.spec.mjs`
+- `pnpm --filter @dii/shared-types typecheck`
+- `pnpm --filter @dii/datahub-client typecheck`
+- `pnpm --filter @dii/agent-core typecheck`
+- `pnpm --filter @dii/api typecheck`
+- `pnpm --filter @dii/web typecheck`
+- `pnpm exec vitest run tests/integration/contracts.test.ts tests/integration/fixture-adapter.test.ts tests/integration/incident-context-gatherer.test.ts tests/integration/suspicious-change-detector.test.ts tests/integration/investigation-runner.test.ts tests/integration/incidents-api.test.ts tests/integration/web-incident-context.test.ts tests/integration/web-suspicious-changes.test.ts tests/integration/web-report.test.ts`
+- `pnpm --filter @dii/shared-types --filter @dii/datahub-client --filter @dii/agent-core --filter @dii/api --filter @dii/web build`
+- Exactly one `pnpm test:e2e:report` run proving fixture metadata tools -> incident context gathering/
+  completed facts -> exact suspicious-change candidate and signal reasons -> unchanged processing/
+  completed full report, plus focus/accessibility, clean console, responsive overflow, three-minute
+  duration, selected-port release, and launcher cleanup.
+- `git diff --check`, tracked-plus-untracked secret/conflict/generated-artifact scans, changed-file and
+  full scoped diff review, `git diff --stat`, `git diff --name-status`, ancestry review, and
+  `git status --short --branch` before the single conventional commit; only final status is repeated
+  after commit/push.
+
+Validation result on the Windows managed worktree, 2026-07-19:
+
+- The tracked bootstrap ran before repository work. The initial guessed legacy path was absent; the
+  tracked `scripts/bootstrap-worktree.ps1` then completed the frozen 259-package install and
+  supply-chain verification but reproduced the known fallback-pnpm failure to resolve root Prettier.
+  Prepending the verified bundled Node and root `.bin` paths only to the retry process completed the
+  bootstrap and static check without changing the bootstrap, manifest, or lockfile.
+- Changed-file Prettier write and check passed. Affected ESLint passed with no findings. All five
+  affected typechecks passed in one parallel sequence: shared-types, datahub-client, agent-core, API,
+  and web.
+- The first sandboxed targeted Vitest command stopped before test execution at the known managed-
+  worktree esbuild ancestor-directory denial. The exact scoped retry passed 9/9 files and 51/51 tests
+  in `7.29s`, covering strict bounds/references/forbidden fields, deterministic detection/rank/dedup/
+  cap, the exact canonical change, missing inputs/history, gathering/failed contexts, zero adapter
+  calls, API lifecycle/safe failures, web terminal/stale copy, context/report compatibility, and
+  resolved report evidence references.
+- All five affected production builds passed. The web build transformed 109 modules and completed in
+  `5.12s`; shared-types, datahub-client, agent-core, and API builds also completed successfully.
+- Exactly one `pnpm test:e2e:report` selected API `http://127.0.0.1:62812` and web
+  `http://127.0.0.1:62813`, then passed the combined metadata tools -> incident context gathering ->
+  completed factual context -> exact `change-removed-gross-revenue` candidate on upstream
+  `raw.orders` with `incident_window`, `upstream_lineage`, and `disruptive_operation` signals ->
+  unchanged completed/full report in `19622ms`. Accessible headings/list/time, resolved report
+  evidence references, clean console, desktop/mobile overflow, three-minute duration, selected-port
+  release, and launcher process cleanup assertions all passed.
+- Final review passed with exactly 17 intended files (15 tracked modifications and two focused new
+  tests). `git diff --check`, full scoped source/test/docs diff, name/stat, both required ancestry
+  checks, and conflict-marker, high-risk secret, debug/raw-provider, generated-path, manifest/lockfile,
+  untracked-file, branch, and worktree reviews found no unintended match or file. Repository structure
+  is unchanged, so `docs/REPOSITORY_MAP.md` remains untouched. Level D and live DataHub smoke were
+  intentionally not run.
+
 Slices: parse and gather; suspicious-change detection; evidence-linked hypothesis scoring; remediation
 and fallback. Completion requires fact/inference/missing-information separation and deterministic limits.
 

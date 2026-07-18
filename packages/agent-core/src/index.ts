@@ -12,6 +12,7 @@ import {
   INCIDENT_CONTEXT_MAX_CANDIDATES,
   INCIDENT_CONTEXT_MAX_CHANGE_ENTITIES,
   IncidentContextCompletedStageSchema,
+  IncidentSuspiciousChangeDetectionSchema,
   IncidentIntentSchema,
   IncidentRequestSchema,
   InvestigationReportSchema,
@@ -23,13 +24,23 @@ import {
   MetadataHealthResponseSchema,
   MetadataLineageResponseSchema,
   MetadataRecentChangesResponseSchema,
+  SUSPICIOUS_CHANGE_MAX_CANDIDATES,
+  SUSPICIOUS_CHANGE_SIGNAL_LABELS,
+  SUSPICIOUS_CHANGE_SIGNAL_ORDER,
+  SUSPICIOUS_CHANGE_SIGNAL_WEIGHTS,
   type Evidence,
   type IncidentContextCompletedStage,
   type IncidentContextMissingInformation,
   type IncidentIntent,
   type IncidentRequest,
   type InvestigationReport,
+  type MetadataRecentChangeCategory,
   type MetadataSourceMode,
+  type SuspiciousChangeCandidate,
+  type SuspiciousChangeDetectionResult,
+  type SuspiciousChangeMissingInformation,
+  type SuspiciousChangeSignal,
+  type SuspiciousChangeSignalCode,
 } from '@dii/shared-types';
 
 export interface IncidentContextGatheringLimits {
@@ -344,6 +355,203 @@ export class DeterministicIncidentContextGatherer implements IncidentContextGath
       },
       missingInformation,
     });
+  }
+}
+
+export interface SuspiciousChangeDetector {
+  detect(contextStage: IncidentContextCompletedStage): SuspiciousChangeDetectionResult;
+}
+
+const suspiciousChangeCategoryTerms: Readonly<
+  Record<MetadataRecentChangeCategory, readonly string[]>
+> = Object.freeze({
+  schema: ['schema', 'column', 'columns', 'field', 'fields', 'type', 'types'],
+  ownership: ['owner', 'ownership', 'steward'],
+  tag: ['tag', 'tags', 'classification'],
+  domain: ['domain'],
+  documentation: ['documentation', 'description', 'docs'],
+  glossary: ['glossary', 'term', 'terms'],
+  relationship: ['relationship', 'lineage', 'upstream', 'downstream', 'dependency'],
+  'structured-property': ['property', 'properties'],
+  application: ['application', 'app'],
+  'asset-membership': ['asset', 'collection', 'membership'],
+  pipeline: ['pipeline', 'job', 'jobs', 'refresh', 'stale', 'delay', 'delayed', 'ingestion'],
+});
+
+const suspiciousChangeMaxIntentTokens = 128;
+
+function boundedIntentTokens(contextStage: IncidentContextCompletedStage) {
+  const tokens = [contextStage.intent.question, ...contextStage.intent.symptoms]
+    .join(' ')
+    .toLowerCase()
+    .match(/[a-z0-9]+(?:[-_][a-z0-9]+)*/g);
+  return new Set((tokens ?? []).slice(0, suspiciousChangeMaxIntentTokens));
+}
+
+function suspiciousChangeSignal(code: SuspiciousChangeSignalCode): SuspiciousChangeSignal {
+  return {
+    code,
+    label: SUSPICIOUS_CHANGE_SIGNAL_LABELS[code],
+  };
+}
+
+function compareSuspiciousCandidates(
+  left: SuspiciousChangeCandidate,
+  right: SuspiciousChangeCandidate,
+) {
+  const leftPriority = left.signals.reduce(
+    (total, signal) => total + SUSPICIOUS_CHANGE_SIGNAL_WEIGHTS[signal.code],
+    0,
+  );
+  const rightPriority = right.signals.reduce(
+    (total, signal) => total + SUSPICIOUS_CHANGE_SIGNAL_WEIGHTS[signal.code],
+    0,
+  );
+  if (leftPriority !== rightPriority) {
+    return rightPriority - leftPriority;
+  }
+  if (left.observedAt !== right.observedAt) {
+    return left.observedAt > right.observedAt ? -1 : 1;
+  }
+  return left.changeId < right.changeId ? -1 : left.changeId > right.changeId ? 1 : 0;
+}
+
+function addSuspiciousChangeMissingInformation(
+  missingInformation: SuspiciousChangeMissingInformation[],
+  item: SuspiciousChangeMissingInformation,
+) {
+  if (!missingInformation.some((existing) => existing.code === item.code)) {
+    missingInformation.push(item);
+  }
+}
+
+export class DeterministicSuspiciousChangeDetector implements SuspiciousChangeDetector {
+  detect(contextStage: IncidentContextCompletedStage): SuspiciousChangeDetectionResult {
+    const parsedContext = IncidentContextCompletedStageSchema.parse(contextStage);
+    const missingInformation: SuspiciousChangeMissingInformation[] = [];
+    if (parsedContext.intent.timeWindow.basis !== 'incident_time') {
+      addSuspiciousChangeMissingInformation(missingInformation, {
+        code: 'incident_time_not_supplied',
+        message: 'No incident time was supplied, so an incident-window signal was not assigned.',
+      });
+    }
+    if (parsedContext.intent.symptoms.length === 0) {
+      addSuspiciousChangeMissingInformation(missingInformation, {
+        code: 'symptom_not_supplied',
+        message: 'No symptom was supplied; category matching used only bounded question terms.',
+      });
+    }
+    if (parsedContext.facts.recentChanges.some((response) => response.truncated)) {
+      addSuspiciousChangeMissingInformation(missingInformation, {
+        code: 'context_changes_truncated',
+        message: 'The gathered recent-change facts were truncated by an existing context bound.',
+      });
+    }
+
+    const changesById = new Map(
+      parsedContext.facts.recentChanges.flatMap((response) =>
+        response.changes.map((change) => [change.id, change] as const),
+      ),
+    );
+    if (changesById.size === 0) {
+      addSuspiciousChangeMissingInformation(missingInformation, {
+        code: 'recent_changes_not_found',
+        message: 'No recent metadata change facts were available for deterministic detection.',
+      });
+    }
+
+    const intentTokens = boundedIntentTokens(parsedContext);
+    const lineageNodes = new Map(
+      parsedContext.facts.lineage?.nodes.map((node) => [node.urn, node] as const) ?? [],
+    );
+    const incidentEndTime = parsedContext.intent.timeWindow.endTime;
+    const incidentStartTime = incidentEndTime
+      ? Date.parse(incidentEndTime) - parsedContext.intent.timeWindow.hours * 60 * 60 * 1_000
+      : undefined;
+    const candidates: SuspiciousChangeCandidate[] = [];
+
+    for (const change of changesById.values()) {
+      const signals: SuspiciousChangeSignal[] = [];
+      if (suspiciousChangeCategoryTerms[change.category].some((term) => intentTokens.has(term))) {
+        signals.push(suspiciousChangeSignal('category_intent_match'));
+      }
+      const observedAt = Date.parse(change.timestamp);
+      if (
+        parsedContext.intent.timeWindow.basis === 'incident_time' &&
+        incidentEndTime &&
+        incidentStartTime !== undefined &&
+        observedAt >= incidentStartTime &&
+        observedAt <= Date.parse(incidentEndTime)
+      ) {
+        signals.push(suspiciousChangeSignal('incident_window'));
+      }
+      if (change.entityUrn === parsedContext.facts.selectedEntity?.urn) {
+        signals.push(suspiciousChangeSignal('selected_entity'));
+      } else if ((lineageNodes.get(change.entityUrn)?.depth ?? 0) > 0) {
+        signals.push(suspiciousChangeSignal('upstream_lineage'));
+      }
+      if (change.operation === 'removed' || change.operation === 'modified') {
+        signals.push(suspiciousChangeSignal('disruptive_operation'));
+      }
+      signals.sort(
+        (left, right) =>
+          SUSPICIOUS_CHANGE_SIGNAL_ORDER.indexOf(left.code) -
+          SUSPICIOUS_CHANGE_SIGNAL_ORDER.indexOf(right.code),
+      );
+
+      const hasIncidentSignal = signals.some(
+        (signal) => signal.code === 'category_intent_match' || signal.code === 'incident_window',
+      );
+      const entityName = lineageNodes.get(change.entityUrn)?.name;
+      if (!hasIncidentSignal || signals.length < 2 || !entityName) {
+        continue;
+      }
+
+      candidates.push({
+        changeId: change.id,
+        entityUrn: change.entityUrn,
+        entityName,
+        category: change.category,
+        operation: change.operation,
+        observedAt: change.timestamp,
+        summary: change.summary,
+        ...(change.field ? { field: change.field } : {}),
+        signals,
+      });
+    }
+
+    candidates.sort(compareSuspiciousCandidates);
+    if (candidates.length > SUSPICIOUS_CHANGE_MAX_CANDIDATES) {
+      addSuspiciousChangeMissingInformation(missingInformation, {
+        code: 'candidate_limit_reached',
+        message: 'Additional qualifying changes were omitted by the five-candidate output cap.',
+      });
+    }
+    const boundedCandidates = candidates.slice(0, SUSPICIOUS_CHANGE_MAX_CANDIDATES);
+    if (boundedCandidates.length === 0) {
+      addSuspiciousChangeMissingInformation(missingInformation, {
+        code: 'no_matching_signals',
+        message: 'No recent change had enough deterministic incident-specific signals.',
+      });
+    }
+
+    const result =
+      boundedCandidates.length > 0
+        ? {
+            status: 'completed' as const,
+            candidates: boundedCandidates,
+            missingInformation,
+          }
+        : {
+            status: 'insufficient' as const,
+            candidates: [],
+            missingInformation,
+          };
+
+    return IncidentSuspiciousChangeDetectionSchema.parse({
+      contextStage: parsedContext,
+      result,
+    }).result;
   }
 }
 

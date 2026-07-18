@@ -1574,3 +1574,73 @@ Managed Windows fallback-pnpm không tự resolve root binaries và sandbox esbu
 ### Exact next step
 
 Rà final diff/secret/generated/worktree, tạo conventional commit cho Slice 3.1, push branch `codex/phase-3-1-parse-gather-20260719-e7b053c`, mở Draft PR base `main`, rồi theo dõi đúng một CI run tới terminal. Sau khi Slice 3.1 PR/CI hoàn tất, hand off Phase 3 Slice 3.2 — suspicious-change detection; không triển khai slice đó trong task này.
+
+## 2026-07-19 — Phase 3 Slice 3.2 suspicious-change detection
+
+### Objective
+
+Từ exact Slice 3.1 final commit `c0d765ed57b00c17d957eb62e3e84984897af48f`, phát hiện và hiển thị
+danh sách bounded, deterministic các recent metadata changes có tín hiệu potentially relevant đối với
+incident intent. Không tạo hypothesis, confidence, causal/root-cause claim, evidence chain hoặc
+remediation.
+
+### Completed
+
+Đã chạy tracked Windows bootstrap với workaround `PATH` process-scoped cho known fallback-pnpm shim,
+xác minh worktree sạch, exact HEAD/ancestry và tạo branch duy nhất
+`codex/phase-3-2-suspicious-changes`. Đã ghi persistent plan trước source changes. Shared contract,
+pure agent-core detector, additive API lifecycle, compact web presentation và focused/regression/E2E
+coverage đã được triển khai. Level C đã xanh; publication evidence đang chờ.
+
+### Files changed
+
+Shared types; agent-core; API; web App/styles; contract, detector, API, web và combined browser tests;
+cùng `AGENT_DESIGN.md`, `API_CONTRACTS.md`, `DATA_MODEL.md`, `IMPLEMENTATION_PLAN.md`,
+`KNOWN_ISSUES.md` và entry này. Không đổi provider/fixture, manifest, lockfile, dependency hoặc cấu trúc
+repository.
+
+### Decisions
+
+Detector chỉ nhận một validated completed context và không nhận adapter. Tín hiệu allowlist là bounded
+category-intent match, supplied incident window, selected/upstream entity và removed/modified operation;
+internal weights chỉ phục vụ deterministic ordering, không xuất ra như confidence. Output cap là năm,
+mọi candidate resolve exact change/entity fact; gathering/failed context không chạy detector.
+
+### Validation performed
+
+- Changed-file Prettier write/check và affected ESLint PASS. Năm affected typechecks PASS trong một
+  parallel sequence: shared-types, datahub-client, agent-core, API và web.
+- Sandboxed targeted Vitest bị chặn trước test bởi known esbuild ancestor-path denial. Exact scoped
+  retry PASS 9 files, `51/51` tests trong `7.29s`, gồm strict output/reference/forbidden-field contract,
+  deterministic rank/dedup/cap, canonical hit, insufficient/missing/failed/gathering behavior, zero
+  adapter calls, API lifecycle/safe error, web stale/accessibility copy và report/context regressions.
+- Năm affected builds PASS; web transformed 109 modules và build trong `5.12s`.
+- Đúng một `pnpm test:e2e:report` PASS `19622ms` trên API `62812`, web `62813`: metadata tools →
+  context gathering/completed facts → exact `change-removed-gross-revenue` trên upstream `raw.orders`
+  với `incident_window`, `upstream_lineage`, `disruptive_operation` → unchanged completed/full report.
+  Clean console, semantic headings/list/time, resolved evidence refs, desktop/mobile overflow,
+  three-minute bound, selected-port release và launcher cleanup đều PASS.
+- Final review PASS với đúng 17 intended files. `git diff --check`, full scoped diff/name/stat, hai
+  ancestry checks, conflict-marker, high-risk secret, debug/raw-provider, generated path,
+  manifest/lockfile, untracked-file, branch và worktree review không tìm thấy unintended match/file.
+  Repository structure không đổi nên không sửa repository map. Không chạy Level D hoặc live DataHub
+  smoke.
+
+### Validation intentionally deferred
+
+Level D, live DataHub smoke, hypothesis generation/scoring, evidence-chain synthesis, impact analysis,
+remediation/fallback, controller, model integration, auth/persistence, provider/dependency expansion và
+Slice 3.3.
+
+### Known issues
+
+Host không có `gh`; handoff cho phép dùng browser session đã đăng nhập để publish. Known managed
+Windows fallback-pnpm workspace-binary và sandbox esbuild ancestor-path limitations có process-scoped
+workaround, không yêu cầu repo change.
+
+### Exact next step
+
+Format/check final docs evidence, review diff/secret/generated/ancestry, tạo commit
+`feat: detect suspicious metadata changes`, push branch, mở stacked Draft PR base
+`codex/phase-3-1-parse-gather-20260719-e7b053c`, rồi theo dõi đúng một final-HEAD CI run tới terminal và
+xác minh conflict-free/merge-ready. Không bắt đầu Slice 3.3.

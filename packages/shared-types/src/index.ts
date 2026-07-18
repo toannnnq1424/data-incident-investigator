@@ -628,6 +628,328 @@ export const IncidentContextStageSchema = z.discriminatedUnion('status', [
   IncidentContextFailedStageSchema,
 ]);
 
+export const SUSPICIOUS_CHANGE_MAX_CANDIDATES = 5;
+
+export const SUSPICIOUS_CHANGE_SIGNAL_ORDER = [
+  'category_intent_match',
+  'incident_window',
+  'selected_entity',
+  'upstream_lineage',
+  'disruptive_operation',
+] as const;
+
+export const SUSPICIOUS_CHANGE_SIGNAL_LABELS = {
+  category_intent_match: 'Change category matches bounded incident terms.',
+  incident_window: 'Change was observed within the supplied incident window.',
+  selected_entity: 'Change belongs to the adapter-selected entity.',
+  upstream_lineage: 'Change belongs to an adapter-evidenced upstream entity.',
+  disruptive_operation: 'Change operation is removed or modified.',
+} as const;
+
+export const SuspiciousChangeSignalCodeSchema = z.enum(SUSPICIOUS_CHANGE_SIGNAL_ORDER);
+
+export const SuspiciousChangeSignalSchema = z
+  .object({
+    code: SuspiciousChangeSignalCodeSchema,
+    label: z.string().trim().min(1).max(120),
+  })
+  .strict()
+  .superRefine((signal, context) => {
+    if (signal.label !== SUSPICIOUS_CHANGE_SIGNAL_LABELS[signal.code]) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Suspicious-change signal labels must match the shared allowlist.',
+        path: ['label'],
+      });
+    }
+  });
+
+export const SUSPICIOUS_CHANGE_SIGNAL_WEIGHTS = {
+  category_intent_match: 4,
+  incident_window: 3,
+  selected_entity: 2,
+  upstream_lineage: 2,
+  disruptive_operation: 2,
+} as const;
+
+export const SuspiciousChangeCandidateSchema = z
+  .object({
+    changeId: z.string().trim().min(1).max(200),
+    entityUrn: z.string().trim().min(1).max(1_000),
+    entityName: z.string().trim().min(1).max(300),
+    category: MetadataRecentChangeCategorySchema,
+    operation: MetadataRecentChangeOperationSchema,
+    observedAt: CanonicalUtcTimestampSchema,
+    summary: z.string().trim().min(1).max(500),
+    field: z.string().trim().min(1).max(300).optional(),
+    signals: z.array(SuspiciousChangeSignalSchema).min(2).max(5),
+  })
+  .strict()
+  .superRefine((candidate, context) => {
+    const seenSignals = new Set<string>();
+    let previousSignalIndex = -1;
+    candidate.signals.forEach((signal, index) => {
+      const signalIndex = SUSPICIOUS_CHANGE_SIGNAL_ORDER.indexOf(signal.code);
+      if (seenSignals.has(signal.code)) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Suspicious-change signals must be unique.',
+          path: ['signals', index, 'code'],
+        });
+      }
+      if (signalIndex <= previousSignalIndex) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Suspicious-change signals must follow the shared deterministic order.',
+          path: ['signals', index],
+        });
+      }
+      seenSignals.add(signal.code);
+      previousSignalIndex = signalIndex;
+    });
+    if (!seenSignals.has('category_intent_match') && !seenSignals.has('incident_window')) {
+      context.addIssue({
+        code: 'custom',
+        message: 'A suspicious-change candidate requires an incident-specific signal.',
+        path: ['signals'],
+      });
+    }
+  });
+
+export const SuspiciousChangeMissingInformationCodeSchema = z.enum([
+  'incident_time_not_supplied',
+  'symptom_not_supplied',
+  'recent_changes_not_found',
+  'no_matching_signals',
+  'context_changes_truncated',
+  'candidate_limit_reached',
+]);
+
+export const SuspiciousChangeMissingInformationSchema = z
+  .object({
+    code: SuspiciousChangeMissingInformationCodeSchema,
+    message: z.string().trim().min(1).max(300),
+  })
+  .strict();
+
+function compareSuspiciousChangeCandidates(
+  left: z.infer<typeof SuspiciousChangeCandidateSchema>,
+  right: z.infer<typeof SuspiciousChangeCandidateSchema>,
+) {
+  const leftPriority = left.signals.reduce(
+    (total, signal) => total + SUSPICIOUS_CHANGE_SIGNAL_WEIGHTS[signal.code],
+    0,
+  );
+  const rightPriority = right.signals.reduce(
+    (total, signal) => total + SUSPICIOUS_CHANGE_SIGNAL_WEIGHTS[signal.code],
+    0,
+  );
+  if (leftPriority !== rightPriority) {
+    return rightPriority - leftPriority;
+  }
+  if (left.observedAt !== right.observedAt) {
+    return left.observedAt > right.observedAt ? -1 : 1;
+  }
+  return left.changeId < right.changeId ? -1 : left.changeId > right.changeId ? 1 : 0;
+}
+
+function refineSuspiciousChangeResult(
+  result: {
+    candidates: z.infer<typeof SuspiciousChangeCandidateSchema>[];
+    missingInformation: z.infer<typeof SuspiciousChangeMissingInformationSchema>[];
+  },
+  context: z.RefinementCtx,
+) {
+  const changeIds = new Set<string>();
+  result.candidates.forEach((candidate, index) => {
+    if (changeIds.has(candidate.changeId)) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Suspicious-change candidate IDs must be unique.',
+        path: ['candidates', index, 'changeId'],
+      });
+    }
+    changeIds.add(candidate.changeId);
+    const previous = result.candidates[index - 1];
+    if (previous && compareSuspiciousChangeCandidates(previous, candidate) > 0) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Suspicious-change candidates must use deterministic priority order.',
+        path: ['candidates', index],
+      });
+    }
+  });
+
+  const missingCodes = new Set<string>();
+  result.missingInformation.forEach((item, index) => {
+    if (missingCodes.has(item.code)) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Suspicious-change missing-information codes must be unique.',
+        path: ['missingInformation', index, 'code'],
+      });
+    }
+    missingCodes.add(item.code);
+  });
+}
+
+export const SuspiciousChangeDetectionCompletedSchema = z
+  .object({
+    status: z.literal('completed'),
+    candidates: z
+      .array(SuspiciousChangeCandidateSchema)
+      .min(1)
+      .max(SUSPICIOUS_CHANGE_MAX_CANDIDATES),
+    missingInformation: z.array(SuspiciousChangeMissingInformationSchema).max(6),
+  })
+  .strict()
+  .superRefine(refineSuspiciousChangeResult);
+
+export const SuspiciousChangeDetectionInsufficientSchema = z
+  .object({
+    status: z.literal('insufficient'),
+    candidates: z.array(SuspiciousChangeCandidateSchema).max(0),
+    missingInformation: z.array(SuspiciousChangeMissingInformationSchema).min(1).max(6),
+  })
+  .strict()
+  .superRefine(refineSuspiciousChangeResult);
+
+export const SuspiciousChangeDetectionResultSchema = z.discriminatedUnion('status', [
+  SuspiciousChangeDetectionCompletedSchema,
+  SuspiciousChangeDetectionInsufficientSchema,
+]);
+
+function refineSuspiciousChangeReferences(
+  value: {
+    contextStage: IncidentContextCompletedStage;
+    result: z.infer<typeof SuspiciousChangeDetectionResultSchema>;
+  },
+  context: z.RefinementCtx,
+) {
+  const changesById = new Map(
+    value.contextStage.facts.recentChanges.flatMap((response) =>
+      response.changes.map((change) => [change.id, change] as const),
+    ),
+  );
+  const entityNames = new Map([
+    ...value.contextStage.facts.candidateEntities.map(
+      (entity) => [entity.urn, entity.name] as const,
+    ),
+    ...(value.contextStage.facts.lineage?.nodes.map(
+      (entity) => [entity.urn, entity.name] as const,
+    ) ?? []),
+  ]);
+  const lineageDepths = new Map(
+    value.contextStage.facts.lineage?.nodes.map((entity) => [entity.urn, entity.depth] as const) ??
+      [],
+  );
+
+  value.result.candidates.forEach((candidate, index) => {
+    const change = changesById.get(candidate.changeId);
+    if (
+      !change ||
+      change.entityUrn !== candidate.entityUrn ||
+      change.category !== candidate.category ||
+      change.operation !== candidate.operation ||
+      change.timestamp !== candidate.observedAt ||
+      change.summary !== candidate.summary ||
+      change.field !== candidate.field
+    ) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Suspicious-change candidates must exactly reference a retrieved change fact.',
+        path: ['result', 'candidates', index],
+      });
+    }
+    if (entityNames.get(candidate.entityUrn) !== candidate.entityName) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Suspicious-change entity labels must resolve to the completed context graph.',
+        path: ['result', 'candidates', index, 'entityName'],
+      });
+    }
+
+    const signalCodes = new Set(candidate.signals.map((signal) => signal.code));
+    if (
+      signalCodes.has('selected_entity') &&
+      candidate.entityUrn !== value.contextStage.facts.selectedEntity?.urn
+    ) {
+      context.addIssue({
+        code: 'custom',
+        message: 'The selected-entity signal must reference the adapter-selected entity.',
+        path: ['result', 'candidates', index, 'signals'],
+      });
+    }
+    if (signalCodes.has('upstream_lineage') && (lineageDepths.get(candidate.entityUrn) ?? 0) < 1) {
+      context.addIssue({
+        code: 'custom',
+        message: 'The upstream-lineage signal must reference a returned upstream node.',
+        path: ['result', 'candidates', index, 'signals'],
+      });
+    }
+    if (
+      signalCodes.has('disruptive_operation') &&
+      !['removed', 'modified'].includes(candidate.operation)
+    ) {
+      context.addIssue({
+        code: 'custom',
+        message: 'The disruptive-operation signal requires a removed or modified fact.',
+        path: ['result', 'candidates', index, 'signals'],
+      });
+    }
+    if (signalCodes.has('incident_window')) {
+      const endTime = value.contextStage.intent.timeWindow.endTime;
+      const startTime = endTime
+        ? Date.parse(endTime) - value.contextStage.intent.timeWindow.hours * 60 * 60 * 1_000
+        : Number.NaN;
+      const observedAt = Date.parse(candidate.observedAt);
+      if (
+        value.contextStage.intent.timeWindow.basis !== 'incident_time' ||
+        !endTime ||
+        observedAt < startTime ||
+        observedAt > Date.parse(endTime)
+      ) {
+        context.addIssue({
+          code: 'custom',
+          message:
+            'The incident-window signal requires a fact inside the supplied incident window.',
+          path: ['result', 'candidates', index, 'signals'],
+        });
+      }
+    }
+  });
+}
+
+export const IncidentSuspiciousChangeDetectionSchema = z
+  .object({
+    contextStage: IncidentContextCompletedStageSchema,
+    result: SuspiciousChangeDetectionResultSchema,
+  })
+  .strict()
+  .superRefine(refineSuspiciousChangeReferences);
+
+export const SuspiciousChangeDetectionUnavailableCodeSchema = z.enum([
+  'CONTEXT_UNAVAILABLE',
+  'DETECTION_INVALID',
+]);
+
+export const SuspiciousChangeDetectionStageSchema = z.union([
+  z.object({ status: z.literal('detecting') }).strict(),
+  SuspiciousChangeDetectionCompletedSchema,
+  SuspiciousChangeDetectionInsufficientSchema,
+  z
+    .object({
+      status: z.literal('unavailable'),
+      error: z
+        .object({
+          code: SuspiciousChangeDetectionUnavailableCodeSchema,
+          message: z.string().trim().min(1).max(300),
+        })
+        .strict(),
+    })
+    .strict(),
+]);
+
 export const IncidentStatusSchema = z.enum(['processing', 'completed']);
 
 export const IncidentAcceptedResponseSchema = z.object({
@@ -701,26 +1023,83 @@ export const InvestigationReportSchema = z
     });
   });
 
-export const IncidentRetrievalResponseSchema = z.discriminatedUnion('status', [
-  z
-    .object({
-      incidentId: z.uuid(),
-      status: z.literal('processing'),
-      contextStage: IncidentContextStageSchema,
-    })
-    .strict(),
-  z
-    .object({
-      incidentId: z.uuid(),
-      status: z.literal('completed'),
-      contextStage: z.union([
-        IncidentContextCompletedStageSchema,
-        IncidentContextFailedStageSchema,
-      ]),
-      report: InvestigationReportSchema,
-    })
-    .strict(),
-]);
+export const IncidentRetrievalResponseSchema = z
+  .discriminatedUnion('status', [
+    z
+      .object({
+        incidentId: z.uuid(),
+        status: z.literal('processing'),
+        contextStage: IncidentContextStageSchema,
+        suspiciousChangeStage: SuspiciousChangeDetectionStageSchema,
+      })
+      .strict(),
+    z
+      .object({
+        incidentId: z.uuid(),
+        status: z.literal('completed'),
+        contextStage: z.union([
+          IncidentContextCompletedStageSchema,
+          IncidentContextFailedStageSchema,
+        ]),
+        suspiciousChangeStage: SuspiciousChangeDetectionStageSchema,
+        report: InvestigationReportSchema,
+      })
+      .strict(),
+  ])
+  .superRefine((response, context) => {
+    const detection = response.suspiciousChangeStage;
+    if (response.contextStage.status === 'gathering' && detection.status !== 'detecting') {
+      context.addIssue({
+        code: 'custom',
+        message: 'A gathering context requires a detecting suspicious-change stage.',
+        path: ['suspiciousChangeStage'],
+      });
+      return;
+    }
+    if (
+      response.contextStage.status === 'failed' &&
+      (detection.status !== 'unavailable' || detection.error.code !== 'CONTEXT_UNAVAILABLE')
+    ) {
+      context.addIssue({
+        code: 'custom',
+        message: 'A failed context requires a safe context-unavailable detection stage.',
+        path: ['suspiciousChangeStage'],
+      });
+      return;
+    }
+    if (response.contextStage.status !== 'completed') {
+      return;
+    }
+    if (detection.status === 'detecting') {
+      context.addIssue({
+        code: 'custom',
+        message: 'A completed context cannot retain a detecting suspicious-change stage.',
+        path: ['suspiciousChangeStage'],
+      });
+      return;
+    }
+    if (detection.status === 'unavailable') {
+      if (detection.error.code !== 'DETECTION_INVALID') {
+        context.addIssue({
+          code: 'custom',
+          message: 'A completed context can only use the safe detection-invalid unavailable state.',
+          path: ['suspiciousChangeStage', 'error', 'code'],
+        });
+      }
+      return;
+    }
+    const crossReferences = IncidentSuspiciousChangeDetectionSchema.safeParse({
+      contextStage: response.contextStage,
+      result: detection,
+    });
+    if (!crossReferences.success) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Suspicious-change results do not resolve to the completed incident context.',
+        path: ['suspiciousChangeStage'],
+      });
+    }
+  });
 
 export type EntityKind = z.infer<typeof EntityKindSchema>;
 export type EntityRef = z.infer<typeof EntityRefSchema>;
@@ -751,6 +1130,14 @@ export type IncidentContextMissingInformation = z.infer<
 export type IncidentContextFacts = z.infer<typeof IncidentContextFactsSchema>;
 export type IncidentContextCompletedStage = z.infer<typeof IncidentContextCompletedStageSchema>;
 export type IncidentContextStage = z.infer<typeof IncidentContextStageSchema>;
+export type SuspiciousChangeSignalCode = z.infer<typeof SuspiciousChangeSignalCodeSchema>;
+export type SuspiciousChangeSignal = z.infer<typeof SuspiciousChangeSignalSchema>;
+export type SuspiciousChangeCandidate = z.infer<typeof SuspiciousChangeCandidateSchema>;
+export type SuspiciousChangeMissingInformation = z.infer<
+  typeof SuspiciousChangeMissingInformationSchema
+>;
+export type SuspiciousChangeDetectionResult = z.infer<typeof SuspiciousChangeDetectionResultSchema>;
+export type SuspiciousChangeDetectionStage = z.infer<typeof SuspiciousChangeDetectionStageSchema>;
 export type IncidentStatus = z.infer<typeof IncidentStatusSchema>;
 export type IncidentAcceptedResponse = z.infer<typeof IncidentAcceptedResponseSchema>;
 export type IncidentRetrievalResponse = z.infer<typeof IncidentRetrievalResponseSchema>;

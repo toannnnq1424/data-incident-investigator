@@ -228,6 +228,41 @@ try {
     fail('Incident parse/gather context did not render bounded adapter facts accessibly.');
   }
 
+  const suspiciousChangeStage = page.locator('.suspicious-change-stage');
+  await suspiciousChangeStage
+    .getByRole('heading', { name: 'Potentially relevant metadata changes' })
+    .waitFor({ timeout: 2_000 });
+  const suspiciousChangeCandidates = await suspiciousChangeStage
+    .locator('.suspicious-change-list > li')
+    .evaluateAll((rows) =>
+      rows.map((row) => ({
+        id: row.getAttribute('data-suspicious-change-id'),
+        text: row.textContent ?? '',
+        timestamp: row.querySelector('time')?.getAttribute('datetime') ?? '',
+        signals: [...row.querySelectorAll('.suspicious-change-signal-list code')].map(
+          (signal) => signal.textContent ?? '',
+        ),
+      })),
+    );
+  const suspiciousChangeText = await suspiciousChangeStage.innerText();
+  if (
+    suspiciousChangeCandidates.length !== 1 ||
+    suspiciousChangeCandidates[0]?.id !== 'change-removed-gross-revenue' ||
+    suspiciousChangeCandidates[0]?.timestamp !== '2026-07-18T07:45:00.000Z' ||
+    !suspiciousChangeCandidates[0]?.text.includes(
+      'Column gross_revenue was removed from raw.orders.',
+    ) ||
+    suspiciousChangeCandidates[0]?.signals.join('|') !==
+      'incident_window|upstream_lineage|disruptive_operation' ||
+    !suspiciousChangeText.includes(
+      'Potential relevance is a deterministic signal classification',
+    ) ||
+    suspiciousChangeText.includes('caused the incident') ||
+    suspiciousChangeText.match(/\d+% confidence/i)
+  ) {
+    fail('Suspicious-change detection did not render the exact bounded factual signal candidate.');
+  }
+
   const reportText = await page.locator('body').innerText();
   assertText(reportText, /Related entities/i, 'related entities section');
   assertText(reportText, /analytics\.daily_revenue/i, 'seed entity');

@@ -2,6 +2,16 @@
 
 Last updated: 2026-07-19.
 
+- Slice 3.2 suspicious-change detection Level C passes locally from exact Slice 3.1 final commit
+  `c0d765ed57b00c17d957eb62e3e84984897af48f`. The detector is pure over validated completed context,
+  uses five allowlisted deterministic signals, returns at most five exact change/entity candidates,
+  and exposes no hypothesis, confidence, root-cause, recommendation, remediation, raw provider payload,
+  or additional provider call. Missing incident comparison inputs and empty/no-match history produce
+  explicit bounded gaps or `insufficient`; context failure remains safe `unavailable`. Targeted
+  evidence is 9 files/51 tests plus five builds; exactly one browser flow passed in `19622ms` on dynamic
+  ports `62812`/`62813` with the exact canonical upstream schema-change signals, unchanged full report,
+  clean console/overflow, and clean teardown. Publication evidence remains pending. Slice 3.3, live
+  DataHub smoke, model work, remediation, persistence, and Level D remain deferred.
 - Slice 3.1 parse-and-gather Level C passes locally from exact Phase 2 closure merge `e7b053c`. The
   additive incident `contextStage` validates normalized intent, selects only adapter-returned URNs,
   gathers one bounded upstream graph and one recent-change window under four calls/one

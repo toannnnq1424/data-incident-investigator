@@ -27,6 +27,16 @@ describe('completed report presentation', () => {
           },
         ],
       },
+      suspiciousChangeStage: {
+        status: 'insufficient',
+        candidates: [],
+        missingInformation: [
+          {
+            code: 'recent_changes_not_found',
+            message: 'No recent metadata change facts were available for deterministic detection.',
+          },
+        ],
+      },
       report: {
         incidentId: 'ba4ec0e8-da23-4f34-a3c7-9f25c44da800',
         summary: 'The removed source column is the strongest evidence-backed inference.',
