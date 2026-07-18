@@ -2,23 +2,26 @@
 
 Last updated: 2026-07-18.
 
-- The Phase 1 Level D core gate passes on the Windows managed worktree, and the browser launcher now
-  resolves pnpm cross-platform, uses synchronized dynamic ports/URLs, and cleans only its own process
-  tree. Three targeted launcher contracts pass. After Windows Playwright Chromium headless shell
-  revision `1228` was provisioned, the single newly authorized e2e run passed the canonical flow in
-  `9361ms` on dynamic ports `51439`/`51440`, with evidence-reference resolution and clean-console
-  assertions enabled. Both ports and the launcher process tree were clean afterward. The Phase 1
-  browser gate is no longer a blocker.
-- The advanced stacked base commit `edd0ed510d4cc4799d1c130415d8e79cb0ff78a5` changed the legacy E2E
-  launcher to tolerate ANSI-styled Vite logs and initially conflicted with the closure launcher. The
-  merge-forward resolution retains HTTP readiness at synchronized dynamic URLs, which is independent
-  of styled logs. Targeted contracts passed 3/3 and the canonical browser flow passed again in
-  `6890ms` on ports `63576`/`63577`, with no listener or launcher-runtime leak.
-- Managed dependency bootstrap required the bundled Node directory in process `PATH`, created an
-  untracked repository-local `.pnpm-store`, and needed scoped access for Vitest to read `esbuild`.
-  PR #4 (`codex/stabilize-managed-worktree-bootstrap`, commit
-  `99dfc5f7a086808b25d8a57988524769bca0cf87`) is separately green but was intentionally not integrated
-  into the Phase 1 product-validation branch.
+- Exact `main` `54945b80a27685ce81e476173a3466e585f42112` exposes a test-only cleanup ownership
+  race in PR #7 CI run `29651498475`, job `88098488706`: 36/37 tests passed, while the launcher
+  integration test's post-cleanup rebind of an old OS-assigned port lost to another process with
+  `EADDRINUSE`. Branch `fix/phase1-launcher-cleanup-ownership` replaces that TOCTOU assertion with a
+  bounded liveness check for the exact descendant PID while preserving pre-cleanup HTTP readiness;
+  focused local validation passes and draft PR CI is pending. No product, DataHub, or launcher runtime
+  blocker is indicated.
+- Phase 1 is fully integrated and closed on exact `main`
+  `54945b80a27685ce81e476173a3466e585f42112`; main CI run `29650788143`, job `88096660559`, is
+  green. PR #4 managed-worktree bootstrap, PR #8 atomic port-race fix, and PR #9 post-merge closure are
+  merged and preserved.
+- The post-merge Level D gate passes: repository format, lint, six workspace type-checks, 7 test
+  files/17 tests, six production builds, both artifact smoke targets, and the canonical browser flow
+  completed on the integrated main tree. The first full-test attempt had two transient `5s` API
+  timeouts under parallel load; the focused pair immediately passed 5/5 and the full-suite recovery
+  passed 17/17 without a code change, so no implementation blocker remains.
+- The single post-merge E2E selected dynamic ports `61369`/`61370` and passed
+  `submit -> processing -> completed -> full evidence display` in `32.400s`, with real evidence
+  references and clean-console assertions. Post-run probes found zero listeners and zero
+  launcher-related process leaks.
 - The GitHub repository is private during development and must become public before submission.
 - Slice 1.2 stores incident lifecycle and completed reports only in API process memory. Restarting the
   API removes existing incident IDs; durable persistence remains deferred.
@@ -35,3 +38,13 @@ Last updated: 2026-07-18.
   Codex opens or reloads the trusted repository.
 - Slice 1.3 adds one checked-in Playwright browser test for the canonical fixture report. A broader
   cross-browser matrix remains deferred until the Phase 1 integration or release checkpoint.
+- Codex desktop is the only documented writer for the shared Local Environment file, and the current
+  callable app tools expose no create/update API. This repository therefore provides verified Windows
+  and macOS/POSIX bootstrap scripts plus UI wiring instructions, but intentionally does not commit a
+  guessed Local Environment schema. An app-generated, secret-free file under `.codex/` remains a
+  follow-up.
+- The Windows bootstrap is validated against the current Codex bundled runtime, and the macOS
+  bootstrap is validated end to end with Homebrew Node/pnpm on `PATH`. The macOS Codex-bundled runtime
+  location/fallback remains unexercised and must fail with the script's actionable prerequisite error
+  if neither compatible host tools nor the verified relative cache layout is available. The recorded
+  macOS result predates the merge-forward from `main`; fresh QA of the post-merge PR head is pending.
