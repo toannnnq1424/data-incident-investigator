@@ -71,6 +71,12 @@ Never use `danger-full-access` as the project default. Prefer project-local port
 download checksums when available, and keep them under ignored `work/tools/` rather than installing
 globally.
 
+## User-facing language
+
+Write user-facing commentary, progress and error reports, command/test summaries, and final reports in
+Vietnamese. Keep commands, paths, identifiers, and necessary technical error excerpts in code formatting;
+do not translate source code or API contracts, or lengthen logs only for translation.
+
 ## Architecture and contracts
 
 - Keep DataHub-specific types inside `packages/datahub-client`.
