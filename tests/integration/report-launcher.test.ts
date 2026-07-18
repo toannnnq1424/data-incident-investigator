@@ -35,15 +35,30 @@ function close(server) {
 
 describe('Phase 1 browser launcher contracts', () => {
   it('resolves pnpm through the current Node runtime and has a safe Windows fallback', () => {
+    for (const npmExecPath of ['C:\\tools\\pnpm.mjs', 'C:\\tools\\pnpm.cjs']) {
+      expect(
+        resolvePnpmInvocation(['--filter', '@dii/api', 'dev'], {
+          env: { npm_execpath: npmExecPath },
+          execPath: 'C:\\node\\node.exe',
+          platform: 'win32',
+        }),
+      ).toEqual({
+        command: 'C:\\node\\node.exe',
+        args: [npmExecPath, '--filter', '@dii/api', 'dev'],
+      });
+    }
+
     expect(
-      resolvePnpmInvocation(['--filter', '@dii/api', 'dev'], {
-        env: { npm_execpath: 'C:\\tools\\pnpm.mjs' },
-        execPath: 'C:\\node\\node.exe',
+      resolvePnpmInvocation(['--filter', '@dii/web', 'dev'], {
+        env: {
+          ComSpec: 'C:\\Windows\\System32\\cmd.exe',
+          npm_execpath: '  C:\\tools\\pnpm.CMD  ',
+        },
         platform: 'win32',
       }),
     ).toEqual({
-      command: 'C:\\node\\node.exe',
-      args: ['C:\\tools\\pnpm.mjs', '--filter', '@dii/api', 'dev'],
+      command: 'C:\\Windows\\System32\\cmd.exe',
+      args: ['/d', '/s', '/c', 'pnpm.cmd', '--filter', '@dii/web', 'dev'],
     });
 
     expect(
@@ -53,7 +68,17 @@ describe('Phase 1 browser launcher contracts', () => {
       }),
     ).toEqual({
       command: 'C:\\Windows\\System32\\cmd.exe',
-      args: ['/d', '/s', '/c', 'pnpm', '--filter', '@dii/web', 'dev'],
+      args: ['/d', '/s', '/c', 'pnpm.cmd', '--filter', '@dii/web', 'dev'],
+    });
+
+    expect(
+      resolvePnpmInvocation(['--filter', '@dii/api', 'dev'], {
+        env: {},
+        platform: 'linux',
+      }),
+    ).toEqual({
+      command: 'pnpm',
+      args: ['--filter', '@dii/api', 'dev'],
     });
   });
 

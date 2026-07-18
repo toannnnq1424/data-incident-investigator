@@ -433,3 +433,48 @@ vẫn deferred như trước.
 
 Tạo merge commit không rewrite, push cùng branch, xác minh draft PR #5 hết conflict và theo dõi đúng
 một CI run mới. Dừng sau PR/CI evidence; không bắt đầu Phase 2 và không tích hợp PR #4.
+
+## 2026-07-18 — Windows pnpm shim fallback hardening
+
+### Objective
+
+Ngăn browser launcher đưa Windows `.cmd`, `.bat` hoặc `.exe` pnpm shim vào Node như JavaScript, không
+đổi runtime/browser behavior đã PASS và không tích hợp duplicate PR #6.
+
+### Completed
+
+`resolvePnpmInvocation` trim `npm_execpath`, chỉ dùng current Node cho non-native script path, và dùng
+controlled `ComSpec /d /s /c pnpm.cmd` trên Windows khi path là native shim/binary hoặc bị thiếu.
+Regression giữ `.mjs`/`.cjs` qua Node, kiểm tra `.CMD` case-insensitive, missing Windows path và POSIX
+`pnpm` fallback.
+
+### Files changed
+
+`tests/e2e/report-launcher.mjs`, `tests/integration/report-launcher.test.ts`, và entry SESSION_LOG này.
+Không đổi product, manifest/lockfile, PR #4 hoặc PR #6.
+
+### Decisions
+
+Không chạy browser E2E: actual validated launcher path là `.cjs`, nhánh Node hiện hữu không đổi, và
+runtime URL/readiness/browser/cleanup contract không đổi. Focused pure invocation regression là test
+reproducing trực tiếp.
+
+### Validation performed
+
+- Changed-file Prettier PASS sau một formatting-only rewrite; affected ESLint PASS trong 2.842 giây.
+- `pnpm exec vitest run tests/integration/report-launcher.test.ts` PASS 3/3; Vitest 2.45 giây, test
+  time 926ms, wall 6.945 giây.
+
+### Validation intentionally deferred
+
+Browser E2E, core Level D, build và smoke không rerun vì input/runtime contract tương ứng không đổi.
+Không có Phase 2.
+
+### Known issues
+
+Không có blocker cục bộ mới; commit/push/CI còn pending tại thời điểm ghi entry.
+
+### Exact next step
+
+Review diff/secret, commit `test: harden Windows pnpm shim fallback`, push thường lên PR #5 và theo dõi
+đúng một CI run mới. Không merge PR và không chạm PR #6.
