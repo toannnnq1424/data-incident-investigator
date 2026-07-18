@@ -710,6 +710,153 @@ open a stacked draft PR against `codex/phase-2-2-entity-search`, and observe exa
 terminal state. After a green handoff, create a separate task for Phase 2 Slice 2.4 — metadata and
 recent changes; do not begin it here.
 
+### Slice 2.4 — Metadata and recent changes
+
+Status: Level C passed locally on `codex/phase-2-4-recent-changes` from exact final Slice 2.3 HEAD
+`a5339fbaca1c855720bb6df1377b233db30924ac`.
+
+Objective: from a stable URN returned by entity search or bounded lineage, let a user request a
+time-windowed, count-bounded list of recent metadata facts through one strict shared contract, the
+fixture or DataHub client boundary, a thin API route, and a compact accessible web display. The slice
+collects and displays facts only; it does not infer impact, correlation, cause, or investigation
+hypotheses.
+
+Minimum files:
+
+- `packages/shared-types/src/index.ts` and `tests/integration/contracts.test.ts` for strict recent-change
+  request/response schemas, small defaults, hard window/count caps, UTC timestamps, allowlisted
+  categories/operations, stable identity, deterministic ordering/dedup, and truncation invariants.
+- `packages/datahub-client/src/index.ts`, `fixtures/metadata/removed-schema-column.json`,
+  `tests/integration/fixture-adapter.test.ts`, and a focused DataHub recent-changes client test for
+  deterministic fixture history plus official GraphQL `getTimeline` mapping, one-request cap, Bearer
+  auth, timeout, missing entity, malformed response, safe normalization, and local window/count bounds.
+- `apps/api/src/index.ts` and a focused recent-changes API integration test for mode-specific
+  composition, validation/defaults, schema-valid success, missing entity, and safe typed errors.
+- `apps/web/src/App.tsx`, `apps/web/src/styles.css`, and a focused web recent-changes behavior test for
+  semantic actions on search results and lineage nodes, loading/success/empty/truncated/error states,
+  focus management, accessible list/time markup, and stale-response protection.
+- `tests/e2e/report-display.spec.mjs` for exactly one combined fixture search -> bounded lineage ->
+  recent changes -> canonical incident processing/completed regression with facts/order/truncation and
+  clean-console assertions.
+- `docs/API_CONTRACTS.md`, `docs/DATA_MODEL.md`, `docs/IMPLEMENTATION_PLAN.md`,
+  `docs/KNOWN_ISSUES.md`, and `docs/SESSION_LOG.md` for the durable contract and handoff.
+
+Acceptance criteria:
+
+- `POST /metadata/recent-changes` rejects unknown keys and accepts only a trimmed bounded entity URN,
+  an optional canonical UTC end time, an integer window with a small default and hard maximum, and a
+  positive integer limit with a hard cap. Client-supplied GraphQL, raw provider queries, and synthetic
+  cursors are impossible.
+- Every success response echoes the entity and accepted bounds, records the exact requested UTC
+  start/end window, contains unique stable IDs and only allowlisted categories/operations, and returns
+  canonical UTC timestamps in deterministic newest-first then ID order. Every change matches the
+  requested entity and window; returned count matches the list; `truncated` is true when the window,
+  limit, or documented provider cap omits history.
+- Fixture mode provides multiple categories, same-timestamp stable ordering/dedup, true empty history,
+  missing entity, and window/limit truncation while preserving the canonical incident and never reading
+  `DATAHUB_*`, Stitch, LLM, or another credential. Malformed records appear only in fake-provider tests.
+- DataHub mode reuses `/api/graphql`, Bearer auth, one total timeout/AbortSignal, and safe provider
+  errors. It issues one official `getTimeline(input: GetTimelineInput!)` query plus an entity existence
+  check, performs no retry/fan-out, maps only official allowlisted categories/operations, derives short
+  factual summaries without raw actor identifiers or provider payloads, and normalizes auth, timeout,
+  unavailable, missing, GraphQL, timestamp, and shape failures.
+- The web preserves health, search, lineage, and incident/report UI while adding compact recent-change
+  controls/actions and semantic heading/list/time output. Loading, success, empty, truncated, and safe
+  error states are distinct; terminal focus is controlled and an older request cannot overwrite newer
+  state.
+- Targeted contract/client/API/web tests and adjacent changed-boundary regressions pass, all five
+  affected production builds pass, and exactly one browser flow proves fixture search -> bounded
+  lineage -> recent changes with expected facts/order/truncation -> canonical incident processing ->
+  completed/full evidence with no console warning/error.
+
+Official DataHub sources verified before implementation:
+
+- The official GraphQL schema defines `getTimeline(input: GetTimelineInput!)`; the input accepts only
+  `urn` and optional `changeCategories`, and returns change transactions with timestamp, actor, official
+  category/operation enums, modifier, parameters, audit stamp, and description:
+  <https://github.com/datahub-project/datahub/blob/master/datahub-graphql-core/src/main/resources/timeline.graphql>.
+- The official web client requests that same field and response shape:
+  <https://github.com/datahub-project/datahub/blob/master/datahub-web-react/src/graphql/timeline.graphql>.
+- The official resolver calls `TimelineService` once with `DEFAULT_MAX_CHANGE_TRANSACTIONS`; the service
+  constant is `100`. Because the public GraphQL input exposes no time range, page size, or cursor, this
+  slice performs one bounded fetch and deterministic local window/limit filtering, exposes no cursor,
+  and records provider-cap truncation:
+  <https://github.com/datahub-project/datahub/blob/master/datahub-graphql-core/src/main/java/com/linkedin/datahub/graphql/resolvers/timeline/GetTimelineResolver.java>
+  and
+  <https://github.com/datahub-project/datahub/blob/master/metadata-service/services/src/main/java/com/linkedin/metadata/timeline/TimelineService.java>.
+
+Deferred: impact analysis, change-to-incident correlation, hypothesis ranking, ownership enrichment,
+schema diff viewer, investigation evidence integration, live credential smoke, additional providers,
+controller or agent orchestration changes, dependency/lockfile changes, and Level D validation. The
+Phase 2 integration checkpoint remains a separate next task after this slice is green.
+
+Exact Level C commands (run as one coherent sequence after implementation):
+
+- `pnpm exec prettier --write packages/shared-types/src/index.ts packages/datahub-client/src/index.ts apps/api/src/index.ts apps/web/src/App.tsx apps/web/src/styles.css fixtures/metadata/removed-schema-column.json tests/integration/contracts.test.ts tests/integration/fixture-adapter.test.ts tests/integration/datahub-recent-changes.test.ts tests/integration/metadata-recent-changes-api.test.ts tests/integration/web-metadata-recent-changes.test.ts tests/e2e/report-display.spec.mjs docs/API_CONTRACTS.md docs/DATA_MODEL.md docs/IMPLEMENTATION_PLAN.md docs/KNOWN_ISSUES.md docs/SESSION_LOG.md`
+- `pnpm exec prettier --check packages/shared-types/src/index.ts packages/datahub-client/src/index.ts apps/api/src/index.ts apps/web/src/App.tsx apps/web/src/styles.css fixtures/metadata/removed-schema-column.json tests/integration/contracts.test.ts tests/integration/fixture-adapter.test.ts tests/integration/datahub-recent-changes.test.ts tests/integration/metadata-recent-changes-api.test.ts tests/integration/web-metadata-recent-changes.test.ts tests/e2e/report-display.spec.mjs docs/API_CONTRACTS.md docs/DATA_MODEL.md docs/IMPLEMENTATION_PLAN.md docs/KNOWN_ISSUES.md docs/SESSION_LOG.md`
+- `pnpm exec eslint packages/shared-types/src packages/datahub-client/src apps/api/src apps/web/src tests/integration/contracts.test.ts tests/integration/fixture-adapter.test.ts tests/integration/investigation-runner.test.ts tests/integration/datahub-search.test.ts tests/integration/datahub-lineage.test.ts tests/integration/datahub-recent-changes.test.ts tests/integration/metadata-search-api.test.ts tests/integration/metadata-lineage-api.test.ts tests/integration/metadata-recent-changes-api.test.ts tests/integration/web-metadata-search.test.ts tests/integration/web-metadata-lineage.test.ts tests/integration/web-metadata-recent-changes.test.ts tests/integration/incidents-api.test.ts tests/integration/web-report.test.ts tests/e2e/report-display.spec.mjs`
+- `pnpm --filter @dii/shared-types typecheck`
+- `pnpm --filter @dii/datahub-client typecheck`
+- `pnpm --filter @dii/agent-core typecheck`
+- `pnpm --filter @dii/api typecheck`
+- `pnpm --filter @dii/web typecheck`
+- `pnpm exec vitest run tests/integration/contracts.test.ts tests/integration/fixture-adapter.test.ts tests/integration/investigation-runner.test.ts tests/integration/datahub-search.test.ts tests/integration/datahub-lineage.test.ts tests/integration/datahub-recent-changes.test.ts tests/integration/metadata-search-api.test.ts tests/integration/metadata-lineage-api.test.ts tests/integration/metadata-recent-changes-api.test.ts tests/integration/web-metadata-search.test.ts tests/integration/web-metadata-lineage.test.ts tests/integration/web-metadata-recent-changes.test.ts tests/integration/incidents-api.test.ts tests/integration/web-report.test.ts`
+- `pnpm --filter @dii/shared-types --filter @dii/datahub-client --filter @dii/agent-core --filter @dii/api --filter @dii/web build`
+- Exactly one `pnpm test:e2e:report` run combining fixture entity search, selected bounded lineage,
+  selected recent changes with facts/order/truncation, canonical incident processing/completed/full
+  evidence, resolved evidence references, clean console output, responsive overflow, existing
+  three-minute bound, selected-port cleanup, and launcher process cleanup.
+- `git diff --check`, tracked-plus-untracked secret-pattern scan, `git diff --stat`,
+  `git diff --name-status`, generated-artifact path scan, full scoped diff review, and
+  `git status --short --branch` before the conventional commit; repeat only final status after
+  commit/push to prove a clean worktree.
+
+Validation result on the Windows managed worktree, 2026-07-19:
+
+- Frozen dependency bootstrap reused all 259 lockfile entries and passed supply-chain verification in
+  4.4 seconds without manifest/lockfile changes. The planned `pnpm exec prettier` call then reproduced
+  the known managed-runtime workspace-binary resolution failure in 0.564 seconds before formatting any
+  file. The verified project-local formatter wrote the scoped files in 1.707 seconds and changed-file
+  format check passed in 1.291 seconds.
+- Affected ESLint first found one `no-control-regex` implementation error in the new DataHub field
+  sanitizer. Replacing that regex with equivalent character-code filtering and rerunning only the
+  affected formatter/lint scope passed; targeted lint took 1.358 seconds. The first parallel typecheck
+  report found one `exactOptionalPropertyTypes` mismatch in the new timeline parameter boundary; after
+  the targeted type declaration fix, datahub-client format/lint/typecheck passed in 3.486 seconds.
+  Final evidence for all five affected typechecks passed: shared-types 2.533 seconds, datahub-client in
+  the targeted 3.486-second sequence, agent-core 2.788 seconds, API 3.462 seconds, and web 3.471 seconds.
+- Sandboxed Vitest stopped before test execution because managed-worktree Vite could not resolve the
+  esbuild package. The exact scoped retry passed 14/14 files and 116/116 tests in 8.73 seconds (11.131
+  seconds command wall), including 12 DataHub recent-change client tests and 16 recent-change API tests
+  for official request variables, one-request/provider cap, Bearer auth, UTC/category/field mapping,
+  stable dedup/order, empty/missing/truncated behavior, timeout/unavailable/malformed sanitization,
+  fixture no-credential behavior, UI states, and stale ownership.
+- The first affected build sequence passed shared-types and datahub-client, then Vite met the same
+  sandbox/esbuild restriction. The scoped retry passed agent-core, API, and web in 6.752 seconds, so all
+  five affected production builds pass. Web transformed 109 modules and built in 1.33 seconds.
+- Exactly one `pnpm test:e2e:report` selected API `http://127.0.0.1:62836` and web
+  `http://127.0.0.1:62837`, then passed fixture search -> three-node bounded lineage -> recent changes
+  with deterministic ownership/schema/tag facts, same-timestamp order, truncation and semantic time
+  elements -> canonical incident processing -> completed/full evidence in 12.969 seconds (20.206
+  seconds command wall). Clean console, terminal focus, resolved evidence references, responsive
+  overflow, three-minute bound, selected-port cleanup, and launcher process cleanup all passed.
+- Final boundary review hardened the DataHub stable ID with transaction/audit/modifier/parameter/
+  description inputs that remain hash-only, preventing distinct same-time events from collapsing while
+  exact duplicates still deduplicate. The DataHub-only affected rerun passed format/lint/typecheck in
+  4.145 seconds, 12/12 client tests in 974ms (1.848 seconds command wall), and its build in 1.990
+  seconds. Reusing the shared category schema directly in fixture validation then passed the affected
+  format/lint/typecheck/build in 5.383 seconds and fixture plus DataHub adapter tests 19/19 in 961ms
+  (1.667 seconds command wall). The browser path did not change, so the single browser run was not
+  repeated. Full test review then found a January/July typo that made the same-timestamp assertion
+  vacuous; the corrected assertion explicitly requires two rows and passed affected format/lint in
+  1.536 seconds plus the 12/12 client tests in 913ms (1.651 seconds command wall).
+
+Exact next action: complete the documented secret/diff/generated-artifact/worktree review, create the
+single conventional commit `feat: add recent metadata changes`, push fast-forward, open a stacked draft
+PR against `codex/phase-2-3-bounded-lineage`, and observe exactly one CI run to terminal. After a green
+handoff, create a separate task for the Phase 2 integration checkpoint; do not begin impact analysis,
+correlation, agent reasoning, or the checkpoint here.
+
 Slices: client health/error normalization; entity search; bounded/cycle-safe lineage; metadata and recent
 changes. Completion requires fixture and DataHub adapters to run through unchanged business logic.
 

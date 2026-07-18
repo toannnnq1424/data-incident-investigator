@@ -267,6 +267,155 @@ export const MetadataLineageResponseSchema = z
     });
   });
 
+export const METADATA_RECENT_CHANGES_DEFAULT_WINDOW_HOURS = 7 * 24;
+export const METADATA_RECENT_CHANGES_MAX_WINDOW_HOURS = 30 * 24;
+export const METADATA_RECENT_CHANGES_DEFAULT_LIMIT = 10;
+export const METADATA_RECENT_CHANGES_MAX_LIMIT = 20;
+
+const CanonicalUtcTimestampSchema = z.iso
+  .datetime()
+  .refine(
+    (timestamp) => timestamp === new Date(timestamp).toISOString(),
+    'Timestamp must be canonical UTC.',
+  );
+
+export const MetadataRecentChangeCategorySchema = z.enum([
+  'schema',
+  'ownership',
+  'tag',
+  'domain',
+  'documentation',
+  'glossary',
+  'relationship',
+  'structured-property',
+  'application',
+  'asset-membership',
+  'pipeline',
+]);
+
+export const MetadataRecentChangeOperationSchema = z.enum(['added', 'modified', 'removed']);
+
+export const MetadataRecentChangesRequestSchema = z
+  .object({
+    entityUrn: z.string().trim().min(1).max(1_000),
+    endTime: CanonicalUtcTimestampSchema.optional(),
+    windowHours: z
+      .number()
+      .int()
+      .min(1)
+      .max(METADATA_RECENT_CHANGES_MAX_WINDOW_HOURS)
+      .default(METADATA_RECENT_CHANGES_DEFAULT_WINDOW_HOURS),
+    limit: z
+      .number()
+      .int()
+      .min(1)
+      .max(METADATA_RECENT_CHANGES_MAX_LIMIT)
+      .default(METADATA_RECENT_CHANGES_DEFAULT_LIMIT),
+  })
+  .strict();
+
+export const MetadataRecentChangeSchema = z
+  .object({
+    id: z.string().trim().min(1).max(200),
+    entityUrn: z.string().trim().min(1).max(1_000),
+    timestamp: CanonicalUtcTimestampSchema,
+    category: MetadataRecentChangeCategorySchema,
+    operation: MetadataRecentChangeOperationSchema,
+    actor: z.string().trim().min(1).max(100).optional(),
+    source: MetadataSourceModeSchema,
+    summary: z.string().trim().min(1).max(500),
+    field: z.string().trim().min(1).max(300).optional(),
+  })
+  .strict();
+
+function compareRecentChanges(
+  left: z.infer<typeof MetadataRecentChangeSchema>,
+  right: z.infer<typeof MetadataRecentChangeSchema>,
+) {
+  if (left.timestamp !== right.timestamp) {
+    return left.timestamp > right.timestamp ? -1 : 1;
+  }
+  return left.id < right.id ? -1 : left.id > right.id ? 1 : 0;
+}
+
+export const MetadataRecentChangesResponseSchema = z
+  .object({
+    entityUrn: z.string().trim().min(1).max(1_000),
+    window: z
+      .object({
+        startTime: CanonicalUtcTimestampSchema,
+        endTime: CanonicalUtcTimestampSchema,
+        hours: z.number().int().min(1).max(METADATA_RECENT_CHANGES_MAX_WINDOW_HOURS),
+      })
+      .strict(),
+    limit: z.number().int().min(1).max(METADATA_RECENT_CHANGES_MAX_LIMIT),
+    returnedCount: z.number().int().min(0).max(METADATA_RECENT_CHANGES_MAX_LIMIT),
+    truncated: z.boolean(),
+    changes: z.array(MetadataRecentChangeSchema).max(METADATA_RECENT_CHANGES_MAX_LIMIT),
+  })
+  .strict()
+  .superRefine((response, context) => {
+    const startTime = Date.parse(response.window.startTime);
+    const endTime = Date.parse(response.window.endTime);
+    if (endTime - startTime !== response.window.hours * 60 * 60 * 1_000) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Recent-change window timestamps do not match the requested hours.',
+        path: ['window'],
+      });
+    }
+    if (response.returnedCount !== response.changes.length) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Returned count does not match recent changes.',
+        path: ['returnedCount'],
+      });
+    }
+    if (response.changes.length > response.limit) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Recent changes exceed the accepted limit.',
+        path: ['changes'],
+      });
+    }
+
+    const ids = new Set<string>();
+    response.changes.forEach((change, index) => {
+      if (ids.has(change.id)) {
+        context.addIssue({
+          code: 'custom',
+          message: `Recent-change ID is duplicated: ${change.id}`,
+          path: ['changes', index, 'id'],
+        });
+      }
+      ids.add(change.id);
+      if (change.entityUrn !== response.entityUrn) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Recent change belongs to a different entity.',
+          path: ['changes', index, 'entityUrn'],
+        });
+      }
+      const timestamp = Date.parse(change.timestamp);
+      if (timestamp < startTime || timestamp > endTime) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Recent change falls outside the requested window.',
+          path: ['changes', index, 'timestamp'],
+        });
+      }
+
+      const previous = response.changes[index - 1];
+      if (previous && compareRecentChanges(previous, change) > 0) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Recent changes are not in deterministic order.',
+          path: ['changes', index],
+        });
+      }
+    });
+  });
+
 export const IncidentRequestSchema = z.object({
   question: z.string().trim().min(3).max(2_000),
   entityHint: z.string().trim().min(1).max(500).optional(),
@@ -366,6 +515,11 @@ export type MetadataLineageRequest = z.infer<typeof MetadataLineageRequestSchema
 export type MetadataLineageNode = z.infer<typeof MetadataLineageNodeSchema>;
 export type MetadataLineageEdge = z.infer<typeof MetadataLineageEdgeSchema>;
 export type MetadataLineageResponse = z.infer<typeof MetadataLineageResponseSchema>;
+export type MetadataRecentChangeCategory = z.infer<typeof MetadataRecentChangeCategorySchema>;
+export type MetadataRecentChangeOperation = z.infer<typeof MetadataRecentChangeOperationSchema>;
+export type MetadataRecentChangesRequest = z.infer<typeof MetadataRecentChangesRequestSchema>;
+export type MetadataRecentChange = z.infer<typeof MetadataRecentChangeSchema>;
+export type MetadataRecentChangesResponse = z.infer<typeof MetadataRecentChangesResponseSchema>;
 export type MetadataSourceMode = z.infer<typeof MetadataSourceModeSchema>;
 export type MetadataHealthStatus = z.infer<typeof MetadataHealthStatusSchema>;
 export type MetadataHealthResponse = z.infer<typeof MetadataHealthResponseSchema>;

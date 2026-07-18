@@ -3,6 +3,8 @@ import {
   ApiErrorSchema,
   METADATA_LINEAGE_DEFAULT_DEPTH,
   METADATA_LINEAGE_DEFAULT_MAX_NODES,
+  METADATA_RECENT_CHANGES_DEFAULT_LIMIT,
+  METADATA_RECENT_CHANGES_DEFAULT_WINDOW_HOURS,
   type EntityKind,
   type EntityRef,
   type Evidence,
@@ -20,6 +22,9 @@ import {
   MetadataLineageRequestSchema,
   MetadataLineageResponseSchema,
   type MetadataLineageResponse,
+  MetadataRecentChangesRequestSchema,
+  MetadataRecentChangesResponseSchema,
+  type MetadataRecentChangesResponse,
 } from '@dii/shared-types';
 
 type CompletedIncident = Extract<IncidentRetrievalResponse, { status: 'completed' }>;
@@ -48,6 +53,12 @@ export type MetadataLineageState =
   | { kind: 'idle' }
   | { kind: 'loading'; direction: MetadataLineageDirection; rootName: string }
   | { kind: 'success'; response: MetadataLineageResponse }
+  | { kind: 'api-error'; message: string };
+
+export type MetadataRecentChangesState =
+  | { kind: 'idle' }
+  | { kind: 'loading'; entityName: string }
+  | { kind: 'success'; response: MetadataRecentChangesResponse }
   | { kind: 'api-error'; message: string };
 
 const problemStatusLabels = {
@@ -216,6 +227,57 @@ export function getMetadataLineagePresentation(state: MetadataLineageState) {
   };
 }
 
+export function getMetadataRecentChangesPresentation(state: MetadataRecentChangesState) {
+  if (state.kind === 'idle') {
+    return {
+      heading: 'Recent metadata changes',
+      message: 'Choose recent changes on a search result or lineage node to inspect facts.',
+      tone: 'idle' as const,
+    };
+  }
+  if (state.kind === 'loading') {
+    return {
+      heading: 'Loading recent changes',
+      message: `Loading bounded metadata history for ${state.entityName}…`,
+      tone: 'loading' as const,
+    };
+  }
+  if (state.kind === 'api-error') {
+    return {
+      heading: 'Recent changes failed',
+      message: state.message,
+      tone: 'error' as const,
+    };
+  }
+  if (state.response.changes.length === 0) {
+    return state.response.truncated
+      ? {
+          heading: 'No changes in this window',
+          message: 'Older metadata history exists outside the selected bounded window.',
+          tone: 'truncated' as const,
+        }
+      : {
+          heading: 'No recent changes',
+          message: 'No metadata changes were recorded for this entity in the selected window.',
+          tone: 'empty' as const,
+        };
+  }
+  if (state.response.truncated) {
+    return {
+      heading: 'Recent metadata changes',
+      message: `Showing ${state.response.returnedCount} bounded changes; older or additional history was omitted.`,
+      tone: 'truncated' as const,
+    };
+  }
+  return {
+    heading: 'Recent metadata changes',
+    message: `${state.response.returnedCount} metadata ${
+      state.response.returnedCount === 1 ? 'change' : 'changes'
+    } found in the selected window.`,
+    tone: 'success' as const,
+  };
+}
+
 function MetadataSourceStatus({ health }: { health: MetadataHealthState }) {
   const presentation = getMetadataHealthPresentation(health);
 
@@ -242,6 +304,8 @@ function MetadataSearchResults({
   headingRef,
   lineageLoading,
   onRequestLineage,
+  onRequestRecentChanges,
+  recentChangesLoading,
   state,
 }: {
   headingRef: RefObject<HTMLHeadingElement | null>;
@@ -250,6 +314,8 @@ function MetadataSearchResults({
     result: MetadataEntitySearchResponse['results'][number],
     direction: MetadataLineageDirection,
   ) => void;
+  onRequestRecentChanges: (result: MetadataEntitySearchResponse['results'][number]) => void;
+  recentChangesLoading: boolean;
   state: MetadataSearchState;
 }) {
   const presentation = getMetadataSearchPresentation(state);
@@ -283,7 +349,7 @@ function MetadataSearchResults({
               <code className="metadata-search-result-urn">{result.urn}</code>
               <div
                 className="metadata-lineage-actions"
-                aria-label={`Lineage actions for ${result.name}`}
+                aria-label={`Metadata actions for ${result.name}`}
               >
                 <button
                   type="button"
@@ -301,6 +367,14 @@ function MetadataSearchResults({
                 >
                   Downstream
                 </button>
+                <button
+                  type="button"
+                  disabled={recentChangesLoading}
+                  onClick={() => onRequestRecentChanges(result)}
+                  aria-label={`View recent changes for ${result.name}`}
+                >
+                  Recent changes
+                </button>
               </div>
             </li>
           ))}
@@ -312,9 +386,13 @@ function MetadataSearchResults({
 
 function MetadataLineageResults({
   headingRef,
+  onRequestRecentChanges,
+  recentChangesLoading,
   state,
 }: {
   headingRef: RefObject<HTMLHeadingElement | null>;
+  onRequestRecentChanges: (node: MetadataLineageResponse['nodes'][number]) => void;
+  recentChangesLoading: boolean;
   state: MetadataLineageState;
 }) {
   const presentation = getMetadataLineagePresentation(state);
@@ -364,6 +442,15 @@ function MetadataLineageResults({
                   {node.platform ? ` · ${node.platform}` : ''}
                 </p>
                 {node.description && <p>{node.description}</p>}
+                <button
+                  type="button"
+                  className="metadata-node-recent-changes"
+                  disabled={recentChangesLoading}
+                  onClick={() => onRequestRecentChanges(node)}
+                  aria-label={`View recent changes for ${node.name}`}
+                >
+                  Recent changes
+                </button>
               </li>
             ))}
           </ul>
@@ -384,6 +471,76 @@ function MetadataLineageResults({
           {state.response.truncated && (
             <p className="metadata-lineage-truncation-note" role="status">
               Truncated: increase a bounded control to inspect more reachable lineage.
+            </p>
+          )}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function MetadataRecentChangesResults({
+  headingRef,
+  state,
+}: {
+  headingRef: RefObject<HTMLHeadingElement | null>;
+  state: MetadataRecentChangesState;
+}) {
+  const presentation = getMetadataRecentChangesPresentation(state);
+  const terminal = state.kind === 'success' || state.kind === 'api-error';
+
+  return (
+    <section
+      className={`metadata-recent-changes metadata-recent-changes-${presentation.tone}`}
+      aria-live="polite"
+      aria-atomic="false"
+      aria-labelledby="metadata-recent-changes-heading"
+    >
+      <h3
+        id="metadata-recent-changes-heading"
+        ref={headingRef}
+        tabIndex={terminal ? -1 : undefined}
+      >
+        {presentation.heading}
+      </h3>
+      <p role={presentation.tone === 'error' ? 'alert' : 'status'}>{presentation.message}</p>
+      {state.kind === 'success' && (
+        <div className="metadata-recent-changes-content">
+          <p className="metadata-recent-changes-window">
+            Window:{' '}
+            <time dateTime={state.response.window.startTime}>
+              {formatObservedAt(state.response.window.startTime)}
+            </time>{' '}
+            to{' '}
+            <time dateTime={state.response.window.endTime}>
+              {formatObservedAt(state.response.window.endTime)}
+            </time>{' '}
+            · limit {state.response.limit}
+          </p>
+          {state.response.changes.length > 0 && (
+            <ol className="metadata-recent-change-list">
+              {state.response.changes.map((change) => (
+                <li key={change.id} data-change-id={change.id}>
+                  <div className="metadata-recent-change-heading">
+                    <div>
+                      <span>{change.category}</span>
+                      <strong>{change.operation}</strong>
+                    </div>
+                    <time dateTime={change.timestamp}>{formatObservedAt(change.timestamp)}</time>
+                  </div>
+                  <p>{change.summary}</p>
+                  {change.field && <code>{change.field}</code>}
+                  <small>
+                    Source: {change.source}
+                    {change.actor ? ` · ${change.actor}` : ''}
+                  </small>
+                </li>
+              ))}
+            </ol>
+          )}
+          {state.response.truncated && (
+            <p className="metadata-recent-changes-truncation" role="status">
+              Truncated: the selected window, limit, or provider cap omitted additional history.
             </p>
           )}
         </div>
@@ -631,18 +788,29 @@ export function App() {
   const [metadataLineageMaxNodes, setMetadataLineageMaxNodes] = useState(
     METADATA_LINEAGE_DEFAULT_MAX_NODES,
   );
+  const [metadataRecentChangesWindow, setMetadataRecentChangesWindow] = useState(
+    METADATA_RECENT_CHANGES_DEFAULT_WINDOW_HOURS,
+  );
+  const [metadataRecentChangesLimit, setMetadataRecentChangesLimit] = useState(
+    METADATA_RECENT_CHANGES_DEFAULT_LIMIT,
+  );
   const [metadataSearchState, setMetadataSearchState] = useState<MetadataSearchState>({
     kind: 'idle',
   });
   const [metadataLineageState, setMetadataLineageState] = useState<MetadataLineageState>({
     kind: 'idle',
   });
+  const [metadataRecentChangesState, setMetadataRecentChangesState] =
+    useState<MetadataRecentChangesState>({ kind: 'idle' });
   const metadataSearchAbort = useRef<AbortController | null>(null);
   const metadataLineageAbort = useRef<AbortController | null>(null);
+  const metadataRecentChangesAbort = useRef<AbortController | null>(null);
   const metadataSearchHeading = useRef<HTMLHeadingElement>(null);
   const metadataLineageHeading = useRef<HTMLHeadingElement>(null);
+  const metadataRecentChangesHeading = useRef<HTMLHeadingElement>(null);
   const metadataSearchGuard = useRef(createLatestRequestGuard());
   const metadataLineageGuard = useRef(createLatestRequestGuard());
+  const metadataRecentChangesGuard = useRef(createLatestRequestGuard());
 
   useEffect(() => {
     const controller = new AbortController();
@@ -676,6 +844,7 @@ export function App() {
     () => () => {
       metadataSearchAbort.current?.abort();
       metadataLineageAbort.current?.abort();
+      metadataRecentChangesAbort.current?.abort();
     },
     [],
   );
@@ -692,12 +861,24 @@ export function App() {
     }
   }, [metadataLineageState]);
 
+  useEffect(() => {
+    if (
+      metadataRecentChangesState.kind === 'success' ||
+      metadataRecentChangesState.kind === 'api-error'
+    ) {
+      metadataRecentChangesHeading.current?.focus();
+    }
+  }, [metadataRecentChangesState]);
+
   async function submitMetadataSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     metadataSearchAbort.current?.abort();
     metadataLineageAbort.current?.abort();
+    metadataRecentChangesAbort.current?.abort();
     metadataLineageGuard.current.begin();
+    metadataRecentChangesGuard.current.begin();
     setMetadataLineageState({ kind: 'idle' });
+    setMetadataRecentChangesState({ kind: 'idle' });
     const requestId = metadataSearchGuard.current.begin();
     const parsedRequest = MetadataEntitySearchRequestSchema.safeParse({
       query: metadataQuery,
@@ -817,6 +998,67 @@ export function App() {
         setMetadataLineageState({
           kind: 'api-error',
           message: 'Metadata lineage is unavailable. Try again shortly.',
+        });
+      }
+    }
+  }
+
+  async function requestMetadataRecentChanges(entity: EntityRef) {
+    metadataRecentChangesAbort.current?.abort();
+    const requestId = metadataRecentChangesGuard.current.begin();
+    const parsedRequest = MetadataRecentChangesRequestSchema.safeParse({
+      entityUrn: entity.urn,
+      windowHours: metadataRecentChangesWindow,
+      limit: metadataRecentChangesLimit,
+    });
+    if (!parsedRequest.success) {
+      setMetadataRecentChangesState({
+        kind: 'api-error',
+        message: 'The recent-change bounds are invalid.',
+      });
+      return;
+    }
+
+    const controller = new AbortController();
+    metadataRecentChangesAbort.current = controller;
+    setMetadataRecentChangesState({ kind: 'loading', entityName: entity.name });
+
+    try {
+      const response = await fetch(`${apiBaseUrl}/metadata/recent-changes`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(parsedRequest.data),
+        signal: controller.signal,
+      });
+      const body: unknown = await response.json();
+      if (!metadataRecentChangesGuard.current.isCurrent(requestId)) {
+        return;
+      }
+      if (!response.ok) {
+        const parsedError = ApiErrorSchema.safeParse(body);
+        setMetadataRecentChangesState({
+          kind: 'api-error',
+          message: parsedError.success
+            ? parsedError.data.error.message
+            : 'Metadata recent changes could not be completed.',
+        });
+        return;
+      }
+
+      const parsedResponse = MetadataRecentChangesResponseSchema.safeParse(body);
+      if (!parsedResponse.success) {
+        setMetadataRecentChangesState({
+          kind: 'api-error',
+          message: 'Metadata recent changes returned an unexpected response.',
+        });
+        return;
+      }
+      setMetadataRecentChangesState({ kind: 'success', response: parsedResponse.data });
+    } catch {
+      if (!controller.signal.aborted && metadataRecentChangesGuard.current.isCurrent(requestId)) {
+        setMetadataRecentChangesState({
+          kind: 'api-error',
+          message: 'Metadata recent changes are unavailable. Try again shortly.',
         });
       }
     }
@@ -1035,15 +1277,60 @@ export function App() {
             </select>
           </div>
         </fieldset>
+        <fieldset
+          className="metadata-recent-changes-controls"
+          disabled={metadataRecentChangesState.kind === 'loading'}
+        >
+          <legend>Recent-change bounds</legend>
+          <div className="field">
+            <label htmlFor="metadata-recent-changes-window">Time window</label>
+            <select
+              id="metadata-recent-changes-window"
+              value={metadataRecentChangesWindow}
+              onChange={(event) => setMetadataRecentChangesWindow(Number(event.target.value))}
+            >
+              <option value={24}>24 hours</option>
+              <option value={168}>7 days</option>
+              <option value={720}>30 days</option>
+            </select>
+          </div>
+          <div className="field">
+            <label htmlFor="metadata-recent-changes-limit">Change limit</label>
+            <select
+              id="metadata-recent-changes-limit"
+              value={metadataRecentChangesLimit}
+              onChange={(event) => setMetadataRecentChangesLimit(Number(event.target.value))}
+            >
+              <option value={3}>3 changes</option>
+              <option value={10}>10 changes</option>
+              <option value={20}>20 changes</option>
+            </select>
+          </div>
+        </fieldset>
         <MetadataSearchResults
           headingRef={metadataSearchHeading}
           lineageLoading={metadataLineageState.kind === 'loading'}
           onRequestLineage={(result, direction) => {
             void requestMetadataLineage(result, direction);
           }}
+          onRequestRecentChanges={(result) => {
+            void requestMetadataRecentChanges(result);
+          }}
+          recentChangesLoading={metadataRecentChangesState.kind === 'loading'}
           state={metadataSearchState}
         />
-        <MetadataLineageResults headingRef={metadataLineageHeading} state={metadataLineageState} />
+        <MetadataLineageResults
+          headingRef={metadataLineageHeading}
+          onRequestRecentChanges={(node) => {
+            void requestMetadataRecentChanges(node);
+          }}
+          recentChangesLoading={metadataRecentChangesState.kind === 'loading'}
+          state={metadataLineageState}
+        />
+        <MetadataRecentChangesResults
+          headingRef={metadataRecentChangesHeading}
+          state={metadataRecentChangesState}
+        />
       </section>
 
       <section className="incident-panel" aria-labelledby="incident-heading">

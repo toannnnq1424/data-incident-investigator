@@ -34,6 +34,26 @@ size, total provider requests, timeout, and AbortSignal bound traversal; `trunca
 reachable node or edge is omitted by one of those bounds. A no-lineage entity is a valid one-node,
 zero-edge graph, while a missing root is a typed not-found error.
 
+## Recent metadata changes
+
+A public recent-change request identifies one stable entity URN plus a bounded time window and result
+limit. Its optional end time must be canonical UTC; otherwise each provider chooses a deterministic
+boundary appropriate to its mode (the fixed fixture snapshot or the current DataHub request time).
+Window and result bounds have shared defaults and hard caps, and the request cannot contain provider
+queries or synthetic paging fields.
+
+The normalized response contains the exact accepted UTC start/end window, accepted limit, returned
+count, truncation state, and a list of factual changes. Each change has a stable ID, the requested
+entity URN, canonical UTC timestamp, allowlisted category and operation, safe source plus optional actor
+label, a short factual summary, and an optional bounded field/aspect label. Rows are deduplicated by
+stable ID and ordered newest-first with ID as the same-timestamp tie-break. Every returned timestamp is
+inside the accepted window. `truncated` records when window filtering, the result limit, or the official
+DataHub 100-transaction timeline cap omits history; DataHub exposes no timeline cursor, so the shared
+model does not invent one.
+
+Recent changes remain facts. They are not impact scores, correlations, hypotheses, root-cause claims,
+or investigation evidence in Slice 2.4.
+
 ## Evidence
 
 Evidence is an observed fact with:
@@ -69,4 +89,6 @@ persistent storage is deferred.
 - Hypothesis evidence IDs resolve to report evidence.
 - Provider-specific payloads never appear in API responses.
 - Lineage roots/nodes and source-target edge pairs are unique, and lineage edges never dangle.
+- Recent-change IDs are unique; rows match the requested entity/window and use deterministic
+  newest-first/ID ordering with an exact returned count.
 - `inconclusive` reports include missing information and avoid unsupported root-cause claims.

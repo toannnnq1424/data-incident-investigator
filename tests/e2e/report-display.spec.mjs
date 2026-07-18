@@ -134,6 +134,51 @@ try {
     fail('Fixture lineage did not render a unique focused bounded graph with cycle-safe evidence.');
   }
 
+  await page.getByLabel('Change limit').selectOption('3');
+  await page
+    .locator('.metadata-lineage-node-list')
+    .getByRole('button', { name: 'View recent changes for lineage.demo.root' })
+    .click();
+  const recentChangesHeading = page
+    .locator('.metadata-recent-changes')
+    .getByRole('heading', { name: 'Recent metadata changes' });
+  await recentChangesHeading.waitFor({ timeout: 2_000 });
+  await page
+    .getByText(
+      'Truncated: the selected window, limit, or provider cap omitted additional history.',
+      { exact: true },
+    )
+    .waitFor({ timeout: 2_000 });
+  const recentChanges = await page
+    .locator('.metadata-recent-changes-content')
+    .evaluate((element) => {
+      const rows = [...element.querySelectorAll('.metadata-recent-change-list > li')].map(
+        (row) => ({
+          id: row.getAttribute('data-change-id'),
+          text: row.textContent ?? '',
+          timestamp: row.querySelector('time')?.getAttribute('datetime') ?? '',
+        }),
+      );
+      return {
+        rows,
+        semanticTimeCount: element.querySelectorAll('time[datetime]').length,
+      };
+    });
+  if (
+    recentChanges.rows.map((row) => row.id).join('|') !==
+      'change-root-owner|change-root-schema|change-root-tag' ||
+    recentChanges.rows[0]?.timestamp !== '2026-07-19T07:45:00.000Z' ||
+    !recentChanges.rows[0]?.text.includes('Ownership was updated for lineage.demo.root.') ||
+    !recentChanges.rows[1]?.text.includes('gross_revenue') ||
+    !recentChanges.rows[2]?.text.includes('certified tag') ||
+    recentChanges.semanticTimeCount < 5 ||
+    !(await recentChangesHeading.evaluate(
+      (element) => element === element.ownerDocument.activeElement,
+    ))
+  ) {
+    fail('Fixture recent changes did not render deterministic focused facts and truncation.');
+  }
+
   await page.locator('#question').fill('Why did revenue drop today?');
   await page.locator('#entity-hint').fill('analytics.daily_revenue');
   await page.locator('#occurred-at').fill('2026-07-18T08:30');

@@ -768,3 +768,105 @@ credential-gated.
 Commit `feat: add bounded datahub lineage`, push fast-forward, mở stacked draft PR base
 `codex/phase-2-2-entity-search` và theo dõi đúng một CI run tới terminal. Sau green handoff, tạo task riêng
 cho Phase 2 Slice 2.4 — metadata and recent changes; không bắt đầu Slice 2.4 trong task này.
+
+## 2026-07-19 — Phase 2 Slice 2.4 metadata and recent changes
+
+### Objective
+
+Triển khai đúng một vertical slice từ exact Slice 2.3 HEAD
+`a5339fbaca1c855720bb6df1377b233db30924ac`: shared recent-change contract -> fixture/DataHub client
+boundary -> API -> compact web display từ search result hoặc lineage node, chỉ thu thập/hiển thị facts và
+không bắt đầu impact analysis, correlation, hypothesis ranking, agent orchestration hoặc checkpoint kế
+tiếp.
+
+### Completed
+
+Thêm strict request defaults/hard caps cho stable entity URN, optional canonical UTC end time, window
+`168h` mặc định/`720h` hard max và limit `10`/cap `20`. Response enforce exact UTC window, unique stable
+IDs, allowlisted category/operation, same entity/window, exact returned count, newest-first/ID tie-break,
+dedup và truncation. Fixture có multiple category, same-timestamp duplicate, empty/missing, window/limit
+truncation nhưng giữ nguyên canonical raw.orders change và incident report. DataHub client dùng đúng một
+Bearer-authenticated `getTimeline` GraphQL request cùng entity existence check, một total timeout,
+không retry/fan-out/cursor, normalize official categories/operations, tạo deterministic hashed ID và
+không trả raw actor URN/description/provider payload. API route chỉ compose/validate/map safe errors.
+Web giữ health/search/lineage/incident shell, thêm bounded controls, action trên search result và lineage
+node, semantic heading/list/time, loading/success/empty/truncated/error, terminal focus và latest-request
+guard. Combined browser source kiểm tra facts/order/truncation trước canonical completed report.
+
+### Files changed
+
+`packages/shared-types/src/index.ts`; `packages/datahub-client/src/index.ts`; `apps/api/src/index.ts`;
+`apps/web/src/App.tsx`; `apps/web/src/styles.css`;
+`fixtures/metadata/removed-schema-column.json`; `tests/integration/contracts.test.ts`;
+`tests/integration/fixture-adapter.test.ts`; `tests/integration/datahub-recent-changes.test.ts`;
+`tests/integration/metadata-recent-changes-api.test.ts`;
+`tests/integration/web-metadata-recent-changes.test.ts`; `tests/e2e/report-display.spec.mjs`;
+`docs/API_CONTRACTS.md`; `docs/DATA_MODEL.md`; `docs/IMPLEMENTATION_PLAN.md`;
+`docs/KNOWN_ISSUES.md`; `docs/SESSION_LOG.md`. Không đổi repository structure, manifest, lockfile,
+`.env.example`, controller hoặc agent-core business logic.
+
+### Decisions
+
+Nguồn chính thức DataHub là `datahub-graphql-core/src/main/resources/timeline.graphql`, web-client
+`datahub-web-react/src/graphql/timeline.graphql`, `GetTimelineResolver.java` và
+`TimelineService.java`. `GetTimelineInput` chỉ có `urn`/optional categories, không có time range, count,
+page token hay cursor; resolver gọi service một lần với `DEFAULT_MAX_CHANGE_TRANSACTIONS = 100`. Vì vậy
+adapter gọi đúng một request, lọc window/limit cục bộ, mark truncation khi window/limit/provider cap bỏ
+history và không tự tạo cursor. DataHub actor chỉ normalize thành `DataHub system|user`; summary được
+derive từ allowlisted category/operation/optional field thay vì truyền raw description. Fixture dùng
+fixed `snapshotAt` để response mặc định deterministic. Slice 2.4 không đưa facts vào investigation
+evidence hoặc suy luận impact/cause.
+
+### Validation performed
+
+- Frozen bootstrap reuse 259 package, supply-chain PASS trong 4.4 giây, không đổi lockfile. Planned
+  `pnpm exec prettier` tái hiện known shim failure trước write trong 0.564 giây; verified project-local
+  formatter write PASS 1.707 giây và format check PASS 1.291 giây.
+- Affected ESLint ban đầu bắt một `no-control-regex`; targeted char-code sanitizer fix xong lint PASS
+  1.358 giây. Typecheck ban đầu bắt một `exactOptionalPropertyTypes` mismatch; targeted fix xong
+  datahub-client format/lint/typecheck PASS trong 3.486 giây. Final 5/5 typecheck PASS: shared-types
+  2.533 giây, datahub-client trong targeted sequence, agent-core 2.788 giây, API 3.462 giây, web 3.471
+  giây.
+- Sandboxed Vitest dừng trước test vì known esbuild path denial. Exact scoped retry PASS 14/14 files,
+  116/116 tests; Vitest 8.73 giây, command wall 11.131 giây. Trong đó DataHub recent-change client PASS
+  12 tests và recent-change API PASS 16 tests.
+- Build lượt đầu PASS shared-types/datahub-client rồi Vite gặp cùng sandbox denial; scoped retry PASS
+  agent-core/API/web trong 6.752 giây. Tổng cộng 5/5 affected builds PASS; web transform 109 modules và
+  build 1.33 giây.
+- Đúng một `pnpm test:e2e:report` chọn API `http://127.0.0.1:62836`, web
+  `http://127.0.0.1:62837`, rồi PASS fixture search -> three-node bounded lineage -> deterministic
+  recent ownership/schema/tag facts + same-timestamp order + truncation/semantic time -> canonical
+  processing -> completed/full evidence trong 12.969 giây (20.206 giây command wall). Console sạch,
+  focus, evidence references, responsive overflow, three-minute bound, selected ports và launcher
+  cleanup đều PASS.
+- Final boundary review harden DataHub stable ID bằng transaction/audit/modifier/parameter/description
+  inputs chỉ đi vào hash, nên distinct same-time events không bị collapse và exact duplicates vẫn
+  dedup. DataHub-only affected rerun PASS format/lint/typecheck trong 4.145 giây, client test 12/12 trong
+  974ms (1.848 giây command wall), và build trong 1.990 giây. Sau đó fixture reuse trực tiếp shared
+  category schema; affected format/lint/typecheck/build PASS 5.383 giây và fixture + DataHub adapter
+  tests PASS 19/19 trong 961ms (1.667 giây command wall). Browser path không đổi nên không rerun lần hai.
+  Full test review sau đó bắt January/July typo làm same-timestamp assertion vacuous; assertion sửa yêu
+  cầu đúng hai row, affected format/lint PASS 1.536 giây và client tests PASS 12/12 trong 913ms (1.651
+  giây command wall).
+- `git diff --check`, tracked-plus-untracked secret scan, generated-artifact scan, scoped full diff,
+  name/stat và branch/worktree review PASS trước commit; secret match `0`, generated artifact match `0`.
+
+### Validation intentionally deferred
+
+Live DataHub smoke cần credential nên deferred. Không chạy Level D vì Slice 2.4 không phải persistent
+Phase 2 checkpoint; không chạy impact analysis, change-to-incident correlation, schema diff, ownership
+enrichment, investigation evidence integration, agent reasoning hoặc checkpoint kế tiếp.
+
+### Known issues
+
+Không có local product/test blocker. Managed `pnpm exec` workspace-binary resolution và sandbox esbuild
+path denial vẫn là environment limitation với verified local/scoped fallback, không phải CI blocker.
+DataHub timeline không có public GraphQL paging/window input; deployment không retain timeline history có
+thể trả empty hợp lệ. Live DataHub smoke vẫn credential-gated.
+
+### Exact next step
+
+Commit duy nhất `feat: add recent metadata changes`, push fast-forward, mở stacked draft PR base
+`codex/phase-2-3-bounded-lineage` và theo dõi đúng một CI run tới terminal. Nếu CI fail, chỉ sửa targeted
+blocker trong task này. Sau green handoff, tạo task riêng cho Phase 2 integration checkpoint; không bắt
+đầu impact analysis, correlation, agent reasoning hoặc checkpoint trong task này.

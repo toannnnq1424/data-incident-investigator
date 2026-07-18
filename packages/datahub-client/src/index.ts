@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import {
   METADATA_LINEAGE_MAX_EDGES,
@@ -6,6 +7,11 @@ import {
   MetadataLineageNodeSchema,
   MetadataLineageRequestSchema,
   MetadataLineageResponseSchema,
+  MetadataRecentChangeCategorySchema,
+  MetadataRecentChangeOperationSchema,
+  MetadataRecentChangeSchema,
+  MetadataRecentChangesRequestSchema,
+  MetadataRecentChangesResponseSchema,
   type EntityKind,
   type EntityRef,
   type MetadataEntitySearchRequest,
@@ -16,6 +22,10 @@ import {
   type MetadataLineageNode,
   type MetadataLineageRequest,
   type MetadataLineageResponse,
+  type MetadataRecentChange,
+  type MetadataRecentChangeCategory,
+  type MetadataRecentChangesRequest,
+  type MetadataRecentChangesResponse,
 } from '@dii/shared-types';
 import { z } from 'zod';
 
@@ -49,18 +59,20 @@ export interface MetadataLineageProvider {
   getLineageGraph(options: MetadataLineageOptions): Promise<MetadataLineageResponse>;
 }
 
-export const MetadataChangeCategorySchema = z.enum([
-  'schema',
-  'ownership',
-  'tag',
-  'domain',
-  'pipeline',
-]);
+export interface MetadataRecentChangesOptions extends MetadataRecentChangesRequest {
+  signal?: AbortSignal;
+}
+
+export interface MetadataRecentChangesProvider {
+  getRecentChangesForEntity(
+    options: MetadataRecentChangesOptions,
+  ): Promise<MetadataRecentChangesResponse>;
+}
 
 export interface MetadataChange {
   id: string;
   entity: EntityRef;
-  category: z.infer<typeof MetadataChangeCategorySchema>;
+  category: MetadataRecentChangeCategory;
   observedAt: string;
   summary: string;
 }
@@ -73,7 +85,11 @@ export interface LineageResult {
 }
 
 export interface MetadataAdapter
-  extends MetadataHealthProvider, MetadataSearchProvider, MetadataLineageProvider {
+  extends
+    MetadataHealthProvider,
+    MetadataSearchProvider,
+    MetadataLineageProvider,
+    MetadataRecentChangesProvider {
   getLineage(entity: EntityRef, depth: number, entityLimit: number): Promise<LineageResult>;
   getRecentChanges(
     entities: EntityRef[],
@@ -85,6 +101,7 @@ export interface MetadataAdapter
 const FixtureMetadataSchema = z
   .object({
     scenarioId: z.string().min(1),
+    snapshotAt: z.iso.datetime(),
     defaultSeedUrn: z.string().min(1),
     entities: z.array(MetadataEntitySearchResultSchema).min(1).max(10),
     lineage: z
@@ -100,9 +117,12 @@ const FixtureMetadataSchema = z
         z.object({
           id: z.string().min(1),
           entityUrn: z.string().min(1),
-          category: MetadataChangeCategorySchema,
+          category: MetadataRecentChangeCategorySchema,
+          operation: MetadataRecentChangeOperationSchema,
           observedAt: z.iso.datetime(),
           summary: z.string().min(1),
+          actor: z.string().min(1).max(100).optional(),
+          field: z.string().min(1).max(300).optional(),
         }),
       )
       .max(20),
@@ -882,6 +902,373 @@ export class DataHubLineageClient implements MetadataLineageProvider {
   }
 }
 
+const dataHubTimelineTransactionLimit = 100;
+
+const DataHubTimelineCategorySchema = z.enum([
+  'DOCUMENTATION',
+  'GLOSSARY_TERM',
+  'OWNERSHIP',
+  'TECHNICAL_SCHEMA',
+  'TAG',
+  'PARENT',
+  'RELATED_ENTITIES',
+  'DOMAIN',
+  'STRUCTURED_PROPERTY',
+  'APPLICATION',
+  'ASSET_MEMBERSHIP',
+]);
+
+const DataHubTimelineOperationSchema = z.enum(['ADD', 'MODIFY', 'REMOVE']);
+
+const DataHubTimelineResponseSchema = z.object({
+  data: z
+    .object({
+      root: z.object({ urn: z.string().min(1).max(2_000) }).nullish(),
+      getTimeline: z
+        .object({
+          changeTransactions: z
+            .array(
+              z.object({
+                timestampMillis: z.number().int().min(0).max(8_640_000_000_000_000),
+                lastSemanticVersion: z.string().max(200),
+                versionStamp: z.string().max(500),
+                changeType: DataHubTimelineOperationSchema,
+                actor: z.string().max(2_000).nullish(),
+                changes: z
+                  .array(
+                    z.object({
+                      urn: z.string().min(1).max(2_000),
+                      category: DataHubTimelineCategorySchema,
+                      operation: DataHubTimelineOperationSchema,
+                      modifier: z.string().max(2_000).nullish(),
+                      parameters: z
+                        .array(
+                          z.object({
+                            key: z.string().max(200).nullish(),
+                            value: z.string().max(2_000).nullish(),
+                          }),
+                        )
+                        .max(100)
+                        .nullish(),
+                      auditStamp: z
+                        .object({
+                          actor: z.string().max(2_000).nullish(),
+                          time: z.number().int().min(0).max(8_640_000_000_000_000),
+                        })
+                        .nullish(),
+                      description: z.string().max(10_000).nullish(),
+                    }),
+                  )
+                  .max(100),
+              }),
+            )
+            .max(dataHubTimelineTransactionLimit),
+        })
+        .nullish(),
+    })
+    .nullish(),
+  errors: z.array(z.unknown()).optional(),
+});
+
+const dataHubRecentChangesQuery = `
+  query MetadataRecentChanges($urn: String!, $input: GetTimelineInput!) {
+    root: entity(urn: $urn) { urn }
+    getTimeline(input: $input) {
+      changeTransactions {
+        timestampMillis
+        lastSemanticVersion
+        versionStamp
+        changeType
+        actor
+        changes {
+          urn
+          category
+          operation
+          modifier
+          parameters { key value }
+          auditStamp { actor time }
+          description
+        }
+      }
+    }
+  }
+`;
+
+const recentChangeCategoryByDataHubCategory = {
+  DOCUMENTATION: 'documentation',
+  GLOSSARY_TERM: 'glossary',
+  OWNERSHIP: 'ownership',
+  TECHNICAL_SCHEMA: 'schema',
+  TAG: 'tag',
+  PARENT: 'relationship',
+  RELATED_ENTITIES: 'relationship',
+  DOMAIN: 'domain',
+  STRUCTURED_PROPERTY: 'structured-property',
+  APPLICATION: 'application',
+  ASSET_MEMBERSHIP: 'asset-membership',
+} as const satisfies Record<
+  z.infer<typeof DataHubTimelineCategorySchema>,
+  MetadataRecentChangeCategory
+>;
+
+const recentChangeOperationByDataHubOperation = {
+  ADD: 'added',
+  MODIFY: 'modified',
+  REMOVE: 'removed',
+} as const satisfies Record<
+  z.infer<typeof DataHubTimelineOperationSchema>,
+  MetadataRecentChange['operation']
+>;
+
+const recentChangeCategoryLabels: Record<MetadataRecentChangeCategory, string> = {
+  schema: 'Schema',
+  ownership: 'Ownership',
+  tag: 'Tag',
+  domain: 'Domain',
+  documentation: 'Documentation',
+  glossary: 'Glossary term',
+  relationship: 'Related entity',
+  'structured-property': 'Structured property',
+  application: 'Application association',
+  'asset-membership': 'Asset membership',
+  pipeline: 'Pipeline metadata',
+};
+
+function canonicalRecentChangeWindow(request: MetadataRecentChangesRequest, fallbackEndTime: Date) {
+  const endTime = new Date(request.endTime ?? fallbackEndTime).toISOString();
+  const startTime = new Date(
+    Date.parse(endTime) - request.windowHours * 60 * 60 * 1_000,
+  ).toISOString();
+  return { startTime, endTime, hours: request.windowHours };
+}
+
+function compareRecentChanges(left: MetadataRecentChange, right: MetadataRecentChange) {
+  if (left.timestamp !== right.timestamp) {
+    return left.timestamp > right.timestamp ? -1 : 1;
+  }
+  return left.id < right.id ? -1 : left.id > right.id ? 1 : 0;
+}
+
+function normalizedRecentChangesResponse(
+  request: MetadataRecentChangesRequest,
+  window: { startTime: string; endTime: string; hours: number },
+  candidates: MetadataRecentChange[],
+  providerTruncated = false,
+) {
+  const startTimestamp = Date.parse(window.startTime);
+  const endTimestamp = Date.parse(window.endTime);
+  const withinWindow = candidates.filter((change) => {
+    const timestamp = Date.parse(change.timestamp);
+    return timestamp >= startTimestamp && timestamp <= endTimestamp;
+  });
+  const unique = new Map<string, MetadataRecentChange>();
+  withinWindow.sort(compareRecentChanges).forEach((change) => {
+    const parsed = MetadataRecentChangeSchema.parse(change);
+    if (!unique.has(parsed.id)) {
+      unique.set(parsed.id, parsed);
+    }
+  });
+  const ordered = [...unique.values()].sort(compareRecentChanges);
+  const changes = ordered.slice(0, request.limit);
+
+  return MetadataRecentChangesResponseSchema.parse({
+    entityUrn: request.entityUrn,
+    window,
+    limit: request.limit,
+    returnedCount: changes.length,
+    truncated:
+      providerTruncated ||
+      candidates.length > withinWindow.length ||
+      ordered.length > request.limit,
+    changes,
+  });
+}
+
+function safeTimelineField(
+  modifier: string | null | undefined,
+  parameters:
+    | Array<{
+        key?: string | null | undefined;
+        value?: string | null | undefined;
+      }>
+    | null
+    | undefined,
+) {
+  const parameter = parameters?.find(({ key }) =>
+    ['field', 'fieldpath', 'aspect', 'aspectname'].includes(key?.trim().toLowerCase() ?? ''),
+  );
+  const candidate = safeProviderText([modifier, parameter?.value], 300);
+  if (!candidate) {
+    return undefined;
+  }
+  const withoutControlCharacters = [...candidate]
+    .map((character) => {
+      const code = character.charCodeAt(0);
+      return code < 32 || code === 127 ? ' ' : character;
+    })
+    .join('');
+  const normalized = withoutControlCharacters.replace(/\s+/g, ' ').trim();
+  return normalized && !normalized.includes('@') ? normalized.slice(0, 300) : undefined;
+}
+
+function safeTimelineActor(actor: string | null | undefined) {
+  if (!actor?.trim()) {
+    return undefined;
+  }
+  return /(?:__datahub_system|datahub-system|system)$/i.test(actor.trim())
+    ? 'DataHub system'
+    : 'DataHub user';
+}
+
+function dataHubRecentChangeId(parts: string[]) {
+  return `datahub-${createHash('sha256').update(JSON.stringify(parts)).digest('hex').slice(0, 24)}`;
+}
+
+export interface DataHubRecentChangesClientConfig extends DataHubHealthClientConfig {
+  now?: () => Date;
+}
+
+export class DataHubRecentChangesClient implements MetadataRecentChangesProvider {
+  private readonly graphqlUrl: URL | undefined;
+  private readonly now: () => Date;
+  private readonly timeoutMs: number;
+  private readonly token: string | undefined;
+
+  constructor(config: DataHubRecentChangesClientConfig) {
+    this.graphqlUrl = dataHubGraphqlUrl(config.gmsUrl);
+    this.now = config.now ?? (() => new Date());
+    this.timeoutMs = boundedHealthTimeout(config.timeoutMs);
+    this.token = config.token?.trim() || undefined;
+  }
+
+  async getRecentChangesForEntity(
+    options: MetadataRecentChangesOptions,
+  ): Promise<MetadataRecentChangesResponse> {
+    if (!this.graphqlUrl || !this.token) {
+      throw new MetadataProviderError('unconfigured');
+    }
+
+    const { signal, ...input } = options;
+    const request = MetadataRecentChangesRequestSchema.parse(input);
+    const window = canonicalRecentChangeWindow(request, this.now());
+    const controller = new AbortController();
+    const abort = () => controller.abort();
+    const timeout = setTimeout(abort, this.timeoutMs);
+    if (signal?.aborted) {
+      controller.abort();
+    } else {
+      signal?.addEventListener('abort', abort, { once: true });
+    }
+
+    try {
+      const response = await fetch(this.graphqlUrl, {
+        method: 'POST',
+        headers: {
+          accept: 'application/json',
+          authorization: `Bearer ${this.token}`,
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          query: dataHubRecentChangesQuery,
+          variables: { urn: request.entityUrn, input: { urn: request.entityUrn } },
+        }),
+        signal: controller.signal,
+      });
+
+      if (response.status === 401 || response.status === 403) {
+        throw new MetadataProviderError('unauthorized');
+      }
+      if (!response.ok) {
+        throw new MetadataProviderError('unavailable');
+      }
+      if (response.status !== 200 || !isJsonResponse(response)) {
+        throw new MetadataProviderError('invalid_response');
+      }
+
+      let body: unknown;
+      try {
+        body = await response.json();
+      } catch {
+        throw new MetadataProviderError('invalid_response');
+      }
+      const parsedBody = DataHubTimelineResponseSchema.safeParse(body);
+      if (
+        !parsedBody.success ||
+        !parsedBody.data.data ||
+        (parsedBody.data.errors?.length ?? 0) > 0
+      ) {
+        throw new MetadataProviderError('invalid_response');
+      }
+      const { root, getTimeline } = parsedBody.data.data;
+      if (!root) {
+        throw new MetadataProviderError('not_found');
+      }
+      if (root.urn.trim() !== request.entityUrn || !getTimeline) {
+        throw new MetadataProviderError('invalid_response');
+      }
+
+      const candidates: MetadataRecentChange[] = [];
+      for (const transaction of getTimeline.changeTransactions) {
+        const timestamp = new Date(transaction.timestampMillis).toISOString();
+        for (const change of transaction.changes) {
+          if (change.urn.trim() !== request.entityUrn) {
+            throw new MetadataProviderError('invalid_response');
+          }
+          const category = recentChangeCategoryByDataHubCategory[change.category];
+          const operation = recentChangeOperationByDataHubOperation[change.operation];
+          const field = safeTimelineField(change.modifier, change.parameters);
+          const summary = `${recentChangeCategoryLabels[category]} ${operation}${field ? `: ${field}` : ''}.`;
+          const id = dataHubRecentChangeId([
+            request.entityUrn,
+            timestamp,
+            category,
+            operation,
+            field ?? '',
+            transaction.lastSemanticVersion,
+            transaction.versionStamp,
+            transaction.actor ?? '',
+            change.auditStamp?.actor ?? '',
+            String(change.auditStamp?.time ?? ''),
+            change.modifier ?? '',
+            JSON.stringify(change.parameters ?? []),
+            change.description ?? '',
+          ]);
+          candidates.push(
+            MetadataRecentChangeSchema.parse({
+              id,
+              entityUrn: request.entityUrn,
+              timestamp,
+              category,
+              operation,
+              ...(safeTimelineActor(change.auditStamp?.actor ?? transaction.actor)
+                ? { actor: safeTimelineActor(change.auditStamp?.actor ?? transaction.actor) }
+                : {}),
+              source: 'datahub',
+              summary,
+              ...(field ? { field } : {}),
+            }),
+          );
+        }
+      }
+
+      return normalizedRecentChangesResponse(
+        request,
+        window,
+        candidates,
+        getTimeline.changeTransactions.length === dataHubTimelineTransactionLimit,
+      );
+    } catch (error) {
+      if (error instanceof MetadataProviderError) {
+        throw error;
+      }
+      throw new MetadataProviderError(controller.signal.aborted ? 'timeout' : 'unavailable');
+    } finally {
+      clearTimeout(timeout);
+      signal?.removeEventListener('abort', abort);
+    }
+  }
+}
+
 const defaultFixtureUrl = new URL(
   '../../../fixtures/metadata/removed-schema-column.json',
   import.meta.url,
@@ -1061,6 +1448,37 @@ export class FixtureMetadataAdapter implements MetadataAdapter {
     };
   }
 
+  async getRecentChangesForEntity(
+    options: MetadataRecentChangesOptions,
+  ): Promise<MetadataRecentChangesResponse> {
+    const { signal, ...input } = options;
+    const request = MetadataRecentChangesRequestSchema.parse(input);
+    if (signal?.aborted) {
+      throw new MetadataProviderError('timeout');
+    }
+    if (!this.entitiesByUrn.has(request.entityUrn)) {
+      throw new MetadataProviderError('not_found');
+    }
+
+    const window = canonicalRecentChangeWindow(request, new Date(this.fixture.snapshotAt));
+    const candidates = this.fixture.changes
+      .filter((change) => change.entityUrn === request.entityUrn)
+      .map((change) =>
+        MetadataRecentChangeSchema.parse({
+          id: change.id,
+          entityUrn: change.entityUrn,
+          timestamp: new Date(change.observedAt).toISOString(),
+          category: change.category,
+          operation: change.operation,
+          ...(change.actor ? { actor: change.actor } : {}),
+          source: 'fixture',
+          summary: change.summary,
+          ...(change.field ? { field: change.field } : {}),
+        }),
+      );
+    return normalizedRecentChangesResponse(request, window, candidates);
+  }
+
   async getRecentChanges(
     entities: EntityRef[],
     since: string,
@@ -1148,4 +1566,8 @@ export function createDataHubSearchClient(config: DataHubSearchClientConfig) {
 
 export function createDataHubLineageClient(config: DataHubLineageClientConfig) {
   return new DataHubLineageClient(config);
+}
+
+export function createDataHubRecentChangesClient(config: DataHubRecentChangesClientConfig) {
+  return new DataHubRecentChangesClient(config);
 }
