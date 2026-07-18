@@ -20,6 +20,7 @@ Last updated: 2026-07-18.
   and macOS/POSIX bootstrap scripts plus UI wiring instructions, but intentionally does not commit a
   guessed Local Environment schema. An app-generated, secret-free file under `.codex/` remains a
   follow-up.
-- The Windows bootstrap is validated against the current Codex bundled runtime. The macOS script is
-  syntax-checked here, but the macOS bundled runtime location and end-to-end execution still require a
-  macOS host.
+- The Windows bootstrap is validated against the current Codex bundled runtime, and the macOS
+  bootstrap is validated end to end with Homebrew Node/pnpm on `PATH`. The macOS Codex-bundled runtime
+  location/fallback remains unexercised and must fail with the script's actionable prerequisite error
+  if neither compatible host tools nor the verified relative cache layout is available.

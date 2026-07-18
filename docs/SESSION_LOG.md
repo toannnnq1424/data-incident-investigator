@@ -194,23 +194,27 @@ From an empty dependency state, Windows bootstrap discovered Node `v24.14.0` and
 `3.9.5` through `pnpm exec`, and passed the static package formatting check. The PowerShell parser,
 `bash -n`, TOML parser plus required policy assertions, changed-document Prettier, `git diff --check`,
 secret/absolute-path scan, and scoped diff review passed. The first changed-document Prettier attempt
-hit sandboxed pnpm-store access and the identical scoped retry passed.
+hit sandboxed pnpm-store access and the identical scoped retry passed. A clean detached macOS
+worktree at commit `5e75b72b21c01290afaa4f89dadf01c591ea803a` then passed
+`bash scripts/bootstrap-worktree.sh` with Homebrew Node `v26.3.0`, pnpm `11.9.0`, a 257-package frozen
+install with lockfile resolution skipped, Prettier `3.9.5`, the static check, the completion marker,
+and a clean final Git status.
 
 ### Validation intentionally deferred
 
-No full product suite was run. macOS script execution and the macOS bundled-runtime location require a
-macOS host. Creating and checking in the shared Local Environment file requires a human to save the
-verified setup commands through Codex desktop settings.
+No full product suite was run. The macOS host `PATH` route is validated; the macOS Codex-bundled
+runtime location/fallback remains unexercised. Creating and checking in the shared Local Environment
+file requires a human to save the verified setup commands through Codex desktop settings.
 
 ### Known issues
 
 The current host's ignored portable `gh.exe` exists only in the local checkout and its `gh auth`
 session is invalid. It remains a host prerequisite and is not copied or committed. See
-`docs/KNOWN_ISSUES.md` for the persistent Local Environment/macOS follow-ups.
+`docs/KNOWN_ISSUES.md` for the persistent Local Environment and macOS bundled-runtime follow-ups.
 
 ### Exact next step
 
 In Codex desktop settings, create the repository Local Environment with the documented Windows and
-macOS setup commands, share the app-generated secret-free file under `.codex/`, then validate one new
-managed worktree on macOS. After this infrastructure PR is accepted, start Slice 1.3 from the updated
-Slice 1.2 branch; do not implement it here.
+macOS setup commands and share the app-generated secret-free file under `.codex/`. Review draft PR
+[#4](https://github.com/toannnnq1424/data-incident-investigator/pull/4); after it is accepted, start
+Slice 1.3 from the updated Slice 1.2 branch. Do not implement it here.

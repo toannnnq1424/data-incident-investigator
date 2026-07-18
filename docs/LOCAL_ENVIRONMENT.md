@@ -58,8 +58,13 @@ available to the setup shell while dependencies and static tools run.
   Prettier binary and one static formatting command.
 
 On macOS, Node `>=24` and pnpm `11.9.0` on `PATH` are the supported host prerequisites when Codex does
-not expose a compatible bundled runtime at the verified relative cache layout. The macOS bundled
-runtime location has not been validated on a macOS host.
+not expose a compatible bundled runtime at the verified relative cache layout. End-to-end validation
+on a clean detached worktree at commit `5e75b72b21c01290afaa4f89dadf01c591ea803a` selected Homebrew
+Node `v26.3.0` from `/opt/homebrew/bin/node` and pnpm `11.9.0` from `/opt/homebrew/bin/pnpm`.
+`pnpm install --frozen-lockfile` installed 257 packages with lockfile resolution skipped,
+`pnpm exec prettier --version` returned `3.9.5`, the static Prettier check passed, the script printed
+`Managed-worktree bootstrap completed.`, and `git status` remained clean. This validates the host
+`PATH` route; the macOS Codex-bundled runtime location/fallback remains unexercised.
 
 GitHub CLI is also a host prerequisite for publishing, but it is not part of worktree bootstrap.
 Install the correct `gh` build on each host and verify `gh auth status`. Never copy the ignored Windows

@@ -206,23 +206,27 @@ Validation commands:
 - Parse `.codex/config.toml` and every new structured config with a standard parser.
 - Run the Windows bootstrap from a clean dependency state or equivalent disposable copy and capture
   versions plus frozen-install evidence.
-- Run `bash -n scripts/bootstrap-worktree.sh`; macOS execution remains a host-specific follow-up when
-  no macOS runner is available.
+- Run `bash scripts/bootstrap-worktree.sh` from a clean macOS managed worktree and capture versions,
+  frozen-install evidence, the static check, and final Git status.
 - Run `pnpm exec prettier --check` on the changed documentation/scripts and one affected static command
   only; do not run the full product suite.
 - Scan the diff for secrets, generated artifacts, absolute machine paths, dependency/lockfile changes,
   and unintended `.worktreeinclude` entries.
 
-Validation result: passed on Windows 2026-07-18. From an empty dependency state, the bootstrap found
+Validation result: passed on Windows and macOS 2026-07-18. From an empty Windows dependency state, the bootstrap found
 Codex-bundled Node `v24.14.0` and pnpm `11.9.0`, completed the frozen install of 257 packages with the
 lockfile resolution skipped, resolved root Prettier `3.9.5` through `pnpm exec`, and passed its static
 format check. PowerShell parsing, POSIX `bash -n`, TOML parsing/policy assertions, changed-document
 Prettier, `git diff --check`, secret/absolute-path scans, and the scoped diff review passed. The first
 changed-document Prettier attempt was classified as a sandbox restriction because pnpm could not
-access its host store; the identical targeted check passed once with scoped access. macOS runtime
-execution remains explicitly unverified because no macOS host is available. No product source,
-dependency, lockfile, Local Environment schema, `.worktreeinclude`, credential, or portable binary
-changed.
+access its host store; the identical targeted check passed once with scoped access.
+
+From a clean detached macOS worktree at commit `5e75b72b21c01290afaa4f89dadf01c591ea803a`,
+`bash scripts/bootstrap-worktree.sh` selected Homebrew Node `v26.3.0` and pnpm `11.9.0`, completed the
+frozen install of 257 packages with lockfile resolution skipped, resolved Prettier `3.9.5` through
+`pnpm exec`, passed the static Prettier check, printed `Managed-worktree bootstrap completed.`, and
+left `git status` clean. No product source, dependency, lockfile, Local Environment schema,
+`.worktreeinclude`, credential, or portable binary changed.
 
 ### Slice 1.3 — Evidence display
 
