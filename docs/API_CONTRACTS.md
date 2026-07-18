@@ -19,9 +19,10 @@ Response `200`:
 
 This endpoint does not reveal credentials or provider URLs.
 
-## Planned for Slice 1.1
+### `POST /incidents`
 
-### `POST /api/incidents`
+The browser calls `/api/incidents`; the Vite development proxy removes `/api` before forwarding to
+the API. Direct API clients use `/incidents`.
 
 Request:
 
@@ -38,8 +39,8 @@ Accepted response `202`:
 
 ```json
 {
-  "incidentId": "inc_...",
-  "status": "queued"
+  "incidentId": "576982bc-da91-4d69-a5ad-52206b3e17e2",
+  "status": "processing"
 }
 ```
 
@@ -48,14 +49,21 @@ Validation response `400`:
 ```json
 {
   "error": {
-    "code": "INVALID_INCIDENT_REQUEST",
-    "message": "Incident request is invalid.",
-    "fields": [{ "path": "question", "message": "Question is required." }]
+    "code": "VALIDATION_ERROR",
+    "message": "The incident request is invalid.",
+    "issues": [
+      {
+        "path": "question",
+        "message": "Too small: expected string to have >=3 characters"
+      }
+    ]
   }
 }
 ```
 
-Exact response schemas will be added to `packages/shared-types` before the route is implemented.
+`IncidentRequestSchema`, `IncidentAcceptedResponseSchema`, and `ApiErrorSchema` in
+`packages/shared-types` are the source of truth. Optional request fields are omitted when blank. The
+current slice accepts an incident but does not persist it; retrieval is added with Slice 1.2.
 
 ## Planned report retrieval
 

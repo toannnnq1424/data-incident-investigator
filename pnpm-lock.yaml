@@ -35,6 +35,9 @@ importers:
 
   apps/api:
     dependencies:
+      '@dii/shared-types':
+        specifier: workspace:*
+        version: link:../../packages/shared-types
       fastify:
         specifier: ^5.0.0
         version: 5.10.0
@@ -45,6 +48,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@dii/shared-types':
+        specifier: workspace:*
+        version: link:../../packages/shared-types
       react:
         specifier: ^19.0.0
         version: 19.2.7

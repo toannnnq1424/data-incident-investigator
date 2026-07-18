@@ -29,23 +29,49 @@ commit.
 
 ### Slice 1.1 — Submit incident
 
-Status: next slice; not started.
+Status: complete on `phase/mock-investigation`; validated 2026-07-18.
 
 User outcome: enter an incident question and receive an incident ID with visible processing status.
 
 Acceptance criteria:
 
-- Web form captures question and optional context.
+- Web form captures question, entity hint, occurrence time, and symptom.
 - API validates `IncidentRequestSchema` and rejects invalid requests with a stable error envelope.
 - Valid requests return an incident ID and processing state.
-- UI renders loading, success, and validation error states.
+- UI renders idle, submitting, success, API error, and validation error states accessibly.
 - Contract tests, API integration test, and one browser-level flow pass.
 
 Minimum expected files: web form/components, API incident route, shared API schemas, slice tests, API
 contracts, session log.
 
-Slice validation: format changed files; web/API lint and type check; targeted contract/integration tests;
-web and API builds.
+Minimum files for this slice:
+
+- `packages/shared-types/src/index.ts` for accepted-response and stable error-envelope schemas.
+- `apps/api/src/index.ts` for `POST /incidents`.
+- `apps/web/src/App.tsx`, `main.tsx`, `styles.css`, and `vite.config.ts` for the accessible form,
+  status states, and local API proxy.
+- Direct contract and API tests under `tests/integration`; browser-level UI-state validation against
+  the running slice.
+- `docs/API_CONTRACTS.md`, `KNOWN_ISSUES.md`, and `SESSION_LOG.md` for persistent state.
+
+Deferred: incident persistence, fixture investigation, polling/report retrieval, DataHub calls, and
+automated production remediation remain outside Slice 1.1.
+
+Level C validation:
+
+- Prettier check for changed files.
+- Repository lint plus affected web/API/shared-types type checks.
+- Targeted contract/API tests plus browser-level UI-state validation.
+- One real browser submission flow against local Vite/Fastify servers.
+- Affected web, API, and shared-types builds.
+
+Validation result: passed. Prettier checks, repository lint, three affected package type checks, six
+targeted contract/API tests, a real Vite-to-Fastify browser submission flow, and three affected builds
+all completed successfully. The browser flow also confirmed client validation, a generated UUID,
+`processing` status, and no browser console errors. Full phase/release validation remains deferred.
+
+Exact next slice: create a new project-scoped task for Slice 1.2 — Mock investigation. Do not begin it
+from the Slice 1.1 task.
 
 ### Slice 1.2 — Mock investigation
 
