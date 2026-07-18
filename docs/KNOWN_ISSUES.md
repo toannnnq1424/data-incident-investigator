@@ -2,6 +2,25 @@
 
 Last updated: 2026-07-19.
 
+- Phase 2 local integration closure passes on exact Slice 2.4 handoff
+  `43e6d35c9e7881e668eb7cd4837542e8a7fab8dd`: one `pnpm validate` passed format, lint, six
+  type-checks, 19 files/139 tests, six builds, and smoke in `29s`; one combined fixture browser flow
+  passed in `5314ms` on dynamic ports `52655`/`52656` with search, truncated/cycle-safe lineage,
+  deterministic truncated recent changes, incident processing/completed/full evidence, accessibility,
+  resolved evidence references, clean console, no horizontal overflow, and clean launcher/port
+  teardown. Live DataHub smoke remains credential-gated and is not a fixture-gate blocker.
+- Slice 2.4 subsequently merged into exact `main`
+  `fc08d5f32d8a77232ce6875b453884cbe68a4e6b`. The closure merge-forward completed without conflict,
+  and every product/fixture/contract/test/launcher/manifest/lockfile/script gate input remains
+  byte-identical, so the successful Level D/browser commands were not duplicated. The pre-existing
+  `codex/phase-2-closure` branch is checked out in another worktree at that main commit and remains
+  unmodified; the closure PR uses unique branch `codex/phase-2-integration-closure-20260718` with base
+  `main`.
+- This checkpoint reproduced the existing Windows managed fallback-pnpm workspace-binary issue after
+  a successful frozen install and supply-chain check: `pnpm exec prettier` did not resolve the root
+  shim until the verified root `.bin` directory was prepended to the current process `PATH`. The same
+  process-local runtime then passed the full Level D and browser gates. No repository bootstrap,
+  dependency, manifest, or lockfile change is required for Phase 2 closure.
 - The Phase 1 Level D core gate passes on the Windows managed worktree, and the browser launcher now
   resolves pnpm cross-platform, uses synchronized dynamic ports/URLs, and cleans only its own process
   tree. Three targeted launcher contracts pass. After Windows Playwright Chromium headless shell
