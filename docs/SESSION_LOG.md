@@ -209,3 +209,93 @@ removed-schema-column scenario. See `docs/KNOWN_ISSUES.md`.
 Review the stacked draft PR for `codex-mac/slice-1-3-evidence-display` against
 `codex/slice-1-2-mock-investigation`; after acceptance, run the Phase 1 integration checkpoint before
 starting Phase 2.
+
+## 2026-07-18 — Phase 1 Level D closure bị chặn trên managed Windows worktree
+
+### Objective
+
+Đóng checkpoint Phase 1 Level D trên branch handoff `codex/phase-1-level-d-closure`, bắt đầu từ exact
+Slice 1.3 commit `c020a4c056527b0711cb07840be2446e23a00b43`, không tích hợp PR #4 và không bắt
+đầu Phase 2.
+
+### Completed
+
+Xác minh worktree ban đầu sạch và đúng exact HEAD; merge-base với
+`codex/slice-1-2-mock-investigation` là `b7a3e699198f7ebae187a5485d0a540a7127cb75`, với hai
+commit Slice 1.3 phía trên. Ghi objective, acceptance, validation và deferred work trước gate. Core
+Level D đã pass sau khi phân loại và cô lập các hạn chế managed runtime: format, lint, toàn bộ sáu
+workspace type-check, 6 test files/14 tests, sáu production builds và primary artifact smoke. Sửa tối
+thiểu e2e launcher để chẩn đoán pnpm spawn và Vite arguments trên Windows, sau đó hoàn tác toàn bộ
+launcher diff vì controlled rerun vẫn không đạt. Không merge/cherry-pick bootstrap PR #4.
+
+### Files changed
+
+`docs/IMPLEMENTATION_PLAN.md`; `docs/KNOWN_ISSUES.md`; `docs/SESSION_LOG.md`.
+`tests/e2e/report-display.spec.mjs` được sửa tạm để chẩn đoán rồi hoàn tác về exact baseline.
+`docs/REPOSITORY_MAP.md` không đổi vì cấu trúc repository không đổi.
+
+### Decisions
+
+Phân loại lỗi `node`/`.pnpm-store`/sandboxed `esbuild` là environment/bootstrap, còn bare
+`spawn('pnpm')` và Vite argument sentinel là test portability blockers thuộc Phase 1. Dùng bundled Node
+chỉ qua process `PATH`, chuyển cache phát sinh sang
+`C:\tmp\dii-phase1-level-d-pnpm-store-019f7547`, và giữ PR #4 là dependency xanh riêng. Sau hai vòng
+targeted e2e fix vẫn gặp port/process-tree/readiness failures, hoàn tác test diff và dừng sửa/rerun theo
+giới hạn thay vì thêm feature hoặc redesign.
+
+Một đính chính scope cleanup đến sau lệnh dừng process: ngoài PID `21324`, `29640`, và watcher `27692`
+đã xác minh là leak của worktree closure, lệnh đã dừng PID `20492` và `27968` của worktree `6219` cùng
+repository. Hai PID `6219` này không nên bị xem là process ngoài dự án theo scope được làm rõ sau đó;
+controller phải được báo chính xác. Controlled rerun sau đó chỉ cleanup leak mới của closure: PID
+`15476`, `11728`, và watcher `23452`.
+
+Supplied dependency evidence: PR #3 base `codex/slice-1-2-mock-investigation`, head
+`codex-mac/slice-1-3-evidence-display`, CI run `29644831886`/job `88081227744` xanh; PR #4 head
+`99dfc5f7a086808b25d8a57988524769bca0cf87`, CI run `29644965735`/job `88081574373` xanh.
+
+### Validation performed
+
+- Initial `pnpm validate`: failed before format after 29.8 seconds because managed dependency
+  bootstrap could not resolve `node` for `esbuild` postinstall.
+- Environment-only `pnpm install --frozen-lockfile` with bundled Node in `PATH`: passed in 10.7
+  seconds. The next `pnpm validate` stopped at format after 53.1 seconds because bootstrap created an
+  untracked `.pnpm-store`; the cache was moved outside the worktree. The continued `pnpm validate`
+  passed format, lint, and six workspace type-checks, then failed at Vitest after 68.7 seconds because
+  sandboxed Node could not read managed `esbuild`.
+- Scoped `pnpm test`: passed in 18.1 seconds (Vitest 12.79 seconds), 6/6 files and 14/14 tests.
+- Scoped `pnpm build`: passed in 19.5 seconds for all six buildable workspace projects; Vite
+  transformed 109 modules and completed the web build in 2.89 seconds.
+- Scoped `pnpm smoke`: passed in 1.6 seconds, verifying `apps/api/dist/index.js` and
+  `apps/web/dist/index.html`.
+- `pnpm test:e2e:report`: failed in 3.1 seconds and 2.7 seconds with `spawn pnpm ENOENT`; after the
+  portable launcher fix it reached local server startup but failed in 29.6 seconds when Vite fell back
+  from occupied port 5173, and after argument forwarding was fixed it failed in 24.5 seconds with
+  transient `EADDRINUSE` on API port 3001. A controller-approved final controlled rerun was not started
+  at its first preflight because listeners were present. After exact PID/CommandLine inspection and
+  cleanup, ports were clean immediately before the one allowed run; it failed after 28.3 seconds
+  because Vite reported `http://127.0.0.1:5173/` while the readiness regex required `localhost`. The
+  flow never reached Chromium, so no console result or under-three-minute acceptance duration can be
+  claimed. Temporary launcher changes were then reverted without another e2e run.
+- Final changed-file Prettier check passed for the e2e script and three project-memory documents;
+  affected ESLint passed for `tests/e2e/report-display.spec.mjs`. The first `pnpm exec prettier`
+  launcher attempt did not start because the managed environment could not resolve the Windows shim;
+  the equivalent project-local `.cmd` checks passed with scoped access.
+
+### Validation intentionally deferred
+
+No Phase 2, DataHub, Stitch, model reasoning, deployment, or broader cross-browser work was started.
+The unresolved canonical browser gate is blocked, not intentionally waived.
+
+### Known issues
+
+Overall Phase 1 acceptance is failed until the canonical browser flow passes in a clean/bootstrap-ready
+environment. Process-local incident persistence and the single canonical fixture remain as previously
+documented. See `docs/KNOWN_ISSUES.md`.
+
+### Exact next step
+
+Keep Phase 2 blocked. The controller should choose whether to land the separately green managed-worktree
+bootstrap dependency upstream or rerun this closure from a clean environment. Address cross-platform
+pnpm launch, dedicated/dynamic ports with a matching URL/readiness contract, and process-tree cleanup as
+one bounded browser-test fix; then rerun `pnpm test:e2e:report` once and proceed to merge-readiness only
+after it proves the complete clean-console flow.

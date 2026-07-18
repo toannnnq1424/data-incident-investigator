@@ -199,6 +199,74 @@ desktop/mobile horizontal overflow is absent, and fails on browser console warni
 Exact next slice: stop Phase 1 work here for review. After the stacked PR is accepted, run the Phase 1
 integration checkpoint before starting Phase 2.
 
+### Phase 1 Level D closure
+
+Status: blocked on `codex/phase-1-level-d-closure`, starting from exact Slice 1.3 commit
+`c020a4c056527b0711cb07840be2446e23a00b43` and stacked on
+`codex-mac/slice-1-3-evidence-display`.
+
+Objective: close the Phase 1 integration checkpoint by validating the complete credential-free
+fixture flow and all Slice 1.1-1.3 acceptance criteria without adding features or beginning Phase 2.
+
+Acceptance criteria:
+
+- Valid and invalid incident submissions expose accessible loading, success, validation-error, and
+  API-error states; a valid request receives a UUID and visible `processing` status.
+- The deterministic fixture adapter produces a schema-valid structured report while preserving the
+  compact summary and top-ranked hypothesis.
+- The completed report displays impacted entities, evidence IDs and timeline, ranked confidence,
+  lineage, facts, inferences, assumptions, missing information, and recommended actions; every
+  hypothesis evidence reference resolves to evidence in the report.
+- Loading, error, empty, and insufficient-evidence states use clear semantic headings and appropriate
+  ARIA/status behavior.
+- The canonical `submit -> processing -> completed -> full evidence display` fixture flow completes
+  in under three minutes without credentials and without browser console warnings or errors.
+- Repository format, lint, type-check, all unit/integration/smoke tests, production build, primary
+  artifact smoke, phase browser flow, diff/secret review, and clean-worktree review pass.
+
+Exact Level D validation commands (run successful commands once while inputs remain unchanged):
+
+- `pnpm validate`
+- `pnpm test:e2e:report`
+
+Validation result on Windows managed worktree, 2026-07-18:
+
+- Repository format, lint, and all six workspace type-checks passed. The single `pnpm validate`
+  sequence required environment recovery before reaching those checks: the initial managed bootstrap
+  could not find `node`, then its repository-local `.pnpm-store` artifact was moved to
+  `C:\tmp\dii-phase1-level-d-pnpm-store-019f7547`, and sandboxed Vitest could not read the managed
+  `esbuild` package.
+- The affected `pnpm test` continuation passed with scoped access: 6 test files and 14 tests, including
+  contracts, deterministic adapter/runner, API integration, report presentation, and API health smoke.
+- `pnpm build` passed for all six buildable workspace projects; the web build transformed 109 modules.
+  `pnpm smoke` passed for `apps/api/dist/index.js` and `apps/web/dist/index.html`.
+- `pnpm test:e2e:report` did not complete. The first launch attempts reproduced Windows
+  `spawn pnpm ENOENT`. Temporary targeted launcher changes reached local server startup, but exposed
+  port/process-tree leakage and then a readiness mismatch: Vite was ready at
+  `http://127.0.0.1:5173/` while the test accepted only `http://localhost:5173/`. A controller-approved
+  final rerun on ports verified clean immediately beforehand failed on that mismatch after 28.3
+  seconds, before Chromium. The unproven launcher changes were not retained, so product and test source
+  remain at the exact Slice 1.3 baseline.
+- Slice 1.1 and Slice 1.2 acceptance are supported by the passing contracts/integration suite. Slice
+  1.3 structure and evidence-reference acceptance are supported by passing schema and presentation
+  tests, but overall Phase 1 acceptance remains failed because the local canonical browser flow never
+  reached Chromium; duration-under-three-minutes and clean-console criteria were therefore not proven
+  in this checkpoint.
+
+Deferred: real DataHub access, additional fixture scenarios, durable persistence, model reasoning,
+evaluation expansion, cross-browser matrix automation, deployment, and all Phase 2 implementation.
+PR #4 (`codex/stabilize-managed-worktree-bootstrap`, commit
+`99dfc5f7a086808b25d8a57988524769bca0cf87`) is a separately green environment dependency and is not
+integrated into this product-validation branch. Supplied evidence records PR #4 CI run `29644965735`,
+job `88081574373`, as green. PR #3 is the clean Slice 1.3 dependency at the exact base above; supplied
+evidence records CI run `29644831886`, job `88081227744`, as green.
+
+Exact next action: keep Phase 2 blocked. The controller should decide whether to land the separately
+green managed-worktree bootstrap dependency upstream or rerun this closure from a clean environment,
+then address the browser launch contract as one bounded change covering cross-platform pnpm execution,
+dedicated/dynamic ports and matching URL/readiness, and process-tree cleanup. Rerun the unresolved
+canonical browser gate once after that coherent fix, and complete merge-readiness only after it passes.
+
 Phase completion: a clean clone can select a demo incident and receive a complete report.
 
 ## Phase 2 — DataHub integration
