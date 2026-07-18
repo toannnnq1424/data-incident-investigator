@@ -9,6 +9,13 @@ Last updated: 2026-07-19.
   deterministic truncated recent changes, incident processing/completed/full evidence, accessibility,
   resolved evidence references, clean console, no horizontal overflow, and clean launcher/port
   teardown. Live DataHub smoke remains credential-gated and is not a fixture-gate blocker.
+- Slice 2.4 subsequently merged into exact `main`
+  `fc08d5f32d8a77232ce6875b453884cbe68a4e6b`. The closure merge-forward completed without conflict,
+  and every product/fixture/contract/test/launcher/manifest/lockfile/script gate input remains
+  byte-identical, so the successful Level D/browser commands were not duplicated. The pre-existing
+  `codex/phase-2-closure` branch is checked out in another worktree at that main commit and remains
+  unmodified; the closure PR uses unique branch `codex/phase-2-integration-closure-20260718` with base
+  `main`.
 - This checkpoint reproduced the existing Windows managed fallback-pnpm workspace-binary issue after
   a successful frozen install and supply-chain check: `pnpm exec prettier` did not resolve the root
   shim until the verified root `.bin` directory was prepended to the current process `PATH`. The same

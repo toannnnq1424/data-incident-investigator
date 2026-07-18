@@ -1461,15 +1461,18 @@ hoặc bắt đầu Phase 2 integration checkpoint.
 
 Close Phase 2 on exact Slice 2.4 final HEAD `43e6d35c9e7881e668eb7cd4837542e8a7fab8dd`
 with one repository Level D gate and one combined fixture browser flow. Preserve feature commit
-`9afc729bbe92625d8b92a3dfc943ad7134363666`, avoid product changes, do not merge PR #13, and do
-not begin Phase 3.
+`9afc729bbe92625d8b92a3dfc943ad7134363666`, avoid product changes, do not perform the feature PR
+merge, and do not begin Phase 3.
 
 ### Completed
 
-Created `codex/phase-2-integration-checkpoint` from the required HEAD. Read the durable project state
-and direct shared/adapter/API/browser contracts. Recorded the checkpoint plan before validation, then
-proved health/error normalization, entity search, bounded/cycle-safe lineage, recent metadata changes,
-and the canonical evidence-linked incident flow through the existing fixture/DataHub adapter boundary.
+Created the checkpoint from the required HEAD. Read the durable project state and direct
+shared/adapter/API/browser contracts. Recorded the checkpoint plan before validation, then proved
+health/error normalization, entity search, bounded/cycle-safe lineage, recent metadata changes, and
+the canonical evidence-linked incident flow through the existing fixture/DataHub adapter boundary.
+Before PR creation, fetched exact integrated main `fc08d5f32d8a77232ce6875b453884cbe68a4e6b`,
+merged it forward without conflict, and selected unique final branch
+`codex/phase-2-integration-closure-20260718` for a draft PR based on `main`.
 
 ### Files changed
 
@@ -1483,7 +1486,9 @@ Keep this checkpoint docs-only. Treat the bootstrap workspace-binary resolution 
 managed Windows environment issue because the frozen install and supply-chain verification passed,
 the root shim exists, a process-local verified runtime path resolved it, and the complete Level D gate
 then passed unchanged. Defer live DataHub smoke without newly supplied authorization; never read or use
-credentials previously exposed in chat.
+credentials previously exposed in chat. Preserve pre-existing branch `codex/phase-2-closure` at
+`fc08d5f…` in its separate worktree rather than overwriting or deleting it. Use the controller-specified
+unique branch above and base the closure PR on `main`, not the merged feature branch.
 
 ### Validation performed
 
@@ -1502,6 +1507,11 @@ credentials previously exposed in chat.
   scoped diff, both required ancestry checks, and conflict-marker, high-risk secret,
   generated-status-path, name/stat, branch, and worktree reviews found zero unintended matches or
   files. Repository structure is unchanged.
+- Fetch confirmed `origin/main` and the controller-supplied Slice 2.4 merge commit are exact
+  `fc08d5f32d8a77232ce6875b453884cbe68a4e6b`. Normal merge-forward commit
+  `354086305c85feb4742e5308f241bfdd9a8885fd` has parents `3cdfa0a…` and `fc08d5f…`; main is an
+  ancestor. Product, fixture, contract, test, launcher, manifest, lockfile, and script trees are
+  byte-identical to validated inputs, so Level D and browser commands were not rerun.
 
 ### Validation intentionally deferred
 
@@ -1512,14 +1522,16 @@ changes, and UI redesign remain outside this checkpoint.
 ### Known issues
 
 No local product or test blocker remains. The managed Windows fallback-pnpm shim issue remains an
-environment limitation with a verified process-local workaround. Final docs review, checkpoint commit,
-push, stacked draft PR publication, one final-HEAD CI run, and conflict-free/merge-ready verification
-remain pending at the time of this entry.
+environment limitation with a verified process-local workaround. Pre-existing
+`codex/phase-2-closure` remains untouched. The preliminary remote branch
+`codex/phase-2-integration-checkpoint` was pushed before the base correction, has no PR, and is left
+untouched. Final correction-doc review/commit, unique-branch push, draft PR publication, one final-HEAD
+CI run, and conflict-free/merge-ready verification remain pending at the time of this entry.
 
 ### Exact next step
 
 Format and review the three documentation files, create conventional commit
-`docs: close phase 2 integration checkpoint`, push `codex/phase-2-integration-checkpoint`, open a
-stacked draft PR based on `codex/phase-2-4-recent-changes`, and follow exactly one CI run for final HEAD
-to terminal. Only after gate and CI are green, hand off Phase 3 Slice 3.1 — parse and gather to a
-separate Project/worktree task; do not begin it here.
+`docs: align phase 2 closure with main`, push `codex/phase-2-integration-closure-20260718`, open a draft
+PR based on `main`, and follow exactly one CI run for final HEAD to terminal. Only after gate and CI are
+green, hand off Phase 3 Slice 3.1 — parse and gather to a separate Project/worktree task; do not begin it
+here.

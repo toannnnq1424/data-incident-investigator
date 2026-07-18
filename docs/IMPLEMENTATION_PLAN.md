@@ -1178,14 +1178,16 @@ correlation, agent reasoning, or the checkpoint here.
 
 ### Phase 2 integration checkpoint — Level D closure
 
-Status: local Level D passed on `codex/phase-2-integration-checkpoint` from exact Slice 2.4 final HEAD
-`43e6d35c9e7881e668eb7cd4837542e8a7fab8dd`, which preserves feature commit
-`9afc729bbe92625d8b92a3dfc943ad7134363666`. Draft PR #13 is already retargeted to `main`, is
-conflict-free, and passed CI run `29654741893`, job `88106955273`.
+Status: local Level D passed and integrated-main merge-forward completed on
+`codex/phase-2-integration-closure-20260718`. The checkpoint started from exact Slice 2.4 final HEAD
+`43e6d35c9e7881e668eb7cd4837542e8a7fab8dd`, preserves feature commit
+`9afc729bbe92625d8b92a3dfc943ad7134363666`, and now contains exact integrated `origin/main`
+`fc08d5f32d8a77232ce6875b453884cbe68a4e6b`. PR #13 is merged; its supplied final feature CI run
+`29654741893`, job `88106955273`, passed.
 
 Objective: close Phase 2 with one repository-level integration checkpoint proving the complete Slice
 2.1–2.4 capability chain and the canonical incident report on the exact green handoff, without adding a
-feature, changing a provider contract, merging PR #13, or beginning Phase 3.
+feature, changing a provider contract, performing the PR #13 merge, or beginning Phase 3.
 
 Minimum files:
 
@@ -1208,10 +1210,9 @@ Acceptance criteria:
   provider-neutral contracts without a business-logic fork outside the established adapter boundary.
 - Exactly one Level D `pnpm validate` passes, followed by exactly one
   `pnpm test:e2e:report`; successful unchanged inputs are not rerun.
-- Secret, conflict-marker, diff-scope, generated-artifact, ancestry, and worktree reviews pass. A
-  docs-only conventional commit is pushed to a stacked draft PR based on
-  `codex/phase-2-4-recent-changes`, and exactly one CI run for final HEAD reaches a passing terminal
-  state with the PR conflict-free and merge-ready.
+- Secret, conflict-marker, diff-scope, generated-artifact, ancestry, and worktree reviews pass. The
+  docs-only closure history is pushed to a draft PR based on `main`, and exactly one CI run for final
+  HEAD reaches a passing terminal state with the PR conflict-free and merge-ready.
 
 Deferred: live DataHub smoke when no newly supplied authorization is available, Stitch, additional
 providers, impact analysis, change correlation, investigation reasoning, Phase 3 behavior, dependency
@@ -1257,9 +1258,17 @@ Validation result on the Windows managed worktree, 2026-07-19:
   scoped diff, handoff/feature ancestry, conflict-marker, high-risk secret, generated-status-path,
   name/stat, branch, and worktree reviews found zero unintended matches or files. Repository structure
   is unchanged, so `docs/REPOSITORY_MAP.md` remains untouched.
+- Before PR creation, the controller reported that Slice 2.4 had merged into exact `origin/main`
+  `fc08d5f32d8a77232ce6875b453884cbe68a4e6b`. Fetch confirmed that commit and the normal two-parent
+  merge-forward created checkpoint merge commit `354086305c85feb4742e5308f241bfdd9a8885fd`
+  without conflict. Product, fixture, contract, test, launcher, manifest, lockfile, and script trees are
+  byte-identical between the locally validated checkpoint inputs and final integrated main, so the
+  successful Level D/browser commands were not rerun. The pre-existing
+  `codex/phase-2-closure` branch remains untouched at `fc08d5f…` in its separate worktree; the unique
+  final branch is `codex/phase-2-integration-closure-20260718`, with PR base `main`.
 
-Exact next implementation task after the docs-only checkpoint commit, stacked draft PR, green final-HEAD
-CI, and conflict-free/merge-ready review: Phase 3 Slice 3.1 — parse and gather in a separate
+Exact next implementation task after the docs-only checkpoint history, draft PR based on `main`, green
+final-HEAD CI, and conflict-free/merge-ready review: Phase 3 Slice 3.1 — parse and gather in a separate
 Project/worktree task. Do not begin Phase 3 in this checkpoint.
 
 Slices: client health/error normalization; entity search; bounded/cycle-safe lineage; metadata and recent
