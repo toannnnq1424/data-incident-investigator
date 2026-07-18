@@ -71,6 +71,12 @@ Never use `danger-full-access` as the project default. Prefer project-local port
 download checksums when available, and keep them under ignored `work/tools/` rather than installing
 globally.
 
+For a new Codex managed worktree, run the tracked platform bootstrap before repository commands:
+`& .\scripts\bootstrap-worktree.ps1` on Windows or `. ./scripts/bootstrap-worktree.sh` on macOS/POSIX.
+The bootstrap verifies Node/pnpm versions, installs with `pnpm install --frozen-lockfile`, and checks a
+root static tool. GitHub CLI remains a host prerequisite and must not be copied through
+`.worktreeinclude`; see `docs/LOCAL_ENVIRONMENT.md`.
+
 ## User-facing language
 
 Write user-facing commentary, progress and error reports, command/test summaries, and final reports in
@@ -134,6 +140,12 @@ The integration owner exclusively controls root tooling, lockfiles, shared contr
 and the canonical session log unless a pull request explicitly transfers ownership. Parallel work must
 use separate branches, separate slices, and non-overlapping file ownership. GitHub issues and pull
 requests are the coordination plane; chat context is not shared state.
+
+Preserve Codex Project history: never archive, delete, or hide an existing task/conversation unless the
+user explicitly requests it. Do not pin a Project task when pinning would move it outside its Project
+group. Create every new implementation task with `target.type=project`,
+`projectId=a43a7aaa-fc63-48e9-867e-c9d9cae6784d`, and the appropriate `local` or `worktree`
+environment; never create implementation work as a projectless task.
 
 ## Scope priority
 

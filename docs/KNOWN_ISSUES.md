@@ -15,3 +15,11 @@ Last updated: 2026-07-18.
   Codex opens or reloads the trusted repository.
 - Slice browser flows are exercised against local Vite/Fastify servers, but a repeatable checked-in
   browser automation suite remains deferred until the UI flow needs cross-session regression coverage.
+- Codex desktop is the only documented writer for the shared Local Environment file, and the current
+  callable app tools expose no create/update API. This repository therefore provides verified Windows
+  and macOS/POSIX bootstrap scripts plus UI wiring instructions, but intentionally does not commit a
+  guessed Local Environment schema. An app-generated, secret-free file under `.codex/` remains a
+  follow-up.
+- The Windows bootstrap is validated against the current Codex bundled runtime. The macOS script is
+  syntax-checked here, but the macOS bundled runtime location and end-to-end execution still require a
+  macOS host.

@@ -16,7 +16,7 @@ Last verified: 2026-07-18 after Phase 1 Slice 1.2.
 | `tests/integration`       | Cross-package contract and slice tests                      | `contracts.test.ts`, `incidents-api.test.ts`                                  |
 | `tests/smoke`             | Primary health and build smoke tests                        | `health.test.ts`                                                              |
 | `tests/e2e`               | Browser flows                                               | populated after a full UI slice                                               |
-| `scripts`                 | Repository operations and smoke checks                      | `smoke.mjs`                                                                   |
+| `scripts`                 | Repository operations, worktree bootstrap, and smoke checks | `bootstrap-worktree.ps1`, `bootstrap-worktree.sh`, `smoke.mjs`                |
 | `docs`                    | Product, architecture, plan, memory, and release docs       | see list below                                                                |
 | `.github`                 | CI, release validation, and PR template                     | `workflows/ci.yml`                                                            |
 | `.codex`                  | Trusted project-scoped Codex settings without secrets       | `config.toml`                                                                 |
@@ -63,7 +63,7 @@ Product and design: `PRODUCT_SPEC.md`, `ARCHITECTURE.md`, `DATA_MODEL.md`, `API_
 `AGENT_DESIGN.md`, `FRONTEND_WORKFLOW.md`.
 
 Execution and quality: `IMPLEMENTATION_PLAN.md`, `TEST_STRATEGY.md`, `SECURITY.md`, `DEPLOYMENT.md`,
-`DECISIONS.md`, `KNOWN_ISSUES.md`, `SESSION_LOG.md`.
+`DECISIONS.md`, `LOCAL_ENVIRONMENT.md`, `KNOWN_ISSUES.md`, `SESSION_LOG.md`.
 
 Submission: `DEMO_SCRIPT.md`, `DEVPOST_SUBMISSION.md`, `RELEASE_CHECKLIST.md`.
 

@@ -150,3 +150,67 @@ Fixture incident state is process-local and only the removed-schema-column scena
 ### Exact next step
 
 create a new project-scoped task for Phase 1 Slice 1.3 — Evidence display, starting from this Slice 1.2 branch/commit; do not continue Slice 1.3 here.
+
+## 2026-07-18 — Codex managed-worktree bootstrap stabilization
+
+### Objective
+
+Stabilize dependency bootstrap for future Codex managed worktrees without changing product code or
+starting Slice 1.3/Phase 2.
+
+### Completed
+
+Reproduced the Windows runtime failure where bundled `pnpm.cmd` was available but bundled `node.exe`
+was absent from `PATH`, causing the esbuild lifecycle script to fail. Confirmed that a new worktree had
+no root dependencies and that the ignored Windows portable GitHub CLI was not inherited. Added tracked
+Windows and macOS/POSIX bootstrap scripts that verify the manifest runtime contract, refuse unpinned
+package-manager activation, install from the frozen lockfile, and validate a root static tool. Added
+verified Local Environment UI wiring and documented why no unverified app-generated schema or
+`.worktreeinclude` file was committed.
+
+### Files changed
+
+Managed-worktree bootstrap scripts; local-environment documentation; Codex operating guidance;
+implementation plan, repository map, known issues, session log, and the pnpm-store ignore rule.
+
+### Decisions
+
+Use host or dynamically discovered Codex-bundled Node/pnpm without storing a username or absolute
+machine path. Keep exact pnpm `11.9.0` as a prerequisite to avoid missing offline metadata. Keep GitHub
+CLI as a per-host prerequisite; do not copy ignored `work/tools/` or Windows binaries into managed
+worktrees/macOS. Leave `.worktreeinclude` absent because all required setup inputs are tracked. Do not
+invent a Local Environment filename/schema when the desktop app exposes no callable writer API and UI
+automation is prohibited.
+
+Preserve all existing Codex Project task history unless the user explicitly requests archive, deletion,
+or hiding. Do not pin a task if doing so removes it from the Project group. Every new implementation
+task must use `target.type=project`, `projectId=a43a7aaa-fc63-48e9-867e-c9d9cae6784d`, and an
+appropriate `local` or `worktree` environment; projectless implementation tasks are prohibited.
+
+### Validation performed
+
+From an empty dependency state, Windows bootstrap discovered Node `v24.14.0` and pnpm `11.9.0`, ran
+`pnpm install --frozen-lockfile` for 257 packages with lockfile resolution skipped, resolved Prettier
+`3.9.5` through `pnpm exec`, and passed the static package formatting check. The PowerShell parser,
+`bash -n`, TOML parser plus required policy assertions, changed-document Prettier, `git diff --check`,
+secret/absolute-path scan, and scoped diff review passed. The first changed-document Prettier attempt
+hit sandboxed pnpm-store access and the identical scoped retry passed.
+
+### Validation intentionally deferred
+
+No full product suite was run. macOS script execution and the macOS bundled-runtime location require a
+macOS host. Creating and checking in the shared Local Environment file requires a human to save the
+verified setup commands through Codex desktop settings.
+
+### Known issues
+
+The current host's ignored portable `gh.exe` exists only in the local checkout and its `gh auth`
+session is invalid. It remains a host prerequisite and is not copied or committed. See
+`docs/KNOWN_ISSUES.md` for the persistent Local Environment/macOS follow-ups.
+
+### Exact next step
+
+In Codex desktop settings, create the repository Local Environment with the documented Windows and
+macOS setup commands, share the app-generated secret-free file under `.codex/`, then validate one new
+managed worktree on macOS. After this infrastructure PR is accepted, start Slice 1.3 from the updated
+Slice 1.2 branch; do not implement it here.
