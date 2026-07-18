@@ -15,6 +15,28 @@ export const IncidentRequestSchema = z.object({
   symptom: z.string().trim().min(1).max(2_000).optional(),
 });
 
+export const IncidentStatusSchema = z.literal('processing');
+
+export const IncidentAcceptedResponseSchema = z.object({
+  incidentId: z.uuid(),
+  status: IncidentStatusSchema,
+});
+
+export const ApiErrorCodeSchema = z.enum(['VALIDATION_ERROR', 'INTERNAL_ERROR']);
+
+export const ApiErrorIssueSchema = z.object({
+  path: z.string().min(1),
+  message: z.string().min(1),
+});
+
+export const ApiErrorSchema = z.object({
+  error: z.object({
+    code: ApiErrorCodeSchema,
+    message: z.string().min(1),
+    issues: z.array(ApiErrorIssueSchema).optional(),
+  }),
+});
+
 export const EvidenceSchema = z.object({
   id: z.string().min(1),
   category: z.enum(['metadata', 'lineage', 'schema-change', 'pipeline', 'ownership']),
@@ -44,5 +66,8 @@ export const InvestigationReportSchema = z.object({
 export type EntityKind = z.infer<typeof EntityKindSchema>;
 export type EntityRef = z.infer<typeof EntityRefSchema>;
 export type IncidentRequest = z.infer<typeof IncidentRequestSchema>;
+export type IncidentStatus = z.infer<typeof IncidentStatusSchema>;
+export type IncidentAcceptedResponse = z.infer<typeof IncidentAcceptedResponseSchema>;
+export type ApiError = z.infer<typeof ApiErrorSchema>;
 export type Evidence = z.infer<typeof EvidenceSchema>;
 export type InvestigationReport = z.infer<typeof InvestigationReportSchema>;
