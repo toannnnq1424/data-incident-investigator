@@ -15,6 +15,25 @@ fields when the provider supplies safe non-empty values. Search results have uni
 name/kind/URN ordering, and a request-bounded count. A no-match search is an empty list; only the
 fixture incident runner may explicitly request its declared default seed.
 
+## Lineage graph
+
+A public lineage request identifies one search-result URN, one traversal direction, a bounded depth,
+and a bounded maximum node count. The shared response is provider-neutral and contains:
+
+- the stable root URN, requested direction/depth, accepted node cap, visited-node count, and truncation
+  state;
+- unique nodes with stable URN, normalized kind, safe display name, traversal depth, and optional safe
+  platform/description;
+- unique directed edges whose source is physically upstream and target is physically downstream.
+
+The root is always the first node, appears exactly once, and has depth zero. Every edge endpoint must
+resolve to a returned node. Remaining nodes are ordered by depth/name/kind/URN and edges by source/
+target URN so fixture and provider results render deterministically. Cycles and self-loops are retained
+once as evidence but a visited set prevents repeated expansion. Depth, nodes, edges, provider page
+size, total provider requests, timeout, and AbortSignal bound traversal; `truncated` records when a
+reachable node or edge is omitted by one of those bounds. A no-lineage entity is a valid one-node,
+zero-edge graph, while a missing root is a typed not-found error.
+
 ## Evidence
 
 Evidence is an observed fact with:
@@ -49,4 +68,5 @@ persistent storage is deferred.
 - Entity URNs and evidence IDs are unique within a report.
 - Hypothesis evidence IDs resolve to report evidence.
 - Provider-specific payloads never appear in API responses.
+- Lineage roots/nodes and source-target edge pairs are unique, and lineage edges never dangle.
 - `inconclusive` reports include missing information and avoid unsupported root-cause claims.

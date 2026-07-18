@@ -130,6 +130,93 @@ HTTP authorization/non-success responses, refusal, timeout, non-JSON, invalid JS
 and malformed entity results normalize before the API boundary. Responses and logs never contain the
 provider URL, token, Authorization header, raw body, GraphQL error text, or raw exception.
 
+### `POST /metadata/lineage`
+
+The browser calls `/api/metadata/lineage`; direct API clients use `/metadata/lineage`. The strict
+request accepts only a stable root URN, `upstream` or `downstream`, and bounded integer controls. Depth
+defaults to `2` and is capped at `5`; `maxNodes` includes the root, defaults to `8`, and is capped at
+`25`. Unknown fields are rejected, so a client cannot supply GraphQL or another provider query.
+
+Request:
+
+```json
+{
+  "rootUrn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,lineage.demo.root,PROD)",
+  "direction": "downstream",
+  "depth": 2,
+  "maxNodes": 8
+}
+```
+
+Response `200` (abridged nodes, complete top-level shape):
+
+```json
+{
+  "rootUrn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,lineage.demo.root,PROD)",
+  "direction": "downstream",
+  "requestedDepth": 2,
+  "maxNodes": 8,
+  "visitedNodeCount": 3,
+  "truncated": false,
+  "nodes": [
+    {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,lineage.demo.root,PROD)",
+      "kind": "dataset",
+      "name": "lineage.demo.root",
+      "depth": 0,
+      "platform": "snowflake",
+      "description": "Deterministic lineage demo root with bounded branches and cycles."
+    }
+  ],
+  "edges": [
+    {
+      "sourceUrn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,lineage.demo.root,PROD)",
+      "targetUrn": "urn:li:chart:(looker,lineage-demo-chart)"
+    }
+  ]
+}
+```
+
+The root is the first node at depth zero and appears exactly once. All other nodes have a traversal
+depth within `requestedDepth`. Node URNs and source/target edge pairs are unique; every edge endpoint
+resolves to a returned node. Edges always use physical lineage orientation (`sourceUrn` is upstream,
+`targetUrn` is downstream), including for an upstream traversal. Nodes are ordered by depth, normalized
+display name, kind, and URN; edges are ordered by source then target URN. Self-loops and cycles may be
+returned once but never duplicate nodes or cause further traversal. At most 100 edges can cross the
+boundary.
+
+An existing root with no lineage returns exactly the root, `edges: []`, `visitedNodeCount: 1`, and
+`truncated: false`. `truncated` becomes true only when reachable lineage is omitted by the requested
+depth, node/edge cap, provider page, or the hard provider-step cap. A missing root returns HTTP `404`
+with the existing `NOT_FOUND` envelope. Invalid requests return HTTP `400` with `VALIDATION_ERROR` and
+message `The metadata lineage request is invalid.` Other provider failures use the existing safe
+metadata mapping:
+
+| Provider status    | HTTP | Error code                  |
+| ------------------ | ---- | --------------------------- |
+| `unconfigured`     | 503  | `METADATA_UNCONFIGURED`     |
+| `unauthorized`     | 502  | `METADATA_UNAUTHORIZED`     |
+| `unavailable`      | 503  | `METADATA_UNAVAILABLE`      |
+| `timeout`          | 504  | `METADATA_TIMEOUT`          |
+| `invalid_response` | 502  | `METADATA_INVALID_RESPONSE` |
+
+Fixture mode uses only the checked-in graph and does not read `DATAHUB_GMS_URL`, `DATAHUB_TOKEN`,
+Stitch, an LLM, or another credential. It contains multi-level upstream, branching downstream,
+cycle/self-loop, empty, missing-root, and depth/node truncation cases while retaining the canonical
+incident graph.
+
+DataHub mode sends sequential, Bearer-authenticated one-hop GraphQL requests to `/api/graphql` using
+`searchAcrossLineage(input: SearchAcrossLineageInput!)` with `urn`, `query: "*"`, `start: 0`, bounded
+`count`, `UPSTREAM|DOWNSTREAM`, and a direct `degree: ["1"]` filter. The adapter performs deterministic
+BFS with a visited set, a maximum of 25 total provider requests, one total timeout/AbortSignal, and no
+retry. This follows DataHub's official
+[`lineage` API tutorial](https://github.com/datahub-project/datahub/blob/master/docs/api/tutorials/lineage.md)
+and official web-client
+[`lineage.graphql`](https://github.com/datahub-project/datahub/blob/master/datahub-web-react/src/graphql/lineage.graphql).
+HTTP failures, refusal, timeout, invalid/non-JSON responses, GraphQL errors, missing follow-up entities,
+and malformed results normalize before the API boundary. Raw provider payloads, URL, token,
+Authorization header, GraphQL error text, exceptions, and stack traces are never returned or logged.
+
 ### `POST /incidents`
 
 The browser calls `/api/incidents`; the Vite development proxy removes `/api` before forwarding to

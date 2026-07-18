@@ -293,6 +293,198 @@ h1 {
   color: #708b92 !important;
 }
 
+.metadata-lineage-controls {
+  display: flex;
+  align-items: end;
+  gap: 0.75rem;
+  margin: 0.9rem 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.metadata-lineage-controls legend {
+  float: left;
+  margin-right: 0.25rem;
+  padding: 0 0 0.5rem;
+  color: #9ceade;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.metadata-lineage-controls .field {
+  min-width: 8rem;
+}
+
+.metadata-lineage-controls label {
+  font-size: 0.74rem;
+}
+
+.metadata-lineage-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.metadata-lineage-actions button {
+  min-height: 2.25rem;
+  flex: 1;
+  padding: 0 0.65rem;
+  border: 1px solid #39746e;
+  border-radius: 0.55rem;
+  color: #bff7ee;
+  background: #123238;
+  font-size: 0.74rem;
+}
+
+.metadata-lineage-actions button:hover:not(:disabled) {
+  color: #041614;
+  background: #91eddf;
+}
+
+.metadata-lineage-results {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #243d44;
+}
+
+.metadata-lineage-results h3,
+.metadata-lineage-results h4 {
+  margin: 0 0 0.35rem;
+}
+
+.metadata-lineage-results h3 {
+  font-size: 1rem;
+}
+
+.metadata-lineage-results h3:focus-visible {
+  border-radius: 0.25rem;
+  outline: 2px solid #73e7d5;
+  outline-offset: 3px;
+}
+
+.metadata-lineage-results > p {
+  margin: 0;
+  color: #8ba1a8;
+  font-size: 0.82rem;
+}
+
+.metadata-lineage-loading > p,
+.metadata-lineage-success > p,
+.metadata-lineage-truncated > p {
+  color: #9ceade;
+}
+
+.metadata-lineage-error > p {
+  color: #ffd4d4;
+}
+
+.metadata-lineage-graph {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 0.9rem;
+}
+
+.metadata-lineage-summary {
+  display: grid;
+  gap: 0.3rem;
+  padding: 0.7rem;
+  border: 1px solid #2d5b59;
+  border-radius: 0.65rem;
+  background: #0a2025;
+}
+
+.metadata-lineage-summary > span:first-child {
+  color: #9ceade;
+  font-size: 0.7rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.metadata-lineage-summary > span:last-child,
+.metadata-lineage-node-list p,
+.metadata-lineage-empty-edges {
+  margin: 0;
+  color: #8ba1a8;
+  font-size: 0.75rem;
+}
+
+.metadata-lineage-summary code,
+.metadata-lineage-node-list code,
+.metadata-lineage-edge-list code {
+  overflow-wrap: anywhere;
+  color: #b7ced4;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.72rem;
+}
+
+.metadata-lineage-node-list,
+.metadata-lineage-edge-list {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.metadata-lineage-node-list {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.metadata-lineage-node-list li,
+.metadata-lineage-edge-list li {
+  min-width: 0;
+  padding: 0.65rem;
+  border: 1px solid #294149;
+  border-radius: 0.6rem;
+  background: #0b2228;
+}
+
+.metadata-lineage-node-list li > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.metadata-lineage-node-list strong {
+  overflow-wrap: anywhere;
+}
+
+.metadata-lineage-node-list li > div span {
+  color: #9ceade;
+  font-size: 0.68rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.metadata-lineage-node-list li > p:last-child {
+  margin-top: 0.35rem;
+  color: #bdcdd1;
+}
+
+.metadata-lineage-edge-list li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.metadata-lineage-edge-list span {
+  color: #72e3d1;
+  font-weight: 850;
+}
+
+.metadata-lineage-truncation-note {
+  margin: 0;
+  padding: 0.65rem;
+  border: 1px solid #80692e;
+  border-radius: 0.55rem;
+  color: #ffe7a3;
+  background: #29240f;
+  font-size: 0.78rem;
+}
+
 .panel-heading,
 .submission-row {
   display: flex;
@@ -686,6 +878,7 @@ dd {
   .form-grid,
   .metadata-search-form,
   .metadata-search-result-list,
+  .metadata-lineage-node-list,
   dl {
     grid-template-columns: 1fr;
   }
@@ -705,6 +898,15 @@ dd {
 
   button {
     width: 100%;
+  }
+
+  .metadata-lineage-controls {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .metadata-lineage-controls legend {
+    float: none;
   }
 
   .entity-list li {

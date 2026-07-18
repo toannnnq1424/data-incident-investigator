@@ -1,11 +1,21 @@
 import { readFileSync } from 'node:fs';
 import {
+  METADATA_LINEAGE_MAX_EDGES,
+  METADATA_LINEAGE_MAX_NODES,
   MetadataEntitySearchResultSchema,
+  MetadataLineageNodeSchema,
+  MetadataLineageRequestSchema,
+  MetadataLineageResponseSchema,
   type EntityKind,
   type EntityRef,
   type MetadataEntitySearchRequest,
   type MetadataEntitySearchResult,
   type MetadataHealthStatus,
+  type MetadataLineageDirection,
+  type MetadataLineageEdge,
+  type MetadataLineageNode,
+  type MetadataLineageRequest,
+  type MetadataLineageResponse,
 } from '@dii/shared-types';
 import { z } from 'zod';
 
@@ -31,6 +41,14 @@ export interface MetadataSearchProvider {
   searchEntities(options: MetadataEntitySearchOptions): Promise<MetadataEntitySearchResult[]>;
 }
 
+export interface MetadataLineageOptions extends MetadataLineageRequest {
+  signal?: AbortSignal;
+}
+
+export interface MetadataLineageProvider {
+  getLineageGraph(options: MetadataLineageOptions): Promise<MetadataLineageResponse>;
+}
+
 export const MetadataChangeCategorySchema = z.enum([
   'schema',
   'ownership',
@@ -54,7 +72,8 @@ export interface LineageResult {
   truncated: boolean;
 }
 
-export interface MetadataAdapter extends MetadataHealthProvider, MetadataSearchProvider {
+export interface MetadataAdapter
+  extends MetadataHealthProvider, MetadataSearchProvider, MetadataLineageProvider {
   getLineage(entity: EntityRef, depth: number, entityLimit: number): Promise<LineageResult>;
   getRecentChanges(
     entities: EntityRef[],
@@ -121,13 +140,22 @@ const defaultDataHubHealthTimeoutMs = 2_000;
 const minimumDataHubHealthTimeoutMs = 10;
 const maximumDataHubHealthTimeoutMs = 10_000;
 
-type MetadataProviderFailureStatus = Exclude<MetadataHealthStatus, 'ready'>;
+type MetadataProviderFailureStatus = Exclude<MetadataHealthStatus, 'ready'> | 'not_found';
+
+const metadataProviderFailureMessages: Record<MetadataProviderFailureStatus, string> = {
+  unconfigured: metadataHealthMessages.unconfigured,
+  unauthorized: metadataHealthMessages.unauthorized,
+  unavailable: metadataHealthMessages.unavailable,
+  timeout: metadataHealthMessages.timeout,
+  invalid_response: metadataHealthMessages.invalid_response,
+  not_found: 'The requested metadata entity was not found.',
+};
 
 export class MetadataProviderError extends Error {
   readonly status: MetadataProviderFailureStatus;
 
   constructor(status: MetadataProviderFailureStatus) {
-    super(metadataHealthMessages[status]);
+    super(metadataProviderFailureMessages[status]);
     this.name = 'MetadataProviderError';
     this.status = status;
   }
@@ -526,6 +554,334 @@ export class DataHubSearchClient implements MetadataSearchProvider {
   }
 }
 
+const dataHubLineageResultLimit = METADATA_LINEAGE_MAX_NODES + 1;
+const dataHubLineageRequestLimit = METADATA_LINEAGE_MAX_NODES;
+
+const DataHubLineageResponseSchema = z.object({
+  data: z
+    .object({
+      root: DataHubSearchEntitySchema.nullish(),
+      searchAcrossLineage: z.object({
+        total: z.number().int().nonnegative(),
+        searchResults: z
+          .array(
+            z.object({
+              degree: z.number().int().min(1),
+              entity: DataHubSearchEntitySchema,
+            }),
+          )
+          .max(dataHubLineageResultLimit),
+      }),
+    })
+    .nullish(),
+  errors: z.array(z.unknown()).optional(),
+});
+
+const dataHubLineageQuery = `
+  query MetadataBoundedLineage($urn: String!, $input: SearchAcrossLineageInput!) {
+    root: entity(urn: $urn) {
+      urn
+      type
+      ... on Dataset {
+        name
+        properties { name description qualifiedName }
+        editableProperties { name description }
+      }
+      ... on Dashboard {
+        properties { name description }
+        editableProperties { description }
+      }
+      ... on Chart {
+        properties { name description }
+        editableProperties { description }
+      }
+      ... on DataFlow {
+        properties { name description }
+        editableProperties { description }
+      }
+      ... on DataJob {
+        properties { name description }
+        editableProperties { description }
+      }
+    }
+    searchAcrossLineage(input: $input) {
+      total
+      searchResults {
+        degree
+        entity {
+          urn
+          type
+          ... on Dataset {
+            name
+            properties { name description qualifiedName }
+            editableProperties { name description }
+          }
+          ... on Dashboard {
+            properties { name description }
+            editableProperties { description }
+          }
+          ... on Chart {
+            properties { name description }
+            editableProperties { description }
+          }
+          ... on DataFlow {
+            properties { name description }
+            editableProperties { description }
+          }
+          ... on DataJob {
+            properties { name description }
+            editableProperties { description }
+          }
+        }
+      }
+    }
+  }
+`;
+
+function compareLineageNodes(left: MetadataLineageNode, right: MetadataLineageNode) {
+  if (left.depth !== right.depth) {
+    return left.depth - right.depth;
+  }
+  const leftName = left.name.toLowerCase();
+  const rightName = right.name.toLowerCase();
+  if (leftName !== rightName) {
+    return leftName < rightName ? -1 : 1;
+  }
+  if (left.kind !== right.kind) {
+    return left.kind < right.kind ? -1 : 1;
+  }
+  return left.urn < right.urn ? -1 : left.urn > right.urn ? 1 : 0;
+}
+
+function compareLineageEdges(left: MetadataLineageEdge, right: MetadataLineageEdge) {
+  if (left.sourceUrn !== right.sourceUrn) {
+    return left.sourceUrn < right.sourceUrn ? -1 : 1;
+  }
+  return left.targetUrn < right.targetUrn ? -1 : left.targetUrn > right.targetUrn ? 1 : 0;
+}
+
+function normalizedLineageResponse(
+  request: MetadataLineageRequest,
+  nodesByUrn: Map<string, MetadataLineageNode>,
+  edgesByKey: Map<string, MetadataLineageEdge>,
+  truncated: boolean,
+) {
+  const nodes = [...nodesByUrn.values()].sort(compareLineageNodes);
+  const edges = [...edgesByKey.values()].sort(compareLineageEdges);
+  return MetadataLineageResponseSchema.parse({
+    rootUrn: request.rootUrn,
+    direction: request.direction,
+    requestedDepth: request.depth,
+    maxNodes: request.maxNodes,
+    visitedNodeCount: nodes.length,
+    truncated,
+    nodes,
+    edges,
+  });
+}
+
+function addLineageEdge(edgesByKey: Map<string, MetadataLineageEdge>, edge: MetadataLineageEdge) {
+  const key = `${edge.sourceUrn}\u0000${edge.targetUrn}`;
+  if (edgesByKey.has(key)) {
+    return true;
+  }
+  if (edgesByKey.size >= METADATA_LINEAGE_MAX_EDGES) {
+    return false;
+  }
+  edgesByKey.set(key, edge);
+  return true;
+}
+
+function normalizeDataHubLineageNode(
+  entity: z.infer<typeof DataHubSearchEntitySchema>,
+  depth: number,
+) {
+  const normalized = normalizeDataHubSearchEntity(entity);
+  return MetadataLineageNodeSchema.parse({
+    urn: normalized.urn,
+    kind: normalized.kind,
+    name: normalized.name,
+    depth,
+    ...(normalized.description ? { description: normalized.description } : {}),
+  });
+}
+
+interface DataHubOneHopLineage {
+  root: z.infer<typeof DataHubSearchEntitySchema> | null | undefined;
+  adjacent: Array<z.infer<typeof DataHubSearchEntitySchema>>;
+  hasMore: boolean;
+}
+
+export type DataHubLineageClientConfig = DataHubHealthClientConfig;
+
+export class DataHubLineageClient implements MetadataLineageProvider {
+  private readonly graphqlUrl: URL | undefined;
+  private readonly timeoutMs: number;
+  private readonly token: string | undefined;
+
+  constructor(config: DataHubLineageClientConfig) {
+    this.graphqlUrl = dataHubGraphqlUrl(config.gmsUrl);
+    this.timeoutMs = boundedHealthTimeout(config.timeoutMs);
+    this.token = config.token?.trim() || undefined;
+  }
+
+  async getLineageGraph(options: MetadataLineageOptions): Promise<MetadataLineageResponse> {
+    if (!this.graphqlUrl || !this.token) {
+      throw new MetadataProviderError('unconfigured');
+    }
+
+    const { signal, ...input } = options;
+    const request = MetadataLineageRequestSchema.parse(input);
+    const controller = new AbortController();
+    const abort = () => controller.abort();
+    const timeout = setTimeout(abort, this.timeoutMs);
+    if (signal?.aborted) {
+      controller.abort();
+    } else {
+      signal?.addEventListener('abort', abort, { once: true });
+    }
+
+    const nodesByUrn = new Map<string, MetadataLineageNode>();
+    const edgesByKey = new Map<string, MetadataLineageEdge>();
+    const visited = new Set([request.rootUrn]);
+    const frontier: Array<{ urn: string; depth: number }> = [{ urn: request.rootUrn, depth: 0 }];
+    let requestCount = 0;
+    let truncated = false;
+
+    try {
+      while (frontier.length > 0) {
+        if (requestCount >= dataHubLineageRequestLimit) {
+          truncated = true;
+          break;
+        }
+
+        const current = frontier.shift();
+        if (!current) {
+          break;
+        }
+        const oneHop = await this.requestOneHop(current.urn, request.direction, controller.signal);
+        requestCount += 1;
+
+        if (!oneHop.root || oneHop.root.urn.trim() !== current.urn) {
+          throw new MetadataProviderError(current.depth === 0 ? 'not_found' : 'invalid_response');
+        }
+        if (current.depth === 0) {
+          nodesByUrn.set(current.urn, normalizeDataHubLineageNode(oneHop.root, 0));
+        }
+        if (oneHop.hasMore) {
+          truncated = true;
+        }
+
+        const adjacentByUrn = new Map<string, z.infer<typeof DataHubSearchEntitySchema>>();
+        for (const entity of oneHop.adjacent) {
+          const urn = entity.urn.trim();
+          if (!adjacentByUrn.has(urn)) {
+            adjacentByUrn.set(urn, entity);
+          }
+        }
+        const adjacent = [...adjacentByUrn.values()].sort((left, right) =>
+          left.urn.localeCompare(right.urn),
+        );
+
+        for (const entity of adjacent) {
+          const adjacentUrn = entity.urn.trim();
+          if (!visited.has(adjacentUrn)) {
+            if (current.depth >= request.depth || nodesByUrn.size >= request.maxNodes) {
+              truncated = true;
+              continue;
+            }
+            const nextDepth = current.depth + 1;
+            visited.add(adjacentUrn);
+            nodesByUrn.set(adjacentUrn, normalizeDataHubLineageNode(entity, nextDepth));
+            frontier.push({ urn: adjacentUrn, depth: nextDepth });
+          }
+
+          if (nodesByUrn.has(adjacentUrn)) {
+            const edge =
+              request.direction === 'upstream'
+                ? { sourceUrn: adjacentUrn, targetUrn: current.urn }
+                : { sourceUrn: current.urn, targetUrn: adjacentUrn };
+            if (!addLineageEdge(edgesByKey, edge)) {
+              truncated = true;
+            }
+          }
+        }
+      }
+
+      return normalizedLineageResponse(request, nodesByUrn, edgesByKey, truncated);
+    } catch (error) {
+      if (error instanceof MetadataProviderError) {
+        throw error;
+      }
+      throw new MetadataProviderError(controller.signal.aborted ? 'timeout' : 'unavailable');
+    } finally {
+      clearTimeout(timeout);
+      signal?.removeEventListener('abort', abort);
+    }
+  }
+
+  private async requestOneHop(
+    urn: string,
+    direction: MetadataLineageDirection,
+    signal: AbortSignal,
+  ): Promise<DataHubOneHopLineage> {
+    const response = await fetch(this.graphqlUrl!, {
+      method: 'POST',
+      headers: {
+        accept: 'application/json',
+        authorization: `Bearer ${this.token}`,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        query: dataHubLineageQuery,
+        variables: {
+          urn,
+          input: {
+            urn,
+            query: '*',
+            start: 0,
+            count: dataHubLineageResultLimit,
+            direction: direction.toUpperCase(),
+            orFilters: [{ and: [{ field: 'degree', values: ['1'] }] }],
+          },
+        },
+      }),
+      signal,
+    });
+
+    if (response.status === 401 || response.status === 403) {
+      throw new MetadataProviderError('unauthorized');
+    }
+    if (!response.ok) {
+      throw new MetadataProviderError('unavailable');
+    }
+    if (response.status !== 200 || !isJsonResponse(response)) {
+      throw new MetadataProviderError('invalid_response');
+    }
+
+    let body: unknown;
+    try {
+      body = await response.json();
+    } catch {
+      throw new MetadataProviderError('invalid_response');
+    }
+    const parsedBody = DataHubLineageResponseSchema.safeParse(body);
+    if (!parsedBody.success || !parsedBody.data.data || (parsedBody.data.errors?.length ?? 0) > 0) {
+      throw new MetadataProviderError('invalid_response');
+    }
+
+    const lineage = parsedBody.data.data.searchAcrossLineage;
+    if (lineage.searchResults.some((result) => result.degree !== 1)) {
+      throw new MetadataProviderError('invalid_response');
+    }
+    return {
+      root: parsedBody.data.data.root,
+      adjacent: lineage.searchResults.map((result) => result.entity),
+      hasMore: lineage.total > lineage.searchResults.length,
+    };
+  }
+}
+
 const defaultFixtureUrl = new URL(
   '../../../fixtures/metadata/removed-schema-column.json',
   import.meta.url,
@@ -537,6 +893,18 @@ function boundedInteger(value: number) {
 
 function loadDefaultFixture(): unknown {
   return JSON.parse(readFileSync(defaultFixtureUrl, 'utf8')) as unknown;
+}
+
+function fixtureLineageNode(entity: MetadataEntitySearchResult, depth: number) {
+  const platform = /urn:li:dataPlatform:([^,)]+)/.exec(entity.urn)?.[1]?.trim().slice(0, 200);
+  return MetadataLineageNodeSchema.parse({
+    urn: entity.urn,
+    kind: entity.kind,
+    name: entity.name,
+    depth,
+    ...(platform ? { platform } : {}),
+    ...(entity.description ? { description: entity.description } : {}),
+  });
 }
 
 export class FixtureMetadataAdapter implements MetadataAdapter {
@@ -597,6 +965,79 @@ export class FixtureMetadataAdapter implements MetadataAdapter {
           : [];
 
     return normalizeSearchResults(candidates, resultLimit);
+  }
+
+  async getLineageGraph(options: MetadataLineageOptions): Promise<MetadataLineageResponse> {
+    const { signal, ...input } = options;
+    const request = MetadataLineageRequestSchema.parse(input);
+    if (signal?.aborted) {
+      throw new MetadataProviderError('timeout');
+    }
+
+    const root = this.entitiesByUrn.get(request.rootUrn);
+    if (!root) {
+      throw new MetadataProviderError('not_found');
+    }
+
+    const nodesByUrn = new Map<string, MetadataLineageNode>([
+      [root.urn, fixtureLineageNode(root, 0)],
+    ]);
+    const edgesByKey = new Map<string, MetadataLineageEdge>();
+    const visited = new Set([root.urn]);
+    const frontier: Array<{ urn: string; depth: number }> = [{ urn: root.urn, depth: 0 }];
+    let truncated = false;
+
+    while (frontier.length > 0) {
+      if (signal?.aborted) {
+        throw new MetadataProviderError('timeout');
+      }
+      const current = frontier.shift();
+      if (!current) {
+        break;
+      }
+      const adjacentEdges = this.fixture.lineage
+        .filter((edge) =>
+          request.direction === 'upstream'
+            ? edge.downstreamUrn === current.urn
+            : edge.upstreamUrn === current.urn,
+        )
+        .sort(
+          (left, right) =>
+            left.upstreamUrn.localeCompare(right.upstreamUrn) ||
+            left.downstreamUrn.localeCompare(right.downstreamUrn),
+        );
+
+      for (const edge of adjacentEdges) {
+        const adjacentUrn =
+          request.direction === 'upstream' ? edge.upstreamUrn : edge.downstreamUrn;
+        if (!visited.has(adjacentUrn)) {
+          if (current.depth >= request.depth || nodesByUrn.size >= request.maxNodes) {
+            truncated = true;
+            continue;
+          }
+          const adjacent = this.entitiesByUrn.get(adjacentUrn);
+          if (!adjacent) {
+            throw new MetadataProviderError('invalid_response');
+          }
+          const nextDepth = current.depth + 1;
+          visited.add(adjacentUrn);
+          nodesByUrn.set(adjacentUrn, fixtureLineageNode(adjacent, nextDepth));
+          frontier.push({ urn: adjacentUrn, depth: nextDepth });
+        }
+
+        if (nodesByUrn.has(adjacentUrn)) {
+          const normalizedEdge = {
+            sourceUrn: edge.upstreamUrn,
+            targetUrn: edge.downstreamUrn,
+          };
+          if (!addLineageEdge(edgesByKey, normalizedEdge)) {
+            truncated = true;
+          }
+        }
+      }
+    }
+
+    return normalizedLineageResponse(request, nodesByUrn, edgesByKey, truncated);
   }
 
   async getLineage(entity: EntityRef, depth: number, entityLimit: number): Promise<LineageResult> {
@@ -703,4 +1144,8 @@ export function createDataHubHealthClient(config: DataHubHealthClientConfig) {
 
 export function createDataHubSearchClient(config: DataHubSearchClientConfig) {
   return new DataHubSearchClient(config);
+}
+
+export function createDataHubLineageClient(config: DataHubLineageClientConfig) {
+  return new DataHubLineageClient(config);
 }

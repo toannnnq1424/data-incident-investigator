@@ -8,11 +8,13 @@ import {
 } from '@dii/agent-core';
 import {
   createDataHubHealthClient,
+  createDataHubLineageClient,
   createDataHubSearchClient,
   createFixtureMetadataAdapter,
   MetadataProviderError,
   type MetadataAdapter,
   type MetadataHealthProvider,
+  type MetadataLineageProvider,
   type MetadataSearchProvider,
 } from '@dii/datahub-client';
 import {
@@ -23,6 +25,8 @@ import {
   MetadataEntitySearchRequestSchema,
   MetadataEntitySearchResponseSchema,
   MetadataHealthResponseSchema,
+  MetadataLineageRequestSchema,
+  MetadataLineageResponseSchema,
   MetadataSourceModeSchema,
   type InvestigationReport,
   type MetadataHealthResponse,
@@ -35,6 +39,7 @@ interface BuildServerOptions {
   logger?: boolean;
   metadata?: MetadataAdapter;
   metadataHealth?: MetadataHealthProvider;
+  metadataLineage?: MetadataLineageProvider;
   metadataSearch?: MetadataSearchProvider;
   mode?: MetadataSourceMode;
   runner?: InvestigationRunner;
@@ -90,6 +95,44 @@ const metadataSearchFailures = {
     httpStatus: 502,
     message: 'Metadata search returned an unexpected response.',
   },
+  not_found: {
+    code: 'NOT_FOUND',
+    httpStatus: 404,
+    message: 'The requested metadata entity was not found.',
+  },
+} as const;
+
+const metadataLineageFailures = {
+  unconfigured: {
+    code: 'METADATA_UNCONFIGURED',
+    httpStatus: 503,
+    message: 'Metadata lineage is not configured. Check the metadata source settings.',
+  },
+  unauthorized: {
+    code: 'METADATA_UNAUTHORIZED',
+    httpStatus: 502,
+    message: 'Metadata lineage authorization failed. Check the configured access token.',
+  },
+  unavailable: {
+    code: 'METADATA_UNAVAILABLE',
+    httpStatus: 503,
+    message: 'Metadata lineage is unavailable. Check the service and network connection.',
+  },
+  timeout: {
+    code: 'METADATA_TIMEOUT',
+    httpStatus: 504,
+    message: 'Metadata lineage timed out. Try again shortly.',
+  },
+  invalid_response: {
+    code: 'METADATA_INVALID_RESPONSE',
+    httpStatus: 502,
+    message: 'Metadata lineage returned an unexpected response.',
+  },
+  not_found: {
+    code: 'NOT_FOUND',
+    httpStatus: 404,
+    message: 'The requested metadata entity was not found.',
+  },
 } as const;
 
 export function buildServer(options: BuildServerOptions = {}) {
@@ -110,6 +153,14 @@ export function buildServer(options: BuildServerOptions = {}) {
     (mode === 'fixture'
       ? metadata
       : createDataHubSearchClient({
+          gmsUrl: environment.DATAHUB_GMS_URL,
+          token: environment.DATAHUB_TOKEN,
+        }));
+  const metadataLineage =
+    options.metadataLineage ??
+    (mode === 'fixture'
+      ? metadata
+      : createDataHubLineageClient({
           gmsUrl: environment.DATAHUB_GMS_URL,
           token: environment.DATAHUB_TOKEN,
         }));
@@ -183,6 +234,61 @@ export function buildServer(options: BuildServerOptions = {}) {
       const status = error instanceof MetadataProviderError ? error.status : 'unavailable';
       const failure = metadataSearchFailures[status];
       server.log.warn({ mode, status }, 'Metadata entity search failed');
+      return reply.code(failure.httpStatus).send(
+        ApiErrorSchema.parse({
+          error: {
+            code: failure.code,
+            message: failure.message,
+          },
+        }),
+      );
+    }
+  });
+
+  server.post('/metadata/lineage', async (request, reply) => {
+    const parsedRequest = MetadataLineageRequestSchema.safeParse(request.body);
+    if (!parsedRequest.success) {
+      return reply.code(400).send(
+        ApiErrorSchema.parse({
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: 'The metadata lineage request is invalid.',
+            issues: parsedRequest.error.issues.map((issue) => ({
+              path: issue.path.map(String).join('.') || 'request',
+              message: issue.message,
+            })),
+          },
+        }),
+      );
+    }
+
+    try {
+      const lineage = await metadataLineage.getLineageGraph(parsedRequest.data);
+      const parsedResponse = MetadataLineageResponseSchema.safeParse(lineage);
+      if (
+        !parsedResponse.success ||
+        parsedResponse.data.rootUrn !== parsedRequest.data.rootUrn ||
+        parsedResponse.data.direction !== parsedRequest.data.direction ||
+        parsedResponse.data.requestedDepth !== parsedRequest.data.depth ||
+        parsedResponse.data.maxNodes !== parsedRequest.data.maxNodes
+      ) {
+        throw new MetadataProviderError('invalid_response');
+      }
+
+      server.log.info(
+        {
+          mode,
+          direction: parsedResponse.data.direction,
+          visitedNodeCount: parsedResponse.data.visitedNodeCount,
+          truncated: parsedResponse.data.truncated,
+        },
+        'Metadata lineage completed',
+      );
+      return reply.code(200).send(parsedResponse.data);
+    } catch (error) {
+      const status = error instanceof MetadataProviderError ? error.status : 'unavailable';
+      const failure = metadataLineageFailures[status];
+      server.log.warn({ mode, status }, 'Metadata lineage failed');
       return reply.code(failure.httpStatus).send(
         ApiErrorSchema.parse({
           error: {

@@ -21,6 +21,46 @@
       "name": "Revenue overview",
       "kind": "dashboard",
       "description": "Executive dashboard for daily revenue performance."
+    },
+    {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,lineage.demo.root,PROD)",
+      "name": "lineage.demo.root",
+      "kind": "dataset",
+      "description": "Deterministic lineage demo root with bounded branches and cycles.",
+      "qualifiedName": "snowflake.lineage.demo.root"
+    },
+    {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,lineage.demo.upstream_stage,PROD)",
+      "name": "lineage.demo.upstream_stage",
+      "kind": "dataset",
+      "description": "Intermediate upstream stage for multi-depth fixture lineage.",
+      "qualifiedName": "snowflake.lineage.demo.upstream_stage"
+    },
+    {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,lineage.demo.upstream_raw,PROD)",
+      "name": "lineage.demo.upstream_raw",
+      "kind": "dataset",
+      "description": "Raw upstream source for multi-depth fixture lineage.",
+      "qualifiedName": "snowflake.lineage.demo.upstream_raw"
+    },
+    {
+      "urn": "urn:li:dashboard:(looker,lineage-demo-dashboard)",
+      "name": "Lineage demo dashboard",
+      "kind": "dashboard",
+      "description": "One deterministic downstream branch from the lineage demo root."
+    },
+    {
+      "urn": "urn:li:chart:(looker,lineage-demo-chart)",
+      "name": "Lineage demo chart",
+      "kind": "chart",
+      "description": "A second deterministic downstream branch from the lineage demo root."
+    },
+    {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,lineage.empty_source,PROD)",
+      "name": "lineage.empty_source",
+      "kind": "dataset",
+      "description": "Fixture entity with no upstream or downstream lineage.",
+      "qualifiedName": "snowflake.lineage.empty_source"
     }
   ],
   "lineage": [
@@ -31,6 +71,38 @@
     {
       "upstreamUrn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,analytics.daily_revenue,PROD)",
       "downstreamUrn": "urn:li:dashboard:(looker,revenue-overview)"
+    },
+    {
+      "upstreamUrn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,lineage.demo.upstream_raw,PROD)",
+      "downstreamUrn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,lineage.demo.upstream_stage,PROD)"
+    },
+    {
+      "upstreamUrn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,lineage.demo.upstream_stage,PROD)",
+      "downstreamUrn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,lineage.demo.root,PROD)"
+    },
+    {
+      "upstreamUrn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,lineage.demo.root,PROD)",
+      "downstreamUrn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,lineage.demo.upstream_stage,PROD)"
+    },
+    {
+      "upstreamUrn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,lineage.demo.root,PROD)",
+      "downstreamUrn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,lineage.demo.root,PROD)"
+    },
+    {
+      "upstreamUrn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,lineage.demo.root,PROD)",
+      "downstreamUrn": "urn:li:dashboard:(looker,lineage-demo-dashboard)"
+    },
+    {
+      "upstreamUrn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,lineage.demo.root,PROD)",
+      "downstreamUrn": "urn:li:chart:(looker,lineage-demo-chart)"
+    },
+    {
+      "upstreamUrn": "urn:li:chart:(looker,lineage-demo-chart)",
+      "downstreamUrn": "urn:li:dashboard:(looker,lineage-demo-dashboard)"
+    },
+    {
+      "upstreamUrn": "urn:li:dashboard:(looker,lineage-demo-dashboard)",
+      "downstreamUrn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,lineage.demo.root,PROD)"
     }
   ],
   "changes": [

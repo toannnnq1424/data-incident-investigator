@@ -687,3 +687,84 @@ credential. Live DataHub smoke vẫn credential-gated và deferred.
 Commit `feat: add datahub entity search`, push fast-forward, mở stacked draft PR base
 `codex/phase-2-1-datahub-health` và theo dõi đúng một CI run tới terminal. Sau green handoff, tạo task riêng
 cho Slice 2.3 — bounded, cycle-safe DataHub lineage; không bắt đầu Slice 2.3 trong task này.
+
+## 2026-07-18 — Phase 2 Slice 2.3 bounded DataHub lineage
+
+### Objective
+
+Triển khai đúng một vertical slice từ exact Slice 2.2 HEAD
+`65657aa7d06ad0a3457b16289a6e5311bb056592`: shared bounded-lineage graph contract -> fixture/DataHub
+client boundary -> API -> compact lineage actions/display trên entity-search results, không bắt đầu
+recent changes, ownership enrichment, impact analysis, controller hoặc Slice 2.4.
+
+### Completed
+
+Thêm strict request defaults/hard caps cho root URN, `upstream|downstream`, depth và `maxNodes`; response
+schema enforce root đúng một lần, unique bounded nodes/edges, no dangling edge, deterministic ordering,
+requested depth/visited count/truncation. Fixture bổ sung graph tách biệt có upstream nhiều tầng,
+downstream phân nhánh, cycle, self-loop, empty/missing root và depth/node truncation mà không đổi canonical
+incident graph. DataHub client dùng official `searchAcrossLineage(input: SearchAcrossLineageInput!)`
+degree-one semantics theo BFS tuần tự, visited dedup, cap 25 request/25 node/100 edge, một total timeout và
+không retry. API route chỉ validate/compose/map safe typed errors. Web reuse search results, thêm bounded
+controls, upstream/downstream actions, semantic root/node/edge lists, loading/success/empty/truncated/error,
+terminal focus và latest-request guard. Một combined browser flow giữ nguyên canonical incident report.
+
+### Files changed
+
+`packages/shared-types/src/index.ts`; `packages/datahub-client/src/index.ts`; `apps/api/src/index.ts`;
+`apps/web/src/App.tsx`; `apps/web/src/styles.css`; `fixtures/metadata/removed-schema-column.json`;
+`tests/integration/contracts.test.ts`; `tests/integration/fixture-adapter.test.ts`;
+`tests/integration/datahub-lineage.test.ts`; `tests/integration/metadata-lineage-api.test.ts`;
+`tests/integration/web-metadata-lineage.test.ts`; `tests/e2e/report-display.spec.mjs`;
+`docs/API_CONTRACTS.md`; `docs/DATA_MODEL.md`; `docs/IMPLEMENTATION_PLAN.md`; `docs/KNOWN_ISSUES.md`;
+`docs/SESSION_LOG.md`. Không đổi repository structure, manifest, lockfile hoặc `.env.example`.
+
+### Decisions
+
+DataHub multi-hop result phẳng không đủ để dựng directed edges, nên traversal gọi bounded one-hop
+`searchAcrossLineage` với `urn`, `query: "*"`, `start: 0`, count 26, direction enum và
+`degree: ["1"]`, rồi dựng physical upstream -> downstream edges qua cycle-safe BFS. Sources chính thức:
+<https://github.com/datahub-project/datahub/blob/master/docs/api/tutorials/lineage.md> và
+<https://github.com/datahub-project/datahub/blob/master/datahub-web-react/src/graphql/lineage.graphql>.
+Node root luôn depth 0/đầu danh sách; remaining nodes sort depth/name/kind/URN, edges sort source/target.
+Self-loop/cycle giữ một lần như evidence nhưng không được expand lại. Live DataHub smoke không cần
+credential và vẫn deferred.
+
+### Validation performed
+
+- Formatter bootstrap đầu verify lockfile/supply-chain nhưng esbuild thiếu Node; bundled PATH retry
+  install xong nhưng `pnpm exec` không resolve workspace binary. Probe xác nhận production flags unset,
+  `prettier@3.9.5` là root devDependency và project-local binary tồn tại. Direct formatter write PASS
+  2.5 giây, format check PASS 2.2 giây, affected ESLint PASS 10.6 giây. `.pnpm-store` được path-verify,
+  xác nhận 0 worktree runtime process giữ handle rồi xóa đúng literal artifact.
+- Năm typecheck PASS: shared-types 8.1 giây, datahub-client 8.3 giây, agent-core 8.2 giây, API 9.1
+  giây, web 8.9 giây.
+- Sandboxed Vitest gặp known ancestor-metadata denial; exact scoped retry PASS 11/11 files, 81/81 tests
+  trong 9.03 giây (10.2 giây command wall), gồm 12 DataHub-lineage và 15 lineage-API tests.
+- Build lượt đầu PASS shared-types/datahub-client rồi Vite gặp cùng sandbox denial; scoped retry PASS
+  agent-core/API/web. Tổng cộng 5/5 affected builds PASS; web transform 109 modules, build 1.64 giây.
+- Đúng một `pnpm test:e2e:report` chọn API `http://127.0.0.1:56205`, web
+  `http://127.0.0.1:56206`, rồi PASS deterministic search -> selected bounded lineage với three-node
+  truncation + unique root/self-loop cycle-safe assertion -> incident processing -> completed/full
+  evidence trong 16.096 giây (23.3 giây wall). Console, evidence references, responsive overflow,
+  three-minute bound, selected ports và launcher cleanup đều PASS.
+- `git diff --check`, secret scan tracked+untracked, generated-artifact scan, stat/name/full scoped diff
+  và branch/worktree review PASS: secret `0`, generated artifact `0`, 13 tracked + 3 intended untracked
+  files trước documentation finalization.
+
+### Validation intentionally deferred
+
+Live DataHub smoke cần credential nên deferred. Không chạy Level D vì Slice 2.3 chưa đóng Phase 2; không
+rerun formatter/lint/typecheck đã xanh, không chạy recent changes, impact analysis hoặc slice kế tiếp.
+
+### Known issues
+
+Không có local product/test blocker. Managed `pnpm exec` không resolve workspace binary sau bootstrap,
+nhưng direct project-local binary và CI-compatible package scripts hoạt động. Live DataHub smoke vẫn
+credential-gated.
+
+### Exact next step
+
+Commit `feat: add bounded datahub lineage`, push fast-forward, mở stacked draft PR base
+`codex/phase-2-2-entity-search` và theo dõi đúng một CI run tới terminal. Sau green handoff, tạo task riêng
+cho Phase 2 Slice 2.4 — metadata and recent changes; không bắt đầu Slice 2.4 trong task này.
