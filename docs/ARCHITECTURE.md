@@ -40,6 +40,11 @@ depend on apps. Evaluation depends on public internal contracts, not UI renderin
 
 Switching adapters must not change investigation business logic or API output.
 
+At the Phase 2 checkpoint, provider switching covers metadata health, entity search, bounded lineage,
+and recent-change exploration through shared API schemas. Incident submission and report generation
+remain on the deterministic fixture runner; live DataHub-backed incident orchestration begins only in
+Phase 3 Slice 3.1. Raw DataHub GraphQL types remain inside `packages/datahub-client` in both cases.
+
 ## Trust boundaries
 
 User input, provider responses, and model output are untrusted. Validate at the API boundary and again

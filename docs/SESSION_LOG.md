@@ -1454,3 +1454,93 @@ public paging/window input.
 Format/review hai docs resolution, tạo normal merge commit, push fast-forward, retarget draft PR #13
 sang `main`, rồi theo dõi đúng một CI run của final HEAD tới terminal. Giữ PR draft/open; không merge PR
 hoặc bắt đầu Phase 2 integration checkpoint.
+
+## 2026-07-19 — Đóng Phase 2 DataHub integration
+
+### Objective
+
+Đóng checkpoint Phase 2 từ exact integrated `origin/main`
+`fc08d5f32d8a77232ce6875b453884cbe68a4e6b`, chứng minh health, search, bounded/cycle-safe lineage và
+recent changes chạy qua contract provider-neutral ở fixture/DataHub mode; không bắt đầu reasoning,
+correlation, scoring hoặc remediation của Phase 3.
+
+### Completed
+
+- Thêm một shared metadata-boundary integration test chạy cùng bốn API request qua fixture adapter và
+  các DataHub client thật được cấp dữ liệu bởi local fake HTTP provider. Cả hai mode trả shared schemas
+  và cùng top-level business/UI shapes; raw GraphQL field, provider marker, URL và fake authorization
+  không vượt boundary.
+- Xác nhận các focused contract/provider/API tests hiện có bao phủ strict schema, safe normalized
+  errors, limits, timeout/AbortSignal, cycle termination, deterministic ordering/dedup và fixture
+  no-credential behavior.
+- Làm rõ tài liệu hiện trạng: DataHub mode đã có metadata exploration; live DataHub-backed incident
+  orchestration vẫn deferred tới Phase 3 Slice 3.1. Thu gọn known issues về các limitation còn thực sự
+  hiện hành.
+- Trạng thái acceptance: shared boundary PASS; health/search/lineage/recent changes contract và safe
+  bounds PASS; deterministic credential-free fixture PASS; fake-provider/no-real-network DataHub tests
+  PASS; documentation accuracy PASS; live DataHub smoke DEFERRED vì credential không có trong
+  environment, không phải fixture/CI failure.
+
+### Files changed
+
+- `tests/integration/metadata-boundary.test.ts`.
+- `docs/ARCHITECTURE.md`, `docs/TEST_STRATEGY.md`, `docs/IMPLEMENTATION_PLAN.md`,
+  `docs/KNOWN_ISSUES.md`, và entry này trong `docs/SESSION_LOG.md`.
+- Không đổi product source, shared schema, fixture, manifest, lockfile, `.env.example` hoặc repository
+  structure; `docs/REPOSITORY_MAP.md` không cần đổi.
+
+### Decisions
+
+- Chỉ bổ sung test/tài liệu tối thiểu còn thiếu. Không hợp nhất các DataHub clients thành product
+  abstraction mới và không nối incident runner vào DataHub trong checkpoint này vì đó là orchestration
+  của Phase 3 Slice 3.1.
+- Dùng local fake HTTP server cho DataHub contract; không gọi real DataHub và không đọc/in/log credential.
+- Sau sandbox failure đã biết, dùng scoped access cho Vitest/Vite/esbuild; không sửa code để chữa
+  environment restriction.
+
+### Validation performed
+
+- Bootstrap command:
+  `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/bootstrap-worktree.ps1`. Node
+  `v24.14.0`, pnpm `11.9.0`, 309-entry supply-chain verification và frozen install 259 packages PASS;
+  command dừng sau `26.1s` ở known `pnpm exec` root-binary resolution limitation. Lần gọi trực tiếp đầu
+  bị host execution policy chặn trong `0.112s`; manifest/lockfile không đổi.
+- Initial `pnpm validate`: harness allowance đầu dừng ở `2.5s` trước khi format trả kết quả. Lần có
+  allowance đúng PASS format/lint/sáu typechecks rồi dừng trước test ở sandbox esbuild ancestor-path
+  denial sau `34.3s`.
+- Scoped `pnpm test` chạy 20 files/140 tests: 139 PASS, một test mới fail vì query test quá rộng. Sau
+  khi đọc scoring hiện có và đổi sang unique token `cycles`, focused command
+  `node_modules/.bin/vitest.cmd run tests/integration/metadata-boundary.test.ts` PASS 1/1 trong `1.73s`
+  (`3.0s` command wall).
+- Final complete `pnpm validate` PASS trong `39.5s`: repository format, lint, sáu workspace typechecks,
+  20/20 files và 140/140 tests, sáu production builds, primary API/web artifact smoke. Web build 109
+  modules trong `1.77s`.
+- Đúng một `pnpm test:e2e:report` PASS trên API `127.0.0.1:58119` và web `127.0.0.1:58120` trong
+  `11.773s` (`18.7s` command wall). Flow bao phủ fixture health/search/lineage/recent changes,
+  processing/completed/full evidence, deterministic facts/order/truncation, evidence references,
+  clean console, responsive overflow, three-minute bound và managed cleanup. Probe sau run: `0`
+  listener và `0` matching runtime process.
+- Presence-only environment check: `DATAHUB_GMS_URL_present=False` và
+  `DATAHUB_TOKEN_present=False`; không đọc hoặc log giá trị. Live DataHub smoke không chạy theo đúng
+  credential gate.
+
+### Validation intentionally deferred
+
+- Live DataHub smoke deferred tới môi trường đã có credential hợp lệ.
+- Closure-branch macOS exact-head QA do controller giao sau Draft PR; broader cross-browser, deployment,
+  persistence và evaluation expansion vẫn deferred.
+- Toàn bộ Phase 3, gồm parse/gather live orchestration, impact/correlation, scoring và remediation, chưa
+  bắt đầu.
+
+### Known issues
+
+Không có product/test blocker. Windows managed runtime vẫn có `pnpm exec` shim limitation và sandbox
+esbuild ancestor-path denial; DataHub timeline vẫn không có public time/count/page/cursor input; live
+DataHub smoke vẫn credential-gated.
+
+### Exact next step
+
+Tạo một conventional closure commit, push fast-forward branch `codex/phase-2-closure`, mở Draft PR base
+`main` và theo dõi đúng một CI run tới terminal; không merge. Controller tiếp tục giao macOS exact-head
+QA rồi review/merge. Sau khi Phase 2 closure merge, task implementation kế tiếp chính xác là Phase 3
+Slice 3.1 — Parse and gather; không bắt đầu slice đó trong checkpoint này.

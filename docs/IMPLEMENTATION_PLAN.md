@@ -1179,6 +1179,92 @@ correlation, agent reasoning, or the checkpoint here.
 Slices: client health/error normalization; entity search; bounded/cycle-safe lineage; metadata and recent
 changes. Completion requires fixture and DataHub adapters to run through unchanged business logic.
 
+### Phase 2 Level D closure
+
+Status: Level D passed on `codex/phase-2-closure` from exact integrated `origin/main`
+`fc08d5f32d8a77232ce6875b453884cbe68a4e6b` after PR #13 merged.
+
+Objective: close the Phase 2 DataHub integration checkpoint by proving the existing health, entity
+search, bounded/cycle-safe lineage, and recent-change slices share provider-neutral contracts across
+fixture and DataHub modes. This checkpoint adds no reasoning, correlation, scoring, remediation, or
+other Phase 3 behavior.
+
+Minimum files:
+
+- `tests/integration/metadata-boundary.test.ts` for one shared API/metadata contract exercise against
+  the deterministic fixture adapter and the real DataHub clients backed only by a local fake HTTP
+  provider.
+- `docs/TEST_STRATEGY.md`, `docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md`, and
+  `docs/SESSION_LOG.md` for the closure contract, exact validation evidence, limitations, and handoff.
+- No product source, fixture, shared schema, manifest, lockfile, environment contract, or repository
+  map change unless a classified Level D failure proves one is necessary.
+
+Acceptance criteria:
+
+- The same provider-neutral health/search/lineage/recent-change API exercise passes in fixture and
+  DataHub modes; both modes return only shared schemas and the same top-level business/UI shapes.
+- Raw DataHub GraphQL fields, provider payload details, URL, and authorization data do not cross the
+  metadata/API boundary.
+- Existing contracts and tests continue to prove strict requests, safe normalized errors, bounded
+  counts/depth/windows/provider steps, cycle-safe traversal, timeout/AbortSignal behavior, and
+  deterministic fixture operation without credentials.
+- All DataHub integration tests use a local stub/fake provider and make no real network request. A live
+  smoke runs only when both DataHub environment variables are already present; otherwise its
+  credential-gated deferral is recorded without reading or logging either value.
+- One complete Level D sequence passes: `pnpm validate`, then the canonical fixture browser flow
+  `pnpm test:e2e:report`. Documentation describes only implemented Phase 2 behavior and provider
+  limitations.
+
+Deferred: live DataHub smoke when credentials are absent, live DataHub-backed incident orchestration,
+impact analysis, change-to-incident correlation, hypothesis ranking, scoring, remediation, evaluation
+expansion, persistent storage, broader cross-browser coverage, deployment, and all Phase 3 work.
+
+Validation commands:
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/bootstrap-worktree.ps1`
+- `pnpm validate`
+- `pnpm test:e2e:report`
+- Read-only credential-presence check followed by a live DataHub smoke only when both required
+  variables are already non-empty; otherwise record the credential-gated limitation.
+- `git diff --check`, scoped diff/secret/generated-artifact review, and final worktree/ancestry review.
+
+Validation result on the Windows managed worktree, 2026-07-19:
+
+- The direct bootstrap invocation was blocked by the host PowerShell execution policy in `0.112s`.
+  The required `-ExecutionPolicy Bypass` invocation selected Node `v24.14.0` and pnpm `11.9.0`,
+  verified the 309-entry supply-chain policy, and installed all 259 locked packages without a manifest
+  or lockfile change. It then reproduced the known managed-runtime `pnpm exec` root-binary resolution
+  limitation after `26.1s`; the verified project-local `.cmd` tools were used with the same bundled
+  Node runtime.
+- The first validation harness allowance expired after `2.5s`, before repository format returned a
+  result. With an adequate harness limit, repository format, lint, and all six workspace typechecks
+  passed before Vitest hit the known managed-worktree esbuild ancestor-path denial after `34.3s`.
+  One scoped test retry reached the suite and classified the only failure as new test data: a broad
+  fixture query selected another valid deterministic result at limit one. After reading the existing
+  scoring behavior and switching to the unique fixture token `cycles`, the focused shared-boundary
+  test passed 1/1 in `1.73s` (`3.0s` command wall).
+- The one final complete `pnpm validate` passed in `39.5s`: repository format and lint, all six
+  workspace typechecks, 20/20 test files and 140/140 tests, all six production builds, and the primary
+  API/web artifact smoke. The web build transformed 109 modules and completed in `1.77s`.
+- Exactly one `pnpm test:e2e:report` selected API `http://127.0.0.1:58119` and web
+  `http://127.0.0.1:58120`, then passed fixture health -> search -> bounded lineage -> recent changes ->
+  canonical incident processing/completed/full evidence in `11.773s` (`18.7s` command wall). The
+  existing assertions cover deterministic facts/order/truncation, resolved evidence references,
+  clean console output, responsive overflow, the three-minute bound, and managed cleanup. Read-only
+  post-run probes found zero listeners on both ports and zero matching launcher/browser processes.
+- The new shared contract test drives the same four metadata endpoints through fixture mode and the
+  real DataHub clients backed by one local fake HTTP provider. Both modes pass the shared schemas and
+  top-level shapes; raw GraphQL fields, provider markers, URL, and fake authorization data do not cross
+  the API boundary. All DataHub tests remain local fake-provider tests with no real network.
+- A presence-only environment check reported both required DataHub variables absent without reading or
+  logging values. Live DataHub smoke is therefore credential-gated and intentionally deferred; this is
+  not a fixture, test, CI, or product failure.
+
+Exact next action: publish the single conventional closure commit to one draft PR against `main`,
+observe exactly one CI run to terminal, and hand the exact PR head to the controller for macOS QA and
+merge. After Phase 2 closure is merged, the next implementation task is Phase 3 Slice 3.1 — Parse and
+gather; do not begin it in this checkpoint.
+
 ## Phase 3 — Agent reasoning
 
 Slices: parse and gather; suspicious-change detection; evidence-linked hypothesis scoring; remediation

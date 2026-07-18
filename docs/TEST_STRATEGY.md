@@ -30,7 +30,9 @@ before merge, release, or submission.
 
 - Schema and pure logic: package-local or `tests/integration` where contracts cross packages.
 - API routes: Fastify injection without binding a port.
-- Adapter behavior: shared contract suite executed against fixture and DataHub adapters.
+- Adapter behavior: `tests/integration/metadata-boundary.test.ts` executes the same provider-neutral
+  health/search/lineage/recent-change API contract against the fixture adapter and DataHub clients
+  backed by a local fake HTTP provider; focused adapter tests cover provider-specific edge cases.
 - User flows: `tests/e2e`; Slice 1.3 starts this with `pnpm test:e2e:report` for the canonical
   fixture report display. On a new machine, run `pnpm exec playwright install chromium` once before the
   browser flow.
