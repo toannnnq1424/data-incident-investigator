@@ -913,3 +913,115 @@ new CI run for the final head remain pending at the time of this entry.
 Run the documented affected checks once, review ancestry/diff/secrets/conflict markers/generated junk,
 create and push the merge commit, retarget draft PR #7 to `main`, and follow exactly one new final-head
 CI run. Keep PR #7 draft/open and do not modify PR #10.
+
+## 2026-07-18 — Phase 1 launcher cleanup-ownership CI hotfix
+
+### Objective
+
+Fix only the main-owned integration-test cleanup race from PR #7 CI run `29651498475`, job
+`88098488706`, on exact `origin/main` `54945b80a27685ce81e476173a3466e585f42112`, without changing
+PR #7, launcher runtime behavior, product/API/DataHub code, or beginning Phase 2.
+
+### Completed
+
+Created `fix/phase1-launcher-cleanup-ownership` from exact main. Kept the cleanup descendant's atomic
+`port: 0` bind and pre-cleanup HTTP readiness proof, changed its report to include the actual PID and
+bound port, removed the post-cleanup `assertPortAvailable` rebind, and asserted that the exact
+descendant PID disappears through a bounded cross-platform signal-0 liveness wait.
+
+### Files changed
+
+`tests/integration/report-launcher.test.ts`, `docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md`, and
+this session entry only. No launcher helper/runtime, product, API, DataHub, manifest, lockfile, browser
+test, bootstrap, or repository-structure file changed.
+
+### Decisions
+
+Classified the exact `EADDRINUSE` result as a test-ownership TOCTOU defect: after managed cleanup,
+another process is free to claim the old port before the test probes it. Prove ownership through the
+managed descendant's PID instead. Do not add retry, sleep around port allocation, random port ranges,
+or wider test timeouts.
+
+### Validation performed
+
+- The first two command attempts did not enter Vitest because the worktree lacked resolved executable
+  dependencies and then exposed a sandbox-inaccessible pnpm hardlink. Frozen install state was repaired
+  without manifest/lockfile changes, and the single real pre-fix baseline passed 1 file/3 tests in
+  `6.80s` (`17.546s` wall).
+- Changed-file Prettier passed in `6.401s`. A `30s` harness limit interrupted the first affected ESLint
+  process without a result; the identical command passed in `7.568s` under a sufficient command budget.
+- The primary post-fix focused run passed 1 file/3 tests in `1.74s` (`4.739s` wall).
+- Five permitted assessment runs produced one fixture-startup failure before PID/port reporting and
+  four consecutive 1-file/3-test passes in `12.549s` total. A read-only PID/CommandLine/listener probe
+  after the startup failure found no fixture descendant or listener leak. The replaced port-rebind
+  assertion cannot recur because it no longer exists.
+
+### Validation intentionally deferred
+
+Browser E2E, full suite, build, and smoke remain deferred because product and launcher runtime inputs
+did not change. CI supplies the single repository-level validation run for the draft fix PR. PR #7 and
+all Phase 2 implementation remain out of scope.
+
+### Known issues
+
+No local implementation blocker remains. The one non-repeating fixture-startup failure above is
+recorded transparently for CI observation; draft PR publication and its one CI run are pending.
+Existing product limitations remain unchanged.
+
+### Exact next step
+
+Format and review the four-file diff, commit conventionally, push the fix branch, open one draft PR
+against `main`, and follow exactly one new CI run. Do not rerun the failed PR #7 CI, merge the fix PR,
+modify PR #7, or begin Phase 2.
+
+## 2026-07-18 — Slice 2.1 merge-forward after launcher hotfix
+
+### Objective
+
+Merge exact green `origin/main` `1649fd7657a55eee3ce2198a2f7bc38ad5c16c3d` into draft PR #7
+head `e6c34e65bcce0c39dee216d0ab66236deffb4365` without rebase, rewrite, Slice 2.1 behavior changes,
+or changes to PR #10/Slice 2.2.
+
+### Completed
+
+Verified clean local/upstream state and confirmed hotfix `ba358a936541d0ea930e7ccbb76540d4e07595e5`
+is integrated in main. Merge-forward has one append-only conflict in this file; union resolution keeps
+the earlier Slice 2.1 sync evidence and the complete launcher cleanup-ownership hotfix evidence.
+
+### Files changed
+
+The merge imports main's focused launcher integration-test hotfix and its three project-memory files.
+Only this session entry is added by the PR #7 merge resolution. No product, DataHub, UI, manifest,
+lockfile, or environment-contract file changes.
+
+### Decisions
+
+Run changed-doc Prettier and exactly one focused `tests/integration/report-launcher.test.ts`. Defer
+DataHub tests, browser E2E, builds, and type-checks because their input trees remain unchanged from the
+already-recorded PR #7 validation and CI.
+
+### Validation performed
+
+- Changed-doc Prettier PASS in `1.396s`; only this entry required formatting.
+- Exactly one `tests/integration/report-launcher.test.ts` run PASS 1/1 file and 3/3 tests in `1.95s`
+  (`5.542s` wall), including exact descendant-PID cleanup.
+- Slice 2.1 API, web, shared-types, and datahub-client source trees are byte-identical to first parent
+  `e6c34e6…`; the launcher test is byte-identical to main. The prospective PR diff against main remains
+  exactly 15 Slice 2.1 files.
+- `git diff --check`, conflict-marker, manifest/lock/env, high-risk secret, and generated-junk scans
+  PASS. No secret pattern or generated artifact remains.
+
+### Validation intentionally deferred
+
+DataHub/API/web tests, browser E2E, builds, type-checks, live DataHub smoke, and full Level D remain
+deferred. PR #10 and all Slice 2.2 work remain untouched.
+
+### Known issues
+
+Merge commit, push, and exactly one new PR #7 CI run remain pending at the time of this entry.
+
+### Exact next step
+
+Run the two authorized local checks, review ancestry/diff/secrets/conflict markers/generated junk,
+create and push the merge commit, then follow exactly one final-head CI run. Keep PR #7 draft/open and
+do not merge it in this turn.

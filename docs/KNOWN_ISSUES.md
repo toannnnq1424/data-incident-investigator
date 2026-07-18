@@ -2,6 +2,13 @@
 
 Last updated: 2026-07-18.
 
+- Exact `main` `54945b80a27685ce81e476173a3466e585f42112` exposes a test-only cleanup ownership
+  race in PR #7 CI run `29651498475`, job `88098488706`: 36/37 tests passed, while the launcher
+  integration test's post-cleanup rebind of an old OS-assigned port lost to another process with
+  `EADDRINUSE`. Branch `fix/phase1-launcher-cleanup-ownership` replaces that TOCTOU assertion with a
+  bounded liveness check for the exact descendant PID while preserving pre-cleanup HTTP readiness;
+  focused local validation passes and draft PR CI is pending. No product, DataHub, or launcher runtime
+  blocker is indicated.
 - Phase 1 is fully integrated and closed on exact `main`
   `54945b80a27685ce81e476173a3466e585f42112`; main CI run `29650788143`, job `88096660559`, is
   green. PR #4 managed-worktree bootstrap, PR #8 atomic port-race fix, and PR #9 post-merge closure are
