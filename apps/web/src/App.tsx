@@ -26,6 +26,7 @@ import {
   MetadataRecentChangesRequestSchema,
   MetadataRecentChangesResponseSchema,
   type MetadataRecentChangesResponse,
+  type SuspiciousChangeDetectionStage,
 } from '@dii/shared-types';
 
 type CompletedIncident = Extract<IncidentRetrievalResponse, { status: 'completed' }>;
@@ -748,6 +749,119 @@ function IncidentContextStage({ stage }: { stage: IncidentContextStage }) {
   );
 }
 
+export function getSuspiciousChangePresentation(stage: SuspiciousChangeDetectionStage) {
+  if (stage.status === 'detecting') {
+    return {
+      heading: 'Detecting potentially relevant changes',
+      message: 'Applying bounded deterministic signals to the gathered change factsâ€¦',
+      tone: 'loading' as const,
+    };
+  }
+
+  if (stage.status === 'unavailable') {
+    return {
+      heading: 'Suspicious-change detection unavailable',
+      message: stage.error.message,
+      tone: 'error' as const,
+    };
+  }
+
+  if (stage.status === 'insufficient') {
+    return {
+      heading: 'Insufficient suspicious-change signals',
+      message: 'No recent change met the bounded incident-specific signal rules.',
+      tone: 'missing' as const,
+    };
+  }
+
+  return {
+    heading: 'Potentially relevant metadata changes',
+    message: `${stage.candidates.length} bounded change candidates have transparent suspicious signals.`,
+    tone: 'success' as const,
+  };
+}
+
+function SuspiciousChangeStage({ stage }: { stage: SuspiciousChangeDetectionStage }) {
+  const presentation = getSuspiciousChangePresentation(stage);
+
+  return (
+    <section
+      className={`suspicious-change-stage suspicious-${presentation.tone}`}
+      aria-labelledby="suspicious-change-heading"
+      data-suspicious-change-status={stage.status}
+    >
+      <p className="report-label">Suspicious-change signals Â· deterministic</p>
+      <h3 id="suspicious-change-heading" tabIndex={-1}>
+        {presentation.heading}
+      </h3>
+      <p>{presentation.message}</p>
+
+      {stage.status === 'unavailable' && (
+        <p className="suspicious-change-error" role="alert">
+          <code>{stage.error.code}</code>
+        </p>
+      )}
+
+      {(stage.status === 'completed' || stage.status === 'insufficient') && (
+        <div className="suspicious-change-content">
+          {stage.status === 'completed' ? (
+            <ol className="suspicious-change-list">
+              {stage.candidates.map((candidate) => (
+                <li key={candidate.changeId} data-suspicious-change-id={candidate.changeId}>
+                  <div className="suspicious-change-heading">
+                    <div>
+                      <span>
+                        {candidate.category} Â· {candidate.operation}
+                      </span>
+                      <strong>{candidate.entityName}</strong>
+                    </div>
+                    <time dateTime={candidate.observedAt}>
+                      {formatObservedAt(candidate.observedAt)}
+                    </time>
+                  </div>
+                  <p>{candidate.summary}</p>
+                  <code>{candidate.changeId}</code>
+                  <code>{candidate.entityUrn}</code>
+                  <p className="suspicious-change-signal-label">Transparent signals</p>
+                  <ul className="suspicious-change-signal-list">
+                    {candidate.signals.map((signal) => (
+                      <li key={signal.code}>
+                        <code>{signal.code}</code>
+                        <span>{signal.label}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <EmptyState message="No potentially relevant change candidate was produced." />
+          )}
+
+          {stage.missingInformation.length > 0 && (
+            <section aria-labelledby="suspicious-change-missing-heading">
+              <h4 id="suspicious-change-missing-heading">Detection missing information</h4>
+              <ul className="suspicious-change-missing-list">
+                {stage.missingInformation.map((item) => (
+                  <li key={item.code}>
+                    <code>{item.code}</code>
+                    <span>{item.message}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          <p className="suspicious-change-boundary">
+            Potential relevance is a deterministic signal classification, not a cause, root-cause
+            claim, hypothesis, confidence score, or recommendation.
+          </p>
+        </div>
+      )}
+    </section>
+  );
+}
+
 function EmptyState({ message }: { message: string }) {
   return <p className="empty-state">{message}</p>;
 }
@@ -870,6 +984,7 @@ function ProcessingStatus({ incident }: { incident: ProcessingIncident }) {
       <p>Investigation processing</p>
       <span>{incident.incidentId}</span>
       <IncidentContextStage stage={incident.contextStage} />
+      <SuspiciousChangeStage stage={incident.suspiciousChangeStage} />
       <EmptyState message="Report details will appear after fixture evidence is gathered." />
     </div>
   );
@@ -892,6 +1007,7 @@ export function CompletedReport({ incident }: { incident: CompletedIncident }) {
         </div>
       </dl>
       <IncidentContextStage stage={incident.contextStage} />
+      <SuspiciousChangeStage stage={incident.suspiciousChangeStage} />
       <section className="report-summary" aria-labelledby="report-summary-heading">
         <p className="report-label">Incident report</p>
         <h3 id="report-summary-heading">Summary</h3>
@@ -1373,6 +1489,7 @@ export function App() {
         incident: {
           ...parsedResponse.data,
           contextStage: { status: 'gathering' },
+          suspiciousChangeStage: { status: 'detecting' },
         },
       });
       await retrieveIncident(parsedResponse.data, requestId, controller);

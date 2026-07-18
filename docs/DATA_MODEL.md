@@ -87,6 +87,36 @@ model does not invent one.
 Recent changes remain facts. They are not impact scores, correlations, hypotheses, root-cause claims,
 or investigation evidence in Slice 2.4.
 
+## Suspicious-change detection
+
+Incident retrieval adds a `suspiciousChangeStage` owned by the same request as `contextStage`. Its
+lifecycle is `detecting` while context gathers, `completed | insufficient` after a valid completed
+context, or safe `unavailable` when context or detection validation cannot complete. A failed or
+gathering context is never converted into a fabricated suspicious result.
+
+The pure detector result contains at most five unique candidates plus unique explicit missing-
+information items. Each candidate is a projection of one exact normalized recent-change fact:
+
+- exact change ID and entity URN;
+- entity name resolved from the returned candidate/lineage graph;
+- factual category, operation, canonical observation time, summary, and optional field; and
+- at least two unique ordered shared signal objects, including `category_intent_match` or
+  `incident_window` as an incident-specific signal.
+
+The remaining signals are factual entity position (`selected_entity` or `upstream_lineage`) and a
+normalized removed/modified operation (`disruptive_operation`). Signal codes and labels are allowlisted.
+Internal priority weights are fixed at category match 4, incident window 3, and 2 for each entity/
+operation signal. Candidate ordering is descending internal priority, newest observation time, then
+lexical change ID. The internal value is not returned, is not hypothesis confidence, and cannot be
+model-overridden.
+
+`completed` requires at least one candidate. `insufficient` requires no candidates and explicit missing
+information. Missing incident time or symptom removes the associated comparison input; empty history,
+no qualifying incident-specific signal, context truncation, and the five-candidate cap are explicit.
+The model rejects unknown fields, duplicate IDs/signals, invalid ordering, invented change/entity
+references, and any hypothesis, confidence, root-cause, recommendation, remediation, or raw provider
+payload field.
+
 ## Evidence
 
 Evidence is an observed fact with:
@@ -124,4 +154,7 @@ persistent storage is deferred.
 - Lineage roots/nodes and source-target edge pairs are unique, and lineage edges never dangle.
 - Recent-change IDs are unique; rows match the requested entity/window and use deterministic
   newest-first/ID ordering with an exact returned count.
+- Suspicious-change candidates are capped at five, use unique exact recent-change/entity references,
+  and contain only ordered allowlisted factual signals; insufficient output contains no candidate and
+  explicit missing information.
 - `inconclusive` reports include missing information and avoid unsupported root-cause claims.

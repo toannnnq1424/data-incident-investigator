@@ -915,6 +915,134 @@ button:disabled {
   font-size: 0.86rem;
 }
 
+.suspicious-change-stage {
+  display: grid;
+  gap: 0.8rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid #294149;
+  border-radius: 0.8rem;
+  background: #0a2024;
+}
+
+.suspicious-change-stage > p,
+.suspicious-change-stage h3,
+.suspicious-change-stage h4,
+.suspicious-change-content p {
+  margin: 0;
+}
+
+.suspicious-change-stage h3 {
+  color: #eefafa;
+  font-size: 1.15rem;
+}
+
+.suspicious-change-stage h4 {
+  color: #9ceade;
+  font-size: 0.82rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.suspicious-loading,
+.suspicious-success {
+  border-color: #2f6b65;
+}
+
+.suspicious-missing {
+  border-color: #826c37;
+}
+
+.suspicious-error {
+  border-color: #824a4a;
+  background: #351b20;
+}
+
+.suspicious-change-error code {
+  color: #ffd4d4;
+}
+
+.suspicious-change-content {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.suspicious-change-content > section {
+  display: grid;
+  gap: 0.65rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid #243d44;
+}
+
+.suspicious-change-list,
+.suspicious-change-signal-list,
+.suspicious-change-missing-list {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.suspicious-change-list > li {
+  display: grid;
+  gap: 0.55rem;
+  min-width: 0;
+  padding: 0.8rem;
+  border: 1px solid #285159;
+  border-radius: 0.65rem;
+  background: #0b2429;
+}
+
+.suspicious-change-heading {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.suspicious-change-heading > div {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.suspicious-change-heading span,
+.suspicious-change-signal-label {
+  color: #9ceade;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.suspicious-change-heading time {
+  flex: 0 0 auto;
+  color: #8ba1a8;
+  font-size: 0.78rem;
+}
+
+.suspicious-change-list > li > code,
+.suspicious-change-signal-list code,
+.suspicious-change-missing-list code {
+  overflow-wrap: anywhere;
+}
+
+.suspicious-change-signal-list li,
+.suspicious-change-missing-list li {
+  display: grid;
+  grid-template-columns: minmax(10rem, max-content) minmax(0, 1fr);
+  gap: 0.65rem;
+  min-width: 0;
+  padding: 0.55rem;
+  border-radius: 0.5rem;
+  background: #102d32;
+}
+
+.suspicious-change-boundary {
+  color: #b6c8cc;
+  font-size: 0.86rem;
+}
+
 .report-summary {
   display: grid;
   gap: 0.65rem;
@@ -1135,6 +1263,8 @@ dd {
   .metadata-recent-change-list,
   .incident-context-intent,
   .incident-context-missing-list,
+  .suspicious-change-missing-list,
+  .suspicious-change-signal-list,
   dl {
     grid-template-columns: 1fr;
   }
@@ -1144,6 +1274,11 @@ dd {
   .inference-heading,
   .metadata-source-status,
   .metadata-status-copy {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .suspicious-change-heading {
     align-items: flex-start;
     flex-direction: column;
   }

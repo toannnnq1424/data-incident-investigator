@@ -39,6 +39,39 @@ agent-core interface. A provider failure becomes a safe failed context stage whi
 legacy fixture report can still complete for compatibility. Logs contain incident ID, mode, bounded
 counts, and normalized error code only; incident question and symptom text are not logged.
 
+## Slice 3.2 suspicious-change boundary
+
+Slice 3.2 implements stage 5 only. `DeterministicSuspiciousChangeDetector` accepts one already
+validated completed context and has no metadata adapter, provider, network, retry, model, Stitch, or
+credential input. Gathering, failed, and malformed context stages are rejected or represented by the
+API lifecycle without running the detector.
+
+The detector evaluates only normalized recent-change facts already in the context. Each qualifying
+candidate copies the exact change ID, entity URN/name, category, operation, timestamp, summary, and
+optional field, then records a deterministic ordered subset of these shared signals:
+
+- `category_intent_match`: a bounded ASCII token from the incident question or supplied symptoms
+  matches the small allowlist for the factual change category;
+- `incident_window`: the factual timestamp falls inside a supplied incident-time window;
+- `selected_entity`: the factual entity is the adapter-selected entity;
+- `upstream_lineage`: the factual entity is a returned lineage node with depth greater than zero; and
+- `disruptive_operation`: the normalized operation is `removed` or `modified`.
+
+A candidate needs at least two signals and at least one incident-specific signal
+(`category_intent_match` or `incident_window`). Internal deterministic rank weights are 4, 3, 2, 2,
+and 2 in the signal order above, followed by newest timestamp and lexical change ID tie-breaks. The
+weights are hard-coded and bounded; they are not returned as confidence and cannot be overridden by a
+model. Duplicate change IDs do not cross the completed-context contract, results are capped at five,
+and cap/history/context omissions remain explicit missing information.
+
+The pure result is `completed` with one or more candidates or `insufficient` with zero candidates and
+explicit missing information. Incident retrieval wraps it in an additive lifecycle:
+`detecting` while context gathers, the pure terminal result after a completed context, or safe
+`unavailable` when context failed or detection validation failed. The canonical removed-column fixture
+therefore marks `change-removed-gross-revenue` on upstream `raw.orders` as potentially relevant via
+incident-window, upstream-lineage, and disruptive-operation signals. This classification is not a
+root-cause claim, hypothesis, evidence chain, confidence score, or recommendation.
+
 ## Tool and provider rules
 
 - No invented URNs, owners, schemas, or pipelines.

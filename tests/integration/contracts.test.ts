@@ -4,6 +4,7 @@ import {
   INCIDENT_CONTEXT_DEFAULT_WINDOW_HOURS,
   IncidentContextCompletedStageSchema,
   IncidentContextFactsSchema,
+  IncidentSuspiciousChangeDetectionSchema,
   IncidentIntentSchema,
   IncidentAcceptedResponseSchema,
   IncidentRequestSchema,
@@ -16,6 +17,8 @@ import {
   MetadataLineageResponseSchema,
   MetadataRecentChangesRequestSchema,
   MetadataRecentChangesResponseSchema,
+  SUSPICIOUS_CHANGE_SIGNAL_LABELS,
+  SuspiciousChangeDetectionResultSchema,
 } from '../../packages/shared-types/src/index.js';
 
 describe('shared investigation contracts', () => {
@@ -95,6 +98,152 @@ describe('shared investigation contracts', () => {
           recentChanges: [],
         },
         missingInformation: [],
+      }).success,
+    ).toBe(false);
+  });
+
+  it('strictly bounds suspicious-change output and resolves exact context facts', () => {
+    const selected = {
+      urn: 'urn:li:dataset:analytics.revenue',
+      kind: 'dataset' as const,
+      name: 'analytics.revenue',
+    };
+    const upstream = {
+      urn: 'urn:li:dataset:raw.orders',
+      kind: 'dataset' as const,
+      name: 'raw.orders',
+    };
+    const contextStage = IncidentContextCompletedStageSchema.parse({
+      status: 'completed',
+      intent: {
+        question: 'Which schema column changed?',
+        entityHints: ['analytics.revenue'],
+        symptoms: ['A revenue field is missing.'],
+        timeWindow: {
+          basis: 'incident_time',
+          endTime: '2026-07-18T08:30:00.000Z',
+          hours: 168,
+        },
+      },
+      facts: {
+        sourceMode: 'fixture',
+        candidateEntities: [selected],
+        selectedEntity: selected,
+        lineage: {
+          rootUrn: selected.urn,
+          direction: 'upstream',
+          requestedDepth: 2,
+          maxNodes: 5,
+          visitedNodeCount: 2,
+          truncated: false,
+          nodes: [
+            { ...selected, depth: 0 },
+            { ...upstream, depth: 1 },
+          ],
+          edges: [{ sourceUrn: upstream.urn, targetUrn: selected.urn }],
+        },
+        recentChanges: [
+          {
+            entityUrn: upstream.urn,
+            window: {
+              startTime: '2026-07-11T08:30:00.000Z',
+              endTime: '2026-07-18T08:30:00.000Z',
+              hours: 168,
+            },
+            limit: 10,
+            returnedCount: 1,
+            truncated: false,
+            changes: [
+              {
+                id: 'change-removed-column',
+                entityUrn: upstream.urn,
+                timestamp: '2026-07-18T07:45:00.000Z',
+                category: 'schema',
+                operation: 'removed',
+                source: 'fixture',
+                summary: 'Column gross_revenue was removed from raw.orders.',
+                field: 'gross_revenue',
+              },
+            ],
+          },
+        ],
+      },
+      missingInformation: [],
+    });
+    const candidate = {
+      changeId: 'change-removed-column',
+      entityUrn: upstream.urn,
+      entityName: upstream.name,
+      category: 'schema' as const,
+      operation: 'removed' as const,
+      observedAt: '2026-07-18T07:45:00.000Z',
+      summary: 'Column gross_revenue was removed from raw.orders.',
+      field: 'gross_revenue',
+      signals: [
+        {
+          code: 'category_intent_match' as const,
+          label: SUSPICIOUS_CHANGE_SIGNAL_LABELS.category_intent_match,
+        },
+        {
+          code: 'incident_window' as const,
+          label: SUSPICIOUS_CHANGE_SIGNAL_LABELS.incident_window,
+        },
+        {
+          code: 'upstream_lineage' as const,
+          label: SUSPICIOUS_CHANGE_SIGNAL_LABELS.upstream_lineage,
+        },
+        {
+          code: 'disruptive_operation' as const,
+          label: SUSPICIOUS_CHANGE_SIGNAL_LABELS.disruptive_operation,
+        },
+      ],
+    };
+    const result = {
+      status: 'completed' as const,
+      candidates: [candidate],
+      missingInformation: [],
+    };
+
+    expect(
+      IncidentSuspiciousChangeDetectionSchema.safeParse({ contextStage, result }).success,
+    ).toBe(true);
+    expect(
+      IncidentSuspiciousChangeDetectionSchema.safeParse({
+        contextStage,
+        result: {
+          ...result,
+          candidates: [{ ...candidate, changeId: 'invented-change' }],
+        },
+      }).success,
+    ).toBe(false);
+    expect(
+      IncidentSuspiciousChangeDetectionSchema.safeParse({
+        contextStage,
+        result: {
+          ...result,
+          candidates: [{ ...candidate, entityUrn: 'urn:li:dataset:invented' }],
+        },
+      }).success,
+    ).toBe(false);
+    expect(
+      SuspiciousChangeDetectionResultSchema.safeParse({
+        ...result,
+        candidates: [{ ...candidate, confidence: 0.9 }],
+      }).success,
+    ).toBe(false);
+    expect(
+      SuspiciousChangeDetectionResultSchema.safeParse({
+        ...result,
+        hypothesis: 'The change caused the incident.',
+      }).success,
+    ).toBe(false);
+    expect(
+      SuspiciousChangeDetectionResultSchema.safeParse({
+        ...result,
+        candidates: Array.from({ length: 6 }, (_, index) => ({
+          ...candidate,
+          changeId: `change-${index}`,
+        })),
       }).success,
     ).toBe(false);
   });
@@ -438,6 +587,16 @@ describe('shared investigation contracts', () => {
           {
             code: 'entity_not_found',
             message: 'No adapter-evidenced entity was returned.',
+          },
+        ],
+      },
+      suspiciousChangeStage: {
+        status: 'insufficient',
+        candidates: [],
+        missingInformation: [
+          {
+            code: 'recent_changes_not_found',
+            message: 'No recent metadata change facts were available for deterministic detection.',
           },
         ],
       },

@@ -85,6 +85,7 @@ describe('incident API', () => {
     expect(IncidentRetrievalResponseSchema.parse(retrieval.json())).toMatchObject({
       status: 'processing',
       contextStage: { status: 'gathering' },
+      suspiciousChangeStage: { status: 'detecting' },
     });
   });
 
@@ -111,7 +112,22 @@ describe('incident API', () => {
         response.changes.map((change) => change.id),
       ),
     ).toContain('change-removed-gross-revenue');
+    expect(completed.suspiciousChangeStage).toMatchObject({
+      status: 'completed',
+      candidates: [
+        {
+          changeId: 'change-removed-gross-revenue',
+          entityUrn: 'urn:li:dataset:(urn:li:dataPlatform:snowflake,raw.orders,PROD)',
+          signals: [
+            { code: 'incident_window' },
+            { code: 'upstream_lineage' },
+            { code: 'disruptive_operation' },
+          ],
+        },
+      ],
+    });
     expect(completed.contextStage).not.toHaveProperty('hypotheses');
+    expect(completed.suspiciousChangeStage).not.toHaveProperty('confidence');
     expect(completed.report.incidentId).toBe(incidentId);
     expect(completed.report.hypotheses[0]?.evidenceIds).toContain('change-removed-gross-revenue');
   });
@@ -185,14 +201,28 @@ describe('incident API', () => {
         selectedEntity,
       },
     });
+    expect(completed.suspiciousChangeStage).toMatchObject({
+      status: 'insufficient',
+      candidates: [],
+      missingInformation: expect.arrayContaining([
+        expect.objectContaining({ code: 'recent_changes_not_found' }),
+      ]),
+    });
   });
 
   it('returns a safe context-stage timeout without exposing provider errors or breaking the report', async () => {
+    let detectorCalls = 0;
     const server = buildServer({
       logger: false,
       metadataSearch: {
         async searchEntities() {
           throw new MetadataProviderError('timeout');
+        },
+      },
+      suspiciousChangeDetector: {
+        detect() {
+          detectorCalls += 1;
+          throw new Error('Detector must not run after context failure.');
         },
       },
     });
@@ -216,6 +246,49 @@ describe('incident API', () => {
       },
     });
     expect(JSON.stringify(completed.contextStage)).not.toContain('MetadataProviderError');
+    expect(completed.suspiciousChangeStage).toEqual({
+      status: 'unavailable',
+      error: {
+        code: 'CONTEXT_UNAVAILABLE',
+        message:
+          'Suspicious-change detection is unavailable because incident context did not complete.',
+      },
+    });
+    expect(detectorCalls).toBe(0);
+    expect(completed.report.hypotheses).toHaveLength(1);
+  });
+
+  it('normalizes detector validation failure without leaking details or breaking the report', async () => {
+    const server = buildServer({
+      logger: false,
+      suspiciousChangeDetector: {
+        detect() {
+          throw new Error('raw detector details https://provider.invalid secret-token');
+        },
+      },
+    });
+    servers.push(server);
+    const accepted = await server.inject({
+      method: 'POST',
+      url: '/incidents',
+      payload: IncidentRequestSchema.parse(canonicalIncident.request),
+    });
+
+    const completed = await waitForCompleted(
+      server,
+      accepted.json<{ incidentId: string }>().incidentId,
+    );
+
+    expect(completed.suspiciousChangeStage).toEqual({
+      status: 'unavailable',
+      error: {
+        code: 'DETECTION_INVALID',
+        message: 'Suspicious-change detection could not validate the gathered context.',
+      },
+    });
+    expect(JSON.stringify(completed.suspiciousChangeStage)).not.toMatch(
+      /provider\.invalid|secret/i,
+    );
     expect(completed.report.hypotheses).toHaveLength(1);
   });
 
