@@ -5,17 +5,22 @@
     {
       "urn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,raw.orders,PROD)",
       "name": "raw.orders",
-      "kind": "dataset"
+      "kind": "dataset",
+      "description": "Canonical source order records for downstream transformations.",
+      "qualifiedName": "snowflake.raw.orders"
     },
     {
       "urn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,analytics.daily_revenue,PROD)",
       "name": "analytics.daily_revenue",
-      "kind": "dataset"
+      "kind": "dataset",
+      "description": "Daily revenue metrics derived from raw order records.",
+      "qualifiedName": "snowflake.analytics.daily_revenue"
     },
     {
       "urn": "urn:li:dashboard:(looker,revenue-overview)",
       "name": "Revenue overview",
-      "kind": "dashboard"
+      "kind": "dashboard",
+      "description": "Executive dashboard for daily revenue performance."
     }
   ],
   "lineage": [

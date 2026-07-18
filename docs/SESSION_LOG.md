@@ -603,3 +603,87 @@ có local implementation/test blocker.
 Format-check docs đã cập nhật, stage exact merge resolution, tạo merge commit không rewrite, push và xác
 minh PR #7 conflict-free. Theo dõi đúng một CI run gắn với final merge HEAD; chỉ handoff Slice 2.2 sau
 khi run đó PASS và PR đạt merge-readiness.
+
+## 2026-07-18 — Phase 2 Slice 2.2 DataHub entity search
+
+### Objective
+
+Triển khai đúng một vertical slice từ exact final Slice 2.1 HEAD
+`325b21c5d4ca106e3b01b3926d4eecd5378dedd7`: shared entity-search contract -> fixture/DataHub client
+boundary -> API -> compact web search/results, không bắt đầu entity detail, lineage, recent changes,
+controller hoặc Slice 2.3.
+
+### Completed
+
+Thêm strict request schema với query trim/bound, optional entity type và bounded limit; response schema
+enforce unique URN, bounded count và deterministic name/kind/URN ordering. Fixture public search trả
+multiple/empty/filter thật mà không đọc DataHub config; incident runner giữ explicit seed fallback để
+không đổi canonical Phase 1. DataHub client gọi official GraphQL `searchAcrossEntities` tại
+`/api/graphql`, map dataset/dashboard/chart/data-flow/data-job sang shared result và normalize toàn bộ
+provider failure thành safe typed error. API route chỉ compose/validate/map error. Web giữ health region
+và incident shell, thêm semantic search form, compact results, terminal focus và latest-request guard.
+Canonical browser source được mở rộng thành một flow search fixture rồi incident processing/completed.
+
+### Files changed
+
+`packages/shared-types/src/index.ts`; `packages/datahub-client/src/index.ts`;
+`packages/agent-core/src/index.ts`; `apps/api/src/index.ts`; `apps/web/src/App.tsx`;
+`apps/web/src/styles.css`; `fixtures/metadata/removed-schema-column.json`;
+`tests/integration/contracts.test.ts`; `tests/integration/fixture-adapter.test.ts`;
+`tests/integration/datahub-search.test.ts`; `tests/integration/metadata-search-api.test.ts`;
+`tests/integration/web-metadata-search.test.ts`; `tests/e2e/report-display.spec.mjs`;
+`docs/API_CONTRACTS.md`; `docs/DATA_MODEL.md`; `docs/IMPLEMENTATION_PLAN.md`;
+`docs/KNOWN_ISSUES.md`; `docs/SESSION_LOG.md`. Không đổi repository structure, manifest, lockfile hoặc
+`.env.example`.
+
+### Decisions
+
+Dùng official `SearchAcrossEntitiesInput` (`types`, `query`, `start`, `count`) và official web-client
+`searchAcrossEntities` field selection từ repository DataHub; DataHub `DATA_FLOW`/`DATA_JOB` cùng
+normalize thành shared `pipeline`. Provider ranking không đi qua API: normalized results được sort ổn
+định theo name/kind/URN để fixture/fake-provider deterministic. Description/qualified name chỉ được giữ
+sau trim/bound; thiếu display field thì dùng chính provider URN, không tạo entity mới. Public search
+không fallback; chỉ canonical fixture incident runner opt in seed fallback hiện hữu.
+
+### Validation performed
+
+Formatter bootstrap đầu tiên verify supply chain/install xong nhưng fail vì known `pnpm exec` shim
+resolution; verified project-local `.CMD` format PASS 1.970 giây và changed-file Prettier check PASS
+2.089 giây. `.pnpm-store` generated được resolve đúng trong worktree rồi move nguyên vẹn sang
+`C:\tmp\dii-slice-2-2-pnpm-store-019f75bc`. Affected ESLint ban đầu tìm thấy empty interface alias và
+browser global; targeted fix xong full affected lint PASS 2.889 giây. Năm typecheck PASS: shared-types
+4.412 giây, datahub-client 2.987 giây, agent-core 3.595 giây, API 4.553 giây, web 4.343 giây.
+
+Sandboxed Vitest fail trước test vì known esbuild ancestor-metadata denial. Scoped retry chạy đủ suite,
+phát hiện ba targeted test-data/assertion failures; sau khi sửa fixture token collision, no-match query và
+safe error assertion, final combined evidence PASS 11/11 files, 66/66 tests. Final diff review bổ sung
+DataHub invalid-entity normalization case; affected lint/typecheck PASS, datahub search PASS 12/12 và
+datahub-client build PASS. Build sequence đầu PASS shared-types/datahub-client rồi Vite gặp cùng sandbox
+denial; scoped retry PASS agent-core/API/web, nên 5/5 affected builds PASS, web transform 109 modules và
+build 1.92 giây.
+
+Đúng một `pnpm test:e2e:report` chọn API `http://127.0.0.1:49680`, web
+`http://127.0.0.1:49681`, rồi PASS fixture search -> deterministic focused results -> incident processing
+-> completed/full evidence trong 11.569 giây (18.294 giây wall). Console sạch, evidence references
+resolve, dưới ba phút và ports/process tree cleanup PASS. Không rerun sau DataHub-only normalization fix
+vì fixture/browser path không đổi và slice chỉ cho phép đúng một browser run. `git diff --check`, secret
+scan tracked+untracked, generated-artifact scan, stat/name/full scoped diff và branch/worktree review PASS:
+secret `0`, generated artifact `0`, 15 tracked + 3 untracked intended files trước commit.
+
+### Validation intentionally deferred
+
+Live DataHub smoke cần credential nên deferred. Không chạy Level D, không rerun Phase 1/Slice 2.1 gate
+không bị ảnh hưởng, không chạy entity detail, lineage, recent changes, controller hoặc Slice 2.3.
+
+### Known issues
+
+Không có local product/test blocker. Portable GitHub CLI `v2.96.0` đã được official-checksum verify
+trong ignored `work/tools`, nhưng local `gh` auth token hiện invalid và GitHub connector chưa thấy private
+repository; publish sẽ ưu tiên existing Git credential/browser session mà không đọc hoặc tái sử dụng
+credential. Live DataHub smoke vẫn credential-gated và deferred.
+
+### Exact next step
+
+Commit `feat: add datahub entity search`, push fast-forward, mở stacked draft PR base
+`codex/phase-2-1-datahub-health` và theo dõi đúng một CI run tới terminal. Sau green handoff, tạo task riêng
+cho Slice 2.3 — bounded, cycle-safe DataHub lineage; không bắt đầu Slice 2.3 trong task này.

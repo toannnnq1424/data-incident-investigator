@@ -61,6 +61,75 @@ using `DATAHUB_TOKEN` as a Bearer token and a two-second default timeout. Fixtur
 DataHub client and does not read either DataHub environment variable. Provider failures are logged
 only with normalized mode/status fields.
 
+### `POST /metadata/search`
+
+The browser calls `/api/metadata/search`; direct API clients use `/metadata/search`. The request is
+strict: unknown keys are rejected, `query` is trimmed and must contain 2-200 characters,
+`entityType` is optional and limited to `dataset`, `dashboard`, `chart`, or `pipeline`, and `limit` is
+an integer from 1-20 with a default of 10.
+
+Request:
+
+```json
+{
+  "query": "revenue",
+  "entityType": "dataset",
+  "limit": 10
+}
+```
+
+Response `200`:
+
+```json
+{
+  "query": "revenue",
+  "entityType": "dataset",
+  "limit": 10,
+  "results": [
+    {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,analytics.daily_revenue,PROD)",
+      "kind": "dataset",
+      "name": "analytics.daily_revenue",
+      "qualifiedName": "snowflake.analytics.daily_revenue",
+      "description": "Daily revenue metrics derived from raw order records."
+    }
+  ]
+}
+```
+
+Results contain unique stable URNs, are ordered deterministically by normalized name, kind, and URN,
+and never exceed the accepted limit. `description` and `qualifiedName` are omitted when the provider
+does not return a safe non-empty value. A valid query with no matches returns `results: []`; the API
+does not invent or substitute an entity.
+
+Invalid requests return HTTP `400` with the existing `VALIDATION_ERROR` envelope and message
+`The metadata search request is invalid.` Provider failures use the same safe `ApiErrorSchema` with
+these normalized outcomes:
+
+| Provider status    | HTTP | Error code                  |
+| ------------------ | ---- | --------------------------- |
+| `unconfigured`     | 503  | `METADATA_UNCONFIGURED`     |
+| `unauthorized`     | 502  | `METADATA_UNAUTHORIZED`     |
+| `unavailable`      | 503  | `METADATA_UNAVAILABLE`      |
+| `timeout`          | 504  | `METADATA_TIMEOUT`          |
+| `invalid_response` | 502  | `METADATA_INVALID_RESPONSE` |
+
+Fixture mode searches only the checked-in canonical metadata and does not read `DATAHUB_GMS_URL` or
+`DATAHUB_TOKEN`. Public fixture search supports true empty results and an entity-type filter. The
+Phase 1 incident runner separately opts into the declared fixture seed fallback so its canonical
+behavior remains unchanged.
+
+DataHub mode sends a bounded Bearer-authenticated GraphQL request to `/api/graphql` using
+`searchAcrossEntities(input: SearchAcrossEntitiesInput!)` with supported `types`, trimmed `query`,
+`start: 0`, and bounded `count`. `DATA_FLOW` and `DATA_JOB` normalize to `pipeline`; other supported
+types normalize directly. The implementation follows DataHub's official
+[`SearchAcrossEntitiesInput` schema](https://github.com/datahub-project/datahub/blob/master/datahub-graphql-core/src/main/resources/search.graphql)
+and official web-client
+[`searchAcrossEntities` query](https://github.com/datahub-project/datahub/blob/master/datahub-web-react/src/graphql/search.graphql).
+HTTP authorization/non-success responses, refusal, timeout, non-JSON, invalid JSON, GraphQL errors,
+and malformed entity results normalize before the API boundary. Responses and logs never contain the
+provider URL, token, Authorization header, raw body, GraphQL error text, or raw exception.
+
 ### `POST /incidents`
 
 The browser calls `/api/incidents`; the Vite development proxy removes `/api` before forwarding to

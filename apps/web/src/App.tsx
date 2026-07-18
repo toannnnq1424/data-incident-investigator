@@ -1,6 +1,7 @@
-import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type FormEvent, type ReactNode, type RefObject } from 'react';
 import {
   ApiErrorSchema,
+  type EntityKind,
   type EntityRef,
   type Evidence,
   IncidentAcceptedResponseSchema,
@@ -8,6 +9,9 @@ import {
   IncidentRetrievalResponseSchema,
   type IncidentAcceptedResponse,
   type IncidentRetrievalResponse,
+  MetadataEntitySearchRequestSchema,
+  MetadataEntitySearchResponseSchema,
+  type MetadataEntitySearchResponse,
   MetadataHealthResponseSchema,
   type MetadataHealthResponse,
 } from '@dii/shared-types';
@@ -27,6 +31,13 @@ type SubmissionState =
 
 type MetadataHealthState = MetadataHealthResponse | null | undefined;
 
+export type MetadataSearchState =
+  | { kind: 'idle' }
+  | { kind: 'loading' }
+  | { kind: 'success'; response: MetadataEntitySearchResponse }
+  | { kind: 'validation-error'; message: string }
+  | { kind: 'api-error'; message: string };
+
 const problemStatusLabels = {
   unconfigured: 'Setup needed',
   unauthorized: 'Authorization needed',
@@ -38,6 +49,19 @@ const problemStatusLabels = {
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? '/api';
 const retrievalAttempts = 30;
 const retrievalDelayMs = 100;
+
+export function createLatestRequestGuard() {
+  let latestRequest = 0;
+  return {
+    begin() {
+      latestRequest += 1;
+      return latestRequest;
+    },
+    isCurrent(request: number) {
+      return request === latestRequest;
+    },
+  };
+}
 
 function optionalText(value: string) {
   const trimmed = value.trim();
@@ -93,6 +117,44 @@ export function getMetadataHealthPresentation(health: MetadataHealthState) {
   };
 }
 
+export function getMetadataSearchPresentation(state: MetadataSearchState) {
+  if (state.kind === 'idle') {
+    return {
+      heading: 'Search results',
+      message: 'Enter a metadata query to find datasets, dashboards, charts, or pipelines.',
+      tone: 'idle' as const,
+    };
+  }
+  if (state.kind === 'loading') {
+    return {
+      heading: 'Searching metadata',
+      message: 'Searching the selected metadata source…',
+      tone: 'loading' as const,
+    };
+  }
+  if (state.kind === 'validation-error' || state.kind === 'api-error') {
+    return {
+      heading: state.kind === 'validation-error' ? 'Check the search query' : 'Search failed',
+      message: state.message,
+      tone: 'error' as const,
+    };
+  }
+  if (state.response.results.length === 0) {
+    return {
+      heading: 'No results',
+      message: `No metadata entities matched “${state.response.query}”.`,
+      tone: 'empty' as const,
+    };
+  }
+  return {
+    heading: 'Search results',
+    message: `${state.response.results.length} metadata ${
+      state.response.results.length === 1 ? 'entity' : 'entities'
+    } found.`,
+    tone: 'success' as const,
+  };
+}
+
 function MetadataSourceStatus({ health }: { health: MetadataHealthState }) {
   const presentation = getMetadataHealthPresentation(health);
 
@@ -112,6 +174,50 @@ function MetadataSourceStatus({ health }: { health: MetadataHealthState }) {
         </p>
       </div>
     </section>
+  );
+}
+
+function MetadataSearchResults({
+  headingRef,
+  state,
+}: {
+  headingRef: RefObject<HTMLHeadingElement | null>;
+  state: MetadataSearchState;
+}) {
+  const presentation = getMetadataSearchPresentation(state);
+  const terminal = !['idle', 'loading'].includes(state.kind);
+
+  return (
+    <div
+      className={`metadata-search-results metadata-search-${presentation.tone}`}
+      aria-live="polite"
+      aria-atomic="false"
+    >
+      <h3 ref={headingRef} tabIndex={terminal ? -1 : undefined}>
+        {presentation.heading}
+      </h3>
+      <p
+        className="metadata-search-message"
+        role={presentation.tone === 'error' ? 'alert' : 'status'}
+      >
+        {presentation.message}
+      </p>
+      {state.kind === 'success' && state.response.results.length > 0 && (
+        <ul className="metadata-search-result-list">
+          {state.response.results.map((result) => (
+            <li key={result.urn}>
+              <div className="metadata-search-result-heading">
+                <strong>{result.name}</strong>
+                <span>{result.kind}</span>
+              </div>
+              {result.qualifiedName && <code>{result.qualifiedName}</code>}
+              {result.description && <p>{result.description}</p>}
+              <code className="metadata-search-result-urn">{result.urn}</code>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
 
@@ -347,6 +453,15 @@ export function App() {
   const [symptom, setSymptom] = useState('');
   const [state, setState] = useState<SubmissionState>({ kind: 'idle' });
   const [metadataHealth, setMetadataHealth] = useState<MetadataHealthState>(undefined);
+  const [metadataQuery, setMetadataQuery] = useState('');
+  const [metadataEntityType, setMetadataEntityType] = useState<EntityKind | ''>('');
+  const [metadataResultLimit, setMetadataResultLimit] = useState(10);
+  const [metadataSearchState, setMetadataSearchState] = useState<MetadataSearchState>({
+    kind: 'idle',
+  });
+  const metadataSearchAbort = useRef<AbortController | null>(null);
+  const metadataSearchHeading = useRef<HTMLHeadingElement>(null);
+  const metadataSearchGuard = useRef(createLatestRequestGuard());
 
   useEffect(() => {
     const controller = new AbortController();
@@ -375,6 +490,81 @@ export function App() {
     void loadMetadataHealth();
     return () => controller.abort();
   }, []);
+
+  useEffect(
+    () => () => {
+      metadataSearchAbort.current?.abort();
+    },
+    [],
+  );
+
+  useEffect(() => {
+    if (!['idle', 'loading'].includes(metadataSearchState.kind)) {
+      metadataSearchHeading.current?.focus();
+    }
+  }, [metadataSearchState]);
+
+  async function submitMetadataSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    metadataSearchAbort.current?.abort();
+    const requestId = metadataSearchGuard.current.begin();
+    const parsedRequest = MetadataEntitySearchRequestSchema.safeParse({
+      query: metadataQuery,
+      entityType: metadataEntityType || undefined,
+      limit: metadataResultLimit,
+    });
+    if (!parsedRequest.success) {
+      setMetadataSearchState({
+        kind: 'validation-error',
+        message: parsedRequest.error.issues[0]?.message ?? 'Check the metadata search query.',
+      });
+      return;
+    }
+
+    const controller = new AbortController();
+    metadataSearchAbort.current = controller;
+    setMetadataSearchState({ kind: 'loading' });
+
+    try {
+      const response = await fetch(`${apiBaseUrl}/metadata/search`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(parsedRequest.data),
+        signal: controller.signal,
+      });
+      const body: unknown = await response.json();
+      if (!metadataSearchGuard.current.isCurrent(requestId)) {
+        return;
+      }
+      if (!response.ok) {
+        const parsedError = ApiErrorSchema.safeParse(body);
+        setMetadataSearchState({
+          kind: 'api-error',
+          message: parsedError.success
+            ? parsedError.data.error.message
+            : 'Metadata search could not be completed.',
+        });
+        return;
+      }
+
+      const parsedResponse = MetadataEntitySearchResponseSchema.safeParse(body);
+      if (!parsedResponse.success) {
+        setMetadataSearchState({
+          kind: 'api-error',
+          message: 'Metadata search returned an unexpected response.',
+        });
+        return;
+      }
+      setMetadataSearchState({ kind: 'success', response: parsedResponse.data });
+    } catch {
+      if (!controller.signal.aborted && metadataSearchGuard.current.isCurrent(requestId)) {
+        setMetadataSearchState({
+          kind: 'api-error',
+          message: 'Metadata search is unavailable. Try again shortly.',
+        });
+      }
+    }
+  }
 
   async function retrieveIncident(acceptedIncident: IncidentAcceptedResponse) {
     for (let attempt = 0; attempt < retrievalAttempts; attempt += 1) {
@@ -501,6 +691,64 @@ export function App() {
       </header>
 
       <MetadataSourceStatus health={metadataHealth} />
+
+      <section className="metadata-search-panel" aria-labelledby="metadata-search-heading">
+        <div className="metadata-search-copy">
+          <p className="step-label">Metadata lookup</p>
+          <h2 id="metadata-search-heading">Find an entity</h2>
+          <p>
+            Search the active source without opening entity details or changing production data.
+          </p>
+        </div>
+        <form className="metadata-search-form" onSubmit={submitMetadataSearch} noValidate>
+          <div className="field metadata-query-field">
+            <label htmlFor="metadata-query">Metadata query</label>
+            <input
+              id="metadata-query"
+              name="metadataQuery"
+              type="search"
+              minLength={2}
+              maxLength={200}
+              required
+              value={metadataQuery}
+              onChange={(event) => setMetadataQuery(event.target.value)}
+              placeholder="revenue"
+            />
+          </div>
+          <div className="field">
+            <label htmlFor="metadata-entity-type">Entity type</label>
+            <select
+              id="metadata-entity-type"
+              name="metadataEntityType"
+              value={metadataEntityType}
+              onChange={(event) => setMetadataEntityType(event.target.value as EntityKind | '')}
+            >
+              <option value="">All supported types</option>
+              <option value="dataset">Dataset</option>
+              <option value="dashboard">Dashboard</option>
+              <option value="chart">Chart</option>
+              <option value="pipeline">Pipeline</option>
+            </select>
+          </div>
+          <div className="field">
+            <label htmlFor="metadata-result-limit">Result limit</label>
+            <select
+              id="metadata-result-limit"
+              name="metadataResultLimit"
+              value={metadataResultLimit}
+              onChange={(event) => setMetadataResultLimit(Number(event.target.value))}
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+            </select>
+          </div>
+          <button type="submit" disabled={metadataSearchState.kind === 'loading'}>
+            {metadataSearchState.kind === 'loading' ? 'Searching…' : 'Search metadata'}
+          </button>
+        </form>
+        <MetadataSearchResults headingRef={metadataSearchHeading} state={metadataSearchState} />
+      </section>
 
       <section className="incident-panel" aria-labelledby="incident-heading">
         <div className="panel-heading">

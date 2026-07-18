@@ -103,10 +103,11 @@ export class DeterministicInvestigationRunner implements InvestigationRunner {
     const { metadata, limits } = context;
     await metadata.healthCheck();
 
-    const candidates = await metadata.searchEntities(
-      request.entityHint ?? request.question,
-      limits.entityCount,
-    );
+    const candidates = await metadata.searchEntities({
+      query: request.entityHint ?? request.question,
+      limit: limits.entityCount,
+      fallbackToDefault: true,
+    });
     const seed = candidates[0];
     if (!seed) {
       throw new Error('The fixture did not return an investigation seed.');

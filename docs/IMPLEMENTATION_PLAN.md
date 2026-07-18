@@ -469,6 +469,120 @@ append-only `docs/SESSION_LOG.md` conflict. The resolution keeps both entries. F
 seconds wall). The browser flow was not repeated: the base commit preserves the validated `.cjs` path
 used by the already-passing Slice 2.1 flow and changes only the unused native-shim fallback.
 
+### Slice 2.2 — DataHub entity search
+
+Status: Level C passed locally on `codex/phase-2-2-entity-search` from exact final Slice 2.1 HEAD
+`325b21c5d4ca106e3b01b3926d4eecd5378dedd7`, which contains feature commit
+`95ad76d4b02ab4c5bd005b2389b17034af3fd957` and the non-rewriting Phase 1 base advance. Commit,
+stacked draft PR, and one terminal CI observation are pending.
+
+Objective: let a user submit a bounded metadata query and receive compact, deterministic,
+schema-validated entity results through one shared request/response contract, the fixture or DataHub
+search boundary, a thin API route, and the existing web shell. Results expose only a stable URN,
+normalized entity type, display name, and safe optional description or qualified name.
+
+Minimum files:
+
+- `packages/shared-types/src/index.ts` and `tests/integration/contracts.test.ts` for trimmed, bounded
+  search request/response schemas and stable metadata-search error codes.
+- `packages/datahub-client/src/index.ts`, `fixtures/metadata/removed-schema-column.json`,
+  `tests/integration/fixture-adapter.test.ts`, `tests/integration/datahub-health.test.ts`, and a focused
+  DataHub search client test for deterministic fixture search plus official GraphQL
+  `searchAcrossEntities` mapping and safe error normalization.
+- `packages/agent-core/src/index.ts` and its focused runner test only where the adapter request shape
+  must preserve the existing fixture seed fallback for canonical incidents.
+- `apps/api/src/index.ts` and a focused metadata-search API integration test for mode-specific
+  composition, validation, schema-valid success, and safe typed provider errors.
+- `apps/web/src/App.tsx`, `apps/web/src/styles.css`, and a focused web search behavior test for compact
+  accessible query/filter controls, loading/success/empty/error presentation, focus management, and
+  stale-response protection without redesigning the shell.
+- `tests/e2e/report-display.spec.mjs` for exactly one combined fixture entity-search flow followed by
+  the canonical incident processing/completed regression with clean console output.
+- `docs/API_CONTRACTS.md`, `docs/DATA_MODEL.md`, `docs/IMPLEMENTATION_PLAN.md`,
+  `docs/KNOWN_ISSUES.md`, and `docs/SESSION_LOG.md` for the durable contract and handoff.
+
+Acceptance criteria:
+
+- `POST /metadata/search` strictly validates and trims a query of 2-200 characters, an optional
+  `dataset|dashboard|pipeline|chart` filter, and an integer limit from 1-20 with a bounded default.
+- Every success response is schema-valid, contains no duplicate URNs or raw provider payload, contains
+  no more than the accepted limit, and uses deterministic normalized ordering.
+- Fixture mode returns at least a multiple-result query, a true empty result, and an entity-type
+  filtered result without reading `DATAHUB_*`, Stitch, or any credential. The existing incident runner
+  keeps its declared fixture-seed fallback and canonical Phase 1 behavior.
+- DataHub mode posts Bearer-authenticated GraphQL to the official `/api/graphql`
+  `searchAcrossEntities(input: SearchAcrossEntitiesInput!)` boundary with `query`, `types`, `start: 0`,
+  and bounded `count`. Dataset, dashboard, chart, data-flow, and data-job results normalize to the
+  shared entity shape; unsupported or malformed provider results never cross the boundary.
+- Missing configuration, 401/403, refusal/non-success, timeout, invalid response, invalid JSON, and
+  GraphQL/schema errors normalize to safe typed metadata errors without logging or returning URL,
+  token, Authorization header, raw body, or provider exception text.
+- The web preserves the Slice 2.1 health region and Phase 1 incident/report UI while adding semantic
+  search controls and a compact result list. Keyboard submit works, terminal search status receives
+  sensible focus, loading/error/empty/success are explicit, and an older request cannot overwrite a
+  newer result.
+- Targeted contract/client/API/web tests pass, all five affected production builds pass, and exactly
+  one browser flow proves fixture search submit -> result list -> canonical incident submit ->
+  processing -> completed/full evidence with no console warning/error.
+
+Deferred: entity selection or detail, lineage traversal, owners or deep change history, incident
+orchestration through live DataHub search, live credential smoke, Slice 2.3, controller changes,
+additional providers, model reasoning, dependency/lockfile changes, and Level D validation.
+
+Exact Level C commands (run as one coherent sequence after implementation):
+
+- `pnpm exec prettier --write packages/shared-types/src/index.ts packages/datahub-client/src/index.ts packages/agent-core/src/index.ts apps/api/src/index.ts apps/web/src/App.tsx apps/web/src/styles.css fixtures/metadata/removed-schema-column.json tests/integration/contracts.test.ts tests/integration/fixture-adapter.test.ts tests/integration/investigation-runner.test.ts tests/integration/datahub-health.test.ts tests/integration/datahub-search.test.ts tests/integration/metadata-health-api.test.ts tests/integration/metadata-search-api.test.ts tests/integration/web-metadata-health.test.ts tests/integration/web-metadata-search.test.ts tests/integration/incidents-api.test.ts tests/integration/web-report.test.ts tests/e2e/report-display.spec.mjs docs/API_CONTRACTS.md docs/DATA_MODEL.md docs/IMPLEMENTATION_PLAN.md docs/KNOWN_ISSUES.md docs/SESSION_LOG.md`
+- `pnpm exec prettier --check packages/shared-types/src/index.ts packages/datahub-client/src/index.ts packages/agent-core/src/index.ts apps/api/src/index.ts apps/web/src/App.tsx apps/web/src/styles.css fixtures/metadata/removed-schema-column.json tests/integration/contracts.test.ts tests/integration/fixture-adapter.test.ts tests/integration/investigation-runner.test.ts tests/integration/datahub-health.test.ts tests/integration/datahub-search.test.ts tests/integration/metadata-health-api.test.ts tests/integration/metadata-search-api.test.ts tests/integration/web-metadata-health.test.ts tests/integration/web-metadata-search.test.ts tests/integration/incidents-api.test.ts tests/integration/web-report.test.ts tests/e2e/report-display.spec.mjs docs/API_CONTRACTS.md docs/DATA_MODEL.md docs/IMPLEMENTATION_PLAN.md docs/KNOWN_ISSUES.md docs/SESSION_LOG.md`
+- `pnpm exec eslint packages/shared-types/src packages/datahub-client/src packages/agent-core/src apps/api/src apps/web/src tests/integration/contracts.test.ts tests/integration/fixture-adapter.test.ts tests/integration/investigation-runner.test.ts tests/integration/datahub-health.test.ts tests/integration/datahub-search.test.ts tests/integration/metadata-health-api.test.ts tests/integration/metadata-search-api.test.ts tests/integration/web-metadata-health.test.ts tests/integration/web-metadata-search.test.ts tests/integration/incidents-api.test.ts tests/integration/web-report.test.ts tests/e2e/report-display.spec.mjs`
+- `pnpm --filter @dii/shared-types typecheck`
+- `pnpm --filter @dii/datahub-client typecheck`
+- `pnpm --filter @dii/agent-core typecheck`
+- `pnpm --filter @dii/api typecheck`
+- `pnpm --filter @dii/web typecheck`
+- `pnpm exec vitest run tests/integration/contracts.test.ts tests/integration/fixture-adapter.test.ts tests/integration/investigation-runner.test.ts tests/integration/datahub-health.test.ts tests/integration/datahub-search.test.ts tests/integration/metadata-health-api.test.ts tests/integration/metadata-search-api.test.ts tests/integration/web-metadata-health.test.ts tests/integration/web-metadata-search.test.ts tests/integration/incidents-api.test.ts tests/integration/web-report.test.ts`
+- `pnpm --filter @dii/shared-types --filter @dii/datahub-client --filter @dii/agent-core --filter @dii/api --filter @dii/web build`
+- Exactly one `pnpm test:e2e:report` run combining fixture entity search with the canonical incident
+  regression, resolved evidence references, clean console output, and the existing three-minute bound.
+- `git diff --check`, changed-file secret-pattern scan, `git diff --stat`, `git diff --name-status`,
+  generated-artifact path scan, full scoped diff review, and `git status --short --branch` before the
+  conventional commit; repeat only final status after commit/push to prove a clean worktree.
+
+Validation result on the Windows managed worktree, 2026-07-18:
+
+- The first formatter command completed dependency bootstrap and supply-chain verification but then
+  hit the known `pnpm exec` shim-resolution restriction. The verified project-local `.CMD` shim
+  formatted the scoped files in 1.970 seconds; changed-file Prettier check passed in 2.089 seconds.
+  The generated `.pnpm-store` was path-verified inside the worktree and moved intact to
+  `C:\tmp\dii-slice-2-2-pnpm-store-019f75bc`.
+- Affected ESLint initially found one empty-interface alias and one browser-global reference. After
+  the targeted two-line fix, the full affected lint scope passed in 2.889 seconds. All five affected
+  typechecks passed: shared-types 4.412 seconds, datahub-client 2.987 seconds, agent-core 3.595 seconds,
+  API 4.553 seconds, and web 4.343 seconds.
+- Sandboxed Vitest was blocked before tests by the known esbuild ancestor-metadata restriction. One
+  scoped retry exposed three targeted test-data/assertion failures; after fixing the revenue-token
+  fixture collision, the no-match query, and the safe-error assertion, final combined evidence is
+  11/11 files and 66/66 tests passing. A final DataHub-only edge-case review added and passed a twelfth
+  fake-provider search test, proving shared-normalization failures map to `invalid_response`.
+- The first build command passed shared-types and datahub-client before Vite hit the same sandbox
+  restriction. A scoped retry passed agent-core, API, and web; all five affected builds therefore pass.
+  Web transformed 109 modules and built in 1.92 seconds. The DataHub-only normalization follow-up then
+  passed its affected typecheck, 12/12 search-client tests, and datahub-client build.
+- Exactly one `pnpm test:e2e:report` selected API `http://127.0.0.1:49680` and web
+  `http://127.0.0.1:49681`, then passed fixture search -> deterministic focused result list -> incident
+  processing -> completed/full evidence in 11.569 seconds (18.294 seconds wall). Console checks,
+  evidence-reference resolution, three-minute bound, selected-port cleanup, and launcher cleanup all
+  passed. It was not repeated after the DataHub-only normalization edge fix because the fixture/browser
+  execution path did not change and the slice permits exactly one browser run.
+- `git diff --check`, tracked-plus-untracked secret scan, generated-artifact scan, scoped diff review,
+  name/stat review, and branch/worktree review passed; secret matches `0`, generated artifact matches
+  `0`, with 15 tracked and 3 untracked intended files before commit. Live DataHub smoke remains
+  credential-gated and Level D remains deferred.
+
+Exact next action: create conventional commit `feat: add datahub entity search`, push without rewrite,
+open a stacked draft PR against `codex/phase-2-1-datahub-health`, and observe exactly one CI run to a
+terminal state. After a green handoff, create a separate task for Slice 2.3 — bounded, cycle-safe
+DataHub lineage; do not begin it in Slice 2.2.
+
 Slices: client health/error normalization; entity search; bounded/cycle-safe lineage; metadata and recent
 changes. Completion requires fixture and DataHub adapters to run through unchanged business logic.
 

@@ -5,6 +5,8 @@ import {
   IncidentRequestSchema,
   IncidentRetrievalResponseSchema,
   InvestigationReportSchema,
+  MetadataEntitySearchRequestSchema,
+  MetadataEntitySearchResponseSchema,
   MetadataHealthResponseSchema,
 } from '../../packages/shared-types/src/index.js';
 
@@ -63,6 +65,68 @@ describe('shared investigation contracts', () => {
         mode: 'datahub',
         status: 'ECONNREFUSED',
         message: 'Provider-specific error.',
+      }).success,
+    ).toBe(false);
+  });
+
+  it('trims and bounds metadata entity search requests', () => {
+    expect(
+      MetadataEntitySearchRequestSchema.parse({
+        query: '  revenue  ',
+        entityType: 'dataset',
+      }),
+    ).toEqual({ query: 'revenue', entityType: 'dataset', limit: 10 });
+
+    for (const request of [
+      { query: '   ' },
+      { query: 'x'.repeat(201) },
+      { query: 'revenue', entityType: 'user' },
+      { query: 'revenue', limit: 0 },
+      { query: 'revenue', limit: 21 },
+      { query: 'revenue', limit: 1.5 },
+      { query: 'revenue', extra: true },
+    ]) {
+      expect(MetadataEntitySearchRequestSchema.safeParse(request).success).toBe(false);
+    }
+  });
+
+  it('requires bounded, unique, deterministically ordered entity search results', () => {
+    const response = {
+      query: 'revenue',
+      limit: 2,
+      results: [
+        {
+          urn: 'urn:li:dataset:daily-revenue',
+          kind: 'dataset',
+          name: 'analytics.daily_revenue',
+          qualifiedName: 'snowflake.analytics.daily_revenue',
+        },
+        {
+          urn: 'urn:li:dashboard:revenue-overview',
+          kind: 'dashboard',
+          name: 'Revenue overview',
+          description: 'Executive revenue dashboard.',
+        },
+      ],
+    };
+
+    expect(MetadataEntitySearchResponseSchema.safeParse(response).success).toBe(true);
+    expect(
+      MetadataEntitySearchResponseSchema.safeParse({
+        ...response,
+        results: [...response.results].reverse(),
+      }).success,
+    ).toBe(false);
+    expect(
+      MetadataEntitySearchResponseSchema.safeParse({
+        ...response,
+        results: [response.results[0], response.results[0]],
+      }).success,
+    ).toBe(false);
+    expect(
+      MetadataEntitySearchResponseSchema.safeParse({
+        ...response,
+        limit: 1,
       }).success,
     ).toBe(false);
   });

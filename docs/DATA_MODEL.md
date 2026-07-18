@@ -10,6 +10,11 @@ symptom. API validation trims text, enforces length limits, and rejects invalid 
 An entity has a stable URN, display name, and kind: dataset, dashboard, pipeline, or chart. DataHub
 responses are normalized into this shape before leaving the adapter.
 
+Entity search results extend that reference with optional bounded `description` and `qualifiedName`
+fields when the provider supplies safe non-empty values. Search results have unique URNs, deterministic
+name/kind/URN ordering, and a request-bounded count. A no-match search is an empty list; only the
+fixture incident runner may explicitly request its declared default seed.
+
 ## Evidence
 
 Evidence is an observed fact with:
