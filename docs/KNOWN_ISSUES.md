@@ -2,24 +2,19 @@
 
 Last updated: 2026-07-18.
 
-- The Phase 1 Level D core gate passes on the Windows managed worktree, and the browser launcher now
-  resolves pnpm cross-platform, uses synchronized dynamic ports/URLs, and cleans only its own process
-  tree. Three targeted launcher contracts pass. After Windows Playwright Chromium headless shell
-  revision `1228` was provisioned, the single newly authorized e2e run passed the canonical flow in
-  `9361ms` on dynamic ports `51439`/`51440`, with evidence-reference resolution and clean-console
-  assertions enabled. Both ports and the launcher process tree were clean afterward. The Phase 1
-  browser gate is no longer a blocker.
-- The advanced stacked base commit `edd0ed510d4cc4799d1c130415d8e79cb0ff78a5` changed the legacy E2E
-  launcher to tolerate ANSI-styled Vite logs and initially conflicted with the closure launcher. The
-  merge-forward resolution retains HTTP readiness at synchronized dynamic URLs, which is independent
-  of styled logs. Targeted contracts passed 3/3 and the canonical browser flow passed again in
-  `6890ms` on ports `63576`/`63577`, with no listener or launcher-runtime leak.
-- PR #4 (`codex/stabilize-managed-worktree-bootstrap`) is merged into `main` at exact
-  `f86dc552c6cb5805eb1a6b032a1b90a683a9a84f`; it is not being reverted. The resulting main CI run
-  `29649047565`, job `88092112833`, exposed a test-only port-allocation race: the cleanup integration
-  fixture closed a free-port probe before its descendant rebound the port and intermittently received
-  `EADDRINUSE`. The focused hotfix uses atomic OS-assigned port `0` binding and the reported actual port;
-  six consecutive post-fix focused runs passed locally. Draft-PR CI remains pending.
+- Phase 1 is fully integrated and closed on exact `main`
+  `ab1559e3a8364e8c65aeed7407fd4ddfb2390cec`; supplied main CI run `29649987430`, job
+  `88094568246`, is green. PR #4 managed-worktree bootstrap and PR #8 atomic port-race fix are both
+  merged and were preserved by the post-merge checkpoint.
+- The post-merge Level D gate passes: repository format, lint, six workspace type-checks, 7 test
+  files/17 tests, six production builds, both artifact smoke targets, and the canonical browser flow
+  completed on the integrated main tree. The first full-test attempt had two transient `5s` API
+  timeouts under parallel load; the focused pair immediately passed 5/5 and the full-suite recovery
+  passed 17/17 without a code change, so no implementation blocker remains.
+- The single post-merge E2E selected dynamic ports `61369`/`61370` and passed
+  `submit -> processing -> completed -> full evidence display` in `32.400s`, with real evidence
+  references and clean-console assertions. Post-run probes found zero listeners and zero
+  launcher-related process leaks.
 - The GitHub repository is private during development and must become public before submission.
 - Slice 1.2 stores incident lifecycle and completed reports only in API process memory. Restarting the
   API removes existing incident IDs; durable persistence remains deferred.

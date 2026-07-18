@@ -657,3 +657,68 @@ process-local persistence, single fixture, and cross-browser deferrals remain un
 Format the final changed docs, review diff/secrets/conflict markers, commit conventionally, push the
 fix branch, open one draft PR against `main`, and follow exactly one CI run. Do not rerun the failed main
 run, merge the new PR, or begin Phase 2.
+
+## 2026-07-18 — Phase 1 post-merge Level D closure
+
+### Objective
+
+Run the final Phase 1 Level D checkpoint on exact integrated `origin/main`
+`ab1559e3a8364e8c65aeed7407fd4ddfb2390cec`, preserving merged PR #4 bootstrap and PR #8 port-race
+fix, and publish closure evidence without beginning Phase 2.
+
+### Completed
+
+Created `phase/phase1-post-merge-closure` from the exact main commit. Verified supplied main CI run
+`29649987430`, job `88094568246`, as green. Ran the merged bootstrap, the complete repository Level D
+components, exactly one canonical browser E2E, and read-only post-run leak probes. Phase 1 is fully
+integrated and closed on this main tree.
+
+### Files changed
+
+`docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md`, and this session entry only. No product, test,
+launcher, bootstrap, manifest, lockfile, generated artifact, repository map, or Phase 2 source changed.
+
+### Decisions
+
+The single `pnpm validate` wrapper stopped before lint because the newly added checkpoint plan section
+needed Prettier formatting. Applied only that docs formatting fix, reran repository format, then ran
+each not-yet-started wrapper component once. Classified two later API test timeouts as transient
+environment contention: health returned `200` in `15.49ms`, the exact failing pair passed immediately,
+and the full-suite recovery passed without a code change. No retry/sleep/timeout increase or product
+fix was added.
+
+### Validation performed
+
+- Bootstrap: Node `v24.14.0`, pnpm `11.9.0`, frozen dependencies already current, Prettier `3.9.5`,
+  PASS in `5.356s`.
+- Initial `pnpm validate`: stopped at format after `8.734s`; targeted repository format recovery PASS
+  in `2.798s`.
+- `pnpm lint`: PASS in `31.434s`.
+- `pnpm typecheck`: PASS for 6/7 workspace projects in `36.859s`.
+- First `pnpm test`: 15/17 PASS with two transient `5s` API timeouts. Targeted reproducer PASS 2
+  files/5 tests in `1.88s` (`3.731s` wall). One full-suite recovery PASS 7 files/17 tests in `2.64s`
+  (`4.568s` wall).
+- `pnpm build`: PASS for 6/7 projects in `15.967s`; web transformed 109 modules.
+- `pnpm smoke`: PASS for `apps/api/dist/index.js` and `apps/web/dist/index.html` in `0.905s`.
+- Exactly one `pnpm test:e2e:report`: API `61369`, web `61370`, canonical flow PASS in `32.400s`
+  (`43.082s` wall), under three minutes, with processing/completed/full-evidence, evidence-reference,
+  and clean-console assertions. Post-run probes found 0 listeners and 0 launcher-related processes.
+
+### Validation intentionally deferred
+
+No DataHub credential or real provider call was needed for the fixture-backed Phase 1 gate. Broader
+cross-browser coverage, additional scenarios, durable persistence, deployment, and all Phase 2 work
+remain deferred.
+
+### Known issues
+
+No Phase 1 acceptance blocker remains. The repository remains private during development; process-local
+incident persistence, one canonical fixture, and broader cross-browser coverage remain known
+limitations.
+
+### Exact next step
+
+Format and review the docs-only closure diff, commit conventionally, push the checkpoint branch, open a
+draft PR against `main`, and follow exactly one CI run. After that PR is reviewed and merged, create a
+separate project task for Phase 2 Slice 2.1 — DataHub client health/error normalization from the
+then-current exact main. Do not begin Phase 2 here.

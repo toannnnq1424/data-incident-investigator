@@ -519,6 +519,72 @@ Exact next action: update project memory, review the scoped diff and secret/conf
 conventional commit, push the fix branch, open a draft PR against `main`, and follow exactly one CI run.
 Do not rerun the failed main run, merge the fix PR, or begin Phase 2.
 
+### Phase 1 post-merge Level D closure
+
+Status: passed on `phase/phase1-post-merge-closure` from exact integrated `origin/main`
+`ab1559e3a8364e8c65aeed7407fd4ddfb2390cec`. Supplied main CI run `29649987430`, job
+`88094568246`, is green; PR #4 bootstrap and PR #8 port-race fix are both merged and remain intact.
+
+Objective: run the final Phase 1 Level D checkpoint on the fully integrated main tree, prove the
+credential-free canonical fixture flow, and publish docs-only closure evidence without starting Phase 2.
+
+Minimum files:
+
+- `docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md`, and `docs/SESSION_LOG.md` for the integrated
+  validation record and handoff.
+- No product, test, launcher, bootstrap, manifest, lockfile, or repository-map change unless a
+  classified gate failure requires a targeted in-scope fix.
+
+Acceptance criteria:
+
+- The merged Windows bootstrap verifies Node/pnpm and frozen dependencies before repository commands.
+- Repository format, lint, all workspace type-checks, the complete unit/integration/smoke test suite,
+  all production builds, and the primary artifact smoke pass exactly once through `pnpm validate`.
+- Exactly one `pnpm test:e2e:report` completes
+  `submit -> processing -> completed -> full evidence display` in under three minutes, resolves every
+  hypothesis evidence reference, reports no browser console warning/error, and leaves no selected
+  listener or launcher descendant behind.
+- Diff, secret, conflict-marker, generated-junk, ancestry, and clean-worktree reviews pass; a docs-only
+  conventional commit is pushed to one draft PR based on `main`, followed by exactly one new CI run.
+
+Validation commands:
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/bootstrap-worktree.ps1`
+- `pnpm validate`
+- `pnpm test:e2e:report`
+- Changed-doc Prettier plus read-only diff/secret/conflict/generated-junk/worktree review after the gate.
+
+Validation result on Windows, 2026-07-18:
+
+- Bootstrap selected Node `v24.14.0` and pnpm `11.9.0`, confirmed the frozen workspace was already up
+  to date, resolved Prettier `3.9.5`, and passed its static check in `5.356s`.
+- The single `pnpm validate` wrapper stopped at its first step after `8.734s` because this checkpoint's
+  newly added plan section needed formatting; lint/typecheck/test/build/smoke had not run. After the
+  targeted docs-only Prettier write, repository format passed in `2.798s`. The remaining unchanged
+  wrapper components then ran once each: lint passed in `31.434s`; type-check passed for 6/7 workspace
+  projects in `36.859s`; build passed for 6/7 projects in `15.967s` with 109 web modules; and smoke
+  passed both API/web artifacts in `0.905s`.
+- The first full test attempt reported 15/17 passing and two `5s` API timeouts despite the logged
+  health response completing in `15.49ms`. The exact failing pair then passed 5/5 in `1.88s`
+  (`3.731s` wall), classifying the failure as transient environment contention rather than an
+  implementation defect. The one recovery run of the full suite passed 7 files/17 tests in `2.64s`
+  (`4.568s` wall); no product or test fix was made.
+- Exactly one `pnpm test:e2e:report` selected API `http://127.0.0.1:61369` and web
+  `http://127.0.0.1:61370`, then passed the canonical fixture flow in `32.400s` (`43.082s` wall), under
+  three minutes. Its assertions covered processing, completed/full evidence display, real hypothesis
+  evidence references, and clean browser console output. Read-only post-run probes found zero
+  listeners on both ports and zero launcher-related processes.
+- Phase 1 is fully integrated and closed on the exact main tree above. No Phase 2 implementation was
+  started.
+
+Deferred: all DataHub implementation, additional fixture scenarios, durable persistence, broader
+cross-browser coverage, deployment, and Phase 2. The exact next implementation step after this gate
+passes is a separate Phase 2 Slice 2.1 DataHub client task.
+
+Exact next step: after the docs-only closure PR is reviewed and merged, create a separate project task
+for Phase 2 Slice 2.1 — DataHub client health/error normalization from the then-current exact `main`.
+Do not begin that slice in this checkpoint.
+
 Phase completion: a clean clone can select a demo incident and receive a complete report.
 
 ## Phase 2 — DataHub integration
