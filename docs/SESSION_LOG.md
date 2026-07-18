@@ -299,3 +299,67 @@ bootstrap dependency upstream or rerun this closure from a clean environment. Ad
 pnpm launch, dedicated/dynamic ports with a matching URL/readiness contract, and process-tree cleanup as
 one bounded browser-test fix; then rerun `pnpm test:e2e:report` once and proceed to merge-readiness only
 after it proves the complete clean-console flow.
+
+## 2026-07-18 — Gỡ blocker Phase 1 E2E launcher trên Windows
+
+### Objective
+
+Chỉ sửa launcher của canonical report E2E từ exact HEAD
+`31621056a9786fb5423773e0bec94704cdab6fa8` trên branch
+`codex/fix-phase1-e2e-launcher`, stacked trên `codex/phase-1-level-d-closure`; không sửa product, không
+tích hợp PR #4 và không bắt đầu Phase 2.
+
+### Completed
+
+Thay bare pnpm spawn bằng active pnpm JavaScript runtime qua `process.execPath` + `npm_execpath`, có
+fallback theo platform; bỏ sentinel sai bằng `pnpm exec vite`. Launcher chọn đồng thời hai cổng rảnh,
+truyền API URL thực qua Vite config tạm, parse URL loopback sau khi loại ANSI, điều hướng tới web URL
+thực, và cleanup đúng process tree bằng PID (`taskkill /T /F` trên Windows, process group trên
+macOS/POSIX). Thêm focused regression test cho command, forwarding, URL, ANSI và port allocation.
+
+### Files changed
+
+`tests/e2e/report-display.spec.mjs`; `tests/e2e/report-launcher.test.ts`;
+`docs/IMPLEMENTATION_PLAN.md`; `docs/KNOWN_ISSUES.md`; `docs/SESSION_LOG.md`.
+`docs/REPOSITORY_MAP.md` không đổi vì cấu trúc repository không đổi.
+
+### Decisions
+
+Giữ toàn bộ thay đổi trong test launcher. Dùng Vite config tạm trong OS temp để proxy tới API port
+thực, tránh thay product `apps/web/vite.config.ts`. Dùng built-in `stripVTControlCharacters` thay regex
+control-character để thỏa ESLint. Không kill theo tên process, theo port hoặc theo project; chỉ dùng PID
+của pnpm child do launcher tạo. Không rerun core tests/build/smoke đã xanh vì input product/core không
+đổi.
+
+### Validation performed
+
+Frozen install hiện có pass 4.6 giây sau environment recovery bằng bundled Node trong child `PATH` và
+pnpm store ngoài worktree; không đổi manifest/lockfile. Prettier, ESLint, Node syntax và
+`git diff --check` pass. Focused Vitest pass 9/9 cases trong 965 ms ở lượt cuối. Canonical reproducer đầu
+tiên fail sau 22.8 giây trước Chromium vì ANSI nằm trong Vite URL; hậu kiểm port `58903`, process và temp
+đều sạch. Sau controller-approved ANSI regression/fix, canonical cuối pass trong 3.794 giây với API
+port `57153`, web port `57154`: Chromium thấy `processing`, `completed`, full report, mọi detailed/overflow
+assertion pass, console có 0 warning/error. Hậu kiểm không còn process Node/watcher, listener hay temp.
+Repository `pnpm format:check` và `pnpm lint` pass.
+
+Evidence macOS riêng tại exact starting HEAD: preflight 3001/5173/5174 sạch; canonical command exit 1
+sau 70.62 giây vì pnpm bootstrap registry `ENOTFOUND` trước Node/E2E, không tới readiness/Chromium/console,
+không leak, không source diff. Phân loại environment/bootstrap, không phải launcher reproduction.
+
+### Validation intentionally deferred
+
+Controller sẽ QA lại branch fix trên macOS worktree đã bootstrap riêng. Core 14/14 tests, sáu builds và
+smoke không rerun vì không có input liên quan thay đổi. Phase 2, PR #4, DataHub, model reasoning,
+persistence, deployment và product redesign ngoài scope.
+
+### Known issues
+
+macOS QA của branch fix và CI của stacked draft PR chưa hoàn tất. Incident vẫn process-local, fixture
+vẫn chỉ có canonical removed-schema-column scenario, và các limitation đã hoãn khác giữ nguyên trong
+`docs/KNOWN_ISSUES.md`.
+
+### Exact next step
+
+Commit/push bounded launcher fix và mở stacked Draft PR base `codex/phase-1-level-d-closure`; theo dõi
+một lượt CI. Sau đó controller chạy lại `pnpm test:e2e:report` trên macOS worktree đã bootstrap trước khi
+gỡ chặn Phase 2.

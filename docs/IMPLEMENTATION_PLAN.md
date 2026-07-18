@@ -267,6 +267,93 @@ then address the browser launch contract as one bounded change covering cross-pl
 dedicated/dynamic ports and matching URL/readiness, and process-tree cleanup. Rerun the unresolved
 canonical browser gate once after that coherent fix, and complete merge-readiness only after it passes.
 
+#### Phase 1 Level D launcher unblock
+
+Status: implemented and validated on Windows on `codex/fix-phase1-e2e-launcher`, starting from exact blocked-closure commit
+`31621056a9786fb5423773e0bec94704cdab6fa8` and stacked on
+`codex/phase-1-level-d-closure`.
+
+Objective: repair only the canonical report e2e launcher so the already-green Phase 1 fixture flow can
+reach Chromium reliably on Windows and macOS. Product code, Phase 2, PR #4, and the repository
+structure remain out of scope.
+
+Hypothesis:
+
+- The Windows `ENOENT` occurs because the launcher spawns the `pnpm` shim as a bare executable. A
+  `process.execPath` + `npm_execpath` invocation should run the current pnpm runtime portably; a
+  platform-specific fallback is needed only when npm metadata is unavailable.
+- Fixed API/web ports and the checked-in Vite proxy target make parallel worktrees contend. Selecting
+  distinct ephemeral ports and supplying a temporary test-only Vite config with the actual API target
+  should isolate each run without changing product configuration.
+- Readiness should parse the URL emitted by each server and accept only loopback hosts (`localhost`,
+  `127.0.0.1`, or IPv6 loopback) on the selected port instead of matching one hostname spelling.
+- Killing only the immediate pnpm child leaves watcher descendants. Cleanup must target only each
+  child tree created by this launcher: `taskkill /T` by recorded PID on Windows and an isolated process
+  group on macOS/POSIX, with graceful then forced termination where supported.
+
+Minimum files:
+
+- `tests/e2e/report-display.spec.mjs` for launcher orchestration and browser acceptance.
+- `tests/e2e/report-launcher.test.ts` for focused command, URL, and port-allocation regression tests.
+- `docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md`, and `docs/SESSION_LOG.md` for persistent state.
+
+Acceptance criteria:
+
+- The launcher uses the active pnpm JavaScript runtime when available and never passes a stray `--`
+  sentinel to `pnpm run`.
+- Each invocation selects distinct free API/web ports, passes the actual API target through a
+  test-only Vite configuration, navigates to the actual emitted web URL, and never binds hard-coded
+  `3001` or `5173`.
+- Readiness accepts loopback URLs emitted as `localhost`, `127.0.0.1`, or `[::1]` and rejects a wrong
+  port or non-loopback host.
+- Success and failure cleanup terminate only the recorded child process trees and remove the temporary
+  config directory; no project-wide or port-wide kill is used.
+- The canonical incident visibly transitions `processing -> completed`, renders the full report in
+  Chromium in under three minutes, and emits zero browser console warnings/errors.
+
+Exact targeted commands (do not rerun previously green unchanged core tests/build/smoke):
+
+- `pnpm exec prettier --check tests/e2e/report-display.spec.mjs tests/e2e/report-launcher.test.ts docs/IMPLEMENTATION_PLAN.md`
+- `pnpm exec eslint tests/e2e/report-display.spec.mjs tests/e2e/report-launcher.test.ts`
+- `pnpm exec vitest run tests/e2e/report-launcher.test.ts`
+- exactly one `pnpm test:e2e:report` after the focused checks pass
+- if the browser gate passes, run the affected repository Level D surfaces once with
+  `pnpm format:check` and `pnpm lint`; after final memory updates, run one changed-file Prettier check
+  covering the three memory documents without rerunning the browser gate.
+
+Validation result on Windows, 2026-07-18:
+
+- Frozen dependency bootstrap passed in 4.6 seconds after adding the bundled Node directory to the
+  child `PATH` and keeping the pnpm store under `C:\tmp`. The initial automatic bootstrap had failed
+  at `esbuild` postinstall because `node` was absent from child `PATH`; its untracked `.pnpm-store`
+  artifact was removed. No manifest or lockfile changed, and PR #4 was not integrated.
+- Changed-file Prettier, affected ESLint, Node syntax, and `git diff --check` passed. Because managed
+  `pnpm exec` could not execute Windows `.CMD` shims, the equivalent project-local locked shims were
+  used for targeted static checks. Focused Vitest passed 9/9 launcher regressions, including active
+  pnpm runtime selection, controlled Windows fallback, sentinel-free Vite args, three loopback URL
+  forms, ANSI-formatted URL normalization, wrong-host/port rejection, and distinct available ports.
+- The first canonical reproducer after the initial focused suite failed after 22.8 seconds before
+  Chromium: Vite was ready on dynamic port `58903`, but ANSI styling inside the emitted URL prevented
+  readiness parsing. Cleanup left no matching Node/watcher process, listener, or temporary config. A
+  controller-approved bounded follow-up added the ANSI regression and used Node's
+  `stripVTControlCharacters`; no product code changed.
+- The single controller-approved final `pnpm test:e2e:report` passed. Launcher timing was 3.794 seconds
+  with API `http://127.0.0.1:57153/` and web `http://127.0.0.1:57154/`. Chromium observed the canonical
+  `processing -> completed -> full report` flow, all detailed report assertions and desktop/mobile
+  overflow checks passed, and the browser emitted zero console warnings/errors. Post-run inspection
+  found no matching Node/watcher process, listener on either selected port, or temporary config.
+- Affected repository Level D `pnpm format:check` and `pnpm lint` passed. The previously green core
+  14/14 tests, six builds, and smoke were intentionally not rerun because no product/core input
+  changed.
+- Separate macOS QA at the exact starting HEAD did not reach Node/E2E: after a clean 3001/5173/5174
+  preflight, pnpm bootstrap failed with registry `ENOTFOUND` after 70.62 seconds. Ports remained clean,
+  no process leaked, and no source diff was produced. This is environment/bootstrap evidence rather
+  than a launcher reproduction; controller QA of this fix remains pending on a separately bootstrapped
+  macOS worktree.
+
+Deferred: all product behavior changes, Phase 2, dependency/bootstrap PR #4, additional fixtures,
+cross-browser automation, DataHub, model reasoning, persistence, deployment, and UI redesign.
+
 Phase completion: a clean clone can select a demo incident and receive a complete report.
 
 ## Phase 2 — DataHub integration
