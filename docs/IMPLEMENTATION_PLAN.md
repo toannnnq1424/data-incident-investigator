@@ -902,6 +902,133 @@ Sync validation result on Windows:
 Deferred: live DataHub smoke, full Level D/release validation, PR readiness/merge, PR #10 changes, and
 all Slice 2.2/2.3 implementation.
 
+### Slice 2.3 — Bounded, cycle-safe DataHub lineage
+
+Status: Level C passed locally on `codex/phase-2-3-bounded-lineage` from exact Slice 2.2 handoff
+commit `65657aa7d06ad0a3457b16289a6e5311bb056592`; commit, stacked draft PR, and one terminal CI
+observation are pending.
+
+Objective: from a stable URN returned by entity search, let a user request upstream or downstream
+lineage through one strict shared graph contract, the fixture or DataHub client boundary, a thin API
+route, and a compact accessible web display. Traversal must be deterministic, bounded by depth, node,
+provider-result, request-step, timeout, and AbortSignal limits, and terminate safely through cycles.
+
+Minimum files:
+
+- `packages/shared-types/src/index.ts` and `tests/integration/contracts.test.ts` for strict lineage
+  request/response schemas, defaults, hard caps, unique root/nodes/edges, deterministic ordering, and
+  no-dangling-edge invariants.
+- `packages/datahub-client/src/index.ts`, `fixtures/metadata/removed-schema-column.json`,
+  `tests/integration/fixture-adapter.test.ts`, and a focused DataHub lineage client test for bounded
+  fixture graphs plus official GraphQL one-hop lineage mapping, cycle/dedup termination, truncation,
+  request-step cap, Bearer auth, timeout, and safe provider-error normalization.
+- `apps/api/src/index.ts` and a focused metadata-lineage API integration test for mode-specific
+  composition, validation/defaults, schema-valid success, missing root, and safe typed errors.
+- `apps/web/src/App.tsx`, `apps/web/src/styles.css`, and a focused web lineage behavior test for
+  semantic upstream/downstream actions on search results, bounded controls, loading/success/empty/
+  truncated/error states, focus management, and stale-response protection.
+- `tests/e2e/report-display.spec.mjs` for exactly one combined fixture search -> bounded lineage ->
+  canonical incident processing/completed regression with a truncation/cycle-safe assertion and clean
+  console output.
+- `docs/API_CONTRACTS.md`, `docs/DATA_MODEL.md`, `docs/IMPLEMENTATION_PLAN.md`,
+  `docs/KNOWN_ISSUES.md`, and `docs/SESSION_LOG.md` for the durable contract and handoff.
+
+Acceptance criteria:
+
+- `POST /metadata/lineage` rejects unknown keys and accepts only a trimmed bounded root URN,
+  `upstream|downstream`, integer depth within the shared hard cap, and integer `maxNodes` within the
+  shared hard cap; small defaults are applied and client-supplied GraphQL is impossible.
+- Every success response includes the root exactly once, unique stable nodes with safe display fields,
+  unique directed source/target edges with no dangling references, deterministic node/edge ordering,
+  requested depth, visited-node count, and an accurate `truncated` flag when depth or node bounds omit
+  reachable nodes.
+- Fixture mode provides deterministic multi-level upstream, branching downstream, cycle/self-loop,
+  empty/missing-root, and depth/node truncation cases without reading `DATAHUB_*`, Stitch, LLM, or any
+  credential. Existing health/search and the canonical Phase 1 incident flow remain compatible.
+- DataHub mode uses the official `searchAcrossLineage(input: SearchAcrossLineageInput!)` GraphQL
+  semantics with `urn`, `direction`, `start`, bounded `count`, and direct-degree filtering. Sequential
+  BFS requests are capped, use the existing Bearer/timeout/AbortSignal boundary, and never retry or
+  fan out without bounds.
+- Missing configuration/root, 401/403, refusal/non-success, timeout, invalid content/JSON/GraphQL
+  shape, provider errors, and malformed entities normalize to existing safe typed metadata outcomes;
+  URL, token, header, raw payload/error, and stack trace never cross the adapter/API boundary.
+- The web preserves health/search/incident UI, adds compact semantic lineage controls/actions and a
+  readable root/node/edge list, protects against stale responses, and exposes controlled live/focus
+  behavior for loading, success, empty, truncated, and safe-error states without duplicate DOM rows.
+- Targeted contract/client/API/web and adjacent changed-boundary regressions pass, all five affected
+  production builds pass, and exactly one browser flow proves fixture search -> bounded lineage ->
+  canonical incident processing -> completed/full evidence with no console warning/error.
+
+Official DataHub sources verified before implementation:
+
+- The official lineage tutorial documents `searchAcrossLineage`/`scrollAcrossLineage` inputs with
+  `urn`, `direction`, `count`, and a direct `degree` filter:
+  <https://github.com/datahub-project/datahub/blob/master/docs/api/tutorials/lineage.md>.
+- The official DataHub web client defines `searchAcrossLineage(input: $input)` with
+  `SearchAcrossLineageInput!` and uses degree-one counts for upstream/downstream:
+  <https://github.com/datahub-project/datahub/blob/master/datahub-web-react/src/graphql/lineage.graphql>.
+
+Deferred: recent changes/change events (Slice 2.4), owners, schema details, confidence or impact
+scoring, investigation orchestration through live DataHub lineage, live credential smoke, additional
+providers, controller changes, model reasoning, dependency/lockfile changes, and Level D validation.
+
+Exact Level C commands (run as one coherent sequence after implementation):
+
+- `pnpm exec prettier --write packages/shared-types/src/index.ts packages/datahub-client/src/index.ts apps/api/src/index.ts apps/web/src/App.tsx apps/web/src/styles.css fixtures/metadata/removed-schema-column.json tests/integration/contracts.test.ts tests/integration/fixture-adapter.test.ts tests/integration/investigation-runner.test.ts tests/integration/datahub-search.test.ts tests/integration/datahub-lineage.test.ts tests/integration/metadata-search-api.test.ts tests/integration/metadata-lineage-api.test.ts tests/integration/web-metadata-search.test.ts tests/integration/web-metadata-lineage.test.ts tests/integration/incidents-api.test.ts tests/integration/web-report.test.ts tests/e2e/report-display.spec.mjs docs/API_CONTRACTS.md docs/DATA_MODEL.md docs/IMPLEMENTATION_PLAN.md docs/KNOWN_ISSUES.md docs/SESSION_LOG.md`
+- `pnpm exec prettier --check packages/shared-types/src/index.ts packages/datahub-client/src/index.ts apps/api/src/index.ts apps/web/src/App.tsx apps/web/src/styles.css fixtures/metadata/removed-schema-column.json tests/integration/contracts.test.ts tests/integration/fixture-adapter.test.ts tests/integration/investigation-runner.test.ts tests/integration/datahub-search.test.ts tests/integration/datahub-lineage.test.ts tests/integration/metadata-search-api.test.ts tests/integration/metadata-lineage-api.test.ts tests/integration/web-metadata-search.test.ts tests/integration/web-metadata-lineage.test.ts tests/integration/incidents-api.test.ts tests/integration/web-report.test.ts tests/e2e/report-display.spec.mjs docs/API_CONTRACTS.md docs/DATA_MODEL.md docs/IMPLEMENTATION_PLAN.md docs/KNOWN_ISSUES.md docs/SESSION_LOG.md`
+- `pnpm exec eslint packages/shared-types/src packages/datahub-client/src apps/api/src apps/web/src tests/integration/contracts.test.ts tests/integration/fixture-adapter.test.ts tests/integration/investigation-runner.test.ts tests/integration/datahub-search.test.ts tests/integration/datahub-lineage.test.ts tests/integration/metadata-search-api.test.ts tests/integration/metadata-lineage-api.test.ts tests/integration/web-metadata-search.test.ts tests/integration/web-metadata-lineage.test.ts tests/integration/incidents-api.test.ts tests/integration/web-report.test.ts tests/e2e/report-display.spec.mjs`
+- `pnpm --filter @dii/shared-types typecheck`
+- `pnpm --filter @dii/datahub-client typecheck`
+- `pnpm --filter @dii/agent-core typecheck`
+- `pnpm --filter @dii/api typecheck`
+- `pnpm --filter @dii/web typecheck`
+- `pnpm exec vitest run tests/integration/contracts.test.ts tests/integration/fixture-adapter.test.ts tests/integration/investigation-runner.test.ts tests/integration/datahub-search.test.ts tests/integration/datahub-lineage.test.ts tests/integration/metadata-search-api.test.ts tests/integration/metadata-lineage-api.test.ts tests/integration/web-metadata-search.test.ts tests/integration/web-metadata-lineage.test.ts tests/integration/incidents-api.test.ts tests/integration/web-report.test.ts`
+- `pnpm --filter @dii/shared-types --filter @dii/datahub-client --filter @dii/agent-core --filter @dii/api --filter @dii/web build`
+- Exactly one `pnpm test:e2e:report` run combining fixture entity search, selected bounded lineage with
+  truncation/cycle-safe evidence, canonical incident processing/completed/full evidence, resolved
+  evidence references, clean console output, and the existing three-minute bound.
+- `git diff --check`, tracked-plus-untracked secret-pattern scan, `git diff --stat`,
+  `git diff --name-status`, generated-artifact path scan, full scoped diff review, and
+  `git status --short --branch` before the conventional commit; repeat only final status after
+  commit/push to prove a clean worktree.
+
+Validation result on the Windows managed worktree, 2026-07-18:
+
+- The first formatter bootstrap verified the unchanged lockfile and supply-chain policy but failed
+  because esbuild postinstall could not find Node. After loading the bundled runtime, the second
+  bootstrap completed but `pnpm exec` did not resolve workspace binaries. Read-only probes confirmed
+  `NODE_ENV`/npm/pnpm production flags were unset, `prettier@3.9.5` was present as a root
+  devDependency, and `node_modules/.bin/prettier.cmd` existed. Direct changed-file formatter write
+  passed in 2.5 seconds, format check passed in 2.2 seconds, and affected ESLint passed in 10.6
+  seconds. The generated `.pnpm-store` was later path-verified, found to have zero worktree runtime
+  process holders, and removed exactly.
+- All five affected typechecks passed: shared-types 8.1 seconds, datahub-client 8.3 seconds,
+  agent-core 8.2 seconds, API 9.1 seconds, and web 8.9 seconds.
+- Direct sandboxed Vitest reached the known managed-worktree ancestor-metadata denial. The exact
+  scoped retry passed 11/11 files and 81/81 tests in 9.03 seconds (10.2 seconds command wall),
+  including 12 DataHub-lineage tests and 15 lineage-API tests for official one-hop variables, auth,
+  timeout, safe errors, missing root, multi-depth/branching traversal, cycle/self-loop dedup, depth/
+  node/request caps, fixture no-credential behavior, API schema validation, UI states, focus, and stale
+  ownership.
+- The first affected build command passed shared-types and datahub-client before Vite hit the same
+  ancestor-metadata denial. A scoped retry passed agent-core, API, and web; all five affected builds
+  therefore pass. Web transformed 109 modules and built in 1.64 seconds.
+- Exactly one `pnpm test:e2e:report` selected API `http://127.0.0.1:56205` and web
+  `http://127.0.0.1:56206`, then passed deterministic fixture search -> selected downstream lineage
+  with a three-node cap -> visible truncation plus unique-root/cycle-safe self-loop evidence ->
+  canonical incident processing -> completed/full evidence in 16.096 seconds (23.3 seconds command
+  wall). Existing clean-console, resolved-evidence, responsive-overflow, three-minute, port, and
+  launcher cleanup checks passed.
+- `git diff --check`, tracked-plus-untracked secret scan, generated-artifact scan, scoped full diff,
+  name/stat, and branch/worktree review passed; secret matches `0`, generated artifact matches `0`,
+  with 13 tracked and 3 intended untracked files before documentation finalization. Live DataHub smoke
+  remains credential-gated and Level D remains deferred because Slice 2.3 does not close Phase 2.
+
+Exact next action: create conventional commit `feat: add bounded datahub lineage`, push fast-forward,
+open a stacked draft PR against `codex/phase-2-2-entity-search`, and observe exactly one CI run to a
+terminal state. After a green handoff, create a separate task for Phase 2 Slice 2.4 — metadata and
+recent changes; do not begin it here.
+
 Slices: client health/error normalization; entity search; bounded/cycle-safe lineage; metadata and recent
 changes. Completion requires fixture and DataHub adapters to run through unchanged business logic.
 

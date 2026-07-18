@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState, type FormEvent, type ReactNode, type RefObject } from 'react';
 import {
   ApiErrorSchema,
+  METADATA_LINEAGE_DEFAULT_DEPTH,
+  METADATA_LINEAGE_DEFAULT_MAX_NODES,
   type EntityKind,
   type EntityRef,
   type Evidence,
@@ -14,6 +16,10 @@ import {
   type MetadataEntitySearchResponse,
   MetadataHealthResponseSchema,
   type MetadataHealthResponse,
+  type MetadataLineageDirection,
+  MetadataLineageRequestSchema,
+  MetadataLineageResponseSchema,
+  type MetadataLineageResponse,
 } from '@dii/shared-types';
 
 type CompletedIncident = Extract<IncidentRetrievalResponse, { status: 'completed' }>;
@@ -36,6 +42,12 @@ export type MetadataSearchState =
   | { kind: 'loading' }
   | { kind: 'success'; response: MetadataEntitySearchResponse }
   | { kind: 'validation-error'; message: string }
+  | { kind: 'api-error'; message: string };
+
+export type MetadataLineageState =
+  | { kind: 'idle' }
+  | { kind: 'loading'; direction: MetadataLineageDirection; rootName: string }
+  | { kind: 'success'; response: MetadataLineageResponse }
   | { kind: 'api-error'; message: string };
 
 const problemStatusLabels = {
@@ -155,6 +167,55 @@ export function getMetadataSearchPresentation(state: MetadataSearchState) {
   };
 }
 
+export function getMetadataLineagePresentation(state: MetadataLineageState) {
+  if (state.kind === 'idle') {
+    return {
+      heading: 'Bounded lineage',
+      message: 'Choose upstream or downstream on a search result to inspect its lineage.',
+      tone: 'idle' as const,
+    };
+  }
+  if (state.kind === 'loading') {
+    return {
+      heading: `Loading ${state.direction} lineage`,
+      message: `Tracing bounded ${state.direction} lineage for ${state.rootName}…`,
+      tone: 'loading' as const,
+    };
+  }
+  if (state.kind === 'api-error') {
+    return {
+      heading: 'Lineage failed',
+      message: state.message,
+      tone: 'error' as const,
+    };
+  }
+
+  const connectedNodeCount = state.response.nodes.length - 1;
+  if (state.response.edges.length === 0) {
+    return {
+      heading: `No ${state.response.direction} lineage`,
+      message: 'The root entity exists, but no lineage was found within the requested bounds.',
+      tone: 'empty' as const,
+    };
+  }
+  if (state.response.truncated) {
+    return {
+      heading: `${state.response.direction === 'upstream' ? 'Upstream' : 'Downstream'} lineage`,
+      message: `Showing ${connectedNodeCount} connected ${
+        connectedNodeCount === 1 ? 'node' : 'nodes'
+      }; the graph reached a depth, node, edge, or provider-step bound.`,
+      tone: 'truncated' as const,
+    };
+  }
+  return {
+    heading: `${state.response.direction === 'upstream' ? 'Upstream' : 'Downstream'} lineage`,
+    message: `${connectedNodeCount} connected ${
+      connectedNodeCount === 1 ? 'node' : 'nodes'
+    } within depth ${state.response.requestedDepth}.`,
+    tone: 'success' as const,
+  };
+}
+
 function MetadataSourceStatus({ health }: { health: MetadataHealthState }) {
   const presentation = getMetadataHealthPresentation(health);
 
@@ -179,9 +240,16 @@ function MetadataSourceStatus({ health }: { health: MetadataHealthState }) {
 
 function MetadataSearchResults({
   headingRef,
+  lineageLoading,
+  onRequestLineage,
   state,
 }: {
   headingRef: RefObject<HTMLHeadingElement | null>;
+  lineageLoading: boolean;
+  onRequestLineage: (
+    result: MetadataEntitySearchResponse['results'][number],
+    direction: MetadataLineageDirection,
+  ) => void;
   state: MetadataSearchState;
 }) {
   const presentation = getMetadataSearchPresentation(state);
@@ -213,11 +281,114 @@ function MetadataSearchResults({
               {result.qualifiedName && <code>{result.qualifiedName}</code>}
               {result.description && <p>{result.description}</p>}
               <code className="metadata-search-result-urn">{result.urn}</code>
+              <div
+                className="metadata-lineage-actions"
+                aria-label={`Lineage actions for ${result.name}`}
+              >
+                <button
+                  type="button"
+                  disabled={lineageLoading}
+                  onClick={() => onRequestLineage(result, 'upstream')}
+                  aria-label={`View upstream lineage for ${result.name}`}
+                >
+                  Upstream
+                </button>
+                <button
+                  type="button"
+                  disabled={lineageLoading}
+                  onClick={() => onRequestLineage(result, 'downstream')}
+                  aria-label={`View downstream lineage for ${result.name}`}
+                >
+                  Downstream
+                </button>
+              </div>
             </li>
           ))}
         </ul>
       )}
     </div>
+  );
+}
+
+function MetadataLineageResults({
+  headingRef,
+  state,
+}: {
+  headingRef: RefObject<HTMLHeadingElement | null>;
+  state: MetadataLineageState;
+}) {
+  const presentation = getMetadataLineagePresentation(state);
+  const terminal = state.kind === 'success' || state.kind === 'api-error';
+
+  return (
+    <section
+      className={`metadata-lineage-results metadata-lineage-${presentation.tone}`}
+      aria-live="polite"
+      aria-atomic="false"
+      aria-labelledby="metadata-lineage-results-heading"
+    >
+      <h3
+        id="metadata-lineage-results-heading"
+        ref={headingRef}
+        tabIndex={terminal ? -1 : undefined}
+      >
+        {presentation.heading}
+      </h3>
+      <p role={presentation.tone === 'error' ? 'alert' : 'status'}>{presentation.message}</p>
+      {state.kind === 'success' && (
+        <div className="metadata-lineage-graph">
+          <div className="metadata-lineage-summary">
+            <span>Root</span>
+            <code>{state.response.rootUrn}</code>
+            <span>
+              {state.response.visitedNodeCount} visited · depth {state.response.requestedDepth} ·
+              max {state.response.maxNodes} nodes
+            </span>
+          </div>
+          <h4>Nodes</h4>
+          <ul className="metadata-lineage-node-list">
+            {state.response.nodes.map((node) => (
+              <li
+                key={node.urn}
+                data-lineage-root={node.urn === state.response.rootUrn || undefined}
+              >
+                <div>
+                  <strong>{node.name}</strong>
+                  <span>
+                    {node.urn === state.response.rootUrn ? 'root' : `depth ${node.depth}`}
+                  </span>
+                </div>
+                <code>{node.urn}</code>
+                <p>
+                  {node.kind}
+                  {node.platform ? ` · ${node.platform}` : ''}
+                </p>
+                {node.description && <p>{node.description}</p>}
+              </li>
+            ))}
+          </ul>
+          <h4>Directed edges</h4>
+          {state.response.edges.length === 0 ? (
+            <p className="metadata-lineage-empty-edges">No directed edges were returned.</p>
+          ) : (
+            <ul className="metadata-lineage-edge-list">
+              {state.response.edges.map((edge) => (
+                <li key={`${edge.sourceUrn}\u0000${edge.targetUrn}`}>
+                  <code>{edge.sourceUrn}</code>
+                  <span aria-label="flows to">→</span>
+                  <code>{edge.targetUrn}</code>
+                </li>
+              ))}
+            </ul>
+          )}
+          {state.response.truncated && (
+            <p className="metadata-lineage-truncation-note" role="status">
+              Truncated: increase a bounded control to inspect more reachable lineage.
+            </p>
+          )}
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -456,12 +627,22 @@ export function App() {
   const [metadataQuery, setMetadataQuery] = useState('');
   const [metadataEntityType, setMetadataEntityType] = useState<EntityKind | ''>('');
   const [metadataResultLimit, setMetadataResultLimit] = useState(10);
+  const [metadataLineageDepth, setMetadataLineageDepth] = useState(METADATA_LINEAGE_DEFAULT_DEPTH);
+  const [metadataLineageMaxNodes, setMetadataLineageMaxNodes] = useState(
+    METADATA_LINEAGE_DEFAULT_MAX_NODES,
+  );
   const [metadataSearchState, setMetadataSearchState] = useState<MetadataSearchState>({
     kind: 'idle',
   });
+  const [metadataLineageState, setMetadataLineageState] = useState<MetadataLineageState>({
+    kind: 'idle',
+  });
   const metadataSearchAbort = useRef<AbortController | null>(null);
+  const metadataLineageAbort = useRef<AbortController | null>(null);
   const metadataSearchHeading = useRef<HTMLHeadingElement>(null);
+  const metadataLineageHeading = useRef<HTMLHeadingElement>(null);
   const metadataSearchGuard = useRef(createLatestRequestGuard());
+  const metadataLineageGuard = useRef(createLatestRequestGuard());
 
   useEffect(() => {
     const controller = new AbortController();
@@ -494,6 +675,7 @@ export function App() {
   useEffect(
     () => () => {
       metadataSearchAbort.current?.abort();
+      metadataLineageAbort.current?.abort();
     },
     [],
   );
@@ -504,9 +686,18 @@ export function App() {
     }
   }, [metadataSearchState]);
 
+  useEffect(() => {
+    if (metadataLineageState.kind === 'success' || metadataLineageState.kind === 'api-error') {
+      metadataLineageHeading.current?.focus();
+    }
+  }, [metadataLineageState]);
+
   async function submitMetadataSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     metadataSearchAbort.current?.abort();
+    metadataLineageAbort.current?.abort();
+    metadataLineageGuard.current.begin();
+    setMetadataLineageState({ kind: 'idle' });
     const requestId = metadataSearchGuard.current.begin();
     const parsedRequest = MetadataEntitySearchRequestSchema.safeParse({
       query: metadataQuery,
@@ -561,6 +752,71 @@ export function App() {
         setMetadataSearchState({
           kind: 'api-error',
           message: 'Metadata search is unavailable. Try again shortly.',
+        });
+      }
+    }
+  }
+
+  async function requestMetadataLineage(
+    result: MetadataEntitySearchResponse['results'][number],
+    direction: MetadataLineageDirection,
+  ) {
+    metadataLineageAbort.current?.abort();
+    const requestId = metadataLineageGuard.current.begin();
+    const parsedRequest = MetadataLineageRequestSchema.safeParse({
+      rootUrn: result.urn,
+      direction,
+      depth: metadataLineageDepth,
+      maxNodes: metadataLineageMaxNodes,
+    });
+    if (!parsedRequest.success) {
+      setMetadataLineageState({
+        kind: 'api-error',
+        message: 'The bounded lineage controls are invalid.',
+      });
+      return;
+    }
+
+    const controller = new AbortController();
+    metadataLineageAbort.current = controller;
+    setMetadataLineageState({ kind: 'loading', direction, rootName: result.name });
+
+    try {
+      const response = await fetch(`${apiBaseUrl}/metadata/lineage`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(parsedRequest.data),
+        signal: controller.signal,
+      });
+      const body: unknown = await response.json();
+      if (!metadataLineageGuard.current.isCurrent(requestId)) {
+        return;
+      }
+      if (!response.ok) {
+        const parsedError = ApiErrorSchema.safeParse(body);
+        setMetadataLineageState({
+          kind: 'api-error',
+          message: parsedError.success
+            ? parsedError.data.error.message
+            : 'Metadata lineage could not be completed.',
+        });
+        return;
+      }
+
+      const parsedResponse = MetadataLineageResponseSchema.safeParse(body);
+      if (!parsedResponse.success) {
+        setMetadataLineageState({
+          kind: 'api-error',
+          message: 'Metadata lineage returned an unexpected response.',
+        });
+        return;
+      }
+      setMetadataLineageState({ kind: 'success', response: parsedResponse.data });
+    } catch {
+      if (!controller.signal.aborted && metadataLineageGuard.current.isCurrent(requestId)) {
+        setMetadataLineageState({
+          kind: 'api-error',
+          message: 'Metadata lineage is unavailable. Try again shortly.',
         });
       }
     }
@@ -747,7 +1003,47 @@ export function App() {
             {metadataSearchState.kind === 'loading' ? 'Searching…' : 'Search metadata'}
           </button>
         </form>
-        <MetadataSearchResults headingRef={metadataSearchHeading} state={metadataSearchState} />
+        <fieldset
+          className="metadata-lineage-controls"
+          disabled={metadataLineageState.kind === 'loading'}
+        >
+          <legend>Lineage bounds</legend>
+          <div className="field">
+            <label htmlFor="metadata-lineage-depth">Depth</label>
+            <select
+              id="metadata-lineage-depth"
+              value={metadataLineageDepth}
+              onChange={(event) => setMetadataLineageDepth(Number(event.target.value))}
+            >
+              <option value={1}>1 hop</option>
+              <option value={2}>2 hops</option>
+              <option value={3}>3 hops</option>
+              <option value={5}>5 hops</option>
+            </select>
+          </div>
+          <div className="field">
+            <label htmlFor="metadata-lineage-max-nodes">Node limit</label>
+            <select
+              id="metadata-lineage-max-nodes"
+              value={metadataLineageMaxNodes}
+              onChange={(event) => setMetadataLineageMaxNodes(Number(event.target.value))}
+            >
+              <option value={3}>3 nodes</option>
+              <option value={8}>8 nodes</option>
+              <option value={12}>12 nodes</option>
+              <option value={25}>25 nodes</option>
+            </select>
+          </div>
+        </fieldset>
+        <MetadataSearchResults
+          headingRef={metadataSearchHeading}
+          lineageLoading={metadataLineageState.kind === 'loading'}
+          onRequestLineage={(result, direction) => {
+            void requestMetadataLineage(result, direction);
+          }}
+          state={metadataSearchState}
+        />
+        <MetadataLineageResults headingRef={metadataLineageHeading} state={metadataLineageState} />
       </section>
 
       <section className="incident-panel" aria-labelledby="incident-heading">

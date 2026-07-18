@@ -1,7 +1,12 @@
 # Known issues
 
-Last updated: 2026-07-18.
+Last updated: 2026-07-19.
 
+- Slice 2.3 reproduced the managed `pnpm exec` workspace-binary resolution issue after a successful
+  frozen dependency bootstrap. Read-only probes confirmed devDependencies were installed; direct
+  project-local `.cmd` binaries passed formatter/lint/test execution. The generated `.pnpm-store` was
+  removed after all worktree runtime processes ended. This is an environment limitation, not a product
+  or CI blocker.
 - Exact `main` `54945b80a27685ce81e476173a3466e585f42112` exposes a test-only cleanup ownership
   race in PR #7 CI run `29651498475`, job `88098488706`: 36/37 tests passed, while the launcher
   integration test's post-cleanup rebind of an old OS-assigned port lost to another process with
@@ -27,11 +32,11 @@ Last updated: 2026-07-18.
   API removes existing incident IDs; durable persistence remains deferred.
 - Fixture mode currently contains only the canonical removed-schema-column scenario. Additional
   canonical scenarios and generic scenario selection remain deferred.
-- Slice 2.2 adds bounded entity search through deterministic fixtures and DataHub GraphQL
-  `searchAcrossEntities`. Entity selection/detail, live DataHub-backed incident orchestration, lineage,
-  recent changes, model reasoning, evaluation CLI, cross-browser automation, and public deployment
-  remain deferred to their planned slices. A live DataHub smoke is credential-gated and is not
-  required for fixture and local fake-provider validation.
+- Slice 2.3 adds bounded, cycle-safe lineage from entity-search results through deterministic fixtures
+  and DataHub GraphQL `searchAcrossLineage`. Live DataHub-backed incident orchestration, recent
+  changes, ownership/schema enrichment, impact scoring, model reasoning, evaluation CLI, cross-browser
+  automation, and public deployment remain deferred to their planned slices. A live DataHub smoke is
+  credential-gated and is not required for fixture and local fake-provider validation.
 - Stitch MCP configuration is tracked without a key. A rotated `STITCH_API_KEY` must be set in the Codex
   process environment on each machine, then Codex must reload the trusted project.
 - Stitch tools are not expected in the current task because project-scoped MCP configuration loads when

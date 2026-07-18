@@ -79,23 +79,59 @@ try {
   await page.goto(runtime.webUrl, { waitUntil: 'networkidle' });
   await page.getByRole('heading', { name: 'Fixture metadata' }).waitFor({ timeout: 2_000 });
   await page.getByText('Fixture metadata is ready.', { exact: true }).waitFor({ timeout: 2_000 });
-  await page.getByLabel('Metadata query').fill('revenue');
+  await page.getByLabel('Metadata query').fill('lineage demo root');
   await page.getByRole('button', { name: 'Search metadata' }).click();
   const searchResultsHeading = page
     .locator('.metadata-search-results')
     .getByRole('heading', { name: 'Search results' });
   await searchResultsHeading.waitFor({ timeout: 2_000 });
-  await page.getByText('2 metadata entities found.', { exact: true }).waitFor({ timeout: 2_000 });
+  await page.getByText('6 metadata entities found.', { exact: true }).waitFor({ timeout: 2_000 });
   const searchResultNames = await page
     .locator('.metadata-search-result-heading > strong')
     .allTextContents();
   if (
-    searchResultNames.join('|') !== 'analytics.daily_revenue|Revenue overview' ||
+    searchResultNames.join('|') !==
+      'Lineage demo chart|Lineage demo dashboard|lineage.demo.root|lineage.demo.upstream_raw|lineage.demo.upstream_stage|lineage.empty_source' ||
     !(await searchResultsHeading.evaluate(
       (element) => element === element.ownerDocument.activeElement,
     ))
   ) {
     fail('Fixture entity search did not render deterministic focused results.');
+  }
+
+  await page.getByLabel('Node limit').selectOption('3');
+  await page.getByRole('button', { name: 'View downstream lineage for lineage.demo.root' }).click();
+  const lineageHeading = page
+    .locator('.metadata-lineage-results')
+    .getByRole('heading', { name: 'Downstream lineage' });
+  await lineageHeading.waitFor({ timeout: 2_000 });
+  await page
+    .getByText('Truncated: increase a bounded control to inspect more reachable lineage.', {
+      exact: true,
+    })
+    .waitFor({ timeout: 2_000 });
+  const lineageGraph = await page.locator('.metadata-lineage-graph').evaluate((element) => {
+    const nodes = [...element.querySelectorAll('.metadata-lineage-node-list > li')].map((node) => ({
+      urn: node.querySelector('code')?.textContent ?? '',
+      root: node.getAttribute('data-lineage-root') === 'true',
+    }));
+    const edges = [...element.querySelectorAll('.metadata-lineage-edge-list > li')].map((edge) => {
+      const urns = [...edge.querySelectorAll('code')].map((code) => code.textContent ?? '');
+      return `${urns[0]}->${urns[1]}`;
+    });
+    return { nodes, edges };
+  });
+  if (
+    lineageGraph.nodes.length !== 3 ||
+    new Set(lineageGraph.nodes.map((node) => node.urn)).size !== 3 ||
+    lineageGraph.nodes.filter((node) => node.root).length !== 1 ||
+    !lineageGraph.edges.some((edge) => {
+      const [source, target] = edge.split('->');
+      return source === target;
+    }) ||
+    !(await lineageHeading.evaluate((element) => element === element.ownerDocument.activeElement))
+  ) {
+    fail('Fixture lineage did not render a unique focused bounded graph with cycle-safe evidence.');
   }
 
   await page.locator('#question').fill('Why did revenue drop today?');

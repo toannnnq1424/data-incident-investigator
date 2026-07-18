@@ -8,6 +8,8 @@ import {
   MetadataEntitySearchRequestSchema,
   MetadataEntitySearchResponseSchema,
   MetadataHealthResponseSchema,
+  MetadataLineageRequestSchema,
+  MetadataLineageResponseSchema,
 } from '../../packages/shared-types/src/index.js';
 
 describe('shared investigation contracts', () => {
@@ -127,6 +129,93 @@ describe('shared investigation contracts', () => {
       MetadataEntitySearchResponseSchema.safeParse({
         ...response,
         limit: 1,
+      }).success,
+    ).toBe(false);
+  });
+
+  it('defaults and strictly bounds metadata lineage requests without accepting provider queries', () => {
+    expect(
+      MetadataLineageRequestSchema.parse({
+        rootUrn: '  urn:li:dataset:lineage-root  ',
+        direction: 'upstream',
+      }),
+    ).toEqual({
+      rootUrn: 'urn:li:dataset:lineage-root',
+      direction: 'upstream',
+      depth: 2,
+      maxNodes: 8,
+    });
+
+    for (const request of [
+      { rootUrn: ' ', direction: 'upstream' },
+      { rootUrn: 'x'.repeat(1_001), direction: 'upstream' },
+      { rootUrn: 'urn:li:dataset:root', direction: 'both' },
+      { rootUrn: 'urn:li:dataset:root', direction: 'upstream', depth: 0 },
+      { rootUrn: 'urn:li:dataset:root', direction: 'upstream', depth: 6 },
+      { rootUrn: 'urn:li:dataset:root', direction: 'downstream', maxNodes: 0 },
+      { rootUrn: 'urn:li:dataset:root', direction: 'downstream', maxNodes: 26 },
+      { rootUrn: 'urn:li:dataset:root', direction: 'downstream', maxNodes: 1.5 },
+      { rootUrn: 'urn:li:dataset:root', direction: 'upstream', query: '{ rawGraphql }' },
+    ]) {
+      expect(MetadataLineageRequestSchema.safeParse(request).success).toBe(false);
+    }
+  });
+
+  it('requires one root, deterministic unique nodes and edges, and no dangling lineage edges', () => {
+    const response = {
+      rootUrn: 'urn:li:dataset:root',
+      direction: 'downstream',
+      requestedDepth: 2,
+      maxNodes: 3,
+      visitedNodeCount: 2,
+      truncated: false,
+      nodes: [
+        {
+          urn: 'urn:li:dataset:root',
+          kind: 'dataset',
+          name: 'Root',
+          depth: 0,
+        },
+        {
+          urn: 'urn:li:dashboard:child',
+          kind: 'dashboard',
+          name: 'Child',
+          depth: 1,
+        },
+      ],
+      edges: [
+        { sourceUrn: 'urn:li:dataset:root', targetUrn: 'urn:li:dashboard:child' },
+        { sourceUrn: 'urn:li:dataset:root', targetUrn: 'urn:li:dataset:root' },
+      ],
+    };
+
+    expect(MetadataLineageResponseSchema.safeParse(response).success).toBe(true);
+    expect(
+      MetadataLineageResponseSchema.safeParse({
+        ...response,
+        nodes: [...response.nodes, response.nodes[0]],
+        visitedNodeCount: 3,
+      }).success,
+    ).toBe(false);
+    expect(
+      MetadataLineageResponseSchema.safeParse({
+        ...response,
+        edges: [
+          ...response.edges,
+          { sourceUrn: 'urn:li:dataset:root', targetUrn: 'urn:li:dataset:missing' },
+        ],
+      }).success,
+    ).toBe(false);
+    expect(
+      MetadataLineageResponseSchema.safeParse({
+        ...response,
+        nodes: [...response.nodes].reverse(),
+      }).success,
+    ).toBe(false);
+    expect(
+      MetadataLineageResponseSchema.safeParse({
+        ...response,
+        edges: [...response.edges].reverse(),
       }).success,
     ).toBe(false);
   });

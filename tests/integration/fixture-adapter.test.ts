@@ -73,4 +73,80 @@ describe('fixture metadata adapter', () => {
 
     expect(matches.map((entity) => entity.name)).toEqual(['analytics.daily_revenue']);
   });
+
+  it('returns deterministic multi-depth and branching lineage while terminating cycles and self-loops', async () => {
+    const adapter = createFixtureMetadataAdapter();
+    const rootUrn = 'urn:li:dataset:(urn:li:dataPlatform:snowflake,lineage.demo.root,PROD)';
+
+    const upstream = await adapter.getLineageGraph({
+      rootUrn,
+      direction: 'upstream',
+      depth: 2,
+      maxNodes: 8,
+    });
+    const downstream = await adapter.getLineageGraph({
+      rootUrn,
+      direction: 'downstream',
+      depth: 2,
+      maxNodes: 8,
+    });
+
+    expect(upstream.nodes.map((node) => `${node.depth}:${node.name}`)).toContain(
+      '2:lineage.demo.upstream_raw',
+    );
+    expect(downstream.nodes.map((node) => node.name)).toEqual([
+      'lineage.demo.root',
+      'Lineage demo chart',
+      'Lineage demo dashboard',
+      'lineage.demo.upstream_stage',
+    ]);
+    expect(downstream.edges).toContainEqual({ sourceUrn: rootUrn, targetUrn: rootUrn });
+    expect(new Set(downstream.nodes.map((node) => node.urn)).size).toBe(downstream.nodes.length);
+    expect(new Set(downstream.edges.map((edge) => JSON.stringify(edge))).size).toBe(
+      downstream.edges.length,
+    );
+    expect(downstream.truncated).toBe(false);
+  });
+
+  it('reports empty, missing-root, depth-truncated, and node-truncated fixture lineage safely', async () => {
+    const adapter = createFixtureMetadataAdapter();
+    const rootUrn = 'urn:li:dataset:(urn:li:dataPlatform:snowflake,lineage.demo.root,PROD)';
+    const emptyUrn = 'urn:li:dataset:(urn:li:dataPlatform:snowflake,lineage.empty_source,PROD)';
+
+    const empty = await adapter.getLineageGraph({
+      rootUrn: emptyUrn,
+      direction: 'upstream',
+      depth: 2,
+      maxNodes: 8,
+    });
+    const depthTruncated = await adapter.getLineageGraph({
+      rootUrn,
+      direction: 'upstream',
+      depth: 1,
+      maxNodes: 8,
+    });
+    const nodeTruncated = await adapter.getLineageGraph({
+      rootUrn,
+      direction: 'downstream',
+      depth: 2,
+      maxNodes: 3,
+    });
+
+    expect(empty).toMatchObject({ visitedNodeCount: 1, truncated: false, edges: [] });
+    expect(depthTruncated.truncated).toBe(true);
+    expect(nodeTruncated).toMatchObject({ visitedNodeCount: 3, truncated: true });
+    expect(nodeTruncated.nodes.map((node) => node.name)).toEqual([
+      'lineage.demo.root',
+      'Lineage demo chart',
+      'Lineage demo dashboard',
+    ]);
+    await expect(
+      adapter.getLineageGraph({
+        rootUrn: 'urn:li:dataset:missing',
+        direction: 'upstream',
+        depth: 2,
+        maxNodes: 8,
+      }),
+    ).rejects.toMatchObject({ name: 'MetadataProviderError', status: 'not_found' });
+  });
 });
