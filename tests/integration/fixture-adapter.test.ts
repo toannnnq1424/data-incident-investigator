@@ -149,4 +149,83 @@ describe('fixture metadata adapter', () => {
       }),
     ).rejects.toMatchObject({ name: 'MetadataProviderError', status: 'not_found' });
   });
+
+  it('returns deterministic deduplicated recent changes with window and limit truncation', async () => {
+    const adapter = createFixtureMetadataAdapter();
+    const rootUrn = 'urn:li:dataset:(urn:li:dataPlatform:snowflake,lineage.demo.root,PROD)';
+
+    const full = await adapter.getRecentChangesForEntity({
+      entityUrn: rootUrn,
+      endTime: '2026-07-19T08:30:00.000Z',
+      windowHours: 168,
+      limit: 10,
+    });
+    const limited = await adapter.getRecentChangesForEntity({
+      entityUrn: rootUrn,
+      endTime: '2026-07-19T08:30:00.000Z',
+      windowHours: 168,
+      limit: 2,
+    });
+    const shortWindow = await adapter.getRecentChangesForEntity({
+      entityUrn: rootUrn,
+      endTime: '2026-07-19T08:30:00.000Z',
+      windowHours: 24,
+      limit: 10,
+    });
+
+    expect(full.changes.map((change) => change.id)).toEqual([
+      'change-root-owner',
+      'change-root-schema',
+      'change-root-tag',
+    ]);
+    expect(full.changes.map((change) => change.category)).toEqual(['ownership', 'schema', 'tag']);
+    expect(full.changes[1]).toMatchObject({
+      timestamp: '2026-07-19T07:45:00.000Z',
+      operation: 'modified',
+      field: 'gross_revenue',
+      source: 'fixture',
+    });
+    expect(full).toMatchObject({ returnedCount: 3, truncated: true });
+    expect(limited.changes.map((change) => change.id)).toEqual([
+      'change-root-owner',
+      'change-root-schema',
+    ]);
+    expect(limited).toMatchObject({ returnedCount: 2, truncated: true });
+    expect(shortWindow.changes.map((change) => change.id)).toEqual([
+      'change-root-owner',
+      'change-root-schema',
+    ]);
+    expect(shortWindow.truncated).toBe(true);
+  });
+
+  it('reports empty, missing-entity, and aborted fixture recent-change requests safely', async () => {
+    const adapter = createFixtureMetadataAdapter();
+    const emptyUrn = 'urn:li:dataset:(urn:li:dataPlatform:snowflake,lineage.empty_source,PROD)';
+    const empty = await adapter.getRecentChangesForEntity({
+      entityUrn: emptyUrn,
+      endTime: '2026-07-19T08:30:00.000Z',
+      windowHours: 168,
+      limit: 10,
+    });
+    expect(empty).toMatchObject({ returnedCount: 0, truncated: false, changes: [] });
+
+    await expect(
+      adapter.getRecentChangesForEntity({
+        entityUrn: 'urn:li:dataset:missing',
+        windowHours: 168,
+        limit: 10,
+      }),
+    ).rejects.toMatchObject({ name: 'MetadataProviderError', status: 'not_found' });
+
+    const controller = new AbortController();
+    controller.abort();
+    await expect(
+      adapter.getRecentChangesForEntity({
+        entityUrn: emptyUrn,
+        windowHours: 168,
+        limit: 10,
+        signal: controller.signal,
+      }),
+    ).rejects.toMatchObject({ name: 'MetadataProviderError', status: 'timeout' });
+  });
 });

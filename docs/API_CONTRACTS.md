@@ -217,6 +217,93 @@ HTTP failures, refusal, timeout, invalid/non-JSON responses, GraphQL errors, mis
 and malformed results normalize before the API boundary. Raw provider payloads, URL, token,
 Authorization header, GraphQL error text, exceptions, and stack traces are never returned or logged.
 
+### `POST /metadata/recent-changes`
+
+The browser calls `/api/metadata/recent-changes`; direct API clients use
+`/metadata/recent-changes`. The strict request accepts one stable entity URN, an optional canonical UTC
+end time, and bounded integer controls. `windowHours` defaults to `168` (seven days) and is capped at
+`720` (30 days); `limit` defaults to `10` and is capped at `20`. Unknown fields are rejected, so a
+client cannot supply GraphQL, raw provider filters, or a provider cursor.
+
+Request:
+
+```json
+{
+  "entityUrn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,lineage.demo.root,PROD)",
+  "windowHours": 168,
+  "limit": 3
+}
+```
+
+Response `200`:
+
+```json
+{
+  "entityUrn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,lineage.demo.root,PROD)",
+  "window": {
+    "startTime": "2026-07-12T08:30:00.000Z",
+    "endTime": "2026-07-19T08:30:00.000Z",
+    "hours": 168
+  },
+  "limit": 3,
+  "returnedCount": 3,
+  "truncated": true,
+  "changes": [
+    {
+      "id": "change-root-owner",
+      "entityUrn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,lineage.demo.root,PROD)",
+      "timestamp": "2026-07-19T07:45:00.000Z",
+      "category": "ownership",
+      "operation": "modified",
+      "actor": "Fixture steward",
+      "source": "fixture",
+      "summary": "Ownership was updated for lineage.demo.root."
+    }
+  ]
+}
+```
+
+Change IDs are stable and unique. Timestamps are canonical UTC, every row matches the requested entity
+and accepted window, and rows are ordered newest-first with ID as the stable same-timestamp tie-break.
+Categories and operations are allowlisted; the optional `field` contains a bounded field/aspect label.
+`returnedCount` equals the list length. `truncated` is true when the selected window, accepted limit, or
+the documented provider transaction cap omits history. No synthetic cursor is exposed because the
+official DataHub timeline GraphQL input has no page/cursor semantics.
+
+An entity with no recorded history in the selected window returns `changes: []`, `returnedCount: 0`,
+and `truncated: false` when no older/provider-capped history was observed. A missing entity returns HTTP
+`404` with the existing `NOT_FOUND` envelope. Invalid requests return HTTP `400` with
+`VALIDATION_ERROR` and message `The metadata recent-changes request is invalid.` Other provider failures
+use the existing safe metadata mapping:
+
+| Provider status    | HTTP | Error code                  |
+| ------------------ | ---- | --------------------------- |
+| `unconfigured`     | 503  | `METADATA_UNCONFIGURED`     |
+| `unauthorized`     | 502  | `METADATA_UNAUTHORIZED`     |
+| `unavailable`      | 503  | `METADATA_UNAVAILABLE`      |
+| `timeout`          | 504  | `METADATA_TIMEOUT`          |
+| `invalid_response` | 502  | `METADATA_INVALID_RESPONSE` |
+
+Fixture mode uses the fixed fixture snapshot time, returns multiple categories with deterministic
+same-timestamp ordering/dedup, and never reads `DATAHUB_GMS_URL`, `DATAHUB_TOKEN`, Stitch, an LLM, or
+another credential. The canonical incident change remains unchanged.
+
+DataHub mode sends exactly one Bearer-authenticated GraphQL request to `/api/graphql` using official
+`getTimeline(input: GetTimelineInput!)` semantics and checks `entity(urn:)` in the same request to
+distinguish a missing entity. The official input accepts only `urn` and optional categories; it exposes
+no time range, count, page token, or cursor. The resolver uses `DEFAULT_MAX_CHANGE_TRANSACTIONS = 100`,
+so the client applies the accepted time/count bounds locally and marks a full 100-transaction response
+as truncated. This follows the official
+[`timeline.graphql` schema](https://github.com/datahub-project/datahub/blob/master/datahub-graphql-core/src/main/resources/timeline.graphql),
+official web-client
+[`timeline.graphql` query](https://github.com/datahub-project/datahub/blob/master/datahub-web-react/src/graphql/timeline.graphql),
+official
+[`GetTimelineResolver`](https://github.com/datahub-project/datahub/blob/master/datahub-graphql-core/src/main/java/com/linkedin/datahub/graphql/resolvers/timeline/GetTimelineResolver.java),
+and official
+[`TimelineService`](https://github.com/datahub-project/datahub/blob/master/metadata-service/services/src/main/java/com/linkedin/metadata/timeline/TimelineService.java).
+There is one total timeout/AbortSignal, no retry or fan-out, and no raw actor URN, provider description,
+payload, token, URL, header, GraphQL error, exception, or stack trace crosses the client boundary.
+
 ### `POST /incidents`
 
 The browser calls `/api/incidents`; the Vite development proxy removes `/api` before forwarding to

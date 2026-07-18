@@ -9,12 +9,14 @@ import {
 import {
   createDataHubHealthClient,
   createDataHubLineageClient,
+  createDataHubRecentChangesClient,
   createDataHubSearchClient,
   createFixtureMetadataAdapter,
   MetadataProviderError,
   type MetadataAdapter,
   type MetadataHealthProvider,
   type MetadataLineageProvider,
+  type MetadataRecentChangesProvider,
   type MetadataSearchProvider,
 } from '@dii/datahub-client';
 import {
@@ -27,6 +29,8 @@ import {
   MetadataHealthResponseSchema,
   MetadataLineageRequestSchema,
   MetadataLineageResponseSchema,
+  MetadataRecentChangesRequestSchema,
+  MetadataRecentChangesResponseSchema,
   MetadataSourceModeSchema,
   type InvestigationReport,
   type MetadataHealthResponse,
@@ -40,6 +44,7 @@ interface BuildServerOptions {
   metadata?: MetadataAdapter;
   metadataHealth?: MetadataHealthProvider;
   metadataLineage?: MetadataLineageProvider;
+  metadataRecentChanges?: MetadataRecentChangesProvider;
   metadataSearch?: MetadataSearchProvider;
   mode?: MetadataSourceMode;
   runner?: InvestigationRunner;
@@ -135,6 +140,39 @@ const metadataLineageFailures = {
   },
 } as const;
 
+const metadataRecentChangesFailures = {
+  unconfigured: {
+    code: 'METADATA_UNCONFIGURED',
+    httpStatus: 503,
+    message: 'Metadata recent changes are not configured. Check the metadata source settings.',
+  },
+  unauthorized: {
+    code: 'METADATA_UNAUTHORIZED',
+    httpStatus: 502,
+    message: 'Metadata recent-changes authorization failed. Check the configured access token.',
+  },
+  unavailable: {
+    code: 'METADATA_UNAVAILABLE',
+    httpStatus: 503,
+    message: 'Metadata recent changes are unavailable. Check the service and network connection.',
+  },
+  timeout: {
+    code: 'METADATA_TIMEOUT',
+    httpStatus: 504,
+    message: 'Metadata recent changes timed out. Try again shortly.',
+  },
+  invalid_response: {
+    code: 'METADATA_INVALID_RESPONSE',
+    httpStatus: 502,
+    message: 'Metadata recent changes returned an unexpected response.',
+  },
+  not_found: {
+    code: 'NOT_FOUND',
+    httpStatus: 404,
+    message: 'The requested metadata entity was not found.',
+  },
+} as const;
+
 export function buildServer(options: BuildServerOptions = {}) {
   const server = Fastify({ logger: options.logger ?? true });
   const environment = options.environment ?? process.env;
@@ -161,6 +199,14 @@ export function buildServer(options: BuildServerOptions = {}) {
     (mode === 'fixture'
       ? metadata
       : createDataHubLineageClient({
+          gmsUrl: environment.DATAHUB_GMS_URL,
+          token: environment.DATAHUB_TOKEN,
+        }));
+  const metadataRecentChanges =
+    options.metadataRecentChanges ??
+    (mode === 'fixture'
+      ? metadata
+      : createDataHubRecentChangesClient({
           gmsUrl: environment.DATAHUB_GMS_URL,
           token: environment.DATAHUB_TOKEN,
         }));
@@ -289,6 +335,64 @@ export function buildServer(options: BuildServerOptions = {}) {
       const status = error instanceof MetadataProviderError ? error.status : 'unavailable';
       const failure = metadataLineageFailures[status];
       server.log.warn({ mode, status }, 'Metadata lineage failed');
+      return reply.code(failure.httpStatus).send(
+        ApiErrorSchema.parse({
+          error: {
+            code: failure.code,
+            message: failure.message,
+          },
+        }),
+      );
+    }
+  });
+
+  server.post('/metadata/recent-changes', async (request, reply) => {
+    const parsedRequest = MetadataRecentChangesRequestSchema.safeParse(request.body);
+    if (!parsedRequest.success) {
+      return reply.code(400).send(
+        ApiErrorSchema.parse({
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: 'The metadata recent-changes request is invalid.',
+            issues: parsedRequest.error.issues.map((issue) => ({
+              path: issue.path.map(String).join('.') || 'request',
+              message: issue.message,
+            })),
+          },
+        }),
+      );
+    }
+
+    try {
+      const recentChanges = await metadataRecentChanges.getRecentChangesForEntity(
+        parsedRequest.data,
+      );
+      const parsedResponse = MetadataRecentChangesResponseSchema.safeParse(recentChanges);
+      if (
+        !parsedResponse.success ||
+        parsedResponse.data.entityUrn !== parsedRequest.data.entityUrn ||
+        parsedResponse.data.window.hours !== parsedRequest.data.windowHours ||
+        parsedResponse.data.limit !== parsedRequest.data.limit ||
+        (parsedRequest.data.endTime &&
+          parsedResponse.data.window.endTime !== parsedRequest.data.endTime)
+      ) {
+        throw new MetadataProviderError('invalid_response');
+      }
+
+      server.log.info(
+        {
+          mode,
+          returnedCount: parsedResponse.data.returnedCount,
+          truncated: parsedResponse.data.truncated,
+          windowHours: parsedResponse.data.window.hours,
+        },
+        'Metadata recent changes completed',
+      );
+      return reply.code(200).send(parsedResponse.data);
+    } catch (error) {
+      const status = error instanceof MetadataProviderError ? error.status : 'unavailable';
+      const failure = metadataRecentChangesFailures[status];
+      server.log.warn({ mode, status }, 'Metadata recent changes failed');
       return reply.code(failure.httpStatus).send(
         ApiErrorSchema.parse({
           error: {

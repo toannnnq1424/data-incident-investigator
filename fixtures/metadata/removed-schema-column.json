@@ -1,5 +1,6 @@
 {
   "scenarioId": "removed-schema-column",
+  "snapshotAt": "2026-07-19T08:30:00.000Z",
   "defaultSeedUrn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,analytics.daily_revenue,PROD)",
   "entities": [
     {
@@ -110,8 +111,59 @@
       "id": "change-removed-gross-revenue",
       "entityUrn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,raw.orders,PROD)",
       "category": "schema",
+      "operation": "removed",
       "observedAt": "2026-07-18T07:45:00.000Z",
-      "summary": "Column gross_revenue was removed from raw.orders."
+      "summary": "Column gross_revenue was removed from raw.orders.",
+      "actor": "Fixture ingestion",
+      "field": "gross_revenue"
+    },
+    {
+      "id": "change-root-owner",
+      "entityUrn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,lineage.demo.root,PROD)",
+      "category": "ownership",
+      "operation": "modified",
+      "observedAt": "2026-07-19T07:45:00.000Z",
+      "summary": "Ownership was updated for lineage.demo.root.",
+      "actor": "Fixture steward"
+    },
+    {
+      "id": "change-root-schema",
+      "entityUrn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,lineage.demo.root,PROD)",
+      "category": "schema",
+      "operation": "modified",
+      "observedAt": "2026-07-19T07:45:00.000Z",
+      "summary": "Field gross_revenue changed type on lineage.demo.root.",
+      "actor": "Fixture ingestion",
+      "field": "gross_revenue"
+    },
+    {
+      "id": "change-root-schema",
+      "entityUrn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,lineage.demo.root,PROD)",
+      "category": "schema",
+      "operation": "modified",
+      "observedAt": "2026-07-19T07:45:00.000Z",
+      "summary": "Field gross_revenue changed type on lineage.demo.root.",
+      "actor": "Fixture ingestion",
+      "field": "gross_revenue"
+    },
+    {
+      "id": "change-root-tag",
+      "entityUrn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,lineage.demo.root,PROD)",
+      "category": "tag",
+      "operation": "added",
+      "observedAt": "2026-07-18T06:00:00.000Z",
+      "summary": "The certified tag was added to lineage.demo.root.",
+      "actor": "Fixture steward",
+      "field": "certified"
+    },
+    {
+      "id": "change-root-documentation-old",
+      "entityUrn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,lineage.demo.root,PROD)",
+      "category": "documentation",
+      "operation": "modified",
+      "observedAt": "2026-07-10T08:00:00.000Z",
+      "summary": "Documentation was refreshed for lineage.demo.root.",
+      "actor": "Fixture steward"
     }
   ]
 }

@@ -10,6 +10,8 @@ import {
   MetadataHealthResponseSchema,
   MetadataLineageRequestSchema,
   MetadataLineageResponseSchema,
+  MetadataRecentChangesRequestSchema,
+  MetadataRecentChangesResponseSchema,
 } from '../../packages/shared-types/src/index.js';
 
 describe('shared investigation contracts', () => {
@@ -216,6 +218,112 @@ describe('shared investigation contracts', () => {
       MetadataLineageResponseSchema.safeParse({
         ...response,
         edges: [...response.edges].reverse(),
+      }).success,
+    ).toBe(false);
+  });
+
+  it('defaults and strictly bounds recent-change requests without provider queries', () => {
+    expect(
+      MetadataRecentChangesRequestSchema.parse({
+        entityUrn: '  urn:li:dataset:recent-root  ',
+      }),
+    ).toEqual({
+      entityUrn: 'urn:li:dataset:recent-root',
+      windowHours: 168,
+      limit: 10,
+    });
+
+    for (const request of [
+      { entityUrn: ' ' },
+      { entityUrn: 'x'.repeat(1_001) },
+      { entityUrn: 'urn:li:dataset:root', endTime: '2026-07-19T08:30:00Z' },
+      { entityUrn: 'urn:li:dataset:root', windowHours: 0 },
+      { entityUrn: 'urn:li:dataset:root', windowHours: 721 },
+      { entityUrn: 'urn:li:dataset:root', limit: 0 },
+      { entityUrn: 'urn:li:dataset:root', limit: 21 },
+      { entityUrn: 'urn:li:dataset:root', limit: 1.5 },
+      { entityUrn: 'urn:li:dataset:root', query: '{ rawGraphql }' },
+    ]) {
+      expect(MetadataRecentChangesRequestSchema.safeParse(request).success).toBe(false);
+    }
+  });
+
+  it('requires canonical UTC, unique newest-first recent changes inside the echoed window', () => {
+    const response = {
+      entityUrn: 'urn:li:dataset:root',
+      window: {
+        startTime: '2026-07-12T08:30:00.000Z',
+        endTime: '2026-07-19T08:30:00.000Z',
+        hours: 168,
+      },
+      limit: 3,
+      returnedCount: 3,
+      truncated: true,
+      changes: [
+        {
+          id: 'change-owner',
+          entityUrn: 'urn:li:dataset:root',
+          timestamp: '2026-07-19T07:45:00.000Z',
+          category: 'ownership',
+          operation: 'modified',
+          actor: 'DataHub user',
+          source: 'datahub',
+          summary: 'Ownership modified.',
+        },
+        {
+          id: 'change-schema',
+          entityUrn: 'urn:li:dataset:root',
+          timestamp: '2026-07-19T07:45:00.000Z',
+          category: 'schema',
+          operation: 'modified',
+          source: 'datahub',
+          summary: 'Schema modified: gross_revenue.',
+          field: 'gross_revenue',
+        },
+        {
+          id: 'change-tag',
+          entityUrn: 'urn:li:dataset:root',
+          timestamp: '2026-07-18T06:00:00.000Z',
+          category: 'tag',
+          operation: 'added',
+          source: 'datahub',
+          summary: 'Tag added: certified.',
+          field: 'certified',
+        },
+      ],
+    };
+
+    expect(MetadataRecentChangesResponseSchema.safeParse(response).success).toBe(true);
+    expect(
+      MetadataRecentChangesResponseSchema.safeParse({
+        ...response,
+        changes: [response.changes[1], response.changes[0], response.changes[2]],
+      }).success,
+    ).toBe(false);
+    expect(
+      MetadataRecentChangesResponseSchema.safeParse({
+        ...response,
+        changes: [response.changes[0], response.changes[0], response.changes[2]],
+      }).success,
+    ).toBe(false);
+    expect(
+      MetadataRecentChangesResponseSchema.safeParse({
+        ...response,
+        changes: [
+          response.changes[0],
+          response.changes[1],
+          { ...response.changes[2], entityUrn: 'urn:li:dataset:other' },
+        ],
+      }).success,
+    ).toBe(false);
+    expect(
+      MetadataRecentChangesResponseSchema.safeParse({
+        ...response,
+        changes: [
+          response.changes[0],
+          response.changes[1],
+          { ...response.changes[2], timestamp: '2026-07-11T06:00:00.000Z' },
+        ],
       }).success,
     ).toBe(false);
   });
