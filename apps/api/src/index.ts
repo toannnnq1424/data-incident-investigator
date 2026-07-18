@@ -1,8 +1,12 @@
 import { randomUUID } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 import {
+  DEFAULT_INCIDENT_CONTEXT_LIMITS,
+  DeterministicIncidentContextGatherer,
   DeterministicInvestigationRunner,
   FIXTURE_INVESTIGATION_LIMITS,
+  type IncidentContextGatherer,
+  type IncidentContextGatheringLimits,
   type InvestigationLimits,
   type InvestigationRunner,
 } from '@dii/agent-core';
@@ -22,6 +26,7 @@ import {
 import {
   ApiErrorSchema,
   IncidentAcceptedResponseSchema,
+  IncidentContextStageSchema,
   IncidentRequestSchema,
   IncidentRetrievalResponseSchema,
   MetadataEntitySearchRequestSchema,
@@ -32,6 +37,7 @@ import {
   MetadataRecentChangesRequestSchema,
   MetadataRecentChangesResponseSchema,
   MetadataSourceModeSchema,
+  type IncidentContextStage,
   type InvestigationReport,
   type MetadataHealthResponse,
   type MetadataSourceMode,
@@ -47,13 +53,15 @@ interface BuildServerOptions {
   metadataRecentChanges?: MetadataRecentChangesProvider;
   metadataSearch?: MetadataSearchProvider;
   mode?: MetadataSourceMode;
+  contextGatherer?: IncidentContextGatherer;
+  contextLimits?: IncidentContextGatheringLimits;
   runner?: InvestigationRunner;
   limits?: InvestigationLimits;
 }
 
 type StoredIncident =
-  | { status: 'processing' }
-  | { status: 'completed'; report: InvestigationReport }
+  | { status: 'processing'; contextStage: IncidentContextStage }
+  | { status: 'completed'; contextStage: IncidentContextStage; report: InvestigationReport }
   | { status: 'failed' };
 
 const fixtureProcessingDelayMs = 250;
@@ -173,6 +181,51 @@ const metadataRecentChangesFailures = {
   },
 } as const;
 
+const incidentContextFailures = {
+  unconfigured: {
+    code: 'METADATA_UNCONFIGURED',
+    message: 'Incident context metadata is not configured.',
+  },
+  unauthorized: {
+    code: 'METADATA_UNAUTHORIZED',
+    message: 'Incident context metadata authorization failed.',
+  },
+  unavailable: {
+    code: 'METADATA_UNAVAILABLE',
+    message: 'Incident context metadata is unavailable.',
+  },
+  timeout: {
+    code: 'METADATA_TIMEOUT',
+    message: 'Incident context gathering timed out.',
+  },
+  invalid_response: {
+    code: 'METADATA_INVALID_RESPONSE',
+    message: 'Incident context metadata returned an unexpected response.',
+  },
+  not_found: {
+    code: 'METADATA_INVALID_RESPONSE',
+    message: 'An incident context entity could not be resolved.',
+  },
+} as const;
+
+function failedIncidentContext(error: unknown): IncidentContextStage {
+  if (error instanceof MetadataProviderError) {
+    const failure = incidentContextFailures[error.status];
+    return IncidentContextStageSchema.parse({
+      status: 'failed',
+      error: failure,
+    });
+  }
+
+  return IncidentContextStageSchema.parse({
+    status: 'failed',
+    error: {
+      code: 'INTERNAL_ERROR',
+      message: 'Incident context could not be gathered.',
+    },
+  });
+}
+
 export function buildServer(options: BuildServerOptions = {}) {
   const server = Fastify({ logger: options.logger ?? true });
   const environment = options.environment ?? process.env;
@@ -210,6 +263,15 @@ export function buildServer(options: BuildServerOptions = {}) {
           gmsUrl: environment.DATAHUB_GMS_URL,
           token: environment.DATAHUB_TOKEN,
         }));
+  const contextGatherer = options.contextGatherer ?? new DeterministicIncidentContextGatherer();
+  const contextLimits = options.contextLimits ?? DEFAULT_INCIDENT_CONTEXT_LIMITS;
+  const contextMetadata = {
+    healthCheck: metadataHealth.healthCheck.bind(metadataHealth),
+    searchEntities: metadataSearch.searchEntities.bind(metadataSearch),
+    getLineageGraph: metadataLineage.getLineageGraph.bind(metadataLineage),
+    getRecentChangesForEntity:
+      metadataRecentChanges.getRecentChangesForEntity.bind(metadataRecentChanges),
+  };
   const runner = options.runner ?? new DeterministicInvestigationRunner();
   const limits = options.limits ?? FIXTURE_INVESTIGATION_LIMITS;
   const incidents = new Map<string, StoredIncident>();
@@ -426,21 +488,57 @@ export function buildServer(options: BuildServerOptions = {}) {
       incidentId: randomUUID(),
       status: 'processing',
     });
-    incidents.set(response.incidentId, { status: 'processing' });
-    server.log.info(
-      { incidentId: response.incidentId, mode: 'fixture' },
-      'Fixture investigation accepted',
-    );
+    incidents.set(response.incidentId, {
+      status: 'processing',
+      contextStage: IncidentContextStageSchema.parse({ status: 'gathering' }),
+    });
+    server.log.info({ incidentId: response.incidentId, mode }, 'Investigation accepted');
 
     setTimeout(() => {
-      void runner
-        .investigate(parsedRequest.data, {
-          incidentId: response.incidentId,
-          metadata,
-          limits,
-        })
-        .then((report) => {
-          incidents.set(response.incidentId, { status: 'completed', report });
+      void (async () => {
+        let contextStage: IncidentContextStage;
+        try {
+          contextStage = await contextGatherer.gather(parsedRequest.data, {
+            metadata: contextMetadata,
+            mode,
+            limits: contextLimits,
+          });
+          incidents.set(response.incidentId, { status: 'processing', contextStage });
+          server.log.info(
+            {
+              incidentId: response.incidentId,
+              mode,
+              candidateCount: contextStage.facts.candidateEntities.length,
+              lineageNodeCount: contextStage.facts.lineage?.nodes.length ?? 0,
+              recentChangeCount: contextStage.facts.recentChanges.reduce(
+                (count, recentChanges) => count + recentChanges.returnedCount,
+                0,
+              ),
+              missingInformationCount: contextStage.missingInformation.length,
+            },
+            'Incident context gathered',
+          );
+        } catch (error: unknown) {
+          contextStage = failedIncidentContext(error);
+          incidents.set(response.incidentId, { status: 'processing', contextStage });
+          server.log.warn(
+            {
+              incidentId: response.incidentId,
+              mode,
+              contextErrorCode:
+                contextStage.status === 'failed' ? contextStage.error.code : 'INTERNAL_ERROR',
+            },
+            'Incident context gathering failed',
+          );
+        }
+
+        try {
+          const report = await runner.investigate(parsedRequest.data, {
+            incidentId: response.incidentId,
+            metadata,
+            limits,
+          });
+          incidents.set(response.incidentId, { status: 'completed', contextStage, report });
           server.log.info(
             {
               incidentId: response.incidentId,
@@ -449,8 +547,7 @@ export function buildServer(options: BuildServerOptions = {}) {
             },
             'Fixture investigation completed',
           );
-        })
-        .catch((error: unknown) => {
+        } catch (error: unknown) {
           incidents.set(response.incidentId, { status: 'failed' });
           server.log.error(
             {
@@ -459,7 +556,8 @@ export function buildServer(options: BuildServerOptions = {}) {
             },
             'Fixture investigation failed',
           );
-        });
+        }
+      })();
     }, fixtureProcessingDelayMs);
 
     return reply.code(202).send(response);
@@ -493,15 +591,18 @@ export function buildServer(options: BuildServerOptions = {}) {
         );
       }
 
-      return reply
-        .code(200)
-        .send(
-          IncidentRetrievalResponseSchema.parse(
-            incident.status === 'completed'
-              ? { incidentId, status: 'completed', report: incident.report }
-              : { incidentId, status: 'processing' },
-          ),
-        );
+      return reply.code(200).send(
+        IncidentRetrievalResponseSchema.parse(
+          incident.status === 'completed'
+            ? {
+                incidentId,
+                status: 'completed',
+                contextStage: incident.contextStage,
+                report: incident.report,
+              }
+            : { incidentId, status: 'processing', contextStage: incident.contextStage },
+        ),
+      );
     },
   );
 

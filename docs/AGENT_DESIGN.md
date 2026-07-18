@@ -12,6 +12,33 @@
 8. Build an evidence chain and remediation steps.
 9. Validate the structured report before returning it.
 
+## Slice 3.1 parse-and-gather boundary
+
+Slice 3.1 implements stages 1-4 as one bounded, deterministic facts-only boundary. It does not run
+stages 5-8. The boundary:
+
+1. validates the strict incident request and normalizes whitespace, optional entity hints, optional
+   symptoms, and a seven-day time-window intent;
+2. checks provider health once and searches once, using the supplied entity hint when present or the
+   normalized question otherwise;
+3. selects only the first deterministically ordered adapter result, preserving its exact URN and safe
+   display fields;
+4. retrieves one upstream lineage graph and one recent-change window for the first returned upstream
+   entity (or the selected root when no upstream entity exists); and
+5. returns parsed intent, provider-normalized facts, and explicit missing information through the
+   shared `IncidentContextStageSchema`.
+
+The default execution permits at most five candidates, five lineage nodes at depth two, three
+recent-change entity with ten changes, four total provider calls, and one two-second
+timeout/AbortSignal. The hard shared provider caps remain authoritative. There is no retry, recursive
+fan-out, LLM, Stitch call, fallback seed, causal statement, hypothesis, score, evidence-chain synthesis,
+or remediation in this stage.
+
+The API composes fixture or DataHub health/search/lineage/recent-change providers behind the same
+agent-core interface. A provider failure becomes a safe failed context stage while the canonical
+legacy fixture report can still complete for compatibility. Logs contain incident ID, mode, bounded
+counts, and normalized error code only; incident question and symptom text are not logged.
+
 ## Tool and provider rules
 
 - No invented URNs, owners, schemas, or pipelines.

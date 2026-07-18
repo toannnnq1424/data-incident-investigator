@@ -9,6 +9,7 @@ import {
   type EntityRef,
   type Evidence,
   IncidentAcceptedResponseSchema,
+  type IncidentContextStage,
   IncidentRequestSchema,
   IncidentRetrievalResponseSchema,
   type IncidentAcceptedResponse,
@@ -28,6 +29,7 @@ import {
 } from '@dii/shared-types';
 
 type CompletedIncident = Extract<IncidentRetrievalResponse, { status: 'completed' }>;
+type ProcessingIncident = Extract<IncidentRetrievalResponse, { status: 'processing' }>;
 type ReportInference = CompletedIncident['report']['hypotheses'][number] & {
   confidenceLabel: string;
 };
@@ -35,7 +37,7 @@ type ReportInference = CompletedIncident['report']['hypotheses'][number] & {
 type SubmissionState =
   | { kind: 'idle' }
   | { kind: 'submitting' }
-  | { kind: 'processing'; incident: IncidentAcceptedResponse }
+  | { kind: 'processing'; incident: ProcessingIncident }
   | { kind: 'completed'; incident: CompletedIncident }
   | { kind: 'validation-error'; message: string }
   | { kind: 'api-error'; message: string };
@@ -572,6 +574,180 @@ export function getCompletedReportContent(incident: CompletedIncident) {
   };
 }
 
+export function getIncidentContextPresentation(stage: IncidentContextStage) {
+  if (stage.status === 'gathering') {
+    return {
+      heading: 'Gathering investigation context',
+      message: 'Parsing the intake and retrieving bounded metadata facts…',
+      tone: 'loading' as const,
+    };
+  }
+
+  if (stage.status === 'failed') {
+    return {
+      heading: 'Context gathering failed',
+      message: stage.error.message,
+      tone: 'error' as const,
+    };
+  }
+
+  if (!stage.facts.selectedEntity) {
+    return {
+      heading: 'Context gathered with missing information',
+      message: 'The intake was parsed, but no adapter-evidenced entity candidate was returned.',
+      tone: 'missing' as const,
+    };
+  }
+
+  return {
+    heading:
+      stage.missingInformation.length > 0
+        ? 'Context gathered with bounded gaps'
+        : 'Investigation context gathered',
+    message: `${stage.facts.candidateEntities.length} candidate entities and ${stage.facts.recentChanges.reduce(
+      (count, recentChanges) => count + recentChanges.returnedCount,
+      0,
+    )} recent metadata changes were retrieved as facts.`,
+    tone: stage.missingInformation.length > 0 ? ('missing' as const) : ('success' as const),
+  };
+}
+
+function IncidentContextStage({ stage }: { stage: IncidentContextStage }) {
+  const presentation = getIncidentContextPresentation(stage);
+
+  return (
+    <section
+      className={`incident-context-stage context-${presentation.tone}`}
+      aria-labelledby="incident-context-heading"
+      data-context-status={stage.status}
+    >
+      <p className="report-label">Parse and gather · facts only</p>
+      <h3 id="incident-context-heading" tabIndex={-1}>
+        {presentation.heading}
+      </h3>
+      <p>{presentation.message}</p>
+
+      {stage.status === 'failed' && (
+        <p className="incident-context-error" role="alert">
+          <code>{stage.error.code}</code>
+        </p>
+      )}
+
+      {stage.status === 'completed' && (
+        <div className="incident-context-content">
+          <section aria-labelledby="parsed-intent-heading">
+            <h4 id="parsed-intent-heading">Parsed incident intent</h4>
+            <dl className="incident-context-intent">
+              <div>
+                <dt>Question</dt>
+                <dd>{stage.intent.question}</dd>
+              </div>
+              <div>
+                <dt>Entity hints</dt>
+                <dd>{stage.intent.entityHints.join(', ') || 'Not supplied'}</dd>
+              </div>
+              <div>
+                <dt>Symptoms</dt>
+                <dd>{stage.intent.symptoms.join(', ') || 'Not supplied'}</dd>
+              </div>
+              <div>
+                <dt>Context window</dt>
+                <dd>
+                  {stage.intent.timeWindow.hours} hours ·{' '}
+                  {stage.intent.timeWindow.endTime ?? 'metadata source default end'}
+                </dd>
+              </div>
+            </dl>
+          </section>
+
+          <section aria-labelledby="candidate-entities-heading">
+            <h4 id="candidate-entities-heading">Candidate entities</h4>
+            {stage.facts.candidateEntities.length === 0 ? (
+              <EmptyState message="No adapter-evidenced candidate entity was returned." />
+            ) : (
+              <ul className="incident-context-entity-list">
+                {stage.facts.candidateEntities.map((candidate) => (
+                  <li
+                    key={candidate.urn}
+                    data-selected={candidate.urn === stage.facts.selectedEntity?.urn}
+                  >
+                    <span>{candidate.kind}</span>
+                    <strong>{candidate.name}</strong>
+                    <code>{candidate.urn}</code>
+                    {candidate.urn === stage.facts.selectedEntity?.urn && <em>Selected</em>}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
+          <section aria-labelledby="gathered-facts-heading">
+            <h4 id="gathered-facts-heading">Gathered metadata facts</h4>
+            {!stage.facts.lineage ? (
+              <EmptyState message="No lineage facts were requested without a selected entity." />
+            ) : (
+              <>
+                <p>
+                  Source: <strong>{stage.facts.sourceMode}</strong> · upstream lineage nodes:{' '}
+                  {stage.facts.lineage.visitedNodeCount}
+                  {stage.facts.lineage.truncated ? ' · truncated' : ''}
+                </p>
+                <ul className="incident-context-fact-list">
+                  {stage.facts.lineage.nodes.map((node) => (
+                    <li key={node.urn}>
+                      <span>Lineage depth {node.depth}</span>
+                      <strong>{node.name}</strong>
+                      <code>{node.urn}</code>
+                    </li>
+                  ))}
+                  {stage.facts.recentChanges.flatMap((recentChanges) =>
+                    recentChanges.changes.map((change) => (
+                      <li
+                        key={`${recentChanges.entityUrn}:${change.id}`}
+                        data-context-fact-id={change.id}
+                      >
+                        <span>
+                          {change.category} · {change.operation}
+                        </span>
+                        <strong>{change.summary}</strong>
+                        <code>{change.id}</code>
+                        <time dateTime={change.timestamp}>
+                          {formatObservedAt(change.timestamp)}
+                        </time>
+                      </li>
+                    )),
+                  )}
+                </ul>
+              </>
+            )}
+          </section>
+
+          <section aria-labelledby="context-missing-information-heading">
+            <h4 id="context-missing-information-heading">Context missing information</h4>
+            {stage.missingInformation.length === 0 ? (
+              <EmptyState message="No bounded context gaps were recorded." />
+            ) : (
+              <ul className="incident-context-missing-list">
+                {stage.missingInformation.map((item) => (
+                  <li key={item.code}>
+                    <code>{item.code}</code>
+                    <span>{item.message}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
+          <p className="incident-context-boundary">
+            This stage contains retrieved facts and missing information only. It does not claim a
+            root cause.
+          </p>
+        </div>
+      )}
+    </section>
+  );
+}
+
 function EmptyState({ message }: { message: string }) {
   return <p className="empty-state">{message}</p>;
 }
@@ -688,11 +864,12 @@ function TextList({ items, emptyMessage }: { items: string[]; emptyMessage: stri
   );
 }
 
-function ProcessingStatus({ incident }: { incident: IncidentAcceptedResponse }) {
+function ProcessingStatus({ incident }: { incident: ProcessingIncident }) {
   return (
     <div className="status-progress processing-status" role="status">
       <p>Investigation processing</p>
       <span>{incident.incidentId}</span>
+      <IncidentContextStage stage={incident.contextStage} />
       <EmptyState message="Report details will appear after fixture evidence is gathered." />
     </div>
   );
@@ -714,6 +891,7 @@ export function CompletedReport({ incident }: { incident: CompletedIncident }) {
           <dd>{content.status}</dd>
         </div>
       </dl>
+      <IncidentContextStage stage={incident.contextStage} />
       <section className="report-summary" aria-labelledby="report-summary-heading">
         <p className="report-label">Incident report</p>
         <h3 id="report-summary-heading">Summary</h3>
@@ -805,12 +983,14 @@ export function App() {
   const metadataSearchAbort = useRef<AbortController | null>(null);
   const metadataLineageAbort = useRef<AbortController | null>(null);
   const metadataRecentChangesAbort = useRef<AbortController | null>(null);
+  const incidentAbort = useRef<AbortController | null>(null);
   const metadataSearchHeading = useRef<HTMLHeadingElement>(null);
   const metadataLineageHeading = useRef<HTMLHeadingElement>(null);
   const metadataRecentChangesHeading = useRef<HTMLHeadingElement>(null);
   const metadataSearchGuard = useRef(createLatestRequestGuard());
   const metadataLineageGuard = useRef(createLatestRequestGuard());
   const metadataRecentChangesGuard = useRef(createLatestRequestGuard());
+  const incidentRequestGuard = useRef(createLatestRequestGuard());
 
   useEffect(() => {
     const controller = new AbortController();
@@ -845,6 +1025,7 @@ export function App() {
       metadataSearchAbort.current?.abort();
       metadataLineageAbort.current?.abort();
       metadataRecentChangesAbort.current?.abort();
+      incidentAbort.current?.abort();
     },
     [],
   );
@@ -1064,10 +1245,22 @@ export function App() {
     }
   }
 
-  async function retrieveIncident(acceptedIncident: IncidentAcceptedResponse) {
+  async function retrieveIncident(
+    acceptedIncident: IncidentAcceptedResponse,
+    requestId: number,
+    controller: AbortController,
+  ) {
     for (let attempt = 0; attempt < retrievalAttempts; attempt += 1) {
-      const response = await fetch(`${apiBaseUrl}/incidents/${acceptedIncident.incidentId}`);
+      if (controller.signal.aborted || !incidentRequestGuard.current.isCurrent(requestId)) {
+        return;
+      }
+      const response = await fetch(`${apiBaseUrl}/incidents/${acceptedIncident.incidentId}`, {
+        signal: controller.signal,
+      });
       const body: unknown = await response.json();
+      if (!incidentRequestGuard.current.isCurrent(requestId)) {
+        return;
+      }
 
       if (!response.ok) {
         const parsedError = ApiErrorSchema.safeParse(body);
@@ -1094,18 +1287,24 @@ export function App() {
         return;
       }
 
-      setState({ kind: 'processing', incident: acceptedIncident });
+      setState({ kind: 'processing', incident: parsedIncident.data });
       await delay(retrievalDelayMs);
     }
 
-    setState({
-      kind: 'api-error',
-      message: 'The investigation is still processing. Try again shortly.',
-    });
+    if (incidentRequestGuard.current.isCurrent(requestId)) {
+      setState({
+        kind: 'api-error',
+        message: 'The investigation is still processing. Try again shortly.',
+      });
+    }
   }
 
   async function submitIncident(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    incidentAbort.current?.abort();
+    const requestId = incidentRequestGuard.current.begin();
+    const controller = new AbortController();
+    incidentAbort.current = controller;
 
     let occurredAtIso: string | undefined;
     if (occurredAt) {
@@ -1142,8 +1341,12 @@ export function App() {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify(parsedRequest.data),
+        signal: controller.signal,
       });
       const body: unknown = await response.json();
+      if (!incidentRequestGuard.current.isCurrent(requestId)) {
+        return;
+      }
 
       if (!response.ok) {
         const parsedError = ApiErrorSchema.safeParse(body);
@@ -1165,13 +1368,21 @@ export function App() {
         return;
       }
 
-      setState({ kind: 'processing', incident: parsedResponse.data });
-      await retrieveIncident(parsedResponse.data);
-    } catch {
       setState({
-        kind: 'api-error',
-        message: 'The investigation service is unavailable. Try again shortly.',
+        kind: 'processing',
+        incident: {
+          ...parsedResponse.data,
+          contextStage: { status: 'gathering' },
+        },
       });
+      await retrieveIncident(parsedResponse.data, requestId, controller);
+    } catch {
+      if (!controller.signal.aborted && incidentRequestGuard.current.isCurrent(requestId)) {
+        setState({
+          kind: 'api-error',
+          message: 'The investigation service is unavailable. Try again shortly.',
+        });
+      }
     }
   }
 

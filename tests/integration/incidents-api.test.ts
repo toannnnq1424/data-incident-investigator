@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import canonicalIncident from '../../fixtures/incidents/removed-schema-column.json';
 import { buildServer } from '../../apps/api/src/index.js';
+import { MetadataProviderError } from '../../packages/datahub-client/src/index.js';
 import {
   IncidentRequestSchema,
   IncidentRetrievalResponseSchema,
@@ -75,6 +76,16 @@ describe('incident API', () => {
       ),
       status: 'processing',
     });
+
+    const retrieval = await server.inject({
+      method: 'GET',
+      url: `/incidents/${response.json<{ incidentId: string }>().incidentId}`,
+    });
+    expect(retrieval.statusCode).toBe(200);
+    expect(IncidentRetrievalResponseSchema.parse(retrieval.json())).toMatchObject({
+      status: 'processing',
+      contextStage: { status: 'gathering' },
+    });
   });
 
   it('retrieves the completed schema-valid canonical report', async () => {
@@ -90,8 +101,153 @@ describe('incident API', () => {
     const completed = await waitForCompleted(server, incidentId);
 
     expect(completed.incidentId).toBe(incidentId);
+    expect(completed.contextStage.status).toBe('completed');
+    if (completed.contextStage.status !== 'completed') {
+      throw new Error('Expected completed fixture context.');
+    }
+    expect(completed.contextStage.facts.selectedEntity?.name).toBe('analytics.daily_revenue');
+    expect(
+      completed.contextStage.facts.recentChanges.flatMap((response) =>
+        response.changes.map((change) => change.id),
+      ),
+    ).toContain('change-removed-gross-revenue');
+    expect(completed.contextStage).not.toHaveProperty('hypotheses');
     expect(completed.report.incidentId).toBe(incidentId);
     expect(completed.report.hypotheses[0]?.evidenceIds).toContain('change-removed-gross-revenue');
+  });
+
+  it('uses the same provider-neutral context contracts in DataHub mode', async () => {
+    const selectedEntity = {
+      urn: 'urn:li:dataset:(urn:li:dataPlatform:snowflake,analytics.daily_revenue,PROD)',
+      kind: 'dataset' as const,
+      name: 'analytics.daily_revenue',
+    };
+    const server = buildServer({
+      logger: false,
+      mode: 'datahub',
+      metadataHealth: {
+        async healthCheck() {
+          return { status: 'ready', message: 'DataHub metadata is ready.' };
+        },
+      },
+      metadataSearch: {
+        async searchEntities() {
+          return [selectedEntity];
+        },
+      },
+      metadataLineage: {
+        async getLineageGraph(options) {
+          return {
+            rootUrn: options.rootUrn,
+            direction: options.direction,
+            requestedDepth: options.depth,
+            maxNodes: options.maxNodes,
+            visitedNodeCount: 1,
+            truncated: false,
+            nodes: [{ ...selectedEntity, depth: 0 }],
+            edges: [],
+          };
+        },
+      },
+      metadataRecentChanges: {
+        async getRecentChangesForEntity(options) {
+          const endTime = options.endTime ?? '2026-07-18T08:30:00.000Z';
+          const startTime = new Date(
+            Date.parse(endTime) - options.windowHours * 60 * 60 * 1_000,
+          ).toISOString();
+          return {
+            entityUrn: options.entityUrn,
+            window: { startTime, endTime, hours: options.windowHours },
+            limit: options.limit,
+            returnedCount: 0,
+            truncated: false,
+            changes: [],
+          };
+        },
+      },
+    });
+    servers.push(server);
+    const accepted = await server.inject({
+      method: 'POST',
+      url: '/incidents',
+      payload: IncidentRequestSchema.parse(canonicalIncident.request),
+    });
+
+    const completed = await waitForCompleted(
+      server,
+      accepted.json<{ incidentId: string }>().incidentId,
+    );
+
+    expect(completed.contextStage).toMatchObject({
+      status: 'completed',
+      facts: {
+        sourceMode: 'datahub',
+        selectedEntity,
+      },
+    });
+  });
+
+  it('returns a safe context-stage timeout without exposing provider errors or breaking the report', async () => {
+    const server = buildServer({
+      logger: false,
+      metadataSearch: {
+        async searchEntities() {
+          throw new MetadataProviderError('timeout');
+        },
+      },
+    });
+    servers.push(server);
+    const accepted = await server.inject({
+      method: 'POST',
+      url: '/incidents',
+      payload: IncidentRequestSchema.parse(canonicalIncident.request),
+    });
+
+    const completed = await waitForCompleted(
+      server,
+      accepted.json<{ incidentId: string }>().incidentId,
+    );
+
+    expect(completed.contextStage).toEqual({
+      status: 'failed',
+      error: {
+        code: 'METADATA_TIMEOUT',
+        message: 'Incident context gathering timed out.',
+      },
+    });
+    expect(JSON.stringify(completed.contextStage)).not.toContain('MetadataProviderError');
+    expect(completed.report.hypotheses).toHaveLength(1);
+  });
+
+  it('normalizes malformed provider context responses without leaking raw details', async () => {
+    const server = buildServer({
+      logger: false,
+      metadataSearch: {
+        async searchEntities() {
+          return [{ urn: 'urn:provider:invalid', name: 'Invalid', kind: 'unknown' }] as never;
+        },
+      },
+    });
+    servers.push(server);
+    const accepted = await server.inject({
+      method: 'POST',
+      url: '/incidents',
+      payload: IncidentRequestSchema.parse(canonicalIncident.request),
+    });
+
+    const completed = await waitForCompleted(
+      server,
+      accepted.json<{ incidentId: string }>().incidentId,
+    );
+
+    expect(completed.contextStage).toEqual({
+      status: 'failed',
+      error: {
+        code: 'METADATA_INVALID_RESPONSE',
+        message: 'Incident context metadata returned an unexpected response.',
+      },
+    });
+    expect(JSON.stringify(completed.contextStage)).not.toContain('urn:provider:invalid');
   });
 
   it('returns the stable not-found error for an unknown incident', async () => {

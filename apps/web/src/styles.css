@@ -759,11 +759,11 @@ button:disabled {
   gap: 0.35rem;
 }
 
-.processing-status p {
+.processing-status > p {
   font-weight: 800;
 }
 
-.processing-status span {
+.processing-status > span {
   overflow-wrap: anywhere;
   color: #8ba1a8;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
@@ -789,6 +789,130 @@ button:disabled {
   margin-bottom: 0.8rem;
   color: #94eddf;
   font-weight: 800;
+}
+
+.incident-context-stage {
+  display: grid;
+  gap: 0.8rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid #294149;
+  border-radius: 0.8rem;
+  background: #091f24;
+}
+
+.incident-context-stage > p,
+.incident-context-stage h3,
+.incident-context-stage h4 {
+  margin: 0;
+}
+
+.incident-context-stage h3 {
+  color: #eefafa;
+  font-size: 1.15rem;
+}
+
+.incident-context-stage h4 {
+  color: #9ceade;
+  font-size: 0.82rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.context-loading,
+.context-success {
+  border-color: #2f6b65;
+}
+
+.context-missing {
+  border-color: #826c37;
+}
+
+.context-error {
+  border-color: #824a4a;
+  background: #351b20;
+}
+
+.incident-context-error code {
+  color: #ffd4d4;
+}
+
+.incident-context-content {
+  display: grid;
+  gap: 1rem;
+}
+
+.incident-context-content > section {
+  display: grid;
+  gap: 0.65rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid #243d44;
+}
+
+.incident-context-intent {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.incident-context-entity-list,
+.incident-context-fact-list,
+.incident-context-missing-list {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.incident-context-entity-list li,
+.incident-context-fact-list li,
+.incident-context-missing-list li {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+  padding: 0.75rem;
+  border: 1px solid #1d3a40;
+  border-radius: 0.6rem;
+  background: #0b2429;
+}
+
+.incident-context-entity-list li[data-selected='true'] {
+  border-color: #4f9e93;
+}
+
+.incident-context-entity-list span,
+.incident-context-fact-list span {
+  color: #9ceade;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.incident-context-entity-list code,
+.incident-context-fact-list code,
+.incident-context-missing-list code {
+  overflow-wrap: anywhere;
+}
+
+.incident-context-entity-list em {
+  width: fit-content;
+  color: #94eddf;
+  font-size: 0.78rem;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.incident-context-fact-list time {
+  color: #8ba1a8;
+  font-size: 0.78rem;
+}
+
+.incident-context-missing-list li {
+  grid-template-columns: minmax(10rem, max-content) minmax(0, 1fr);
+}
+
+.incident-context-boundary {
+  color: #b6c8cc;
+  font-size: 0.86rem;
 }
 
 .report-summary {
@@ -1009,6 +1133,8 @@ dd {
   .metadata-search-result-list,
   .metadata-lineage-node-list,
   .metadata-recent-change-list,
+  .incident-context-intent,
+  .incident-context-missing-list,
   dl {
     grid-template-columns: 1fr;
   }

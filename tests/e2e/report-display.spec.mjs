@@ -181,12 +181,52 @@ try {
 
   await page.locator('#question').fill('Why did revenue drop today?');
   await page.locator('#entity-hint').fill('analytics.daily_revenue');
-  await page.locator('#occurred-at').fill('2026-07-18T08:30');
+  await page.locator('#occurred-at').fill('2026-07-18T15:30');
   await page.locator('#symptom').fill('Revenue is 42% below the seven-day baseline.');
   await page.getByRole('button', { name: 'Start investigation' }).click();
 
   await page.getByText('Investigation processing').waitFor({ timeout: 2_000 });
+  await page
+    .getByRole('heading', { name: 'Gathering investigation context' })
+    .waitFor({ timeout: 2_000 });
   await page.getByText('Investigation completed').waitFor({ timeout: 5_000 });
+
+  const contextStage = page.locator('.incident-context-stage');
+  await contextStage
+    .getByRole('heading', { name: 'Investigation context gathered' })
+    .waitFor({ timeout: 2_000 });
+  await contextStage
+    .getByRole('heading', { name: 'Parsed incident intent' })
+    .waitFor({ timeout: 2_000 });
+  await contextStage
+    .getByRole('heading', { name: 'Candidate entities' })
+    .waitFor({ timeout: 2_000 });
+  await contextStage
+    .getByRole('heading', { name: 'Gathered metadata facts' })
+    .waitFor({ timeout: 2_000 });
+  await contextStage
+    .getByRole('heading', { name: 'Context missing information' })
+    .waitFor({ timeout: 2_000 });
+  const selectedContextEntities = await contextStage
+    .locator('.incident-context-entity-list > li[data-selected="true"]')
+    .allTextContents();
+  const contextFactIds = await contextStage
+    .locator('.incident-context-fact-list [data-context-fact-id]')
+    .evaluateAll((rows) => rows.map((row) => row.getAttribute('data-context-fact-id')));
+  const contextText = await contextStage.innerText();
+  if (
+    selectedContextEntities.length !== 1 ||
+    !selectedContextEntities[0]?.includes('analytics.daily_revenue') ||
+    !contextFactIds.includes('change-removed-gross-revenue') ||
+    !contextText.includes('Why did revenue drop today?') ||
+    !contextText.includes('Revenue is 42% below the seven-day baseline.') ||
+    !contextText.includes('raw.orders') ||
+    !contextText.includes('No bounded context gaps were recorded.') ||
+    contextText.match(/\d+% confidence/i) ||
+    (await contextStage.locator('time[datetime]').count()) < 1
+  ) {
+    fail('Incident parse/gather context did not render bounded adapter facts accessibly.');
+  }
 
   const reportText = await page.locator('body').innerText();
   assertText(reportText, /Related entities/i, 'related entities section');

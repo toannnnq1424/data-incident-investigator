@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   ApiErrorSchema,
+  INCIDENT_CONTEXT_DEFAULT_WINDOW_HOURS,
+  IncidentContextCompletedStageSchema,
+  IncidentContextFactsSchema,
+  IncidentIntentSchema,
   IncidentAcceptedResponseSchema,
   IncidentRequestSchema,
   IncidentRetrievalResponseSchema,
@@ -30,6 +34,69 @@ describe('shared investigation contracts', () => {
     });
 
     expect(response.status).toBe('processing');
+  });
+
+  it('applies normalized incident-intent defaults and enforces hard bounds', () => {
+    const intent = IncidentIntentSchema.parse({
+      question: 'Why did revenue drop?',
+      entityHints: ['analytics.daily_revenue'],
+      symptoms: [],
+      timeWindow: { basis: 'provider_default' },
+    });
+
+    expect(intent.timeWindow.hours).toBe(INCIDENT_CONTEXT_DEFAULT_WINDOW_HOURS);
+    expect(
+      IncidentIntentSchema.safeParse({
+        ...intent,
+        entityHints: ['one', 'two', 'three', 'four'],
+      }).success,
+    ).toBe(false);
+    expect(
+      IncidentIntentSchema.safeParse({
+        ...intent,
+        timeWindow: { basis: 'provider_default', hours: 721 },
+      }).success,
+    ).toBe(false);
+    expect(
+      IncidentRequestSchema.safeParse({
+        question: 'Why did revenue drop?',
+        providerQuery: '{ rawGraphQL }',
+      }).success,
+    ).toBe(false);
+  });
+
+  it('requires selected and gathered entity facts to resolve to adapter evidence', () => {
+    const candidate = {
+      urn: 'urn:li:dataset:analytics.revenue',
+      kind: 'dataset' as const,
+      name: 'analytics.revenue',
+    };
+
+    expect(
+      IncidentContextFactsSchema.safeParse({
+        sourceMode: 'fixture',
+        candidateEntities: [candidate],
+        selectedEntity: { ...candidate, urn: 'urn:li:dataset:invented' },
+        recentChanges: [],
+      }).success,
+    ).toBe(false);
+    expect(
+      IncidentContextCompletedStageSchema.safeParse({
+        status: 'completed',
+        intent: {
+          question: 'Why did revenue drop?',
+          entityHints: [],
+          symptoms: [],
+          timeWindow: { basis: 'provider_default' },
+        },
+        facts: {
+          sourceMode: 'fixture',
+          candidateEntities: [],
+          recentChanges: [],
+        },
+        missingInformation: [],
+      }).success,
+    ).toBe(false);
   });
 
   it('accepts the stable validation error envelope', () => {
@@ -354,6 +421,26 @@ describe('shared investigation contracts', () => {
     const result = IncidentRetrievalResponseSchema.safeParse({
       incidentId: 'ba4ec0e8-da23-4f34-a3c7-9f25c44da800',
       status: 'completed',
+      contextStage: {
+        status: 'completed',
+        intent: {
+          question: 'Why did revenue drop?',
+          entityHints: [],
+          symptoms: [],
+          timeWindow: { basis: 'provider_default' },
+        },
+        facts: {
+          sourceMode: 'fixture',
+          candidateEntities: [],
+          recentChanges: [],
+        },
+        missingInformation: [
+          {
+            code: 'entity_not_found',
+            message: 'No adapter-evidenced entity was returned.',
+          },
+        ],
+      },
       report: {
         incidentId: 'ba4ec0e8-da23-4f34-a3c7-9f25c44da800',
         summary: 'A removed source column is the strongest inference.',

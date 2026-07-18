@@ -1276,6 +1276,125 @@ changes. Completion requires fixture and DataHub adapters to run through unchang
 
 ## Phase 3 — Agent reasoning
 
+### Slice 3.1 — Parse incident and gather context
+
+Status: Level C passed locally on `codex/phase-3-1-parse-gather-20260719-e7b053c` from exact Phase 2
+closure merge commit `e7b053c83a5792ed75afa8731bd4f751b4ee7a1a`.
+
+Objective: after an incident is submitted, expose a deterministic, schema-validated investigation
+context stage that normalizes the incident question plus optional entity/time/symptom, selects only
+adapter-evidenced candidate entities, and gathers bounded lineage and recent metadata facts. Preserve
+the canonical processing/completed report flow without adding or changing hypothesis generation,
+scoring, evidence-chain synthesis, remediation, or a generic controller.
+
+Minimum files:
+
+- `packages/shared-types/src/index.ts` and `tests/integration/contracts.test.ts` for strict normalized
+  intent, context-stage, retrieved-fact, missing-information, safe-failure, and retrieval schemas with
+  small defaults and hard bounds.
+- `packages/agent-core/src/index.ts` and a focused context-gatherer test for deterministic parsing,
+  entity-hint/question search, adapter-evidenced selection, bounded health/search/lineage/recent-change
+  calls, one total timeout/AbortSignal, partial factual context, and no hypotheses.
+- `apps/api/src/index.ts` and `tests/integration/incidents-api.test.ts` for fixture/DataHub provider
+  composition through the existing internal health/search/lineage/recent-change contracts, additive
+  `contextStage` lifecycle responses, safe provider errors, and sanitized structured logs.
+- `apps/web/src/App.tsx`, `apps/web/src/styles.css`, and a focused context-presentation test for compact
+  semantic loading/success/missing/error output, stable request ownership, and accessible headings,
+  lists, status, and fact references.
+- `tests/e2e/report-display.spec.mjs` for exactly one combined fixture flow that proves parse/gather
+  context before the unchanged completed report assertions.
+- `docs/AGENT_DESIGN.md`, `docs/API_CONTRACTS.md`, `docs/DATA_MODEL.md`,
+  `docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md`, and `docs/SESSION_LOG.md` for the durable
+  contract, validation evidence, deferred work, and exact next slice. `docs/REPOSITORY_MAP.md` remains
+  unchanged unless implementation adds or moves a structural entrypoint.
+
+Acceptance criteria:
+
+- Incident input remains strict and bounded. The normalized intent trims/collapses user text,
+  canonicalizes a supplied incident time to UTC, applies the shared seven-day context-window default,
+  and preserves optional entity hints and symptoms only within explicit array/text caps.
+- The gatherer performs at most one health check, one bounded entity search, one bounded lineage
+  request, and one bounded recent-change request under one total timeout and AbortSignal. It has no
+  retry, recursive fan-out, client-supplied provider query, model, Stitch, or credential dependency.
+- Entity-hint input is the primary search term; a no-hint request uses the normalized question. A
+  fallback entity is never invented: every candidate and selected entity contains the exact adapter
+  URN, the selected entity is one returned candidate, and lineage/change facts validate against that
+  selected URN and the shared provider-neutral contracts.
+- A no-match search returns completed factual context with no selected entity and explicit missing
+  information, without lineage or recent-change calls. Empty/truncated lineage or recent changes are
+  represented as retrieved facts plus explicit missing information, not inference or root cause.
+- Fixture behavior is deterministic and does not read DataHub, Stitch, LLM, or another credential.
+  DataHub mode composes the existing health/search/lineage/recent-change provider contracts and leaks
+  no DataHub type, payload, URL, token, Authorization header, raw error, question, or symptom into
+  public errors or structured logs.
+- `POST /incidents` remains HTTP `202` with the canonical UUID/`processing` body. Retrieval exposes
+  additive `contextStage: gathering | completed | failed`; a normalized safe context failure can
+  coexist with the preserved legacy completed report, and unknown incidents keep the stable 404.
+- The web displays parsed intent, candidate and selected entity references, gathered lineage/recent-
+  change facts, truncation, and missing information in a semantic context stage. Loading, completed,
+  missing, safe-error, and stale-response behavior are covered without presenting any new hypothesis,
+  confidence, causal claim, or remediation in this stage.
+- Changed-file formatting, affected lint/typechecks, targeted unit/integration tests, all five affected
+  builds, and exactly one combined browser flow pass. Secret/generated/diff/worktree review is clean.
+
+Validation result on the Windows managed worktree, 2026-07-19:
+
+- The tracked bootstrap ran first. Windows execution policy blocked the direct `.ps1` invocation; a
+  process-scoped `-ExecutionPolicy Bypass` retry installed all 259 frozen packages and passed the
+  supply-chain check in `23.9s`, then reproduced the known fallback-pnpm failure to resolve root
+  Prettier. Loading the verified bundled Node, exact pnpm fallback, and root `.bin` paths for the
+  current process resolved repository tools without a script, manifest, or lockfile change.
+- The scoped formatter write completed in about `2s`; affected ESLint passed in about `2s`. All five
+  affected typechecks passed in one parallel sequence of about `2s` wall: shared-types,
+  datahub-client, agent-core, API, and web.
+- Sandboxed targeted Vitest stopped before test execution because esbuild could not read managed-worktree
+  ancestor metadata. The exact scoped retry after the final bounded-call correction ran seven files and
+  all `40/40` tests passed in about `3.50s` Vitest time. Coverage includes schema defaults/hard bounds,
+  deterministic parse, hint/no-hint/no-match selection, no invented entity, six-step call bounds,
+  one total timeout, fixture credential independence, DataHub provider composition, safe context
+  errors, API lifecycle/schema, UI loading/success/missing/error/stale ownership, and report
+  compatibility.
+- The affected build command passed all five production builds on the scoped retry; web transformed 109
+  modules and built in about `5.41s`.
+- Exactly one final `pnpm test:e2e:report` selected API `http://127.0.0.1:58373` and web
+  `http://127.0.0.1:58374`, then passed the combined fixture metadata search -> bounded lineage ->
+  recent changes -> incident submit -> context gathering -> parsed intent/candidate/selected URN ->
+  upstream and recent-change facts -> explicit missing-information section -> processing -> completed
+  canonical report in `6750ms`. It retained resolved evidence references, semantic headings/time,
+  stale-safe ownership coverage in the focused test, clean console, responsive overflow,
+  under-three-minute duration, selected-port release, and launcher cleanup.
+- Level D and live DataHub smoke were intentionally not run. Final changed-file formatting and the
+  secret/conflict/generated/diff/worktree review follow documentation finalization before the single
+  conventional commit.
+
+Deferred: suspicious-change detection is the exact next Phase 3 slice. Impact analysis, correlation,
+hypothesis generation/scoring, evidence-chain synthesis, remediation, fallback reasoning, additional
+providers, live credential smoke, authentication, persistence, model integration, dependency changes,
+and Level D validation remain out of scope.
+
+Exact Level C commands (run as one coherent sequence after implementation; rerun only classified
+affected failures):
+
+- `pnpm exec prettier --write packages/shared-types/src/index.ts packages/agent-core/src/index.ts apps/api/src/index.ts apps/web/src/App.tsx apps/web/src/styles.css tests/integration/contracts.test.ts tests/integration/incident-context-gatherer.test.ts tests/integration/incidents-api.test.ts tests/integration/web-incident-context.test.ts tests/integration/web-report.test.ts tests/e2e/report-display.spec.mjs docs/AGENT_DESIGN.md docs/API_CONTRACTS.md docs/DATA_MODEL.md docs/IMPLEMENTATION_PLAN.md docs/KNOWN_ISSUES.md docs/SESSION_LOG.md`
+- `pnpm exec prettier --check packages/shared-types/src/index.ts packages/agent-core/src/index.ts apps/api/src/index.ts apps/web/src/App.tsx apps/web/src/styles.css tests/integration/contracts.test.ts tests/integration/incident-context-gatherer.test.ts tests/integration/incidents-api.test.ts tests/integration/web-incident-context.test.ts tests/integration/web-report.test.ts tests/e2e/report-display.spec.mjs docs/AGENT_DESIGN.md docs/API_CONTRACTS.md docs/DATA_MODEL.md docs/IMPLEMENTATION_PLAN.md docs/KNOWN_ISSUES.md docs/SESSION_LOG.md`
+- `pnpm exec eslint packages/shared-types/src packages/agent-core/src apps/api/src apps/web/src tests/integration/contracts.test.ts tests/integration/incident-context-gatherer.test.ts tests/integration/investigation-runner.test.ts tests/integration/incidents-api.test.ts tests/integration/web-incident-context.test.ts tests/integration/web-report.test.ts tests/e2e/report-display.spec.mjs`
+- `pnpm --filter @dii/shared-types typecheck`
+- `pnpm --filter @dii/datahub-client typecheck`
+- `pnpm --filter @dii/agent-core typecheck`
+- `pnpm --filter @dii/api typecheck`
+- `pnpm --filter @dii/web typecheck`
+- `pnpm exec vitest run tests/integration/contracts.test.ts tests/integration/fixture-adapter.test.ts tests/integration/incident-context-gatherer.test.ts tests/integration/investigation-runner.test.ts tests/integration/incidents-api.test.ts tests/integration/web-incident-context.test.ts tests/integration/web-report.test.ts`
+- `pnpm --filter @dii/shared-types --filter @dii/datahub-client --filter @dii/agent-core --filter @dii/api --filter @dii/web build`
+- Exactly one `pnpm test:e2e:report` run proving fixture metadata readiness -> search -> bounded lineage
+  -> recent changes -> incident submit -> context gathering -> parsed intent/candidates/selected entity/
+  gathered facts/missing information -> processing -> completed/full canonical report, with clean
+  console, accessibility/focus, responsive overflow, three-minute bound, selected-port release, and
+  launcher cleanup.
+- `git diff --check`, tracked-plus-untracked secret/conflict/generated-artifact scans, changed-file and
+  full scoped diff review, `git diff --stat`, `git diff --name-status`, ancestry review, and
+  `git status --short --branch` before the single conventional commit; only final status is repeated
+  after commit/push.
+
 Slices: parse and gather; suspicious-change detection; evidence-linked hypothesis scoring; remediation
 and fallback. Completion requires fact/inference/missing-information separation and deterministic limits.
 

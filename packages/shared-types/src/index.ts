@@ -416,12 +416,217 @@ export const MetadataRecentChangesResponseSchema = z
     });
   });
 
-export const IncidentRequestSchema = z.object({
-  question: z.string().trim().min(3).max(2_000),
-  entityHint: z.string().trim().min(1).max(500).optional(),
-  occurredAt: z.iso.datetime().optional(),
-  symptom: z.string().trim().min(1).max(2_000).optional(),
-});
+export const INCIDENT_CONTEXT_DEFAULT_WINDOW_HOURS = METADATA_RECENT_CHANGES_DEFAULT_WINDOW_HOURS;
+export const INCIDENT_CONTEXT_MAX_ENTITY_HINTS = 3;
+export const INCIDENT_CONTEXT_MAX_SYMPTOMS = 3;
+export const INCIDENT_CONTEXT_MAX_CANDIDATES = 5;
+export const INCIDENT_CONTEXT_MAX_CHANGE_ENTITIES = 1;
+export const INCIDENT_CONTEXT_MAX_MISSING_INFORMATION = 10;
+
+export const IncidentRequestSchema = z
+  .object({
+    question: z.string().trim().min(3).max(2_000),
+    entityHint: z.string().trim().min(2).max(500).optional(),
+    occurredAt: z.iso.datetime({ offset: true }).optional(),
+    symptom: z.string().trim().min(1).max(2_000).optional(),
+  })
+  .strict();
+
+export const IncidentIntentSchema = z
+  .object({
+    question: z.string().trim().min(3).max(2_000),
+    entityHints: z.array(z.string().trim().min(2).max(500)).max(INCIDENT_CONTEXT_MAX_ENTITY_HINTS),
+    symptoms: z.array(z.string().trim().min(1).max(2_000)).max(INCIDENT_CONTEXT_MAX_SYMPTOMS),
+    timeWindow: z
+      .object({
+        endTime: CanonicalUtcTimestampSchema.optional(),
+        hours: z
+          .number()
+          .int()
+          .min(1)
+          .max(METADATA_RECENT_CHANGES_MAX_WINDOW_HOURS)
+          .default(INCIDENT_CONTEXT_DEFAULT_WINDOW_HOURS),
+        basis: z.enum(['incident_time', 'provider_default']),
+      })
+      .strict(),
+  })
+  .strict()
+  .superRefine((intent, context) => {
+    if (intent.timeWindow.basis === 'incident_time' && !intent.timeWindow.endTime) {
+      context.addIssue({
+        code: 'custom',
+        message: 'An incident-time window requires a canonical end time.',
+        path: ['timeWindow', 'endTime'],
+      });
+    }
+    if (intent.timeWindow.basis === 'provider_default' && intent.timeWindow.endTime) {
+      context.addIssue({
+        code: 'custom',
+        message: 'A provider-default window cannot declare an incident end time.',
+        path: ['timeWindow', 'endTime'],
+      });
+    }
+  });
+
+export const IncidentContextMissingInformationCodeSchema = z.enum([
+  'entity_hint_not_supplied',
+  'incident_time_not_supplied',
+  'symptom_not_supplied',
+  'entity_not_found',
+  'lineage_not_found',
+  'lineage_truncated',
+  'recent_changes_not_found',
+  'recent_changes_truncated',
+]);
+
+export const IncidentContextMissingInformationSchema = z
+  .object({
+    code: IncidentContextMissingInformationCodeSchema,
+    message: z.string().trim().min(1).max(300),
+  })
+  .strict();
+
+export const IncidentContextFactsSchema = z
+  .object({
+    sourceMode: MetadataSourceModeSchema,
+    candidateEntities: z
+      .array(MetadataEntitySearchResultSchema)
+      .max(INCIDENT_CONTEXT_MAX_CANDIDATES),
+    selectedEntity: MetadataEntitySearchResultSchema.optional(),
+    lineage: MetadataLineageResponseSchema.optional(),
+    recentChanges: z
+      .array(MetadataRecentChangesResponseSchema)
+      .max(INCIDENT_CONTEXT_MAX_CHANGE_ENTITIES),
+  })
+  .strict()
+  .superRefine((facts, context) => {
+    const candidateUrns = new Set<string>();
+    facts.candidateEntities.forEach((candidate, index) => {
+      if (candidateUrns.has(candidate.urn)) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Incident context candidate URNs must be unique.',
+          path: ['candidateEntities', index, 'urn'],
+        });
+      }
+      candidateUrns.add(candidate.urn);
+    });
+
+    if (facts.candidateEntities.length > 0 && !facts.selectedEntity) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Incident context with candidates requires one selected entity.',
+        path: ['selectedEntity'],
+      });
+    }
+    if (facts.selectedEntity) {
+      const matchingCandidate = facts.candidateEntities.find(
+        (candidate) => candidate.urn === facts.selectedEntity?.urn,
+      );
+      if (
+        !matchingCandidate ||
+        JSON.stringify(matchingCandidate) !== JSON.stringify(facts.selectedEntity)
+      ) {
+        context.addIssue({
+          code: 'custom',
+          message: 'The selected entity must exactly match one retrieved candidate.',
+          path: ['selectedEntity'],
+        });
+      }
+    }
+    if (!facts.selectedEntity && (facts.lineage || facts.recentChanges.length > 0)) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Lineage and recent-change facts require an adapter-selected entity.',
+        path: ['selectedEntity'],
+      });
+    }
+    if (facts.lineage && facts.lineage.rootUrn !== facts.selectedEntity?.urn) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Lineage facts must use the selected entity as their root.',
+        path: ['lineage', 'rootUrn'],
+      });
+    }
+
+    const lineageUrns = new Set(facts.lineage?.nodes.map((node) => node.urn) ?? []);
+    const recentChangeUrns = new Set<string>();
+    facts.recentChanges.forEach((recentChanges, index) => {
+      if (recentChangeUrns.has(recentChanges.entityUrn)) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Recent-change facts must contain at most one window per entity.',
+          path: ['recentChanges', index, 'entityUrn'],
+        });
+      }
+      recentChangeUrns.add(recentChanges.entityUrn);
+      if (!lineageUrns.has(recentChanges.entityUrn)) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Recent-change facts must reference a returned lineage entity.',
+          path: ['recentChanges', index, 'entityUrn'],
+        });
+      }
+    });
+  });
+
+export const IncidentContextCompletedStageSchema = z
+  .object({
+    status: z.literal('completed'),
+    intent: IncidentIntentSchema,
+    facts: IncidentContextFactsSchema,
+    missingInformation: z
+      .array(IncidentContextMissingInformationSchema)
+      .max(INCIDENT_CONTEXT_MAX_MISSING_INFORMATION),
+  })
+  .strict()
+  .superRefine((stage, context) => {
+    const missingCodes = new Set<string>();
+    stage.missingInformation.forEach((item, index) => {
+      if (missingCodes.has(item.code)) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Incident context missing-information codes must be unique.',
+          path: ['missingInformation', index, 'code'],
+        });
+      }
+      missingCodes.add(item.code);
+    });
+    if (stage.facts.candidateEntities.length === 0 && !missingCodes.has('entity_not_found')) {
+      context.addIssue({
+        code: 'custom',
+        message: 'A no-match context must identify the missing entity information.',
+        path: ['missingInformation'],
+      });
+    }
+  });
+
+export const IncidentContextErrorCodeSchema = z.enum([
+  'METADATA_UNCONFIGURED',
+  'METADATA_UNAUTHORIZED',
+  'METADATA_UNAVAILABLE',
+  'METADATA_TIMEOUT',
+  'METADATA_INVALID_RESPONSE',
+  'INTERNAL_ERROR',
+]);
+
+export const IncidentContextFailedStageSchema = z
+  .object({
+    status: z.literal('failed'),
+    error: z
+      .object({
+        code: IncidentContextErrorCodeSchema,
+        message: z.string().trim().min(1).max(300),
+      })
+      .strict(),
+  })
+  .strict();
+
+export const IncidentContextStageSchema = z.discriminatedUnion('status', [
+  z.object({ status: z.literal('gathering') }).strict(),
+  IncidentContextCompletedStageSchema,
+  IncidentContextFailedStageSchema,
+]);
 
 export const IncidentStatusSchema = z.enum(['processing', 'completed']);
 
@@ -497,12 +702,24 @@ export const InvestigationReportSchema = z
   });
 
 export const IncidentRetrievalResponseSchema = z.discriminatedUnion('status', [
-  IncidentAcceptedResponseSchema,
-  z.object({
-    incidentId: z.uuid(),
-    status: z.literal('completed'),
-    report: InvestigationReportSchema,
-  }),
+  z
+    .object({
+      incidentId: z.uuid(),
+      status: z.literal('processing'),
+      contextStage: IncidentContextStageSchema,
+    })
+    .strict(),
+  z
+    .object({
+      incidentId: z.uuid(),
+      status: z.literal('completed'),
+      contextStage: z.union([
+        IncidentContextCompletedStageSchema,
+        IncidentContextFailedStageSchema,
+      ]),
+      report: InvestigationReportSchema,
+    })
+    .strict(),
 ]);
 
 export type EntityKind = z.infer<typeof EntityKindSchema>;
@@ -524,6 +741,16 @@ export type MetadataSourceMode = z.infer<typeof MetadataSourceModeSchema>;
 export type MetadataHealthStatus = z.infer<typeof MetadataHealthStatusSchema>;
 export type MetadataHealthResponse = z.infer<typeof MetadataHealthResponseSchema>;
 export type IncidentRequest = z.infer<typeof IncidentRequestSchema>;
+export type IncidentIntent = z.infer<typeof IncidentIntentSchema>;
+export type IncidentContextMissingInformationCode = z.infer<
+  typeof IncidentContextMissingInformationCodeSchema
+>;
+export type IncidentContextMissingInformation = z.infer<
+  typeof IncidentContextMissingInformationSchema
+>;
+export type IncidentContextFacts = z.infer<typeof IncidentContextFactsSchema>;
+export type IncidentContextCompletedStage = z.infer<typeof IncidentContextCompletedStageSchema>;
+export type IncidentContextStage = z.infer<typeof IncidentContextStageSchema>;
 export type IncidentStatus = z.infer<typeof IncidentStatusSchema>;
 export type IncidentAcceptedResponse = z.infer<typeof IncidentAcceptedResponseSchema>;
 export type IncidentRetrievalResponse = z.infer<typeof IncidentRetrievalResponseSchema>;
