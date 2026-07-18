@@ -1,84 +1,22 @@
-import { spawn } from 'node:child_process';
 import { log } from 'node:console';
-import { once } from 'node:events';
 import process from 'node:process';
-import { clearTimeout, setTimeout } from 'node:timers';
-import { setTimeout as delay } from 'node:timers/promises';
 import { fileURLToPath, URL } from 'node:url';
-import { stripVTControlCharacters } from 'node:util';
 import { chromium } from 'playwright';
+import {
+  assertPortAvailable,
+  createRuntimeConfig,
+  findFreePort,
+  startManagedPnpmProcess,
+  stopManagedProcesses,
+  waitForHttpReady,
+} from './report-launcher.mjs';
 
 const repoRoot = fileURLToPath(new URL('../..', import.meta.url));
+const viteConfigPath = fileURLToPath(new URL('./vite.config.mjs', import.meta.url));
 const managedProcesses = [];
 
 function fail(message) {
   throw new Error(message);
-}
-
-function startProcess(name, args, readyPattern) {
-  return new Promise((resolve, reject) => {
-    const child = spawn('pnpm', args, {
-      cwd: repoRoot,
-      env: { ...process.env, FORCE_COLOR: '0' },
-      stdio: ['ignore', 'pipe', 'pipe'],
-    });
-    const entry = { child, logs: '', name };
-    let resolved = false;
-    managedProcesses.push(entry);
-
-    const timeout = setTimeout(() => {
-      if (!resolved) {
-        reject(new Error(`${name} did not become ready.\n${entry.logs}`));
-      }
-    }, 20_000);
-
-    const collect = (chunk) => {
-      entry.logs += chunk.toString();
-      const normalizedLogs = stripVTControlCharacters(entry.logs);
-      if (!resolved && readyPattern.test(normalizedLogs)) {
-        resolved = true;
-        clearTimeout(timeout);
-        resolve(entry);
-      }
-    };
-
-    child.stdout.on('data', collect);
-    child.stderr.on('data', collect);
-    child.on('error', (error) => {
-      if (!resolved) {
-        clearTimeout(timeout);
-        reject(error);
-      }
-    });
-    child.on('exit', (code, signal) => {
-      if (!resolved) {
-        clearTimeout(timeout);
-        reject(
-          new Error(`${name} exited before ready: code=${code} signal=${signal}\n${entry.logs}`),
-        );
-      }
-    });
-  });
-}
-
-async function stopProcesses() {
-  await Promise.all(
-    managedProcesses.reverse().map(async ({ child }) => {
-      if (child.exitCode !== null || child.signalCode !== null) {
-        return;
-      }
-
-      child.kill('SIGINT');
-      await Promise.race([
-        once(child, 'exit'),
-        delay(3_000).then(() => {
-          if (child.exitCode === null && child.signalCode === null) {
-            child.kill('SIGKILL');
-          }
-        }),
-      ]);
-    }),
-  );
 }
 
 function assertText(text, pattern, label) {
@@ -101,28 +39,32 @@ async function assertNoHorizontalOverflow(page, label) {
 }
 
 let browser;
+let runtime;
+const startedAt = Date.now();
 
 try {
-  await startProcess(
-    'api',
-    ['--filter', '@dii/api', 'dev'],
-    /Server listening at http:\/\/127\.0\.0\.1:3001/,
-  );
-  await startProcess(
-    'web',
-    [
-      '--filter',
-      '@dii/web',
-      'exec',
-      'vite',
-      '--host',
-      '127.0.0.1',
-      '--port',
-      '5173',
-      '--strictPort',
-    ],
-    /Local:\s+http:\/\/(?:127\.0\.0\.1|localhost):5173\//,
-  );
+  const host = '127.0.0.1';
+  const apiPort = await findFreePort(host);
+  let webPort = await findFreePort(host);
+  while (webPort === apiPort) {
+    webPort = await findFreePort(host);
+  }
+  runtime = createRuntimeConfig({ apiPort, host, viteConfigPath, webPort });
+  log(`Browser e2e selected API ${runtime.apiUrl} and web ${runtime.webUrl}.`);
+
+  const api = startManagedPnpmProcess('api', runtime.apiArgs, {
+    cwd: repoRoot,
+    env: { ...process.env, ...runtime.apiEnv },
+  });
+  managedProcesses.push(api);
+  await waitForHttpReady(api, runtime.apiHealthUrl);
+
+  const web = startManagedPnpmProcess('web', runtime.webArgs, {
+    cwd: repoRoot,
+    env: { ...process.env, ...runtime.webEnv },
+  });
+  managedProcesses.push(web);
+  await waitForHttpReady(web, runtime.webUrl);
 
   browser = await chromium.launch({ headless: true });
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
@@ -134,7 +76,7 @@ try {
   });
   page.on('pageerror', (error) => browserProblems.push(`pageerror: ${error.message}`));
 
-  await page.goto('http://127.0.0.1:5173/', { waitUntil: 'networkidle' });
+  await page.goto(runtime.webUrl, { waitUntil: 'networkidle' });
   await page.locator('#question').fill('Why did revenue drop today?');
   await page.locator('#entity-hint').fill('analytics.daily_revenue');
   await page.locator('#occurred-at').fill('2026-07-18T08:30');
@@ -158,6 +100,20 @@ try {
   assertText(reportText, /Assumptions/i, 'assumption section');
   assertText(reportText, /Missing information/i, 'missing information section');
   assertText(reportText, /Recommended actions/i, 'recommendations section');
+
+  const evidenceIds = new Set(
+    await page.locator('.evidence-list .evidence-meta > code').allTextContents(),
+  );
+  const referencedEvidenceIds = await page
+    .locator('.evidence-reference-list code')
+    .allTextContents();
+  const unresolvedEvidenceIds = referencedEvidenceIds.filter(
+    (evidenceId) => !evidenceIds.has(evidenceId),
+  );
+  if (unresolvedEvidenceIds.length > 0) {
+    fail(`Browser report contains unresolved evidence IDs: ${unresolvedEvidenceIds.join(', ')}`);
+  }
+
   await assertNoHorizontalOverflow(page, 'desktop report');
   await page.setViewportSize({ width: 390, height: 900 });
   await assertNoHorizontalOverflow(page, 'mobile report');
@@ -165,11 +121,19 @@ try {
   if (browserProblems.length > 0) {
     fail(`Browser emitted console problems:\n${browserProblems.join('\n')}`);
   }
-
-  log('Browser report display e2e passed.');
 } finally {
   if (browser) {
     await browser.close();
   }
-  await stopProcesses();
+  await stopManagedProcesses(managedProcesses);
+  if (runtime) {
+    await assertPortAvailable(runtime.host, Number(runtime.apiEnv.API_PORT));
+    await assertPortAvailable(runtime.host, Number(runtime.webEnv.DII_E2E_WEB_PORT));
+  }
 }
+
+const durationMs = Date.now() - startedAt;
+if (durationMs >= 180_000) {
+  fail(`Browser report display e2e exceeded three minutes: ${durationMs}ms.`);
+}
+log(`Browser report display e2e passed in ${durationMs}ms.`);

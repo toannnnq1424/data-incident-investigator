@@ -199,6 +199,176 @@ desktop/mobile horizontal overflow is absent, and fails on browser console warni
 Exact next slice: stop Phase 1 work here for review. After the stacked PR is accepted, run the Phase 1
 integration checkpoint before starting Phase 2.
 
+### Phase 1 Level D closure
+
+Status: passed after browser-launcher remediation on `codex/phase-1-level-d-closure`, starting from exact Slice 1.3 commit
+`c020a4c056527b0711cb07840be2446e23a00b43` and stacked on
+`codex-mac/slice-1-3-evidence-display`.
+
+Objective: close the Phase 1 integration checkpoint by validating the complete credential-free
+fixture flow and all Slice 1.1-1.3 acceptance criteria without adding features or beginning Phase 2.
+
+Acceptance criteria:
+
+- Valid and invalid incident submissions expose accessible loading, success, validation-error, and
+  API-error states; a valid request receives a UUID and visible `processing` status.
+- The deterministic fixture adapter produces a schema-valid structured report while preserving the
+  compact summary and top-ranked hypothesis.
+- The completed report displays impacted entities, evidence IDs and timeline, ranked confidence,
+  lineage, facts, inferences, assumptions, missing information, and recommended actions; every
+  hypothesis evidence reference resolves to evidence in the report.
+- Loading, error, empty, and insufficient-evidence states use clear semantic headings and appropriate
+  ARIA/status behavior.
+- The canonical `submit -> processing -> completed -> full evidence display` fixture flow completes
+  in under three minutes without credentials and without browser console warnings or errors.
+- Repository format, lint, type-check, all unit/integration/smoke tests, production build, primary
+  artifact smoke, phase browser flow, diff/secret review, and clean-worktree review pass.
+
+Exact Level D validation commands (run successful commands once while inputs remain unchanged):
+
+- `pnpm validate`
+- `pnpm test:e2e:report`
+
+Validation result on Windows managed worktree, 2026-07-18:
+
+- Repository format, lint, and all six workspace type-checks passed. The single `pnpm validate`
+  sequence required environment recovery before reaching those checks: the initial managed bootstrap
+  could not find `node`, then its repository-local `.pnpm-store` artifact was moved to
+  `C:\tmp\dii-phase1-level-d-pnpm-store-019f7547`, and sandboxed Vitest could not read the managed
+  `esbuild` package.
+- The affected `pnpm test` continuation passed with scoped access: 6 test files and 14 tests, including
+  contracts, deterministic adapter/runner, API integration, report presentation, and API health smoke.
+- `pnpm build` passed for all six buildable workspace projects; the web build transformed 109 modules.
+  `pnpm smoke` passed for `apps/api/dist/index.js` and `apps/web/dist/index.html`.
+- `pnpm test:e2e:report` did not complete. The first launch attempts reproduced Windows
+  `spawn pnpm ENOENT`. Temporary targeted launcher changes reached local server startup, but exposed
+  port/process-tree leakage and then a readiness mismatch: Vite was ready at
+  `http://127.0.0.1:5173/` while the test accepted only `http://localhost:5173/`. A controller-approved
+  final rerun on ports verified clean immediately beforehand failed on that mismatch after 28.3
+  seconds, before Chromium. The unproven launcher changes were not retained, so product and test source
+  remain at the exact Slice 1.3 baseline.
+- Slice 1.1 and Slice 1.2 acceptance are supported by the passing contracts/integration suite. Slice
+  1.3 structure and evidence-reference acceptance are supported by passing schema and presentation
+  tests, but overall Phase 1 acceptance remains failed because the local canonical browser flow never
+  reached Chromium; duration-under-three-minutes and clean-console criteria were therefore not proven
+  in this checkpoint.
+
+Deferred: real DataHub access, additional fixture scenarios, durable persistence, model reasoning,
+evaluation expansion, cross-browser matrix automation, deployment, and all Phase 2 implementation.
+PR #4 (`codex/stabilize-managed-worktree-bootstrap`, commit
+`99dfc5f7a086808b25d8a57988524769bca0cf87`) is a separately green environment dependency and is not
+integrated into this product-validation branch. Supplied evidence records PR #4 CI run `29644965735`,
+job `88081574373`, as green. PR #3 is the clean Slice 1.3 dependency at the exact base above; supplied
+evidence records CI run `29644831886`, job `88081227744`, as green.
+
+Recorded blocker at commit `31621056a9786fb5423773e0bec94704cdab6fa8`: keep Phase 2 blocked and
+address cross-platform pnpm execution, dedicated/dynamic ports with matching URL/readiness, and
+process-tree cleanup as one bounded browser-launcher change.
+
+Follow-up remediation objective: stabilize only the checked-in Phase 1 browser launcher without
+changing Slice 1.3 product/UI/API behavior. Resolve pnpm through the current Node runtime, select free
+API/web ports, keep proxy/readiness/browser URLs synchronized, and clean only process descendants
+created by the launcher on both success and failure.
+
+Minimum files:
+
+- `tests/e2e/report-display.spec.mjs` and a test-only Vite configuration for the canonical flow.
+- One small launcher helper plus one browser-free contract test under `tests/e2e` and
+  `tests/integration`.
+- `docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md`, and `docs/SESSION_LOG.md` for final evidence.
+
+Follow-up acceptance and validation:
+
+- Targeted launcher contracts prove pnpm invocation, synchronized command/URL/readiness settings, and
+  descendant process-tree cleanup without starting a browser.
+- Changed-file Prettier and affected ESLint pass.
+- A preflight-selected, conflict-free runtime executes exactly one `pnpm test:e2e:report`; it must
+  complete `submit -> processing -> completed -> full evidence display` in under three minutes,
+  resolve every hypothesis evidence reference, emit no browser warnings/errors, and leave neither
+  selected listener nor launcher descendant behind.
+- Do not rerun the already-green core Level D commands because their inputs remain unchanged.
+
+Exact follow-up commands:
+
+- changed-file project-local Prettier check
+- affected project-local ESLint
+- `pnpm exec vitest run tests/integration/report-launcher.test.ts`
+- exactly one `pnpm test:e2e:report` after targeted checks pass
+
+Follow-up validation result on Windows managed worktree, 2026-07-18:
+
+- Changed-file Prettier passed. Affected ESLint initially found two unqualified Node globals and one
+  unused import; after that targeted fix, affected ESLint passed in 1.3 seconds.
+- Launcher contracts passed 3/3 in 1.20 seconds. They verify current-Node pnpm invocation with a safe
+  Windows fallback, resolved Vite proxy/host/port configuration, HTTP readiness at the configured URL,
+  and real descendant process-tree cleanup that releases its listener. Earlier discovery/config
+  attempts were classified before browser execution: the `.mjs` test was outside the repository's
+  `.test.ts` include, and root could not directly resolve web-owned Vite; both were corrected without
+  adding dependencies or changing a lockfile.
+- The one allowed `pnpm test:e2e:report` selected API `http://127.0.0.1:52289` and web
+  `http://127.0.0.1:52290`; both reached HTTP readiness. It then failed after 3.9 seconds before browser
+  creation because Playwright Chromium headless shell revision `1228` was not installed in the Windows
+  runtime. The command was not rerun. Cleanup left zero listeners on both selected ports and zero new
+  managed Node descendants. Pre-existing PID `23972`, created at 20:08:46, was not a descendant of this
+  run and was not stopped.
+- The launcher blocker is fixed and its cleanup contract is proven, but overall Phase 1 acceptance
+  remains failed because the browser flow, evidence display, duration, and console criteria were not
+  executed in the missing browser runtime.
+- After that locked e2e attempt, `pnpm exec playwright install chromium` was run with the managed
+  bundled Node/pnpm runtime. The expected revision `1228` executable is now present at the Playwright
+  Windows user cache and reports `Google Chrome for Testing 149.0.7827.55`.
+- After the controller explicitly authorized one new controlled run for that changed external state,
+  `pnpm test:e2e:report` selected API `http://127.0.0.1:51439` and web
+  `http://127.0.0.1:51440`, then passed the canonical fixture flow in `9361ms` (`15.219s` wall time).
+  The browser contract covered submit -> processing -> completed -> full evidence display, required
+  every hypothesis evidence reference to resolve to a displayed evidence ID, rejected browser console
+  warnings/errors, and enforced the three-minute limit. Post-run checks found zero listeners on both
+  selected ports and zero recent launcher-related processes after excluding the read-only probe.
+- Phase 1 Level D therefore passes. The previously passing core gate was not rerun because its inputs
+  did not change; only the controller-authorized browser gate was repeated after Chromium provisioning.
+
+Merge-readiness follow-up status: passed locally against exact advanced stacked base
+`edd0ed510d4cc4799d1c130415d8e79cb0ff78a5` (`test(e2e): tolerate styled vite readiness logs`), whose
+parent is the original Slice 1.3 base `c020a4c056527b0711cb07840be2446e23a00b43`. Merge the advanced
+base forward without rebase or history rewrite and resolve only the direct conflict in
+`tests/e2e/report-display.spec.mjs`.
+
+Merge-readiness acceptance and validation:
+
+- Preserve the proven dynamic-port, synchronized-URL, descendant-only cleanup launcher while also
+  preserving the advanced base's tolerance for ANSI-styled Vite readiness output where applicable.
+- Run changed-file Prettier and affected ESLint, then
+  `pnpm exec vitest run tests/integration/report-launcher.test.ts` and exactly one
+  `pnpm test:e2e:report`; do not rerun unchanged core Level D commands.
+- The browser flow must remain under three minutes with clean console output, resolved evidence
+  references, and no selected-port or launcher-descendant leak.
+- Update the three project-memory documents, create one merge commit, push without force, verify draft
+  PR #5 no longer conflicts, and follow exactly one CI run created by that push.
+
+Merge-readiness local validation result on Windows, 2026-07-18:
+
+- Fetch verified closure HEAD `c4f20c66d9c7351be8bbf0cdf4e23fe0355ef7f1`, advanced base
+  `edd0ed510d4cc4799d1c130415d8e79cb0ff78a5`, and merge-base
+  `c020a4c056527b0711cb07840be2446e23a00b43`. The only conflict was
+  `tests/e2e/report-display.spec.mjs`.
+- The resolution keeps the proven dynamic-port launcher, HTTP URL readiness, current-Node pnpm
+  invocation, and descendant-only cleanup. Because readiness no longer parses Vite logs, ANSI-styled
+  output from the advanced base cannot prevent readiness; the obsolete regex/fixed-port launcher was
+  not restored.
+- Changed-file Prettier passed in 1.715 seconds and affected ESLint passed in 3.690 seconds. Launcher
+  contracts passed 3/3 in 1.94 seconds (6.076 seconds wall), including real descendant-tree cleanup.
+- The one authorized `pnpm test:e2e:report` selected API `http://127.0.0.1:63576` and web
+  `http://127.0.0.1:63577`, then passed in `6890ms` (`13.097s` wall). It retained the under-three-minute,
+  clean-console, resolved-evidence-reference, and full-report assertions. Post-run checks found zero
+  listeners on both ports and zero Node/cmd/Chromium runtime processes belonging to this launcher.
+
+Deferred: all product/UI/API work, manifest or lockfile changes, PR #4 integration, duplicate sibling
+PR #6/commit `8d75932`, and Phase 2.
+
+Exact next action: create and push the non-rewriting merge commit, verify draft PR #5 is conflict-free,
+and follow exactly one CI run created by that push. Stop after PR/CI evidence; do not begin Phase 2,
+change product code, or integrate PR #4.
+
 Phase completion: a clean clone can select a demo incident and receive a complete report.
 
 ## Phase 2 — DataHub integration
