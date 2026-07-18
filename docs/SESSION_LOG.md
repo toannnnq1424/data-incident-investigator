@@ -722,3 +722,63 @@ Format and review the docs-only closure diff, commit conventionally, push the ch
 draft PR against `main`, and follow exactly one CI run. After that PR is reviewed and merged, create a
 separate project task for Phase 2 Slice 2.1 — DataHub client health/error normalization from the
 then-current exact main. Do not begin Phase 2 here.
+
+## 2026-07-18 — Phase 1 launcher cleanup-ownership CI hotfix
+
+### Objective
+
+Fix only the main-owned integration-test cleanup race from PR #7 CI run `29651498475`, job
+`88098488706`, on exact `origin/main` `54945b80a27685ce81e476173a3466e585f42112`, without changing
+PR #7, launcher runtime behavior, product/API/DataHub code, or beginning Phase 2.
+
+### Completed
+
+Created `fix/phase1-launcher-cleanup-ownership` from exact main. Kept the cleanup descendant's atomic
+`port: 0` bind and pre-cleanup HTTP readiness proof, changed its report to include the actual PID and
+bound port, removed the post-cleanup `assertPortAvailable` rebind, and asserted that the exact
+descendant PID disappears through a bounded cross-platform signal-0 liveness wait.
+
+### Files changed
+
+`tests/integration/report-launcher.test.ts`, `docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md`, and
+this session entry only. No launcher helper/runtime, product, API, DataHub, manifest, lockfile, browser
+test, bootstrap, or repository-structure file changed.
+
+### Decisions
+
+Classified the exact `EADDRINUSE` result as a test-ownership TOCTOU defect: after managed cleanup,
+another process is free to claim the old port before the test probes it. Prove ownership through the
+managed descendant's PID instead. Do not add retry, sleep around port allocation, random port ranges,
+or wider test timeouts.
+
+### Validation performed
+
+- The first two command attempts did not enter Vitest because the worktree lacked resolved executable
+  dependencies and then exposed a sandbox-inaccessible pnpm hardlink. Frozen install state was repaired
+  without manifest/lockfile changes, and the single real pre-fix baseline passed 1 file/3 tests in
+  `6.80s` (`17.546s` wall).
+- Changed-file Prettier passed in `6.401s`. A `30s` harness limit interrupted the first affected ESLint
+  process without a result; the identical command passed in `7.568s` under a sufficient command budget.
+- The primary post-fix focused run passed 1 file/3 tests in `1.74s` (`4.739s` wall).
+- Five permitted assessment runs produced one fixture-startup failure before PID/port reporting and
+  four consecutive 1-file/3-test passes in `12.549s` total. A read-only PID/CommandLine/listener probe
+  after the startup failure found no fixture descendant or listener leak. The replaced port-rebind
+  assertion cannot recur because it no longer exists.
+
+### Validation intentionally deferred
+
+Browser E2E, full suite, build, and smoke remain deferred because product and launcher runtime inputs
+did not change. CI supplies the single repository-level validation run for the draft fix PR. PR #7 and
+all Phase 2 implementation remain out of scope.
+
+### Known issues
+
+No local implementation blocker remains. The one non-repeating fixture-startup failure above is
+recorded transparently for CI observation; draft PR publication and its one CI run are pending.
+Existing product limitations remain unchanged.
+
+### Exact next step
+
+Format and review the four-file diff, commit conventionally, push the fix branch, open one draft PR
+against `main`, and follow exactly one new CI run. Do not rerun the failed PR #7 CI, merge the fix PR,
+modify PR #7, or begin Phase 2.
