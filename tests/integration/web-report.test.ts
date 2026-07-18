@@ -7,6 +7,26 @@ describe('completed report presentation', () => {
     const incident = IncidentRetrievalResponseSchema.parse({
       incidentId: 'ba4ec0e8-da23-4f34-a3c7-9f25c44da800',
       status: 'completed',
+      contextStage: {
+        status: 'completed',
+        intent: {
+          question: 'Why did revenue drop?',
+          entityHints: [],
+          symptoms: [],
+          timeWindow: { basis: 'provider_default' },
+        },
+        facts: {
+          sourceMode: 'fixture',
+          candidateEntities: [],
+          recentChanges: [],
+        },
+        missingInformation: [
+          {
+            code: 'entity_not_found',
+            message: 'No adapter-evidenced entity was returned.',
+          },
+        ],
+      },
       report: {
         incidentId: 'ba4ec0e8-da23-4f34-a3c7-9f25c44da800',
         summary: 'The removed source column is the strongest evidence-backed inference.',

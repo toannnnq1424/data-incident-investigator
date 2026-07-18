@@ -5,6 +5,39 @@
 `IncidentRequest` contains a required question plus optional entity hint, ISO incident timestamp, and
 symptom. API validation trims text, enforces length limits, and rejects invalid timestamps.
 
+## Normalized incident intent
+
+`IncidentIntent` is the facts-only Slice 3.1 normalization of an accepted request. It contains:
+
+- one whitespace-normalized question;
+- zero to three bounded entity hints (the current request contributes at most one);
+- zero to three bounded symptoms (the current request contributes at most one); and
+- a time-window intent with a default of 168 hours, a maximum of 720 hours, and either a canonical UTC
+  incident end time or an explicit `provider_default` basis.
+
+The normalized intent preserves user-supplied meaning but does not infer entity identity, cause,
+severity, or impact.
+
+## Investigation context stage
+
+Incident retrieval includes an additive `contextStage` with `gathering`, `completed`, or `failed`
+status. A completed stage separates `facts` from `missingInformation` and contains no hypothesis,
+confidence, inference, recommendation, or remediation.
+
+Context facts contain the metadata source mode, up to five normalized candidate entities, an optional
+selected entity, one bounded upstream lineage graph, and one existing recent-change response for the
+first returned upstream node (or the selected root when no upstream node exists). The selected entity
+must exactly equal one returned candidate. Its URN must be the lineage root, and the recent-change
+entity must be a node in that returned graph. Thus every entity has an
+adapter/provider URN and every change keeps its adapter evidence ID; there is no invented entity or
+synthetic evidence reference.
+
+A valid no-match context has an empty candidate list, no selection/lineage/change calls, and the
+`entity_not_found` missing-information code. Other unique missing-information codes distinguish an
+absent optional hint/time/symptom, empty lineage/history, and bounded lineage/history truncation. A
+failed stage contains only a normalized safe application code and message; it never stores a raw
+provider payload or error.
+
 ## Entity reference
 
 An entity has a stable URN, display name, and kind: dataset, dashboard, pipeline, or chart. DataHub

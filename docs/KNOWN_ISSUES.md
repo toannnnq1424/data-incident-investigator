@@ -2,6 +2,18 @@
 
 Last updated: 2026-07-19.
 
+- Slice 3.1 parse-and-gather Level C passes locally from exact Phase 2 closure merge `e7b053c`. The
+  additive incident `contextStage` validates normalized intent, selects only adapter-returned URNs,
+  gathers one bounded upstream graph and one recent-change window under four calls/one
+  timeout, and separates provider facts from missing information without adding hypotheses. Targeted
+  evidence covers 40 tests, five affected builds, and one combined browser flow in `6750ms` on dynamic
+  ports `58373`/`58374`; the canonical report remains compatible. Suspicious-change detection,
+  hypothesis/scoring/remediation work, live DataHub smoke, persistence, and Level D remain deferred.
+- This slice reproduced two existing managed Windows environment limitations without a repository
+  defect: fallback pnpm completed the frozen 259-package install but did not resolve root Prettier until
+  the verified process-local Node/root-bin path was loaded, and sandboxed Vitest/Vite could not read
+  esbuild ancestor metadata. Scoped retries passed targeted tests and remaining builds. No bootstrap,
+  dependency, manifest, lockfile, generated store, or credential change is required.
 - Phase 2 local integration closure passes on exact Slice 2.4 handoff
   `43e6d35c9e7881e668eb7cd4837542e8a7fab8dd`: one `pnpm validate` passed format, lint, six
   type-checks, 19 files/139 tests, six builds, and smoke in `29s`; one combined fixture browser flow

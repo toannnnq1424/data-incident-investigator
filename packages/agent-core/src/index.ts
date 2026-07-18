@@ -1,10 +1,351 @@
-import type { MetadataAdapter, MetadataChange } from '@dii/datahub-client';
 import {
+  MetadataProviderError,
+  type MetadataAdapter,
+  type MetadataChange,
+  type MetadataHealthProvider,
+  type MetadataLineageProvider,
+  type MetadataRecentChangesProvider,
+  type MetadataSearchProvider,
+} from '@dii/datahub-client';
+import {
+  INCIDENT_CONTEXT_DEFAULT_WINDOW_HOURS,
+  INCIDENT_CONTEXT_MAX_CANDIDATES,
+  INCIDENT_CONTEXT_MAX_CHANGE_ENTITIES,
+  IncidentContextCompletedStageSchema,
+  IncidentIntentSchema,
+  IncidentRequestSchema,
   InvestigationReportSchema,
+  METADATA_LINEAGE_MAX_DEPTH,
+  METADATA_LINEAGE_MAX_NODES,
+  METADATA_RECENT_CHANGES_MAX_LIMIT,
+  METADATA_RECENT_CHANGES_MAX_WINDOW_HOURS,
+  MetadataEntitySearchResponseSchema,
+  MetadataHealthResponseSchema,
+  MetadataLineageResponseSchema,
+  MetadataRecentChangesResponseSchema,
   type Evidence,
+  type IncidentContextCompletedStage,
+  type IncidentContextMissingInformation,
+  type IncidentIntent,
   type IncidentRequest,
   type InvestigationReport,
+  type MetadataSourceMode,
 } from '@dii/shared-types';
+
+export interface IncidentContextGatheringLimits {
+  candidateEntityCount: number;
+  lineageDepth: number;
+  lineageEntityCount: number;
+  recentChangeEntityCount: number;
+  recentChangeCount: number;
+  recentChangeWindowHours: number;
+  toolCalls: number;
+  timeoutMs: number;
+}
+
+export interface IncidentContextMetadata
+  extends
+    MetadataHealthProvider,
+    MetadataSearchProvider,
+    MetadataLineageProvider,
+    MetadataRecentChangesProvider {}
+
+export interface IncidentContextGatheringContext {
+  metadata: IncidentContextMetadata;
+  mode: MetadataSourceMode;
+  limits: IncidentContextGatheringLimits;
+}
+
+export interface IncidentContextGatherer {
+  gather(
+    request: IncidentRequest,
+    context: IncidentContextGatheringContext,
+  ): Promise<IncidentContextCompletedStage>;
+}
+
+export const DEFAULT_INCIDENT_CONTEXT_LIMITS: IncidentContextGatheringLimits = Object.freeze({
+  candidateEntityCount: INCIDENT_CONTEXT_MAX_CANDIDATES,
+  lineageDepth: 2,
+  lineageEntityCount: 5,
+  recentChangeEntityCount: INCIDENT_CONTEXT_MAX_CHANGE_ENTITIES,
+  recentChangeCount: 10,
+  recentChangeWindowHours: INCIDENT_CONTEXT_DEFAULT_WINDOW_HOURS,
+  toolCalls: 3 + INCIDENT_CONTEXT_MAX_CHANGE_ENTITIES,
+  timeoutMs: 2_000,
+});
+
+function normalizedIncidentText(value: string) {
+  return value.replace(/\s+/g, ' ').trim();
+}
+
+export function parseIncidentIntent(
+  request: IncidentRequest,
+  windowHours = INCIDENT_CONTEXT_DEFAULT_WINDOW_HOURS,
+): IncidentIntent {
+  const parsedRequest = IncidentRequestSchema.parse(request);
+  return IncidentIntentSchema.parse({
+    question: normalizedIncidentText(parsedRequest.question),
+    entityHints: parsedRequest.entityHint ? [normalizedIncidentText(parsedRequest.entityHint)] : [],
+    symptoms: parsedRequest.symptom ? [normalizedIncidentText(parsedRequest.symptom)] : [],
+    timeWindow: parsedRequest.occurredAt
+      ? {
+          endTime: new Date(parsedRequest.occurredAt).toISOString(),
+          hours: windowHours,
+          basis: 'incident_time',
+        }
+      : {
+          hours: windowHours,
+          basis: 'provider_default',
+        },
+  });
+}
+
+function validateContextLimits(limits: IncidentContextGatheringLimits) {
+  const requiredToolCalls = 3 + limits.recentChangeEntityCount;
+  if (
+    !Number.isInteger(limits.candidateEntityCount) ||
+    limits.candidateEntityCount < 1 ||
+    limits.candidateEntityCount > INCIDENT_CONTEXT_MAX_CANDIDATES ||
+    !Number.isInteger(limits.lineageDepth) ||
+    limits.lineageDepth < 1 ||
+    limits.lineageDepth > METADATA_LINEAGE_MAX_DEPTH ||
+    !Number.isInteger(limits.lineageEntityCount) ||
+    limits.lineageEntityCount < 1 ||
+    limits.lineageEntityCount > METADATA_LINEAGE_MAX_NODES ||
+    !Number.isInteger(limits.recentChangeEntityCount) ||
+    limits.recentChangeEntityCount < 1 ||
+    limits.recentChangeEntityCount > INCIDENT_CONTEXT_MAX_CHANGE_ENTITIES ||
+    !Number.isInteger(limits.recentChangeCount) ||
+    limits.recentChangeCount < 1 ||
+    limits.recentChangeCount > METADATA_RECENT_CHANGES_MAX_LIMIT ||
+    !Number.isInteger(limits.recentChangeWindowHours) ||
+    limits.recentChangeWindowHours < 1 ||
+    limits.recentChangeWindowHours > METADATA_RECENT_CHANGES_MAX_WINDOW_HOURS ||
+    !Number.isInteger(limits.toolCalls) ||
+    limits.toolCalls < requiredToolCalls ||
+    limits.toolCalls > 10 ||
+    !Number.isInteger(limits.timeoutMs) ||
+    limits.timeoutMs < 1 ||
+    limits.timeoutMs > 10_000
+  ) {
+    throw new Error('Incident context limits exceed the supported deterministic bounds.');
+  }
+}
+
+function addMissingInformation(
+  missingInformation: IncidentContextMissingInformation[],
+  item: IncidentContextMissingInformation,
+) {
+  if (!missingInformation.some((existing) => existing.code === item.code)) {
+    missingInformation.push(item);
+  }
+}
+
+function assertContextActive(signal: AbortSignal) {
+  if (signal.aborted) {
+    throw new MetadataProviderError('timeout');
+  }
+}
+
+export class DeterministicIncidentContextGatherer implements IncidentContextGatherer {
+  async gather(
+    request: IncidentRequest,
+    context: IncidentContextGatheringContext,
+  ): Promise<IncidentContextCompletedStage> {
+    validateContextLimits(context.limits);
+    const intent = parseIncidentIntent(request, context.limits.recentChangeWindowHours);
+    const controller = new AbortController();
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      timeout = setTimeout(() => {
+        controller.abort();
+        reject(new MetadataProviderError('timeout'));
+      }, context.limits.timeoutMs);
+    });
+
+    try {
+      return await Promise.race([
+        this.gatherBounded(intent, context, controller.signal),
+        timeoutPromise,
+      ]);
+    } finally {
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+    }
+  }
+
+  private async gatherBounded(
+    intent: IncidentIntent,
+    context: IncidentContextGatheringContext,
+    signal: AbortSignal,
+  ): Promise<IncidentContextCompletedStage> {
+    const { limits, metadata, mode } = context;
+    const missingInformation: IncidentContextMissingInformation[] = [];
+    if (intent.entityHints.length === 0) {
+      addMissingInformation(missingInformation, {
+        code: 'entity_hint_not_supplied',
+        message: 'No entity hint was supplied; candidate search used the incident question.',
+      });
+    }
+    if (intent.timeWindow.basis === 'provider_default') {
+      addMissingInformation(missingInformation, {
+        code: 'incident_time_not_supplied',
+        message: 'No incident time was supplied; the metadata source selected the window end.',
+      });
+    }
+    if (intent.symptoms.length === 0) {
+      addMissingInformation(missingInformation, {
+        code: 'symptom_not_supplied',
+        message: 'No observed symptom was supplied for this intake.',
+      });
+    }
+
+    assertContextActive(signal);
+    const healthResult = await metadata.healthCheck({ signal });
+    assertContextActive(signal);
+    const parsedHealth = MetadataHealthResponseSchema.safeParse({ mode, ...healthResult });
+    if (!parsedHealth.success) {
+      throw new MetadataProviderError('invalid_response');
+    }
+    const health = parsedHealth.data;
+    if (health.status !== 'ready') {
+      throw new MetadataProviderError(health.status);
+    }
+
+    const query = intent.entityHints[0] ?? intent.question;
+    assertContextActive(signal);
+    const searchResults = await metadata.searchEntities({
+      query,
+      limit: limits.candidateEntityCount,
+      fallbackToDefault: false,
+      signal,
+    });
+    assertContextActive(signal);
+    const parsedSearch = MetadataEntitySearchResponseSchema.safeParse({
+      query,
+      limit: limits.candidateEntityCount,
+      results: searchResults,
+    });
+    if (!parsedSearch.success) {
+      throw new MetadataProviderError('invalid_response');
+    }
+    const candidateEntities = parsedSearch.data.results;
+    const selectedEntity = candidateEntities[0];
+
+    if (!selectedEntity) {
+      addMissingInformation(missingInformation, {
+        code: 'entity_not_found',
+        message: 'The metadata source returned no candidate entity for the normalized intake.',
+      });
+      return IncidentContextCompletedStageSchema.parse({
+        status: 'completed',
+        intent,
+        facts: {
+          sourceMode: mode,
+          candidateEntities,
+          recentChanges: [],
+        },
+        missingInformation,
+      });
+    }
+
+    const lineageRequest = {
+      rootUrn: selectedEntity.urn,
+      direction: 'upstream',
+      depth: limits.lineageDepth,
+      maxNodes: limits.lineageEntityCount,
+      signal,
+    } as const;
+    assertContextActive(signal);
+    const lineageResponse = await metadata.getLineageGraph(lineageRequest);
+    assertContextActive(signal);
+    const parsedLineage = MetadataLineageResponseSchema.safeParse(lineageResponse);
+    if (
+      !parsedLineage.success ||
+      parsedLineage.data.rootUrn !== lineageRequest.rootUrn ||
+      parsedLineage.data.direction !== lineageRequest.direction ||
+      parsedLineage.data.requestedDepth !== lineageRequest.depth ||
+      parsedLineage.data.maxNodes !== lineageRequest.maxNodes
+    ) {
+      throw new MetadataProviderError('invalid_response');
+    }
+    const lineage = parsedLineage.data;
+    if (lineage.edges.length === 0) {
+      addMissingInformation(missingInformation, {
+        code: 'lineage_not_found',
+        message: 'No upstream lineage was returned within the selected bounds.',
+      });
+    }
+    if (lineage.truncated) {
+      addMissingInformation(missingInformation, {
+        code: 'lineage_truncated',
+        message: 'Additional upstream lineage exists outside the selected bounds.',
+      });
+    }
+
+    const changeEntities = lineage.nodes.slice(1, 1 + limits.recentChangeEntityCount);
+    if (changeEntities.length === 0) {
+      const rootEntity = lineage.nodes[0];
+      if (!rootEntity) {
+        throw new MetadataProviderError('invalid_response');
+      }
+      changeEntities.push(rootEntity);
+    }
+    const recentChanges = [];
+    for (const entity of changeEntities) {
+      const recentChangeRequest = {
+        entityUrn: entity.urn,
+        ...(intent.timeWindow.endTime ? { endTime: intent.timeWindow.endTime } : {}),
+        windowHours: intent.timeWindow.hours,
+        limit: limits.recentChangeCount,
+        signal,
+      } as const;
+      assertContextActive(signal);
+      const recentChangesResponse = await metadata.getRecentChangesForEntity(recentChangeRequest);
+      assertContextActive(signal);
+      const parsedRecentChanges =
+        MetadataRecentChangesResponseSchema.safeParse(recentChangesResponse);
+      if (
+        !parsedRecentChanges.success ||
+        parsedRecentChanges.data.entityUrn !== recentChangeRequest.entityUrn ||
+        parsedRecentChanges.data.window.hours !== recentChangeRequest.windowHours ||
+        parsedRecentChanges.data.limit !== recentChangeRequest.limit ||
+        (recentChangeRequest.endTime &&
+          parsedRecentChanges.data.window.endTime !== recentChangeRequest.endTime)
+      ) {
+        throw new MetadataProviderError('invalid_response');
+      }
+      recentChanges.push(parsedRecentChanges.data);
+    }
+
+    if (recentChanges.every((response) => response.changes.length === 0)) {
+      addMissingInformation(missingInformation, {
+        code: 'recent_changes_not_found',
+        message: 'No recent metadata changes were returned for the bounded context entities.',
+      });
+    }
+    if (recentChanges.some((response) => response.truncated)) {
+      addMissingInformation(missingInformation, {
+        code: 'recent_changes_truncated',
+        message: 'Additional metadata change history exists outside the selected bounds.',
+      });
+    }
+
+    return IncidentContextCompletedStageSchema.parse({
+      status: 'completed',
+      intent,
+      facts: {
+        sourceMode: mode,
+        candidateEntities,
+        selectedEntity,
+        lineage,
+        recentChanges,
+      },
+      missingInformation,
+    });
+  }
+}
 
 export interface InvestigationLimits {
   lineageDepth: number;

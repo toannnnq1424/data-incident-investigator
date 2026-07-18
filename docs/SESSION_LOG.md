@@ -1535,3 +1535,42 @@ Format and review the three documentation files, create conventional commit
 PR based on `main`, and follow exactly one CI run for final HEAD to terminal. Only after gate and CI are
 green, hand off Phase 3 Slice 3.1 — parse and gather to a separate Project/worktree task; do not begin it
 here.
+
+## 2026-07-19 — Phase 3 Slice 3.1 parse và gather
+
+### Objective
+
+Hoàn thiện vertical slice parse incident và gather context từ exact Phase 2 closure `e7b053c83a5792ed75afa8731bd4f751b4ee7a1a`: chuẩn hóa intake có bounds, chọn entity chỉ từ adapter evidence, thu thập facts bounded qua fixture/DataHub contracts và hiển thị context stage facts-only; không làm controller, hypothesis, scoring hay remediation.
+
+### Completed
+
+Đã kiểm tra worktree/HEAD đúng handoff, giữ nguyên các thay đổi Slice 3.1 có sẵn và rà trực tiếp shared schemas, gatherer, API, web và tests. Đã sửa contract để gatherer gọi tối đa đúng một recent-change request: chọn upstream node đầu tiên của lineage, hoặc selected root nếu không có upstream. Context stage giữ trạng thái `gathering | completed | failed`, normalized safe provider errors, missing-information codes, selected/candidate URN references, lineage/change facts và không có hypothesis.
+
+### Files changed
+
+Shared types, agent-core gatherer, API composition, web context presentation/styles, focused integration/E2E tests, cùng `AGENT_DESIGN.md`, `API_CONTRACTS.md`, `DATA_MODEL.md`, `IMPLEMENTATION_PLAN.md`, `KNOWN_ISSUES.md` và entry này. Không đổi fixture, provider types, manifest, lockfile hay cấu trúc repository.
+
+### Decisions
+
+Giữ accepted `POST /incidents` body `202` tương thích; expose context additive qua retrieval. Dùng một total timeout/AbortSignal, không retry/fan-out/model/credential. Fixture không đọc DataHub credential; DataHub mode chỉ inject health/search/lineage/recent-change provider-neutral interfaces. Giữ report legacy chạy sau context failure để không phá demo. Exact next slice là suspicious-change detection; không bắt đầu trong session này.
+
+### Validation performed
+
+- Runtime workaround đã dùng: Node bundled `v24.14.0`, pnpm workspace `.bin`; không đổi repo/bootstrap/lockfile.
+- Changed-file Prettier check và affected ESLint PASS; agent-core/shared-types typecheck sau correction PASS.
+- Scoped targeted Vitest PASS: 7 files, `40/40` tests, Vitest `3.50s`; gồm schema bounds/defaults, deterministic parse, hint/no-hint/no-match, no invented entity, one-call bounds, timeout/abort/malformed-response safe errors, fixture credential independence, DataHub composition, API lifecycle và UI stale/accessibility presentation.
+- Affected production builds PASS cho shared-types, datahub-client, agent-core, API và web; Vite transformed 109 modules, web build khoảng `5.41s`.
+- Đúng một combined `pnpm test:e2e:report` cuối PASS `6750ms`, API `58373`, web `58374`; flow metadata readiness → search → bounded lineage → recent changes → submit → context parsed intent/candidate/selected URN/facts/missing info → completed report, kèm clean console, accessibility/focus, responsive overflow, timeout và launcher cleanup.
+- Review cuối sẽ chạy `git diff --check`, conflict/secret/generated scans, scoped diff/name/stat, ancestry và worktree trước commit; Level D và live DataHub smoke không chạy theo yêu cầu slice.
+
+### Validation intentionally deferred
+
+Level D `pnpm validate`, live credentialed DataHub smoke, suspicious-change detection, impact/correlation, hypothesis/scoring, evidence-chain synthesis, remediation, persistence, auth, model integration, additional providers và dependency changes.
+
+### Known issues
+
+Managed Windows fallback-pnpm không tự resolve root binaries và sandbox esbuild không đọc ancestor metadata; cả hai đã có scoped process workaround và không phải product blocker. Live DataHub vẫn credential-gated. Không có secret, generated artifact hay listener/process leak sau E2E.
+
+### Exact next step
+
+Rà final diff/secret/generated/worktree, tạo conventional commit cho Slice 3.1, push branch `codex/phase-3-1-parse-gather-20260719-e7b053c`, mở Draft PR base `main`, rồi theo dõi đúng một CI run tới terminal. Sau khi Slice 3.1 PR/CI hoàn tất, hand off Phase 3 Slice 3.2 — suspicious-change detection; không triển khai slice đó trong task này.

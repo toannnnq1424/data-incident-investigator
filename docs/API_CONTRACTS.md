@@ -351,6 +351,9 @@ Validation response `400`:
 accepted response remains compatible with Slice 1.1: it always uses HTTP `202` and `processing` even
 though fixture investigation begins immediately in the background.
 
+The accepted body intentionally remains unchanged in Slice 3.1. Clients retrieve the additive
+parse-and-gather lifecycle through `GET /incidents/:incidentId`.
+
 ### `GET /incidents/:incidentId`
 
 The browser calls `/api/incidents/:incidentId`; direct API clients use
@@ -362,16 +365,131 @@ Processing response `200`:
 ```json
 {
   "incidentId": "576982bc-da91-4d69-a5ad-52206b3e17e2",
-  "status": "processing"
+  "status": "processing",
+  "contextStage": {
+    "status": "gathering"
+  }
 }
 ```
 
-Completed response `200` (abridged values, complete shape shown):
+While the legacy report remains `processing`, `contextStage` may already be terminal. A successful
+facts-only stage has this provider-neutral shape (values abridged):
+
+```json
+{
+  "status": "completed",
+  "intent": {
+    "question": "Why did revenue drop today?",
+    "entityHints": ["analytics.daily_revenue"],
+    "symptoms": ["Revenue is below the seven-day baseline."],
+    "timeWindow": {
+      "endTime": "2026-07-18T08:30:00.000Z",
+      "hours": 168,
+      "basis": "incident_time"
+    }
+  },
+  "facts": {
+    "sourceMode": "fixture",
+    "candidateEntities": [
+      {
+        "urn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,analytics.daily_revenue,PROD)",
+        "kind": "dataset",
+        "name": "analytics.daily_revenue"
+      }
+    ],
+    "selectedEntity": {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,analytics.daily_revenue,PROD)",
+      "kind": "dataset",
+      "name": "analytics.daily_revenue"
+    },
+    "lineage": {
+      "rootUrn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,analytics.daily_revenue,PROD)",
+      "direction": "upstream",
+      "requestedDepth": 2,
+      "maxNodes": 5,
+      "visitedNodeCount": 1,
+      "truncated": false,
+      "nodes": [
+        {
+          "urn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,analytics.daily_revenue,PROD)",
+          "kind": "dataset",
+          "name": "analytics.daily_revenue",
+          "depth": 0
+        }
+      ],
+      "edges": []
+    },
+    "recentChanges": [
+      {
+        "entityUrn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,analytics.daily_revenue,PROD)",
+        "window": {
+          "startTime": "2026-07-11T08:30:00.000Z",
+          "endTime": "2026-07-18T08:30:00.000Z",
+          "hours": 168
+        },
+        "limit": 10,
+        "returnedCount": 0,
+        "truncated": false,
+        "changes": []
+      }
+    ]
+  },
+  "missingInformation": []
+}
+```
+
+`lineage` and each `recentChanges` item use the existing shared metadata response schemas. Candidate
+entities are capped at five; the selected entity must exactly match one candidate; lineage must use
+that selected URN as its root; and the single recent-change window references only a returned lineage
+node.
+A no-match search has no selected entity, makes no lineage/recent-change call, and includes
+`entity_not_found` in `missingInformation`. Other missing codes distinguish absent optional intake,
+empty lineage/history, and bounded truncation. These are facts and missing information only; the stage
+contains no hypothesis, confidence, causal inference, evidence chain, recommendation, or remediation.
+
+A safe terminal failure is returned inside the incident response rather than as a raw provider error:
+
+```json
+{
+  "status": "failed",
+  "error": {
+    "code": "METADATA_TIMEOUT",
+    "message": "Incident context gathering timed out."
+  }
+}
+```
+
+Allowed context error codes are the existing normalized metadata codes plus `INTERNAL_ERROR`. Provider
+URL, token, Authorization header, GraphQL/error body, exception, and stack are never returned. Fixture
+and DataHub modes use the same health/search/lineage/recent-change interfaces; default execution makes
+at most four calls under one two-second timeout/AbortSignal, with no retry or unbounded fan-out.
+
+Completed response `200` (legacy report values abridged; context contracts described above):
 
 ```json
 {
   "incidentId": "576982bc-da91-4d69-a5ad-52206b3e17e2",
   "status": "completed",
+  "contextStage": {
+    "status": "completed",
+    "intent": {
+      "question": "Why did revenue drop today?",
+      "entityHints": [],
+      "symptoms": [],
+      "timeWindow": { "hours": 168, "basis": "provider_default" }
+    },
+    "facts": {
+      "sourceMode": "fixture",
+      "candidateEntities": [],
+      "recentChanges": []
+    },
+    "missingInformation": [
+      {
+        "code": "entity_not_found",
+        "message": "The metadata source returned no candidate entity for the normalized intake."
+      }
+    ]
+  },
   "report": {
     "incidentId": "576982bc-da91-4d69-a5ad-52206b3e17e2",
     "summary": "The strongest evidence-backed inference is: ...",
