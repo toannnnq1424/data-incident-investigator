@@ -1,10 +1,10 @@
 import { createServer } from 'node:http';
 import { createRequire } from 'node:module';
 import process from 'node:process';
+import { setTimeout as delay } from 'node:timers/promises';
 import { fileURLToPath, pathToFileURL, URL } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import {
-  assertPortAvailable,
   createRuntimeConfig,
   findFreePort,
   resolvePnpmInvocation,
@@ -31,6 +31,82 @@ function close(server) {
   return new Promise((resolve, reject) => {
     server.close((error) => (error ? reject(error) : resolve()));
   });
+}
+
+function boundPort(server, host) {
+  const address = server.address();
+  if (!address || typeof address === 'string') {
+    throw new Error(`Could not read the bound port on ${host}.`);
+  }
+
+  return address.port;
+}
+
+function waitForBoundProcess(entry, { timeoutMs = 8_000 } = {}) {
+  return new Promise((resolve, reject) => {
+    const finish = (error, processDetails) => {
+      clearTimeout(timeout);
+      entry.child.stdout.off('data', onData);
+      entry.child.off('error', onError);
+      entry.child.off('exit', onExit);
+      if (error) {
+        reject(error);
+      } else {
+        resolve(processDetails);
+      }
+    };
+    const readProcessDetails = () => {
+      const match = /DII_TEST_PROCESS=(\d+):(\d+)/.exec(entry.logs);
+      if (match) {
+        finish(undefined, { pid: Number(match[1]), port: Number(match[2]) });
+      }
+    };
+    const onData = () => readProcessDetails();
+    const onError = (error) => finish(error);
+    const onExit = (code, signal) =>
+      finish(
+        new Error(
+          `${entry.name} exited before reporting its descendant PID and bound port: code=${code} signal=${signal}\n${entry.logs}`,
+        ),
+      );
+    const timeout = setTimeout(
+      () =>
+        finish(
+          new Error(
+            `${entry.name} did not report its descendant PID and bound port.\n${entry.logs}`,
+          ),
+        ),
+      timeoutMs,
+    );
+
+    entry.child.stdout.on('data', onData);
+    entry.child.once('error', onError);
+    entry.child.once('exit', onExit);
+    readProcessDetails();
+  });
+}
+
+function isProcessAlive(pid) {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    if (error?.code === 'ESRCH') {
+      return false;
+    }
+    throw error;
+  }
+}
+
+async function waitForProcessExit(pid, { pollMs = 25, timeoutMs = 2_000 } = {}) {
+  const deadline = Date.now() + timeoutMs;
+
+  while (isProcessAlive(pid)) {
+    if (Date.now() >= deadline) {
+      throw new Error(`Managed descendant process ${pid} was still alive after cleanup.`);
+    }
+    await delay(pollMs);
+  }
 }
 
 describe('Phase 1 browser launcher contracts', () => {
@@ -84,49 +160,45 @@ describe('Phase 1 browser launcher contracts', () => {
 
   it('keeps dynamic commands, proxy, readiness, and browser URLs synchronized', async () => {
     const host = '127.0.0.1';
-    const apiPort = await findFreePort(host);
-    let webPort = await findFreePort(host);
-    while (webPort === apiPort) {
-      webPort = await findFreePort(host);
-    }
-
-    const runtime = createRuntimeConfig({
-      apiPort,
-      host,
-      viteConfigPath,
-      webPort,
-    });
-
-    expect(runtime.apiEnv).toEqual({ API_HOST: host, API_PORT: String(apiPort) });
-    expect(runtime.apiHealthUrl).toBe(`http://${host}:${apiPort}/health`);
-    expect(runtime.webEnv.DII_E2E_API_URL).toBe(runtime.apiUrl);
-    expect(runtime.webUrl).toBe(`http://${host}:${webPort}`);
-    expect(runtime.webArgs).not.toContain('--');
-    expect(runtime.webArgs).toContain(String(webPort));
-
-    const previousE2eEnv = Object.fromEntries(
-      Object.keys(runtime.webEnv).map((key) => [key, process.env[key]]),
-    );
-    Object.assign(process.env, runtime.webEnv);
+    const server = createServer((_request, response) => response.end('ready'));
+    await listen(server, host, 0);
     try {
-      const viteConfig = await resolveConfig({ configFile: viteConfigPath }, 'serve');
-      expect(viteConfig.server.host).toBe(host);
-      expect(viteConfig.server.port).toBe(webPort);
-      expect(viteConfig.server.strictPort).toBe(true);
-      expect(viteConfig.server.proxy?.['/api']?.target).toBe(runtime.apiUrl);
-    } finally {
-      for (const [key, value] of Object.entries(previousE2eEnv)) {
-        if (value === undefined) {
-          delete process.env[key];
-        } else {
-          process.env[key] = value;
+      const webPort = boundPort(server, host);
+      const apiPort = await findFreePort(host);
+      const runtime = createRuntimeConfig({
+        apiPort,
+        host,
+        viteConfigPath,
+        webPort,
+      });
+
+      expect(runtime.apiEnv).toEqual({ API_HOST: host, API_PORT: String(apiPort) });
+      expect(runtime.apiHealthUrl).toBe(`http://${host}:${apiPort}/health`);
+      expect(runtime.webEnv.DII_E2E_API_URL).toBe(runtime.apiUrl);
+      expect(runtime.webUrl).toBe(`http://${host}:${webPort}`);
+      expect(runtime.webArgs).not.toContain('--');
+      expect(runtime.webArgs).toContain(String(webPort));
+
+      const previousE2eEnv = Object.fromEntries(
+        Object.keys(runtime.webEnv).map((key) => [key, process.env[key]]),
+      );
+      Object.assign(process.env, runtime.webEnv);
+      try {
+        const viteConfig = await resolveConfig({ configFile: viteConfigPath }, 'serve');
+        expect(viteConfig.server.host).toBe(host);
+        expect(viteConfig.server.port).toBe(webPort);
+        expect(viteConfig.server.strictPort).toBe(true);
+        expect(viteConfig.server.proxy?.['/api']?.target).toBe(runtime.apiUrl);
+      } finally {
+        for (const [key, value] of Object.entries(previousE2eEnv)) {
+          if (value === undefined) {
+            delete process.env[key];
+          } else {
+            process.env[key] = value;
+          }
         }
       }
-    }
 
-    const server = createServer((_request, response) => response.end('ready'));
-    await listen(server, host, webPort);
-    try {
       const entry = {
         child: { exitCode: null, signalCode: null },
         logs: '',
@@ -139,13 +211,18 @@ describe('Phase 1 browser launcher contracts', () => {
     }
   });
 
-  it('terminates only the managed descendant process tree and releases its listener', async () => {
+  it('terminates the exact managed descendant process tree', async () => {
     const host = '127.0.0.1';
-    const port = await findFreePort(host);
     const childSource = `
         const { createServer } = require('node:http');
-        createServer((_request, response) => response.end('ready'))
-          .listen(${port}, '${host}', () => console.log('ready'));
+        const server = createServer((_request, response) => response.end('ready'));
+        server.listen(0, '${host}', () => {
+          const address = server.address();
+          if (!address || typeof address === 'string') {
+            throw new Error('Could not read the cleanup fixture port.');
+          }
+          console.log('DII_TEST_PROCESS=' + process.pid + ':' + address.port);
+        });
         setInterval(() => {}, 1000);
       `;
     const parentSource = `
@@ -160,12 +237,14 @@ describe('Phase 1 browser launcher contracts', () => {
       parentSource,
     ]);
 
+    let descendant;
     try {
-      await waitForHttpReady(entry, `http://${host}:${port}`, { timeoutMs: 8_000 });
+      descendant = await waitForBoundProcess(entry);
+      await waitForHttpReady(entry, `http://${host}:${descendant.port}`, { timeoutMs: 8_000 });
     } finally {
       await stopManagedProcesses([entry]);
     }
 
-    await expect(assertPortAvailable(host, port)).resolves.toBeUndefined();
+    await expect(waitForProcessExit(descendant.pid)).resolves.toBeUndefined();
   }, 15_000);
 });
