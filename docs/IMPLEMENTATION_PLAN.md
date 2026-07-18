@@ -75,7 +75,78 @@ from the Slice 1.1 task.
 
 ### Slice 1.2 — Mock investigation
 
-Read deterministic fixtures through a fixture `MetadataAdapter`; produce and render a structured report.
+Status: complete on `codex/slice-1-2-mock-investigation` from exact base commit
+`9aea4c5995f3e79c5729b7c9fc7e5fe78de54e0b`.
+
+Objective: after a canonical removed-schema-column incident is submitted, preserve the Slice 1.1
+`202`/UUID/`processing` response and transition through the provider-neutral `MetadataAdapter` to a
+deterministic, schema-validated completed report that the web retrieves and renders without external
+credentials.
+
+Minimum files:
+
+- `fixtures/metadata/removed-schema-column.json` and
+  `fixtures/incidents/removed-schema-column.json` for the single canonical scenario.
+- `packages/datahub-client/src/index.ts` and direct fixture-adapter tests for bounded fixture metadata,
+  lineage, and recent-change access through `MetadataAdapter`.
+- `packages/agent-core/src/index.ts` and direct runner tests for deterministic evidence-linked report
+  orchestration.
+- `packages/shared-types/src/index.ts` and contract tests for the completed retrieval state and stable
+  not-found error.
+- `apps/api/src/index.ts` and API integration tests for in-memory processing/completed state and
+  `GET /incidents/:incidentId`.
+- `apps/web/src/App.tsx`, `apps/web/src/styles.css`, and a focused web behavior test for retrieval and
+  compact completed-report rendering.
+- Affected package manifests/lockfile only where workspace dependency edges require them.
+- `docs/API_CONTRACTS.md`, `docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md`, and
+  `docs/SESSION_LOG.md` for the durable handoff.
+
+Acceptance criteria:
+
+- The canonical fixture travels web -> `POST /incidents` -> fixture `MetadataAdapter` -> agent-core
+  runner -> `GET /incidents/:id` -> visible completed report.
+- The completed response and nested report pass shared schemas; every hypothesis evidence reference
+  resolves to evidence in that report.
+- Repeating the same canonical request yields identical report content except for the generated
+  incident identifier.
+- Fixture entity search, lineage, and recent changes obey small explicit limits and never return
+  entities outside the canonical fixture.
+- Invalid submissions retain the Slice 1.1 typed validation error; unknown incident IDs return the
+  stable typed not-found error.
+- Targeted contracts, fixture adapter/runner, API integration, and web behavior tests pass, followed by
+  one real browser submission-to-report flow with no console errors and affected builds.
+
+Deferred: detailed evidence, entity, confidence, assumption, missing-information, and recommendation
+presentation is Slice 1.3. Real DataHub calls, model reasoning, durable persistence, generic fixture
+selection, checked-in cross-browser automation, and full phase/release Level D validation remain out of
+scope.
+
+Exact Level C commands (run once after the coherent slice, without rerunning unchanged successes):
+
+- `pnpm exec prettier --check <changed files reported by git diff>`
+- `pnpm exec eslint packages/shared-types/src packages/datahub-client/src packages/agent-core/src apps/api/src apps/web/src tests/integration`
+- `pnpm --filter @dii/shared-types typecheck`
+- `pnpm --filter @dii/datahub-client typecheck`
+- `pnpm --filter @dii/agent-core typecheck`
+- `pnpm --filter @dii/api typecheck`
+- `pnpm --filter @dii/web typecheck`
+- `pnpm exec vitest run tests/integration/contracts.test.ts tests/integration/fixture-adapter.test.ts tests/integration/investigation-runner.test.ts tests/integration/incidents-api.test.ts tests/integration/web-report.test.ts`
+- `pnpm --parallel --filter @dii/api --filter @dii/web dev`, then one real browser canonical
+  submission-to-completed-report flow and console inspection.
+- `pnpm --filter @dii/shared-types --filter @dii/datahub-client --filter @dii/agent-core --filter @dii/api --filter @dii/web build`
+
+Validation result: passed on 2026-07-18. Changed-file Prettier checks, affected lint, all five
+affected type checks, five targeted test files with 13 passing tests, and all five affected builds
+passed. After browser validation made the processing transition intentionally visible for 250 ms, the
+affected API format/lint/type-check, four API integration tests, and API build passed again. A real
+canonical fixture flow through Vite and Fastify showed `processing`, then `completed`, the report
+summary, and the top ranked hypothesis with no browser console warnings or errors. The initial Vitest
+attempt was classified as an environment restriction because esbuild could not read worktree ancestor
+metadata; the same targeted command passed with scoped access. Full Level D validation remains
+deferred.
+
+Exact next slice: create a new project-scoped task for Phase 1 Slice 1.3 — Evidence display, starting
+from this Slice 1.2 branch/commit; do not continue Slice 1.3 here.
 
 ### Slice 1.3 — Evidence display
 

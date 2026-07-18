@@ -1,0 +1,40 @@
+{
+  "scenarioId": "removed-schema-column",
+  "defaultSeedUrn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,analytics.daily_revenue,PROD)",
+  "entities": [
+    {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,raw.orders,PROD)",
+      "name": "raw.orders",
+      "kind": "dataset"
+    },
+    {
+      "urn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,analytics.daily_revenue,PROD)",
+      "name": "analytics.daily_revenue",
+      "kind": "dataset"
+    },
+    {
+      "urn": "urn:li:dashboard:(looker,revenue-overview)",
+      "name": "Revenue overview",
+      "kind": "dashboard"
+    }
+  ],
+  "lineage": [
+    {
+      "upstreamUrn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,raw.orders,PROD)",
+      "downstreamUrn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,analytics.daily_revenue,PROD)"
+    },
+    {
+      "upstreamUrn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,analytics.daily_revenue,PROD)",
+      "downstreamUrn": "urn:li:dashboard:(looker,revenue-overview)"
+    }
+  ],
+  "changes": [
+    {
+      "id": "change-removed-gross-revenue",
+      "entityUrn": "urn:li:dataset:(urn:li:dataPlatform:snowflake,raw.orders,PROD)",
+      "category": "schema",
+      "observedAt": "2026-07-18T07:45:00.000Z",
+      "summary": "Column gross_revenue was removed from raw.orders."
+    }
+  ]
+}

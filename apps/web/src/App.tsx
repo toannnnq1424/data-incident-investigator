@@ -3,21 +3,72 @@ import {
   ApiErrorSchema,
   IncidentAcceptedResponseSchema,
   IncidentRequestSchema,
+  IncidentRetrievalResponseSchema,
   type IncidentAcceptedResponse,
+  type IncidentRetrievalResponse,
 } from '@dii/shared-types';
+
+type CompletedIncident = Extract<IncidentRetrievalResponse, { status: 'completed' }>;
 
 type SubmissionState =
   | { kind: 'idle' }
   | { kind: 'submitting' }
-  | { kind: 'success'; incident: IncidentAcceptedResponse }
+  | { kind: 'processing'; incident: IncidentAcceptedResponse }
+  | { kind: 'completed'; incident: CompletedIncident }
   | { kind: 'validation-error'; message: string }
   | { kind: 'api-error'; message: string };
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? '/api';
+const retrievalAttempts = 30;
+const retrievalDelayMs = 100;
 
 function optionalText(value: string) {
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : undefined;
+}
+
+function delay(milliseconds: number) {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
+export function getCompletedReportContent(incident: CompletedIncident) {
+  const topHypothesis = incident.report.hypotheses[0];
+  if (!topHypothesis) {
+    throw new Error('A completed investigation report must include a ranked hypothesis.');
+  }
+
+  return {
+    status: incident.status,
+    summary: incident.report.summary,
+    topHypothesis: topHypothesis.summary,
+  };
+}
+
+export function CompletedReport({ incident }: { incident: CompletedIncident }) {
+  const content = getCompletedReportContent(incident);
+
+  return (
+    <div className="status-success completed-report" role="status">
+      <p>Investigation completed</p>
+      <dl>
+        <div>
+          <dt>Incident ID</dt>
+          <dd>{incident.incidentId}</dd>
+        </div>
+        <div>
+          <dt>Status</dt>
+          <dd>{content.status}</dd>
+        </div>
+      </dl>
+      <section className="report-summary" aria-labelledby="report-summary-heading">
+        <p className="report-label">Incident report</p>
+        <h3 id="report-summary-heading">Summary</h3>
+        <p>{content.summary}</p>
+        <h4>Top ranked hypothesis</h4>
+        <p>{content.topHypothesis}</p>
+      </section>
+    </div>
+  );
 }
 
 export function App() {
@@ -26,6 +77,46 @@ export function App() {
   const [occurredAt, setOccurredAt] = useState('');
   const [symptom, setSymptom] = useState('');
   const [state, setState] = useState<SubmissionState>({ kind: 'idle' });
+
+  async function retrieveIncident(acceptedIncident: IncidentAcceptedResponse) {
+    for (let attempt = 0; attempt < retrievalAttempts; attempt += 1) {
+      const response = await fetch(`${apiBaseUrl}/incidents/${acceptedIncident.incidentId}`);
+      const body: unknown = await response.json();
+
+      if (!response.ok) {
+        const parsedError = ApiErrorSchema.safeParse(body);
+        setState({
+          kind: 'api-error',
+          message: parsedError.success
+            ? parsedError.data.error.message
+            : 'The investigation report could not be retrieved.',
+        });
+        return;
+      }
+
+      const parsedIncident = IncidentRetrievalResponseSchema.safeParse(body);
+      if (!parsedIncident.success) {
+        setState({
+          kind: 'api-error',
+          message: 'The investigation service returned an unexpected report.',
+        });
+        return;
+      }
+
+      if (parsedIncident.data.status === 'completed') {
+        setState({ kind: 'completed', incident: parsedIncident.data });
+        return;
+      }
+
+      setState({ kind: 'processing', incident: acceptedIncident });
+      await delay(retrievalDelayMs);
+    }
+
+    setState({
+      kind: 'api-error',
+      message: 'The investigation is still processing. Try again shortly.',
+    });
+  }
 
   async function submitIncident(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -88,7 +179,8 @@ export function App() {
         return;
       }
 
-      setState({ kind: 'success', incident: parsedResponse.data });
+      setState({ kind: 'processing', incident: parsedResponse.data });
+      await retrieveIncident(parsedResponse.data);
     } catch {
       setState({
         kind: 'api-error',
@@ -97,7 +189,7 @@ export function App() {
     }
   }
 
-  const isSubmitting = state.kind === 'submitting';
+  const isBusy = state.kind === 'submitting' || state.kind === 'processing';
 
   return (
     <main className="shell">
@@ -116,7 +208,7 @@ export function App() {
             <p className="step-label">New investigation</p>
             <h2 id="incident-heading">What changed?</h2>
           </div>
-          <span className="mode-pill">Fixture-ready</span>
+          <span className="mode-pill">Fixture mode</span>
         </div>
 
         <form onSubmit={submitIncident} noValidate>
@@ -181,8 +273,8 @@ export function App() {
           </div>
 
           <div className="submission-row">
-            <button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Starting investigation…' : 'Start investigation'}
+            <button type="submit" disabled={isBusy}>
+              {isBusy ? 'Investigation in progress…' : 'Start investigation'}
             </button>
             <p className="privacy-note">No production data is modified.</p>
           </div>
@@ -194,24 +286,16 @@ export function App() {
           )}
           {state.kind === 'submitting' && (
             <p className="status-progress" role="status">
-              Creating the incident and preparing the investigation…
+              Creating the incident…
             </p>
           )}
-          {state.kind === 'success' && (
-            <div className="status-success" role="status">
-              <p>Investigation accepted</p>
-              <dl>
-                <div>
-                  <dt>Incident ID</dt>
-                  <dd>{state.incident.incidentId}</dd>
-                </div>
-                <div>
-                  <dt>Status</dt>
-                  <dd>{state.incident.status}</dd>
-                </div>
-              </dl>
+          {state.kind === 'processing' && (
+            <div className="status-progress processing-status" role="status">
+              <p>Investigation processing</p>
+              <span>{state.incident.incidentId}</span>
             </div>
           )}
+          {state.kind === 'completed' && <CompletedReport incident={state.incident} />}
           {(state.kind === 'validation-error' || state.kind === 'api-error') && (
             <p className="status-error" role="alert">
               <strong>

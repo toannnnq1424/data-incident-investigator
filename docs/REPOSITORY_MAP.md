@@ -1,25 +1,25 @@
 # Repository map
 
-Last verified: 2026-07-18 after Phase 1 Slice 1.1.
+Last verified: 2026-07-18 after Phase 1 Slice 1.2.
 
 ## Directories
 
-| Path                      | Responsibility                                               | Important entrypoints                           |
-| ------------------------- | ------------------------------------------------------------ | ----------------------------------------------- |
-| `apps/web`                | React/Vite user interface                                    | `src/App.tsx`, `src/main.tsx`, `vite.config.ts` |
-| `apps/api`                | Fastify HTTP API                                             | `src/index.ts`                                  |
-| `packages/shared-types`   | Zod schemas and shared types                                 | `src/index.ts`                                  |
-| `packages/datahub-client` | Provider-neutral metadata contract and later DataHub adapter | `src/index.ts`                                  |
-| `packages/agent-core`     | Investigation runner contracts and later orchestration       | `src/index.ts`                                  |
-| `packages/evaluation`     | Evaluation cases and metrics                                 | `src/index.ts`                                  |
-| `fixtures`                | Deterministic metadata, incidents, and demo data             | populated from Phase 1                          |
-| `tests/integration`       | Cross-package contract and slice tests                       | `contracts.test.ts`, `incidents-api.test.ts`    |
-| `tests/smoke`             | Primary health and build smoke tests                         | `health.test.ts`                                |
-| `tests/e2e`               | Browser flows                                                | populated after a full UI slice                 |
-| `scripts`                 | Repository operations and smoke checks                       | `smoke.mjs`                                     |
-| `docs`                    | Product, architecture, plan, memory, and release docs        | see list below                                  |
-| `.github`                 | CI, release validation, and PR template                      | `workflows/ci.yml`                              |
-| `.codex`                  | Trusted project-scoped Codex settings without secrets        | `config.toml`                                   |
+| Path                      | Responsibility                                              | Important entrypoints                                                         |
+| ------------------------- | ----------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `apps/web`                | React/Vite user interface                                   | `src/App.tsx`, `src/main.tsx`, `vite.config.ts`                               |
+| `apps/api`                | Fastify HTTP API                                            | `src/index.ts`                                                                |
+| `packages/shared-types`   | Zod schemas and shared types                                | `src/index.ts`                                                                |
+| `packages/datahub-client` | Provider-neutral contract and deterministic fixture adapter | `src/index.ts`                                                                |
+| `packages/agent-core`     | Bounded deterministic investigation orchestration           | `src/index.ts`                                                                |
+| `packages/evaluation`     | Evaluation cases and metrics                                | `src/index.ts`                                                                |
+| `fixtures`                | Deterministic metadata, incidents, and demo data            | `metadata/removed-schema-column.json`, `incidents/removed-schema-column.json` |
+| `tests/integration`       | Cross-package contract and slice tests                      | `contracts.test.ts`, `incidents-api.test.ts`                                  |
+| `tests/smoke`             | Primary health and build smoke tests                        | `health.test.ts`                                                              |
+| `tests/e2e`               | Browser flows                                               | populated after a full UI slice                                               |
+| `scripts`                 | Repository operations and smoke checks                      | `smoke.mjs`                                                                   |
+| `docs`                    | Product, architecture, plan, memory, and release docs       | see list below                                                                |
+| `.github`                 | CI, release validation, and PR template                     | `workflows/ci.yml`                                                            |
+| `.codex`                  | Trusted project-scoped Codex settings without secrets       | `config.toml`                                                                 |
 
 ## Root configuration
 
@@ -48,9 +48,11 @@ Last verified: 2026-07-18 after Phase 1 Slice 1.1.
 
 ## Shared contracts
 
-`packages/shared-types/src/index.ts` defines incident input, accepted processing response, stable API
-error, entity, evidence, hypothesis, and report schemas. `packages/datahub-client/src/index.ts` defines
-the provider-neutral `MetadataAdapter`.
+`packages/shared-types/src/index.ts` defines incident input, accepted processing and retrieval
+responses, stable API error, entity, evidence, hypothesis, and report schemas.
+`packages/datahub-client/src/index.ts` defines the provider-neutral `MetadataAdapter` and its bounded
+fixture implementation. `packages/agent-core/src/index.ts` runs deterministic evidence-linked fixture
+investigations through that adapter.
 
 The web uses the same shared incident schemas as the API. In development, Vite proxies browser calls
 from `/api/*` to the Fastify service and removes the `/api` prefix.

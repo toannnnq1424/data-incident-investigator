@@ -35,6 +35,12 @@ importers:
 
   apps/api:
     dependencies:
+      '@dii/agent-core':
+        specifier: workspace:*
+        version: link:../../packages/agent-core
+      '@dii/datahub-client':
+        specifier: workspace:*
+        version: link:../../packages/datahub-client
       '@dii/shared-types':
         specifier: workspace:*
         version: link:../../packages/shared-types
@@ -85,6 +91,9 @@ importers:
       '@dii/shared-types':
         specifier: workspace:*
         version: link:../shared-types
+      zod:
+        specifier: ^4.0.0
+        version: 4.4.3
 
   packages/evaluation:
     dependencies:

@@ -1,0 +1,9 @@
+{
+  "scenarioId": "removed-schema-column",
+  "request": {
+    "question": "Why did revenue drop after the morning warehouse refresh?",
+    "entityHint": "analytics.daily_revenue",
+    "occurredAt": "2026-07-18T08:30:00.000Z",
+    "symptom": "Revenue is 42% below the seven-day baseline."
+  }
+}
