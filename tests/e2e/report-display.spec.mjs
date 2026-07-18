@@ -5,6 +5,7 @@ import process from 'node:process';
 import { clearTimeout, setTimeout } from 'node:timers';
 import { setTimeout as delay } from 'node:timers/promises';
 import { fileURLToPath, URL } from 'node:url';
+import { stripVTControlCharacters } from 'node:util';
 import { chromium } from 'playwright';
 
 const repoRoot = fileURLToPath(new URL('../..', import.meta.url));
@@ -33,7 +34,8 @@ function startProcess(name, args, readyPattern) {
 
     const collect = (chunk) => {
       entry.logs += chunk.toString();
-      if (!resolved && readyPattern.test(entry.logs)) {
+      const normalizedLogs = stripVTControlCharacters(entry.logs);
+      if (!resolved && readyPattern.test(normalizedLogs)) {
         resolved = true;
         clearTimeout(timeout);
         resolve(entry);
@@ -108,8 +110,18 @@ try {
   );
   await startProcess(
     'web',
-    ['--filter', '@dii/web', 'dev', '--', '--host', '127.0.0.1', '--port', '5173', '--strictPort'],
-    /Local:\s+http:\/\/localhost:5173\//,
+    [
+      '--filter',
+      '@dii/web',
+      'exec',
+      'vite',
+      '--host',
+      '127.0.0.1',
+      '--port',
+      '5173',
+      '--strictPort',
+    ],
+    /Local:\s+http:\/\/(?:127\.0\.0\.1|localhost):5173\//,
   );
 
   browser = await chromium.launch({ headless: true });
@@ -122,7 +134,7 @@ try {
   });
   page.on('pageerror', (error) => browserProblems.push(`pageerror: ${error.message}`));
 
-  await page.goto('http://localhost:5173/', { waitUntil: 'networkidle' });
+  await page.goto('http://127.0.0.1:5173/', { waitUntil: 'networkidle' });
   await page.locator('#question').fill('Why did revenue drop today?');
   await page.locator('#entity-hint').fill('analytics.daily_revenue');
   await page.locator('#occurred-at').fill('2026-07-18T08:30');
