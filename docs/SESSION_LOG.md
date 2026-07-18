@@ -148,3 +148,62 @@ Fixture incident state is process-local and only the removed-schema-column scena
 ### Exact next step
 
 create a new project-scoped task for Phase 1 Slice 1.3 — Evidence display, starting from this Slice 1.2 branch/commit; do not continue Slice 1.3 here.
+
+## 2026-07-18 — Phase 1 Slice 1.3 evidence display trên macOS
+
+### Objective
+
+Triển khai màn hình hiển thị evidence chi tiết từ báo cáo fixture đã có ở Slice 1.2, bắt đầu từ exact
+commit `8bfab62a2ab3e80f8b57f90c8a464a1c151130bd`, không sửa backend, `agent-core`, hoặc shared
+contract.
+
+### Completed
+
+Xác nhận Slice 1.2 đạt targeted validation trên macOS, rồi tạo branch
+`codex-mac/slice-1-3-evidence-display`. Mở rộng completed report trong web UI để hiển thị related
+entities, facts/evidence kèm evidence IDs, lineage evidence, hypotheses/inferences kèm confidence và
+referenced evidence IDs, assumptions, missing information, và recommended actions. Giữ loading,
+empty-state và error-state dễ hiểu. Thêm Playwright browser test cho canonical fixture report và thêm
+script `pnpm test:e2e:report`.
+
+### Files changed
+
+`apps/web/src/App.tsx`; `apps/web/src/styles.css`; `tests/integration/web-report.test.ts`;
+`tests/e2e/report-display.spec.mjs`; `package.json`; `pnpm-lock.yaml`; `docs/IMPLEMENTATION_PLAN.md`;
+`docs/KNOWN_ISSUES.md`; `docs/REPOSITORY_MAP.md`; `docs/TEST_STRATEGY.md`; `docs/SESSION_LOG.md`.
+
+### Decisions
+
+Không thay đổi API, runner, adapter hoặc shared schemas vì `IncidentRetrievalResponseSchema` từ Slice
+1.2 đã có đủ dữ liệu. Dùng evidence như facts, hypotheses như inferences, và lọc evidence category
+`lineage` để tạo section lineage riêng. Thêm `playwright` làm dev dependency tối thiểu để browser-level
+test có thể chạy lặp lại trong repo.
+
+### Validation performed
+
+Slice 1.2 targeted validation trên macOS passed: `pnpm install --frozen-lockfile`, changed-file
+Prettier check, affected lint, five affected type-checks, five targeted Vitest files với 13 tests,
+five affected builds, và real browser canonical flow qua Vite/Fastify. Chuẩn bị browser runtime bằng
+`pnpm exec playwright install chromium`. Slice 1.3 Level C passed: `pnpm install --frozen-lockfile`;
+`pnpm exec prettier --check package.json pnpm-lock.yaml
+apps/web/src/App.tsx apps/web/src/styles.css tests/integration/web-report.test.ts
+tests/e2e/report-display.spec.mjs docs/IMPLEMENTATION_PLAN.md docs/KNOWN_ISSUES.md
+docs/REPOSITORY_MAP.md`; `pnpm exec eslint apps/web/src tests/integration/web-report.test.ts
+tests/e2e/report-display.spec.mjs`; `pnpm --filter @dii/web typecheck`; `pnpm exec vitest run
+tests/integration/web-report.test.ts`; `pnpm test:e2e:report`; `pnpm --filter @dii/web build`.
+
+### Validation intentionally deferred
+
+Full Level D validation, cross-browser matrix, real DataHub smoke, model reasoning, durable
+persistence, and Phase 2 work remain deferred.
+
+### Known issues
+
+Incident state remains process-local, and the fixture set still contains only the canonical
+removed-schema-column scenario. See `docs/KNOWN_ISSUES.md`.
+
+### Exact next step
+
+Review the stacked draft PR for `codex-mac/slice-1-3-evidence-display` against
+`codex/slice-1-2-mock-investigation`; after acceptance, run the Phase 1 integration checkpoint before
+starting Phase 2.

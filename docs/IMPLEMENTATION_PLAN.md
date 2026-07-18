@@ -150,7 +150,54 @@ from this Slice 1.2 branch/commit; do not continue Slice 1.3 here.
 
 ### Slice 1.3 — Evidence display
 
-Render evidence, entity impact, confidence, assumptions, missing information, and recommendations.
+Status: complete on `codex-mac/slice-1-3-evidence-display`, stacked on exact Slice 1.2 commit
+`8bfab62a2ab3e80f8b57f90c8a464a1c151130bd`.
+
+Objective: render the completed fixture report in enough detail for a judge to inspect related
+entities, lineage evidence, evidence IDs, hypothesis confidence, facts, inferences, assumptions,
+missing information, and recommended actions without changing the Slice 1.2 backend or shared
+contracts.
+
+Minimum files:
+
+- `apps/web/src/App.tsx` for report-section helpers and accessible detailed completed-report UI.
+- `apps/web/src/styles.css` for compact, scannable report layout and responsive states.
+- `tests/integration/web-report.test.ts` for focused presentation behavior coverage.
+- `tests/e2e/report-display.spec.mjs` for the browser-level canonical report check.
+- `package.json` and `pnpm-lock.yaml` only to add the Playwright dev dependency and report e2e script.
+- `docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md`, and `docs/SESSION_LOG.md` for durable handoff.
+
+Acceptance criteria:
+
+- Completed reports show related entities with kind and URN.
+- Evidence rows show stable evidence IDs, categories, statements, source entities, and observed times
+  when present.
+- Hypotheses show confidence as a readable percentage and list referenced evidence IDs.
+- Lineage-related evidence is visible in a distinct section.
+- The UI labels facts, inferences, assumptions, missing information, and recommendations separately.
+- Loading, empty, and error states remain understandable and accessible.
+- One browser-level test submits the canonical fixture and verifies the detailed report sections.
+
+Deferred: backend persistence, new fixture scenarios, real DataHub lineage, model reasoning,
+cross-browser matrix automation, and Phase 2 work.
+
+Level C validation:
+
+- Prettier check for changed files.
+- Affected web lint.
+- `pnpm --filter @dii/web typecheck`
+- `pnpm exec vitest run tests/integration/web-report.test.ts`
+- `pnpm test:e2e:report`
+- `pnpm --filter @dii/web build`
+
+Validation result: passed on macOS on 2026-07-18. Frozen install, changed-file Prettier check,
+affected frontend/e2e lint, web type-check, focused web presentation test, Playwright browser report
+flow, and affected web build passed. The Playwright flow starts local Fastify/Vite servers, submits the
+canonical fixture, verifies processing and completed states, checks detailed report sections, confirms
+desktop/mobile horizontal overflow is absent, and fails on browser console warnings/errors.
+
+Exact next slice: stop Phase 1 work here for review. After the stacked PR is accepted, run the Phase 1
+integration checkpoint before starting Phase 2.
 
 Phase completion: a clean clone can select a demo incident and receive a complete report.
 

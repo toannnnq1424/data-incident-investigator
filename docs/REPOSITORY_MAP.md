@@ -1,6 +1,6 @@
 # Repository map
 
-Last verified: 2026-07-18 after Phase 1 Slice 1.2.
+Last verified: 2026-07-18 after Phase 1 Slice 1.3.
 
 ## Directories
 
@@ -15,7 +15,7 @@ Last verified: 2026-07-18 after Phase 1 Slice 1.2.
 | `fixtures`                | Deterministic metadata, incidents, and demo data            | `metadata/removed-schema-column.json`, `incidents/removed-schema-column.json` |
 | `tests/integration`       | Cross-package contract and slice tests                      | `contracts.test.ts`, `incidents-api.test.ts`                                  |
 | `tests/smoke`             | Primary health and build smoke tests                        | `health.test.ts`                                                              |
-| `tests/e2e`               | Browser flows                                               | populated after a full UI slice                                               |
+| `tests/e2e`               | Browser flows                                               | `report-display.spec.mjs`                                                     |
 | `scripts`                 | Repository operations and smoke checks                      | `smoke.mjs`                                                                   |
 | `docs`                    | Product, architecture, plan, memory, and release docs       | see list below                                                                |
 | `.github`                 | CI, release validation, and PR template                     | `workflows/ci.yml`                                                            |
@@ -34,17 +34,18 @@ Last verified: 2026-07-18 after Phase 1 Slice 1.2.
 
 ## Commands
 
-| Command             | Purpose                                |
-| ------------------- | -------------------------------------- |
-| `pnpm install`      | Install all workspace dependencies.    |
-| `pnpm dev`          | Run web and API development servers.   |
-| `pnpm format:check` | Repository format check.               |
-| `pnpm lint`         | Repository lint.                       |
-| `pnpm typecheck`    | Recursive workspace type check.        |
-| `pnpm test`         | Vitest unit/integration/smoke tests.   |
-| `pnpm build`        | Build packages and apps.               |
-| `pnpm smoke`        | Verify API and web build artifacts.    |
-| `pnpm validate`     | Full Phase 0/phase/release validation. |
+| Command                | Purpose                                |
+| ---------------------- | -------------------------------------- |
+| `pnpm install`         | Install all workspace dependencies.    |
+| `pnpm dev`             | Run web and API development servers.   |
+| `pnpm format:check`    | Repository format check.               |
+| `pnpm lint`            | Repository lint.                       |
+| `pnpm typecheck`       | Recursive workspace type check.        |
+| `pnpm test`            | Vitest unit/integration/smoke tests.   |
+| `pnpm test:e2e:report` | Canonical fixture report browser flow. |
+| `pnpm build`           | Build packages and apps.               |
+| `pnpm smoke`           | Verify API and web build artifacts.    |
+| `pnpm validate`        | Full Phase 0/phase/release validation. |
 
 ## Shared contracts
 
