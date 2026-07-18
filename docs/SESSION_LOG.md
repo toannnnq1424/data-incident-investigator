@@ -502,6 +502,78 @@ vẫn deferred như trước.
 Tạo merge commit không rewrite, push cùng branch, xác minh draft PR #5 hết conflict và theo dõi đúng
 một CI run mới. Dừng sau PR/CI evidence; không bắt đầu Phase 2 và không tích hợp PR #4.
 
+## 2026-07-18 — Phase 2 Slice 2.1 DataHub health và provider error normalization
+
+### Objective
+
+Triển khai đúng một vertical slice từ exact Phase 1 closure HEAD
+`db7dba58d7ecae0505b0596d0f735cbae96b2b4c`: hiển thị metadata source/readiness xuyên suốt shared
+contract, DataHub client boundary, API và web mà không bắt đầu entity search, controller hoặc tích hợp
+PR nền.
+
+### Completed
+
+Thêm shared schema cho `GET /metadata/health` với mode `fixture|datahub`, sáu normalized status và safe
+message. Fixture adapter trả ready deterministic. DataHub client probe `GET /config` với Bearer token,
+bounded timeout/AbortSignal và normalize missing config, 401/403, refusal/non-success, timeout cùng
+invalid/non-JSON response mà không trả raw payload. API compose fixture/DataHub health theo mode và
+catch unexpected provider failure. Web thêm metadata-source region compact, accessible với loading,
+ready và problem states, giữ nguyên incident form/report. Thêm contract, fake-server, API, web behavior
+tests và mở rộng duy nhất canonical e2e flow để assert fixture readiness trước khi submit.
+
+### Files changed
+
+`packages/shared-types/src/index.ts`; `packages/datahub-client/src/index.ts`; `apps/api/src/index.ts`;
+`apps/web/src/App.tsx`; `apps/web/src/styles.css`; `tests/integration/contracts.test.ts`;
+`tests/integration/fixture-adapter.test.ts`; `tests/integration/datahub-health.test.ts`;
+`tests/integration/metadata-health-api.test.ts`; `tests/integration/web-metadata-health.test.ts`;
+`tests/e2e/report-display.spec.mjs`; `docs/API_CONTRACTS.md`; `docs/IMPLEMENTATION_PLAN.md`;
+`docs/KNOWN_ISSUES.md`; `docs/SESSION_LOG.md`. Không đổi cấu trúc repository, `.env.example`, manifest
+hoặc lockfile.
+
+### Decisions
+
+Dùng GMS `/config` vì đây là connection probe của DataHub client chính thức và hoạt động với cả direct
+GMS URL lẫn frontend GMS proxy base. DataHub mode coi URL hoặc token trống/unsafe là `unconfigured`;
+mọi provider outcome trả HTTP `200` với normalized body để UI phân biệt provider readiness với API
+transport failure. Chỉ mode/status đã normalize được log; URL, token, Authorization header, raw body và
+raw exception không được log hoặc đưa ra shared contract. DataHub investigation vẫn deferred cho Slice
+2.2; canonical incident tiếp tục dùng fixture adapter.
+
+### Validation performed
+
+Changed-file Prettier check PASS trong 0.901 giây và affected ESLint PASS trong 2.862 giây. Bốn affected
+typecheck PASS: shared-types 2.736 giây, datahub-client 2.879 giây, API 3.452 giây, web 3.410 giây.
+Targeted Vitest PASS 7/7 files, 32/32 tests trong 1.46 giây (2.175 giây wall). Bốn affected builds PASS
+trong 6.902 giây; web transform 109 modules và build 1.22 giây. Đúng một `pnpm test:e2e:report` chọn API
+`http://127.0.0.1:62669`, web `http://127.0.0.1:62670`, rồi PASS fixture metadata ready -> submit ->
+processing -> completed -> full evidence display trong 5.422 giây (11.281 giây wall), evidence
+references resolve, console sạch, dưới ba phút và selected ports được cleanup.
+
+Environment classification: formatter bootstrap đầu tiên fail vì subprocess `esbuild` không resolve
+`node`; bundled-Node retry install thành công nhưng `pnpm exec` không resolve tool shim. Sau hai attempts,
+project-local `.CMD` đã được dùng và `.pnpm-store` phát sinh được xóa sau exact path verification.
+Sandboxed Vitest và build lần đầu fail vì esbuild không đọc ancestor metadata; mỗi command được scoped
+retry đúng một lần và PASS, không có product fix nào phát sinh từ các environment failure này.
+
+### Validation intentionally deferred
+
+Live DataHub smoke cần credential nên deferred. Không chạy full Level D, không rerun unchanged Phase 1
+core gates, không chạy entity search, lineage, recent changes, controller hoặc broader cross-browser.
+
+### Known issues
+
+Dependency bootstrap trong managed Windows runtime vẫn cần bundled Node trên process `PATH`, và
+`pnpm exec` có thể không resolve tool shim dù project-local `.CMD` tồn tại. Đây là environment issue đã
+có workaround, không phải product failure. Slice 2.1 không còn local acceptance blocker; live DataHub
+smoke vẫn credential-gated và deferred.
+
+### Exact next step
+
+Review secret/diff/generated artifacts, tạo commit `feat: add datahub health status`, push branch, mở
+stacked draft PR base `codex/phase-1-level-d-closure` và theo dõi đúng một CI run. Chỉ handoff Slice 2.2
+entity search sau khi CI và merge-readiness pass; không bắt đầu Slice 2.2 trong task này.
+
 ## 2026-07-18 — Windows pnpm shim fallback hardening
 
 ### Objective
@@ -546,6 +618,59 @@ Không có blocker cục bộ mới; commit/push/CI còn pending tại thời đ
 
 Review diff/secret, commit `test: harden Windows pnpm shim fallback`, push thường lên PR #5 và theo dõi
 đúng một CI run mới. Không merge PR và không chạm PR #6.
+
+## 2026-07-18 — Slice 2.1 remote-base merge readiness
+
+### Objective
+
+Loại conflict trên stacked draft PR #7 sau khi remote base
+`codex/phase-1-level-d-closure` advance ngoài handoff từ `db7dba58…` lên direct child `c7e6fbe…`, không
+rebase/rewrite, không tích hợp PR #4/#6 và không mở rộng Slice 2.1.
+
+### Completed
+
+Fetch riêng remote base xác minh `c7e6fbe527a813879c06d5f79f26133affb8766c` có parent chính xác
+`db7dba58d7ecae0505b0596d0f735cbae96b2b4c`, chỉ đổi Windows pnpm shim fallback, focused launcher
+test và append SESSION_LOG. Merge-forward `--no-ff` có đúng một conflict append-only tại
+`docs/SESSION_LOG.md`; resolution giữ nguyên cả entry Slice 2.1 lẫn entry base hardening. Không có code
+product hoặc browser-flow conflict.
+
+### Files changed
+
+Merge nhận `tests/e2e/report-launcher.mjs` và `tests/integration/report-launcher.test.ts` từ exact base
+advance; `docs/SESSION_LOG.md` được resolve append-only; `docs/IMPLEMENTATION_PLAN.md` ghi evidence
+merge-readiness. Không đổi manifest, lockfile, `.env.example`, PR #4 hoặc PR #6.
+
+### Decisions
+
+Dùng merge-forward thay vì rebase/rewrite vì remote stacked base đã advance trực tiếp. Không chạy
+browser lần hai: commit base chỉ đổi nhánh native `.cmd|.bat|.exe` fallback, trong khi actual browser run
+đã PASS dùng validated `.cjs` current-Node path và URL/readiness/browser/cleanup contract không đổi.
+Focused launcher regression là validation trực tiếp cho phần base mới.
+
+### Validation performed
+
+- Conflict-marker scan PASS (`0`) và `git diff --check` PASS.
+- Focused Prettier ban đầu yêu cầu formatting-only resolution cho `docs/SESSION_LOG.md`; sau write,
+  Prettier PASS trong 0.522 giây và affected ESLint PASS trong 1.407 giây.
+- `tests/integration/report-launcher.test.ts` PASS 3/3; Vitest 1.10 giây, 364ms test time, 1.774 giây
+  wall.
+
+### Validation intentionally deferred
+
+Không rerun browser E2E hoặc core Level D vì actual validated browser path/product inputs không đổi và
+Slice 2.1 đã dùng đúng một browser flow PASS. Live DataHub smoke vẫn credential-gated.
+
+### Known issues
+
+Merge commit/push và conflict-free/CI verification của PR #7 còn pending tại thời điểm ghi entry. Không
+có local implementation/test blocker.
+
+### Exact next step
+
+Format-check docs đã cập nhật, stage exact merge resolution, tạo merge commit không rewrite, push và xác
+minh PR #7 conflict-free. Theo dõi đúng một CI run gắn với final merge HEAD; chỉ handoff Slice 2.2 sau
+khi run đó PASS và PR đạt merge-readiness.
 
 ## 2026-07-18 — PR #4 merge-forward to Phase 1-complete main
 
@@ -723,6 +848,72 @@ draft PR against `main`, and follow exactly one CI run. After that PR is reviewe
 separate project task for Phase 2 Slice 2.1 — DataHub client health/error normalization from the
 then-current exact main. Do not begin Phase 2 here.
 
+## 2026-07-18 — Slice 2.1 sync to integrated main
+
+### Objective
+
+Merge exact green `origin/main` `54945b80a27685ce81e476173a3466e585f42112` into draft PR #7 head
+`325b21c5d4ca106e3b01b3926d4eecd5378dedd7` without rebase, force-push, feature expansion, or changes
+to stacked PR #10. Retarget PR #7 to `main` while preserving feature commit
+`95ad76d4b02ab4c5bd005b2389b17034af3fd957` and all integrated Phase 1 history.
+
+### Completed
+
+Fetched and verified the locked local, upstream, and main heads. The merge has one append-only conflict
+in this file; union resolution retains the earlier Slice 2.1 merge-readiness record and the integrated
+bootstrap, port-race, and post-merge closure records from main. No product source conflicts, Slice 2.2
+code, manifest, or lockfile changes are introduced.
+
+### Files changed
+
+The merge imports the already-green Phase 1 bootstrap, port-race test, closure docs, and repository
+guidance from main. Conflict resolution and sync evidence affect only `docs/IMPLEMENTATION_PLAN.md`,
+`docs/KNOWN_ISSUES.md`, and this session entry. The prospective PR diff against main remains the 15
+Slice 2.1 implementation, test, and documentation files.
+
+### Decisions
+
+Keep a normal two-parent merge commit and push normally. Defer another browser E2E because the
+prospective merge tree is byte-identical to validated head `325b21c…` for `apps/api/src`,
+`apps/web/src`, `packages/shared-types/src`, `packages/datahub-client/src`, and the complete
+`tests/e2e` tree; the main-side change is a focused integration-test-only atomic port allocation fix,
+not a launcher runtime or UI/E2E input change.
+
+### Validation performed
+
+- Changed-file Prettier write PASS in `9.351s`; only this new session entry needed formatting. Affected
+  ESLint PASS in `101.748s`.
+- Four type-checks PASS: shared-types `15.356s`, datahub-client `15.361s`, API `17.677s`, and web
+  `18.680s`.
+- The first focused Vitest attempt was blocked before test collection by managed-worktree ancestor
+  access, so one scoped retry ran 8 files/35 tests. It passed 33 tests; two first-request API cases hit
+  the already-documented transient `5s` parallel-load timeout while every other health, fake-server,
+  web, compatibility, and launcher test passed. One exact two-file recovery PASS 2/2 files and 7/7
+  tests in `1.88s` (`3.084s` wall), with no product/test/timeout change.
+- Four affected builds PASS in `15.251s`; web transformed 109 modules and built in `4.58s`.
+- `git diff --check` and conflict-marker scans PASS. The prospective PR diff against main contains
+  exactly the 15 Slice 2.1 files; main-owned bootstrap, launcher regression, closure docs, repository
+  guidance, manifests, lockfile, and `.env.example` are identical to main. Feature `95ad76d…` remains
+  an ancestor of the first parent. High-risk token/private-key scans report zero matches. The four
+  ignored build `dist` directories were verified inside the worktree and removed; no generated junk
+  remains.
+
+### Validation intentionally deferred
+
+Full Level D/release validation, a duplicate browser flow, and live DataHub smoke are deferred. No
+credential is read or required. PR #10 and all Slice 2.2/2.3 work remain untouched.
+
+### Known issues
+
+No local product conflict is known. Merge commit, push, PR #7 retarget/mergeability, and exactly one
+new CI run for the final head remain pending at the time of this entry.
+
+### Exact next step
+
+Run the documented affected checks once, review ancestry/diff/secrets/conflict markers/generated junk,
+create and push the merge commit, retarget draft PR #7 to `main`, and follow exactly one new final-head
+CI run. Keep PR #7 draft/open and do not modify PR #10.
+
 ## 2026-07-18 — Phase 1 launcher cleanup-ownership CI hotfix
 
 ### Objective
@@ -782,3 +973,55 @@ Existing product limitations remain unchanged.
 Format and review the four-file diff, commit conventionally, push the fix branch, open one draft PR
 against `main`, and follow exactly one new CI run. Do not rerun the failed PR #7 CI, merge the fix PR,
 modify PR #7, or begin Phase 2.
+
+## 2026-07-18 — Slice 2.1 merge-forward after launcher hotfix
+
+### Objective
+
+Merge exact green `origin/main` `1649fd7657a55eee3ce2198a2f7bc38ad5c16c3d` into draft PR #7
+head `e6c34e65bcce0c39dee216d0ab66236deffb4365` without rebase, rewrite, Slice 2.1 behavior changes,
+or changes to PR #10/Slice 2.2.
+
+### Completed
+
+Verified clean local/upstream state and confirmed hotfix `ba358a936541d0ea930e7ccbb76540d4e07595e5`
+is integrated in main. Merge-forward has one append-only conflict in this file; union resolution keeps
+the earlier Slice 2.1 sync evidence and the complete launcher cleanup-ownership hotfix evidence.
+
+### Files changed
+
+The merge imports main's focused launcher integration-test hotfix and its three project-memory files.
+Only this session entry is added by the PR #7 merge resolution. No product, DataHub, UI, manifest,
+lockfile, or environment-contract file changes.
+
+### Decisions
+
+Run changed-doc Prettier and exactly one focused `tests/integration/report-launcher.test.ts`. Defer
+DataHub tests, browser E2E, builds, and type-checks because their input trees remain unchanged from the
+already-recorded PR #7 validation and CI.
+
+### Validation performed
+
+- Changed-doc Prettier PASS in `1.396s`; only this entry required formatting.
+- Exactly one `tests/integration/report-launcher.test.ts` run PASS 1/1 file and 3/3 tests in `1.95s`
+  (`5.542s` wall), including exact descendant-PID cleanup.
+- Slice 2.1 API, web, shared-types, and datahub-client source trees are byte-identical to first parent
+  `e6c34e6…`; the launcher test is byte-identical to main. The prospective PR diff against main remains
+  exactly 15 Slice 2.1 files.
+- `git diff --check`, conflict-marker, manifest/lock/env, high-risk secret, and generated-junk scans
+  PASS. No secret pattern or generated artifact remains.
+
+### Validation intentionally deferred
+
+DataHub/API/web tests, browser E2E, builds, type-checks, live DataHub smoke, and full Level D remain
+deferred. PR #10 and all Slice 2.2 work remain untouched.
+
+### Known issues
+
+Merge commit, push, and exactly one new PR #7 CI run remain pending at the time of this entry.
+
+### Exact next step
+
+Run the two authorized local checks, review ancestry/diff/secrets/conflict markers/generated junk,
+create and push the merge commit, then follow exactly one final-head CI run. Keep PR #7 draft/open and
+do not merge it in this turn.

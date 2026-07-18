@@ -10,9 +10,9 @@ Last updated: 2026-07-18.
   focused local validation passes and draft PR CI is pending. No product, DataHub, or launcher runtime
   blocker is indicated.
 - Phase 1 is fully integrated and closed on exact `main`
-  `ab1559e3a8364e8c65aeed7407fd4ddfb2390cec`; supplied main CI run `29649987430`, job
-  `88094568246`, is green. PR #4 managed-worktree bootstrap and PR #8 atomic port-race fix are both
-  merged and were preserved by the post-merge checkpoint.
+  `54945b80a27685ce81e476173a3466e585f42112`; main CI run `29650788143`, job `88096660559`, is
+  green. PR #4 managed-worktree bootstrap, PR #8 atomic port-race fix, and PR #9 post-merge closure are
+  merged and preserved.
 - The post-merge Level D gate passes: repository format, lint, six workspace type-checks, 7 test
   files/17 tests, six production builds, both artifact smoke targets, and the canonical browser flow
   completed on the integrated main tree. The first full-test attempt had two transient `5s` API
@@ -27,8 +27,10 @@ Last updated: 2026-07-18.
   API removes existing incident IDs; durable persistence remains deferred.
 - Fixture mode currently contains only the canonical removed-schema-column scenario. Additional
   canonical scenarios and generic scenario selection remain deferred.
-- DataHub integration, model reasoning, evaluation CLI, cross-browser automation, and public deployment
-  are intentionally deferred to their phases.
+- Slice 2.1 adds only a bounded DataHub GMS `/config` health probe and normalized source status. DataHub
+  entity search remains Slice 2.2; lineage, recent changes, model reasoning, evaluation CLI,
+  cross-browser automation, and public deployment remain deferred to their phases. A live DataHub
+  smoke is credential-gated and is not required for deterministic fixture validation.
 - Stitch MCP configuration is tracked without a key. A rotated `STITCH_API_KEY` must be set in the Codex
   process environment on each machine, then Codex must reload the trusted project.
 - Stitch tools are not expected in the current task because project-scoped MCP configuration loads when

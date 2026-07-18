@@ -87,6 +87,80 @@ h1 {
   backdrop-filter: blur(16px);
 }
 
+.metadata-source-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid #294149;
+  border-radius: 0.9rem;
+  background: rgb(10 28 34 / 78%);
+}
+
+.metadata-source-status h2 {
+  margin: 0.2rem 0 0;
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+}
+
+.source-label {
+  margin: 0;
+  color: #8ba1a8;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.metadata-status-copy {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.7rem;
+}
+
+.metadata-status-copy p {
+  max-width: 52ch;
+  margin: 0;
+  color: #aebec3;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  text-align: right;
+}
+
+.metadata-status-pill {
+  flex: 0 0 auto;
+  padding: 0.35rem 0.55rem;
+  border: 1px solid #3b555d;
+  border-radius: 999px;
+  color: #c2d2d6;
+  background: #12282e;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.metadata-source-ready {
+  border-color: #2d5b59;
+}
+
+.metadata-source-ready .metadata-status-pill {
+  border-color: #2d5b59;
+  color: #9ceade;
+  background: #0e302f;
+}
+
+.metadata-source-problem {
+  border-color: #824a4a;
+}
+
+.metadata-source-problem .metadata-status-pill {
+  border-color: #824a4a;
+  color: #ffd4d4;
+  background: #351b20;
+}
+
 .panel-heading,
 .submission-row {
   display: flex;
@@ -103,17 +177,6 @@ h2 {
   margin: 0.4rem 0 0;
   font-size: clamp(1.65rem, 4vw, 2.4rem);
   letter-spacing: -0.035em;
-}
-
-.mode-pill {
-  flex: 0 0 auto;
-  padding: 0.45rem 0.7rem;
-  border: 1px solid #2d5b59;
-  border-radius: 999px;
-  color: #9ceade;
-  background: #0e302f;
-  font-size: 0.78rem;
-  font-weight: 700;
 }
 
 form,
@@ -488,9 +551,15 @@ dd {
 
   .panel-heading,
   .submission-row,
-  .inference-heading {
+  .inference-heading,
+  .metadata-source-status,
+  .metadata-status-copy {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .metadata-status-copy p {
+    text-align: left;
   }
 
   button {

@@ -1,6 +1,19 @@
 import { readFileSync } from 'node:fs';
-import { EntityRefSchema, type EntityRef } from '@dii/shared-types';
+import { EntityRefSchema, type EntityRef, type MetadataHealthStatus } from '@dii/shared-types';
 import { z } from 'zod';
+
+export interface MetadataHealthResult {
+  status: MetadataHealthStatus;
+  message: string;
+}
+
+export interface MetadataHealthCheckOptions {
+  signal?: AbortSignal;
+}
+
+export interface MetadataHealthProvider {
+  healthCheck(options?: MetadataHealthCheckOptions): Promise<MetadataHealthResult>;
+}
 
 export const MetadataChangeCategorySchema = z.enum([
   'schema',
@@ -25,8 +38,7 @@ export interface LineageResult {
   truncated: boolean;
 }
 
-export interface MetadataAdapter {
-  healthCheck(): Promise<void>;
+export interface MetadataAdapter extends MetadataHealthProvider {
   searchEntities(query: string, limit: number): Promise<EntityRef[]>;
   getLineage(entity: EntityRef, depth: number, entityLimit: number): Promise<LineageResult>;
   getRecentChanges(
@@ -81,6 +93,140 @@ const FixtureMetadataSchema = z
 
 type FixtureMetadata = z.infer<typeof FixtureMetadataSchema>;
 
+const metadataHealthMessages: Record<MetadataHealthStatus, string> = {
+  ready: 'DataHub metadata is ready.',
+  unconfigured: 'DataHub metadata is not configured. Set DATAHUB_GMS_URL and DATAHUB_TOKEN.',
+  unauthorized: 'DataHub rejected the configured credentials. Check the access token.',
+  unavailable: 'DataHub metadata is unavailable. Check the service and network connection.',
+  timeout: 'DataHub metadata did not respond in time. Check the service and try again.',
+  invalid_response: 'DataHub returned an unexpected response. Check the configured GMS endpoint.',
+};
+
+const defaultDataHubHealthTimeoutMs = 2_000;
+const minimumDataHubHealthTimeoutMs = 10;
+const maximumDataHubHealthTimeoutMs = 10_000;
+
+function metadataHealthResult(status: MetadataHealthStatus): MetadataHealthResult {
+  return { status, message: metadataHealthMessages[status] };
+}
+
+function fixtureHealthResult(): MetadataHealthResult {
+  return { status: 'ready', message: 'Fixture metadata is ready.' };
+}
+
+function boundedHealthTimeout(value: number | undefined) {
+  if (value === undefined || !Number.isFinite(value)) {
+    return defaultDataHubHealthTimeoutMs;
+  }
+
+  return Math.min(
+    maximumDataHubHealthTimeoutMs,
+    Math.max(minimumDataHubHealthTimeoutMs, Math.floor(value)),
+  );
+}
+
+function dataHubConfigUrl(value: string | undefined): URL | undefined {
+  if (!value?.trim()) {
+    return undefined;
+  }
+
+  try {
+    const url = new URL(value);
+    if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) {
+      return undefined;
+    }
+
+    url.pathname = `${url.pathname.replace(/\/+$/, '')}/config`;
+    url.search = '';
+    url.hash = '';
+    return url;
+  } catch {
+    return undefined;
+  }
+}
+
+function isJsonResponse(response: Response) {
+  const contentType = response.headers.get('content-type')?.toLowerCase();
+  return contentType?.includes('application/json') || contentType?.includes('+json') || false;
+}
+
+function isJsonObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+export interface DataHubHealthClientConfig {
+  gmsUrl: string | undefined;
+  token: string | undefined;
+  timeoutMs?: number;
+}
+
+export class DataHubHealthClient implements MetadataHealthProvider {
+  private readonly configUrl: URL | undefined;
+  private readonly timeoutMs: number;
+  private readonly token: string | undefined;
+
+  constructor(config: DataHubHealthClientConfig) {
+    this.configUrl = dataHubConfigUrl(config.gmsUrl);
+    this.timeoutMs = boundedHealthTimeout(config.timeoutMs);
+    this.token = config.token?.trim() || undefined;
+  }
+
+  async healthCheck(options: MetadataHealthCheckOptions = {}): Promise<MetadataHealthResult> {
+    if (!this.configUrl || !this.token) {
+      return metadataHealthResult('unconfigured');
+    }
+
+    const controller = new AbortController();
+    const abort = () => controller.abort();
+    const timeout = setTimeout(abort, this.timeoutMs);
+
+    if (options.signal?.aborted) {
+      controller.abort();
+    } else {
+      options.signal?.addEventListener('abort', abort, { once: true });
+    }
+
+    try {
+      const response = await fetch(this.configUrl, {
+        method: 'GET',
+        headers: {
+          accept: 'application/json',
+          authorization: `Bearer ${this.token}`,
+        },
+        signal: controller.signal,
+      });
+
+      if (response.status === 401 || response.status === 403) {
+        return metadataHealthResult('unauthorized');
+      }
+      if (response.status !== 200) {
+        return response.ok
+          ? metadataHealthResult('invalid_response')
+          : metadataHealthResult('unavailable');
+      }
+      if (!isJsonResponse(response)) {
+        return metadataHealthResult('invalid_response');
+      }
+
+      try {
+        const body: unknown = await response.json();
+        return isJsonObject(body)
+          ? metadataHealthResult('ready')
+          : metadataHealthResult('invalid_response');
+      } catch {
+        return metadataHealthResult('invalid_response');
+      }
+    } catch {
+      return controller.signal.aborted
+        ? metadataHealthResult('timeout')
+        : metadataHealthResult('unavailable');
+    } finally {
+      clearTimeout(timeout);
+      options.signal?.removeEventListener('abort', abort);
+    }
+  }
+}
+
 const defaultFixtureUrl = new URL(
   '../../../fixtures/metadata/removed-schema-column.json',
   import.meta.url,
@@ -105,10 +251,12 @@ export class FixtureMetadataAdapter implements MetadataAdapter {
     );
   }
 
-  async healthCheck(): Promise<void> {
+  async healthCheck(): Promise<MetadataHealthResult> {
     if (!this.entitiesByUrn.has(this.fixture.defaultSeedUrn)) {
       throw new Error('Fixture metadata is unavailable.');
     }
+
+    return fixtureHealthResult();
   }
 
   async searchEntities(query: string, limit: number): Promise<EntityRef[]> {
@@ -238,4 +386,8 @@ export class FixtureMetadataAdapter implements MetadataAdapter {
 
 export function createFixtureMetadataAdapter() {
   return new FixtureMetadataAdapter();
+}
+
+export function createDataHubHealthClient(config: DataHubHealthClientConfig) {
+  return new DataHubHealthClient(config);
 }

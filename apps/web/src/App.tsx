@@ -1,4 +1,4 @@
-import { useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import {
   ApiErrorSchema,
   type EntityRef,
@@ -8,6 +8,8 @@ import {
   IncidentRetrievalResponseSchema,
   type IncidentAcceptedResponse,
   type IncidentRetrievalResponse,
+  MetadataHealthResponseSchema,
+  type MetadataHealthResponse,
 } from '@dii/shared-types';
 
 type CompletedIncident = Extract<IncidentRetrievalResponse, { status: 'completed' }>;
@@ -22,6 +24,16 @@ type SubmissionState =
   | { kind: 'completed'; incident: CompletedIncident }
   | { kind: 'validation-error'; message: string }
   | { kind: 'api-error'; message: string };
+
+type MetadataHealthState = MetadataHealthResponse | null | undefined;
+
+const problemStatusLabels = {
+  unconfigured: 'Setup needed',
+  unauthorized: 'Authorization needed',
+  unavailable: 'Unavailable',
+  timeout: 'Timed out',
+  invalid_response: 'Unexpected response',
+} as const;
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? '/api';
 const retrievalAttempts = 30;
@@ -42,6 +54,65 @@ function formatConfidence(confidence: number) {
 
 function formatObservedAt(timestamp: string) {
   return timestamp.replace('T', ' ').replace(/\.000Z$/, 'Z');
+}
+
+export function getMetadataHealthPresentation(health: MetadataHealthState) {
+  if (health === undefined) {
+    return {
+      sourceLabel: 'Checking metadata source',
+      statusLabel: 'Loading',
+      message: 'Checking metadata readiness…',
+      tone: 'loading' as const,
+    };
+  }
+
+  if (health === null) {
+    return {
+      sourceLabel: 'Metadata source',
+      statusLabel: 'Unavailable',
+      message: 'Metadata readiness could not be loaded. Refresh the page or check the API service.',
+      tone: 'problem' as const,
+    };
+  }
+
+  const sourceLabel = health.mode === 'fixture' ? 'Fixture metadata' : 'DataHub metadata';
+  if (health.status === 'ready') {
+    return {
+      sourceLabel,
+      statusLabel: 'Ready',
+      message: health.message,
+      tone: 'ready' as const,
+    };
+  }
+
+  return {
+    sourceLabel,
+    statusLabel: problemStatusLabels[health.status],
+    message: health.message,
+    tone: 'problem' as const,
+  };
+}
+
+function MetadataSourceStatus({ health }: { health: MetadataHealthState }) {
+  const presentation = getMetadataHealthPresentation(health);
+
+  return (
+    <section
+      className={`metadata-source-status metadata-source-${presentation.tone}`}
+      aria-labelledby="metadata-source-heading"
+    >
+      <div>
+        <p className="source-label">Metadata source</p>
+        <h2 id="metadata-source-heading">{presentation.sourceLabel}</h2>
+      </div>
+      <div className="metadata-status-copy">
+        <span className="metadata-status-pill">{presentation.statusLabel}</span>
+        <p role="status" aria-live="polite" aria-atomic="true">
+          {presentation.message}
+        </p>
+      </div>
+    </section>
+  );
 }
 
 export function getCompletedReportContent(incident: CompletedIncident) {
@@ -275,6 +346,35 @@ export function App() {
   const [occurredAt, setOccurredAt] = useState('');
   const [symptom, setSymptom] = useState('');
   const [state, setState] = useState<SubmissionState>({ kind: 'idle' });
+  const [metadataHealth, setMetadataHealth] = useState<MetadataHealthState>(undefined);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadMetadataHealth() {
+      try {
+        const response = await fetch(`${apiBaseUrl}/metadata/health`, {
+          signal: controller.signal,
+        });
+        const body: unknown = await response.json();
+        const parsedHealth = MetadataHealthResponseSchema.safeParse(body);
+
+        if (!response.ok || !parsedHealth.success) {
+          setMetadataHealth(null);
+          return;
+        }
+
+        setMetadataHealth(parsedHealth.data);
+      } catch {
+        if (!controller.signal.aborted) {
+          setMetadataHealth(null);
+        }
+      }
+    }
+
+    void loadMetadataHealth();
+    return () => controller.abort();
+  }, []);
 
   async function retrieveIncident(acceptedIncident: IncidentAcceptedResponse) {
     for (let attempt = 0; attempt < retrievalAttempts; attempt += 1) {
@@ -400,13 +500,14 @@ export function App() {
         </p>
       </header>
 
+      <MetadataSourceStatus health={metadataHealth} />
+
       <section className="incident-panel" aria-labelledby="incident-heading">
         <div className="panel-heading">
           <div>
             <p className="step-label">New investigation</p>
             <h2 id="incident-heading">What changed?</h2>
           </div>
-          <span className="mode-pill">Fixture mode</span>
         </div>
 
         <form onSubmit={submitIncident} noValidate>

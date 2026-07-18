@@ -77,6 +77,8 @@ try {
   page.on('pageerror', (error) => browserProblems.push(`pageerror: ${error.message}`));
 
   await page.goto(runtime.webUrl, { waitUntil: 'networkidle' });
+  await page.getByRole('heading', { name: 'Fixture metadata' }).waitFor({ timeout: 2_000 });
+  await page.getByText('Fixture metadata is ready.', { exact: true }).waitFor({ timeout: 2_000 });
   await page.locator('#question').fill('Why did revenue drop today?');
   await page.locator('#entity-hint').fill('analytics.daily_revenue');
   await page.locator('#occurred-at').fill('2026-07-18T08:30');
