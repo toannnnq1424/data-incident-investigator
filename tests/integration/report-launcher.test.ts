@@ -1,10 +1,10 @@
 import { createServer } from 'node:http';
 import { createRequire } from 'node:module';
 import process from 'node:process';
+import { setTimeout as delay } from 'node:timers/promises';
 import { fileURLToPath, pathToFileURL, URL } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import {
-  assertPortAvailable,
   createRuntimeConfig,
   findFreePort,
   resolvePnpmInvocation,
@@ -42,9 +42,9 @@ function boundPort(server, host) {
   return address.port;
 }
 
-function waitForBoundPort(entry, { timeoutMs = 8_000 } = {}) {
+function waitForBoundProcess(entry, { timeoutMs = 8_000 } = {}) {
   return new Promise((resolve, reject) => {
-    const finish = (error, port) => {
+    const finish = (error, processDetails) => {
       clearTimeout(timeout);
       entry.child.stdout.off('data', onData);
       entry.child.off('error', onError);
@@ -52,33 +52,61 @@ function waitForBoundPort(entry, { timeoutMs = 8_000 } = {}) {
       if (error) {
         reject(error);
       } else {
-        resolve(port);
+        resolve(processDetails);
       }
     };
-    const readPort = () => {
-      const match = /DII_TEST_PORT=(\d+)/.exec(entry.logs);
+    const readProcessDetails = () => {
+      const match = /DII_TEST_PROCESS=(\d+):(\d+)/.exec(entry.logs);
       if (match) {
-        finish(undefined, Number(match[1]));
+        finish(undefined, { pid: Number(match[1]), port: Number(match[2]) });
       }
     };
-    const onData = () => readPort();
+    const onData = () => readProcessDetails();
     const onError = (error) => finish(error);
     const onExit = (code, signal) =>
       finish(
         new Error(
-          `${entry.name} exited before reporting its bound port: code=${code} signal=${signal}\n${entry.logs}`,
+          `${entry.name} exited before reporting its descendant PID and bound port: code=${code} signal=${signal}\n${entry.logs}`,
         ),
       );
     const timeout = setTimeout(
-      () => finish(new Error(`${entry.name} did not report its bound port.\n${entry.logs}`)),
+      () =>
+        finish(
+          new Error(
+            `${entry.name} did not report its descendant PID and bound port.\n${entry.logs}`,
+          ),
+        ),
       timeoutMs,
     );
 
     entry.child.stdout.on('data', onData);
     entry.child.once('error', onError);
     entry.child.once('exit', onExit);
-    readPort();
+    readProcessDetails();
   });
+}
+
+function isProcessAlive(pid) {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    if (error?.code === 'ESRCH') {
+      return false;
+    }
+    throw error;
+  }
+}
+
+async function waitForProcessExit(pid, { pollMs = 25, timeoutMs = 2_000 } = {}) {
+  const deadline = Date.now() + timeoutMs;
+
+  while (isProcessAlive(pid)) {
+    if (Date.now() >= deadline) {
+      throw new Error(`Managed descendant process ${pid} was still alive after cleanup.`);
+    }
+    await delay(pollMs);
+  }
 }
 
 describe('Phase 1 browser launcher contracts', () => {
@@ -183,7 +211,7 @@ describe('Phase 1 browser launcher contracts', () => {
     }
   });
 
-  it('terminates only the managed descendant process tree and releases its listener', async () => {
+  it('terminates the exact managed descendant process tree', async () => {
     const host = '127.0.0.1';
     const childSource = `
         const { createServer } = require('node:http');
@@ -193,7 +221,7 @@ describe('Phase 1 browser launcher contracts', () => {
           if (!address || typeof address === 'string') {
             throw new Error('Could not read the cleanup fixture port.');
           }
-          console.log('DII_TEST_PORT=' + address.port);
+          console.log('DII_TEST_PROCESS=' + process.pid + ':' + address.port);
         });
         setInterval(() => {}, 1000);
       `;
@@ -209,14 +237,14 @@ describe('Phase 1 browser launcher contracts', () => {
       parentSource,
     ]);
 
-    let port;
+    let descendant;
     try {
-      port = await waitForBoundPort(entry);
-      await waitForHttpReady(entry, `http://${host}:${port}`, { timeoutMs: 8_000 });
+      descendant = await waitForBoundProcess(entry);
+      await waitForHttpReady(entry, `http://${host}:${descendant.port}`, { timeoutMs: 8_000 });
     } finally {
       await stopManagedProcesses([entry]);
     }
 
-    await expect(assertPortAvailable(host, port)).resolves.toBeUndefined();
+    await expect(waitForProcessExit(descendant.pid)).resolves.toBeUndefined();
   }, 15_000);
 });

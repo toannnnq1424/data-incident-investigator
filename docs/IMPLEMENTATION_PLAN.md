@@ -585,6 +585,66 @@ Exact next step: after the docs-only closure PR is reviewed and merged, create a
 for Phase 2 Slice 2.1 — DataHub client health/error normalization from the then-current exact `main`.
 Do not begin that slice in this checkpoint.
 
+### Phase 1 launcher cleanup-ownership CI hotfix
+
+Status: local focused gate passed on `fix/phase1-launcher-cleanup-ownership` from exact `origin/main`
+`54945b80a27685ce81e476173a3466e585f42112`. PR #7 CI run `29651498475`, job `88098488706`,
+passed 36/37 tests and failed only when the launcher integration test tried to rebind a released
+descendant port. Draft PR publication and its single CI run are pending.
+
+Objective: remove the cleanup test's post-exit port-rebind ownership race while preserving the
+pre-cleanup HTTP readiness proof and the launcher runtime behavior.
+
+Minimum files:
+
+- `tests/integration/report-launcher.test.ts` for the exact descendant-PID cleanup assertion.
+- `docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md`, and `docs/SESSION_LOG.md` for CI evidence and
+  handoff.
+
+Acceptance criteria:
+
+- The fixture reports its actual descendant PID together with its OS-assigned port, and the existing
+  HTTP readiness probe succeeds before cleanup.
+- After `stopManagedProcesses`, a bounded cross-platform PID-liveness check proves that exact
+  descendant is gone; no post-cleanup port bind, retry, random range, timeout widening, or launcher
+  runtime change is introduced.
+- Changed-file Prettier, affected ESLint, and one focused Vitest run pass. After that first post-fix
+  pass, the focused file may run at most five additional consecutive times for flake assessment.
+- Diff, secret, conflict-marker, and worktree reviews pass; one conventional commit is pushed to a
+  draft PR based on `main`, followed by exactly one new CI run without rerunning the failed PR #7 run.
+
+Validation commands:
+
+- `pnpm exec prettier --check tests/integration/report-launcher.test.ts docs/IMPLEMENTATION_PLAN.md docs/KNOWN_ISSUES.md docs/SESSION_LOG.md`
+- `pnpm exec eslint tests/integration/report-launcher.test.ts`
+- `pnpm exec vitest run tests/integration/report-launcher.test.ts` once, then at most five consecutive
+  repetitions after the first post-fix pass.
+
+Validation result on Windows, 2026-07-18:
+
+- Frozen dependencies required a local install-state repair before Vitest could resolve Vite/esbuild;
+  no manifest or lockfile changed. The single real pre-fix baseline then passed 1 file/3 tests in
+  `6.80s` (`17.546s` wall), so the defect remains classified as test flakiness from the exact CI
+  `EADDRINUSE` evidence.
+- The fixture now reports its exact descendant PID and OS-assigned port. HTTP readiness still passes
+  before managed cleanup, which is followed by a bounded `process.kill(pid, 0)` liveness wait for that
+  exact PID. The post-cleanup port rebind is gone; launcher runtime code is unchanged.
+- Changed-file Prettier passed in `6.401s`. The first ESLint process was stopped by its `30s` command
+  harness limit without a result; the identical command then passed in `7.568s` with a sufficient
+  harness budget.
+- The primary post-fix run passed 1 file/3 tests in `1.74s` (`4.739s` wall). Of the five permitted
+  assessment runs, the first stopped at fixture startup when its parent exited code `1` before
+  reporting PID/port; a read-only process/listener probe proved zero fixture leak. The remaining four
+  runs passed 1 file/3 tests each in `12.549s` total. The exact CI ownership assertion did not recur.
+
+Deferred: browser E2E, the full suite, build, smoke, product/API/DataHub changes, PR #7 branch changes,
+and all Phase 2 implementation. They are deferred because this hotfix changes only an integration-test
+ownership assertion, not the launcher runtime or product inputs.
+
+Exact next action: format the final project-memory changes, review the scoped diff, commit and push the
+fix, open one draft PR against `main`, and follow exactly one CI run. Do not rerun PR #7 CI, merge the
+fix PR, change PR #7, or begin Phase 2.
+
 Phase completion: a clean clone can select a demo incident and receive a complete report.
 
 ## Phase 2 — DataHub integration
