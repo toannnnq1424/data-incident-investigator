@@ -25,6 +25,75 @@ export const EntityRefSchema = z.object({
   kind: EntityKindSchema,
 });
 
+export const MetadataEntitySearchRequestSchema = z
+  .object({
+    query: z.string().trim().min(2).max(200),
+    entityType: EntityKindSchema.optional(),
+    limit: z.number().int().min(1).max(20).default(10),
+  })
+  .strict();
+
+export const MetadataEntitySearchResultSchema = EntityRefSchema.extend({
+  urn: z.string().trim().min(1).max(1_000),
+  name: z.string().trim().min(1).max(300),
+  description: z.string().trim().min(1).max(1_000).optional(),
+  qualifiedName: z.string().trim().min(1).max(500).optional(),
+}).strict();
+
+function compareSearchResults(
+  left: z.infer<typeof MetadataEntitySearchResultSchema>,
+  right: z.infer<typeof MetadataEntitySearchResultSchema>,
+) {
+  const leftName = left.name.toLowerCase();
+  const rightName = right.name.toLowerCase();
+  if (leftName !== rightName) {
+    return leftName < rightName ? -1 : 1;
+  }
+  if (left.kind !== right.kind) {
+    return left.kind < right.kind ? -1 : 1;
+  }
+  return left.urn < right.urn ? -1 : left.urn > right.urn ? 1 : 0;
+}
+
+export const MetadataEntitySearchResponseSchema = z
+  .object({
+    query: z.string().trim().min(2).max(200),
+    entityType: EntityKindSchema.optional(),
+    limit: z.number().int().min(1).max(20),
+    results: z.array(MetadataEntitySearchResultSchema).max(20),
+  })
+  .strict()
+  .superRefine((response, context) => {
+    if (response.results.length > response.limit) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Search results exceed the accepted limit.',
+        path: ['results'],
+      });
+    }
+
+    const urns = new Set<string>();
+    response.results.forEach((result, index) => {
+      if (urns.has(result.urn)) {
+        context.addIssue({
+          code: 'custom',
+          message: `Search result URN is duplicated: ${result.urn}`,
+          path: ['results', index, 'urn'],
+        });
+      }
+      urns.add(result.urn);
+
+      const previous = response.results[index - 1];
+      if (previous && compareSearchResults(previous, result) > 0) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Search results are not in deterministic order.',
+          path: ['results', index],
+        });
+      }
+    });
+  });
+
 export const IncidentRequestSchema = z.object({
   question: z.string().trim().min(3).max(2_000),
   entityHint: z.string().trim().min(1).max(500).optional(),
@@ -39,7 +108,16 @@ export const IncidentAcceptedResponseSchema = z.object({
   status: z.literal('processing'),
 });
 
-export const ApiErrorCodeSchema = z.enum(['VALIDATION_ERROR', 'NOT_FOUND', 'INTERNAL_ERROR']);
+export const ApiErrorCodeSchema = z.enum([
+  'VALIDATION_ERROR',
+  'NOT_FOUND',
+  'INTERNAL_ERROR',
+  'METADATA_UNCONFIGURED',
+  'METADATA_UNAUTHORIZED',
+  'METADATA_UNAVAILABLE',
+  'METADATA_TIMEOUT',
+  'METADATA_INVALID_RESPONSE',
+]);
 
 export const ApiErrorIssueSchema = z.object({
   path: z.string().min(1),
@@ -107,6 +185,9 @@ export const IncidentRetrievalResponseSchema = z.discriminatedUnion('status', [
 
 export type EntityKind = z.infer<typeof EntityKindSchema>;
 export type EntityRef = z.infer<typeof EntityRefSchema>;
+export type MetadataEntitySearchRequest = z.infer<typeof MetadataEntitySearchRequestSchema>;
+export type MetadataEntitySearchResult = z.infer<typeof MetadataEntitySearchResultSchema>;
+export type MetadataEntitySearchResponse = z.infer<typeof MetadataEntitySearchResponseSchema>;
 export type MetadataSourceMode = z.infer<typeof MetadataSourceModeSchema>;
 export type MetadataHealthStatus = z.infer<typeof MetadataHealthStatusSchema>;
 export type MetadataHealthResponse = z.infer<typeof MetadataHealthResponseSchema>;

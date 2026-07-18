@@ -672,6 +672,90 @@ Format-check docs đã cập nhật, stage exact merge resolution, tạo merge c
 minh PR #7 conflict-free. Theo dõi đúng một CI run gắn với final merge HEAD; chỉ handoff Slice 2.2 sau
 khi run đó PASS và PR đạt merge-readiness.
 
+## 2026-07-18 — Phase 2 Slice 2.2 DataHub entity search
+
+### Objective
+
+Triển khai đúng một vertical slice từ exact final Slice 2.1 HEAD
+`325b21c5d4ca106e3b01b3926d4eecd5378dedd7`: shared entity-search contract -> fixture/DataHub client
+boundary -> API -> compact web search/results, không bắt đầu entity detail, lineage, recent changes,
+controller hoặc Slice 2.3.
+
+### Completed
+
+Thêm strict request schema với query trim/bound, optional entity type và bounded limit; response schema
+enforce unique URN, bounded count và deterministic name/kind/URN ordering. Fixture public search trả
+multiple/empty/filter thật mà không đọc DataHub config; incident runner giữ explicit seed fallback để
+không đổi canonical Phase 1. DataHub client gọi official GraphQL `searchAcrossEntities` tại
+`/api/graphql`, map dataset/dashboard/chart/data-flow/data-job sang shared result và normalize toàn bộ
+provider failure thành safe typed error. API route chỉ compose/validate/map error. Web giữ health region
+và incident shell, thêm semantic search form, compact results, terminal focus và latest-request guard.
+Canonical browser source được mở rộng thành một flow search fixture rồi incident processing/completed.
+
+### Files changed
+
+`packages/shared-types/src/index.ts`; `packages/datahub-client/src/index.ts`;
+`packages/agent-core/src/index.ts`; `apps/api/src/index.ts`; `apps/web/src/App.tsx`;
+`apps/web/src/styles.css`; `fixtures/metadata/removed-schema-column.json`;
+`tests/integration/contracts.test.ts`; `tests/integration/fixture-adapter.test.ts`;
+`tests/integration/datahub-search.test.ts`; `tests/integration/metadata-search-api.test.ts`;
+`tests/integration/web-metadata-search.test.ts`; `tests/e2e/report-display.spec.mjs`;
+`docs/API_CONTRACTS.md`; `docs/DATA_MODEL.md`; `docs/IMPLEMENTATION_PLAN.md`;
+`docs/KNOWN_ISSUES.md`; `docs/SESSION_LOG.md`. Không đổi repository structure, manifest, lockfile hoặc
+`.env.example`.
+
+### Decisions
+
+Dùng official `SearchAcrossEntitiesInput` (`types`, `query`, `start`, `count`) và official web-client
+`searchAcrossEntities` field selection từ repository DataHub; DataHub `DATA_FLOW`/`DATA_JOB` cùng
+normalize thành shared `pipeline`. Provider ranking không đi qua API: normalized results được sort ổn
+định theo name/kind/URN để fixture/fake-provider deterministic. Description/qualified name chỉ được giữ
+sau trim/bound; thiếu display field thì dùng chính provider URN, không tạo entity mới. Public search
+không fallback; chỉ canonical fixture incident runner opt in seed fallback hiện hữu.
+
+### Validation performed
+
+Formatter bootstrap đầu tiên verify supply chain/install xong nhưng fail vì known `pnpm exec` shim
+resolution; verified project-local `.CMD` format PASS 1.970 giây và changed-file Prettier check PASS
+2.089 giây. `.pnpm-store` generated được resolve đúng trong worktree rồi move nguyên vẹn sang
+`C:\tmp\dii-slice-2-2-pnpm-store-019f75bc`. Affected ESLint ban đầu tìm thấy empty interface alias và
+browser global; targeted fix xong full affected lint PASS 2.889 giây. Năm typecheck PASS: shared-types
+4.412 giây, datahub-client 2.987 giây, agent-core 3.595 giây, API 4.553 giây, web 4.343 giây.
+
+Sandboxed Vitest fail trước test vì known esbuild ancestor-metadata denial. Scoped retry chạy đủ suite,
+phát hiện ba targeted test-data/assertion failures; sau khi sửa fixture token collision, no-match query và
+safe error assertion, final combined evidence PASS 11/11 files, 66/66 tests. Final diff review bổ sung
+DataHub invalid-entity normalization case; affected lint/typecheck PASS, datahub search PASS 12/12 và
+datahub-client build PASS. Build sequence đầu PASS shared-types/datahub-client rồi Vite gặp cùng sandbox
+denial; scoped retry PASS agent-core/API/web, nên 5/5 affected builds PASS, web transform 109 modules và
+build 1.92 giây.
+
+Đúng một `pnpm test:e2e:report` chọn API `http://127.0.0.1:49680`, web
+`http://127.0.0.1:49681`, rồi PASS fixture search -> deterministic focused results -> incident processing
+-> completed/full evidence trong 11.569 giây (18.294 giây wall). Console sạch, evidence references
+resolve, dưới ba phút và ports/process tree cleanup PASS. Không rerun sau DataHub-only normalization fix
+vì fixture/browser path không đổi và slice chỉ cho phép đúng một browser run. `git diff --check`, secret
+scan tracked+untracked, generated-artifact scan, stat/name/full scoped diff và branch/worktree review PASS:
+secret `0`, generated artifact `0`, 15 tracked + 3 untracked intended files trước commit.
+
+### Validation intentionally deferred
+
+Live DataHub smoke cần credential nên deferred. Không chạy Level D, không rerun Phase 1/Slice 2.1 gate
+không bị ảnh hưởng, không chạy entity detail, lineage, recent changes, controller hoặc Slice 2.3.
+
+### Known issues
+
+Không có local product/test blocker. Portable GitHub CLI `v2.96.0` đã được official-checksum verify
+trong ignored `work/tools`, nhưng local `gh` auth token hiện invalid và GitHub connector chưa thấy private
+repository; publish sẽ ưu tiên existing Git credential/browser session mà không đọc hoặc tái sử dụng
+credential. Live DataHub smoke vẫn credential-gated và deferred.
+
+### Exact next step
+
+Commit `feat: add datahub entity search`, push fast-forward, mở stacked draft PR base
+`codex/phase-2-1-datahub-health` và theo dõi đúng một CI run tới terminal. Sau green handoff, tạo task riêng
+cho Slice 2.3 — bounded, cycle-safe DataHub lineage; không bắt đầu Slice 2.3 trong task này.
+
 ## 2026-07-18 — PR #4 merge-forward to Phase 1-complete main
 
 ### Objective
@@ -1025,3 +1109,59 @@ Merge commit, push, and exactly one new PR #7 CI run remain pending at the time 
 Run the two authorized local checks, review ancestry/diff/secrets/conflict markers/generated junk,
 create and push the merge commit, then follow exactly one final-head CI run. Keep PR #7 draft/open and
 do not merge it in this turn.
+
+## 2026-07-19 — Slice 2.2 retarget after Slice 2.1 merge
+
+### Objective
+
+Merge exact green `origin/main` `a9ef2907d8772a12c4694cd5cc3db395e9eebe8d` into draft PR #10
+head `65657aa7d06ad0a3457b16289a6e5311bb056592` without rebase, rewrite, entity-search behavior
+changes, or any Slice 2.3 work; then retarget the draft PR to `main` and observe one new CI run.
+
+### Completed
+
+Verified clean local/upstream state, fetched authoritative main, and confirmed the merge-base remains
+final Slice 2.1 `325b21c5d4ca106e3b01b3926d4eecd5378dedd7`. The non-rewriting merge-forward has only two
+append-only conflicts in `docs/IMPLEMENTATION_PLAN.md` and this file; union resolution preserves the
+complete Phase 1, Slice 2.1, launcher-hotfix, and Slice 2.2 histories. All 13 Slice 2.2
+source/API/UI/fixture/test blobs match feature head `65657aa…` exactly after resolution.
+
+### Files changed
+
+The merge imports main's bootstrap/environment documentation and scripts, repository instructions,
+ignore rules, and focused launcher-test hardening. The two append-only project-memory resolutions and
+this entry are the only local resolution changes. No entity-search product, API, UI, fixture, or test
+file changed; no manifest, lockfile, or `.env.example` changed.
+
+### Decisions
+
+Preserve both append-only histories instead of choosing either conflict side. Run only changed-doc
+Prettier and the launcher integration test advanced by main; defer entity-search tests, browser E2E,
+builds, and type-checks because byte equality proves their validated inputs are unchanged and CI will
+run repository validation once for the final merge head.
+
+### Validation performed
+
+- Changed-doc Prettier PASS in `1.658s`; only this appended session entry required formatting.
+- The first focused-test command stopped before Vitest because `node` was absent from process `PATH`;
+  zero tests ran. The one actual bundled-runtime execution passed 1/1 file and 3/3 launcher tests in
+  `2.34s` (`7.2s` wall), including exact descendant-PID cleanup.
+- Conflict-marker scan is `0`; all 13 Slice 2.2 source/API/UI/fixture/test blob hashes match
+  `65657aa…`.
+
+### Validation intentionally deferred
+
+Entity-search tests, browser E2E, builds, type-checks, live DataHub smoke, and Level D remain deferred.
+CI supplies the single repository-level validation run. Slice 2.3 and merging PR #10 remain out of
+scope.
+
+### Known issues
+
+No local product or test blocker. Merge commit, normal push, PR #10 retarget, mergeability review, and
+one new final-head CI run remain pending at the time of this entry.
+
+### Exact next step
+
+Format and review the merged documentation, prove the prospective PR diff is Slice 2.2-only, create
+and push the merge commit, retarget draft PR #10 to `main`, and follow exactly one new CI run to
+terminal. Keep the PR draft/open and do not merge it or begin Slice 2.3.

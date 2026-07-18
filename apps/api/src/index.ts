@@ -8,15 +8,20 @@ import {
 } from '@dii/agent-core';
 import {
   createDataHubHealthClient,
+  createDataHubSearchClient,
   createFixtureMetadataAdapter,
+  MetadataProviderError,
   type MetadataAdapter,
   type MetadataHealthProvider,
+  type MetadataSearchProvider,
 } from '@dii/datahub-client';
 import {
   ApiErrorSchema,
   IncidentAcceptedResponseSchema,
   IncidentRequestSchema,
   IncidentRetrievalResponseSchema,
+  MetadataEntitySearchRequestSchema,
+  MetadataEntitySearchResponseSchema,
   MetadataHealthResponseSchema,
   MetadataSourceModeSchema,
   type InvestigationReport,
@@ -30,6 +35,7 @@ interface BuildServerOptions {
   logger?: boolean;
   metadata?: MetadataAdapter;
   metadataHealth?: MetadataHealthProvider;
+  metadataSearch?: MetadataSearchProvider;
   mode?: MetadataSourceMode;
   runner?: InvestigationRunner;
   limits?: InvestigationLimits;
@@ -58,6 +64,34 @@ function unavailableMetadataHealth(mode: MetadataSourceMode): MetadataHealthResp
   });
 }
 
+const metadataSearchFailures = {
+  unconfigured: {
+    code: 'METADATA_UNCONFIGURED',
+    httpStatus: 503,
+    message: 'Metadata search is not configured. Check the metadata source settings.',
+  },
+  unauthorized: {
+    code: 'METADATA_UNAUTHORIZED',
+    httpStatus: 502,
+    message: 'Metadata search authorization failed. Check the configured access token.',
+  },
+  unavailable: {
+    code: 'METADATA_UNAVAILABLE',
+    httpStatus: 503,
+    message: 'Metadata search is unavailable. Check the service and network connection.',
+  },
+  timeout: {
+    code: 'METADATA_TIMEOUT',
+    httpStatus: 504,
+    message: 'Metadata search timed out. Try again shortly.',
+  },
+  invalid_response: {
+    code: 'METADATA_INVALID_RESPONSE',
+    httpStatus: 502,
+    message: 'Metadata search returned an unexpected response.',
+  },
+} as const;
+
 export function buildServer(options: BuildServerOptions = {}) {
   const server = Fastify({ logger: options.logger ?? true });
   const environment = options.environment ?? process.env;
@@ -68,6 +102,14 @@ export function buildServer(options: BuildServerOptions = {}) {
     (mode === 'fixture'
       ? metadata
       : createDataHubHealthClient({
+          gmsUrl: environment.DATAHUB_GMS_URL,
+          token: environment.DATAHUB_TOKEN,
+        }));
+  const metadataSearch =
+    options.metadataSearch ??
+    (mode === 'fixture'
+      ? metadata
+      : createDataHubSearchClient({
           gmsUrl: environment.DATAHUB_GMS_URL,
           token: environment.DATAHUB_TOKEN,
         }));
@@ -99,6 +141,57 @@ export function buildServer(options: BuildServerOptions = {}) {
     }
 
     return reply.code(200).send(response);
+  });
+
+  server.post('/metadata/search', async (request, reply) => {
+    const parsedRequest = MetadataEntitySearchRequestSchema.safeParse(request.body);
+    if (!parsedRequest.success) {
+      return reply.code(400).send(
+        ApiErrorSchema.parse({
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: 'The metadata search request is invalid.',
+            issues: parsedRequest.error.issues.map((issue) => ({
+              path: issue.path.map(String).join('.') || 'request',
+              message: issue.message,
+            })),
+          },
+        }),
+      );
+    }
+
+    try {
+      const results = await metadataSearch.searchEntities(parsedRequest.data);
+      const parsedResponse = MetadataEntitySearchResponseSchema.safeParse({
+        ...parsedRequest.data,
+        results,
+      });
+      if (!parsedResponse.success) {
+        throw new MetadataProviderError('invalid_response');
+      }
+
+      server.log.info(
+        {
+          mode,
+          resultCount: parsedResponse.data.results.length,
+          entityType: parsedResponse.data.entityType ?? 'all',
+        },
+        'Metadata entity search completed',
+      );
+      return reply.code(200).send(parsedResponse.data);
+    } catch (error) {
+      const status = error instanceof MetadataProviderError ? error.status : 'unavailable';
+      const failure = metadataSearchFailures[status];
+      server.log.warn({ mode, status }, 'Metadata entity search failed');
+      return reply.code(failure.httpStatus).send(
+        ApiErrorSchema.parse({
+          error: {
+            code: failure.code,
+            message: failure.message,
+          },
+        }),
+      );
+    }
   });
 
   server.post('/incidents', async (request, reply) => {

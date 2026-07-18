@@ -9,7 +9,7 @@ describe('fixture metadata adapter', () => {
       message: 'Fixture metadata is ready.',
     });
 
-    const matches = await adapter.searchEntities('analytics.daily_revenue', 1);
+    const matches = await adapter.searchEntities({ query: 'analytics.daily_revenue', limit: 1 });
     expect(matches).toHaveLength(1);
     expect(matches[0]?.name).toBe('analytics.daily_revenue');
 
@@ -36,10 +36,40 @@ describe('fixture metadata adapter', () => {
     expect(changes[0]?.id).toBe('change-removed-gross-revenue');
   });
 
-  it('uses the declared fixture seed when a query has no fixture match', async () => {
+  it('returns deterministic multiple, empty, and entity-type filtered public searches', async () => {
     const adapter = createFixtureMetadataAdapter();
 
-    const matches = await adapter.searchEntities('unrelated customer support metric', 2);
+    const multiple = await adapter.searchEntities({ query: 'revenue', limit: 10 });
+    const empty = await adapter.searchEntities({
+      query: 'unrelated customer support tickets',
+      limit: 10,
+    });
+    const datasets = await adapter.searchEntities({
+      query: 'revenue',
+      entityType: 'dataset',
+      limit: 10,
+    });
+
+    expect(multiple.map((entity) => entity.name)).toEqual([
+      'analytics.daily_revenue',
+      'Revenue overview',
+    ]);
+    expect(empty).toEqual([]);
+    expect(datasets.map((entity) => entity.name)).toEqual(['analytics.daily_revenue']);
+    expect(multiple[0]).toMatchObject({
+      qualifiedName: 'snowflake.analytics.daily_revenue',
+      description: 'Daily revenue metrics derived from raw order records.',
+    });
+  });
+
+  it('uses the declared fixture seed only when the incident runner requests fallback', async () => {
+    const adapter = createFixtureMetadataAdapter();
+
+    const matches = await adapter.searchEntities({
+      query: 'unrelated customer support tickets',
+      limit: 2,
+      fallbackToDefault: true,
+    });
 
     expect(matches.map((entity) => entity.name)).toEqual(['analytics.daily_revenue']);
   });

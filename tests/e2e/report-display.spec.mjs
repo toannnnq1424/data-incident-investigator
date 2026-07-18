@@ -79,11 +79,30 @@ try {
   await page.goto(runtime.webUrl, { waitUntil: 'networkidle' });
   await page.getByRole('heading', { name: 'Fixture metadata' }).waitFor({ timeout: 2_000 });
   await page.getByText('Fixture metadata is ready.', { exact: true }).waitFor({ timeout: 2_000 });
+  await page.getByLabel('Metadata query').fill('revenue');
+  await page.getByRole('button', { name: 'Search metadata' }).click();
+  const searchResultsHeading = page
+    .locator('.metadata-search-results')
+    .getByRole('heading', { name: 'Search results' });
+  await searchResultsHeading.waitFor({ timeout: 2_000 });
+  await page.getByText('2 metadata entities found.', { exact: true }).waitFor({ timeout: 2_000 });
+  const searchResultNames = await page
+    .locator('.metadata-search-result-heading > strong')
+    .allTextContents();
+  if (
+    searchResultNames.join('|') !== 'analytics.daily_revenue|Revenue overview' ||
+    !(await searchResultsHeading.evaluate(
+      (element) => element === element.ownerDocument.activeElement,
+    ))
+  ) {
+    fail('Fixture entity search did not render deterministic focused results.');
+  }
+
   await page.locator('#question').fill('Why did revenue drop today?');
   await page.locator('#entity-hint').fill('analytics.daily_revenue');
   await page.locator('#occurred-at').fill('2026-07-18T08:30');
   await page.locator('#symptom').fill('Revenue is 42% below the seven-day baseline.');
-  await page.locator('button[type="submit"]').click();
+  await page.getByRole('button', { name: 'Start investigation' }).click();
 
   await page.getByText('Investigation processing').waitFor({ timeout: 2_000 });
   await page.getByText('Investigation completed').waitFor({ timeout: 5_000 });
