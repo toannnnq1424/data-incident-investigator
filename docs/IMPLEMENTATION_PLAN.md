@@ -460,6 +460,15 @@ Exact next action: review secrets/diff/generated artifacts, create `feat: add da
 push without rewrite, open the stacked draft PR against `codex/phase-1-level-d-closure`, and follow
 exactly one CI run. Slice 2.2 entity search remains blocked until that CI and merge-readiness check pass.
 
+Base-advance merge-readiness follow-up: after draft PR #7 was opened, the remote base was found at
+direct child `c7e6fbe527a813879c06d5f79f26133affb8766c` (`test: harden Windows pnpm shim fallback`) rather
+than the locked starting commit. It changes only the launcher shim resolver, its focused test, and the
+session log; it does not contain PR #4/#6 or product work. A non-rewriting merge-forward had one
+append-only `docs/SESSION_LOG.md` conflict. The resolution keeps both entries. Focused Prettier passed in
+0.522 seconds, ESLint in 1.407 seconds, and the launcher regression passed 3/3 in 1.10 seconds (1.774
+seconds wall). The browser flow was not repeated: the base commit preserves the validated `.cjs` path
+used by the already-passing Slice 2.1 flow and changes only the unused native-shim fallback.
+
 Slices: client health/error normalization; entity search; bounded/cycle-safe lineage; metadata and recent
 changes. Completion requires fixture and DataHub adapters to run through unchanged business logic.
 

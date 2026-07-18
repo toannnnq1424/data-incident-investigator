@@ -43,14 +43,17 @@ export function resolvePnpmInvocation(
   args,
   { env = process.env, execPath = process.execPath, platform = process.platform } = {},
 ) {
-  if (env.npm_execpath) {
-    return { command: execPath, args: [env.npm_execpath, ...args] };
+  const npmExecPath = typeof env.npm_execpath === 'string' ? env.npm_execpath.trim() : '';
+  const isNativeShim = /\.(?:bat|cmd|exe)$/i.test(npmExecPath);
+
+  if (npmExecPath && !isNativeShim) {
+    return { command: execPath, args: [npmExecPath, ...args] };
   }
 
   if (platform === 'win32') {
     return {
       command: env.ComSpec ?? env.COMSPEC ?? 'cmd.exe',
-      args: ['/d', '/s', '/c', 'pnpm', ...args],
+      args: ['/d', '/s', '/c', 'pnpm.cmd', ...args],
     };
   }
 

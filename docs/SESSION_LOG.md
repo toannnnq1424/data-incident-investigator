@@ -505,3 +505,101 @@ smoke vẫn credential-gated và deferred.
 Review secret/diff/generated artifacts, tạo commit `feat: add datahub health status`, push branch, mở
 stacked draft PR base `codex/phase-1-level-d-closure` và theo dõi đúng một CI run. Chỉ handoff Slice 2.2
 entity search sau khi CI và merge-readiness pass; không bắt đầu Slice 2.2 trong task này.
+
+## 2026-07-18 — Windows pnpm shim fallback hardening
+
+### Objective
+
+Ngăn browser launcher đưa Windows `.cmd`, `.bat` hoặc `.exe` pnpm shim vào Node như JavaScript, không
+đổi runtime/browser behavior đã PASS và không tích hợp duplicate PR #6.
+
+### Completed
+
+`resolvePnpmInvocation` trim `npm_execpath`, chỉ dùng current Node cho non-native script path, và dùng
+controlled `ComSpec /d /s /c pnpm.cmd` trên Windows khi path là native shim/binary hoặc bị thiếu.
+Regression giữ `.mjs`/`.cjs` qua Node, kiểm tra `.CMD` case-insensitive, missing Windows path và POSIX
+`pnpm` fallback.
+
+### Files changed
+
+`tests/e2e/report-launcher.mjs`, `tests/integration/report-launcher.test.ts`, và entry SESSION_LOG này.
+Không đổi product, manifest/lockfile, PR #4 hoặc PR #6.
+
+### Decisions
+
+Không chạy browser E2E: actual validated launcher path là `.cjs`, nhánh Node hiện hữu không đổi, và
+runtime URL/readiness/browser/cleanup contract không đổi. Focused pure invocation regression là test
+reproducing trực tiếp.
+
+### Validation performed
+
+- Changed-file Prettier PASS sau một formatting-only rewrite; affected ESLint PASS trong 2.842 giây.
+- `pnpm exec vitest run tests/integration/report-launcher.test.ts` PASS 3/3; Vitest 2.45 giây, test
+  time 926ms, wall 6.945 giây.
+
+### Validation intentionally deferred
+
+Browser E2E, core Level D, build và smoke không rerun vì input/runtime contract tương ứng không đổi.
+Không có Phase 2.
+
+### Known issues
+
+Không có blocker cục bộ mới; commit/push/CI còn pending tại thời điểm ghi entry.
+
+### Exact next step
+
+Review diff/secret, commit `test: harden Windows pnpm shim fallback`, push thường lên PR #5 và theo dõi
+đúng một CI run mới. Không merge PR và không chạm PR #6.
+
+## 2026-07-18 — Slice 2.1 remote-base merge readiness
+
+### Objective
+
+Loại conflict trên stacked draft PR #7 sau khi remote base
+`codex/phase-1-level-d-closure` advance ngoài handoff từ `db7dba58…` lên direct child `c7e6fbe…`, không
+rebase/rewrite, không tích hợp PR #4/#6 và không mở rộng Slice 2.1.
+
+### Completed
+
+Fetch riêng remote base xác minh `c7e6fbe527a813879c06d5f79f26133affb8766c` có parent chính xác
+`db7dba58d7ecae0505b0596d0f735cbae96b2b4c`, chỉ đổi Windows pnpm shim fallback, focused launcher
+test và append SESSION_LOG. Merge-forward `--no-ff` có đúng một conflict append-only tại
+`docs/SESSION_LOG.md`; resolution giữ nguyên cả entry Slice 2.1 lẫn entry base hardening. Không có code
+product hoặc browser-flow conflict.
+
+### Files changed
+
+Merge nhận `tests/e2e/report-launcher.mjs` và `tests/integration/report-launcher.test.ts` từ exact base
+advance; `docs/SESSION_LOG.md` được resolve append-only; `docs/IMPLEMENTATION_PLAN.md` ghi evidence
+merge-readiness. Không đổi manifest, lockfile, `.env.example`, PR #4 hoặc PR #6.
+
+### Decisions
+
+Dùng merge-forward thay vì rebase/rewrite vì remote stacked base đã advance trực tiếp. Không chạy
+browser lần hai: commit base chỉ đổi nhánh native `.cmd|.bat|.exe` fallback, trong khi actual browser run
+đã PASS dùng validated `.cjs` current-Node path và URL/readiness/browser/cleanup contract không đổi.
+Focused launcher regression là validation trực tiếp cho phần base mới.
+
+### Validation performed
+
+- Conflict-marker scan PASS (`0`) và `git diff --check` PASS.
+- Focused Prettier ban đầu yêu cầu formatting-only resolution cho `docs/SESSION_LOG.md`; sau write,
+  Prettier PASS trong 0.522 giây và affected ESLint PASS trong 1.407 giây.
+- `tests/integration/report-launcher.test.ts` PASS 3/3; Vitest 1.10 giây, 364ms test time, 1.774 giây
+  wall.
+
+### Validation intentionally deferred
+
+Không rerun browser E2E hoặc core Level D vì actual validated browser path/product inputs không đổi và
+Slice 2.1 đã dùng đúng một browser flow PASS. Live DataHub smoke vẫn credential-gated.
+
+### Known issues
+
+Merge commit/push và conflict-free/CI verification của PR #7 còn pending tại thời điểm ghi entry. Không
+có local implementation/test blocker.
+
+### Exact next step
+
+Format-check docs đã cập nhật, stage exact merge resolution, tạo merge commit không rewrite, push và xác
+minh PR #7 conflict-free. Theo dõi đúng một CI run gắn với final merge HEAD; chỉ handoff Slice 2.2 sau
+khi run đó PASS và PR đạt merge-readiness.
