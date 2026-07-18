@@ -148,6 +148,110 @@ deferred.
 Exact next slice: create a new project-scoped task for Phase 1 Slice 1.3 — Evidence display, starting
 from this Slice 1.2 branch/commit; do not continue Slice 1.3 here.
 
+### Infrastructure stabilization - Codex managed-worktree bootstrap
+
+Status: complete on `codex/stabilize-managed-worktree-bootstrap` from exact Slice 1.2 commit
+`b7a3e699198f7ebae187a5485d0a540a7127cb75`. This is an infrastructure-only objective and does not
+start Slice 1.3 or Phase 2.
+
+Objective: make a newly created Codex managed worktree install the locked workspace dependencies with
+the required Node and pnpm versions on Windows and macOS, while documenting the verified Local
+Environment UI wiring when the desktop app exposes no callable configuration API.
+
+Root-cause classification:
+
+- Codex's bundled `pnpm.cmd` is on the Windows agent `PATH`, but the sibling bundled `node.exe`
+  directory is not. Dependency lifecycle scripts that invoke `node` therefore fail even though pnpm
+  itself starts.
+- A new managed worktree contains tracked files but no root `node_modules`, so `pnpm exec` cannot rely
+  on root tool binaries until a frozen install completes.
+- Invoking package-manager shims that need uncached Corepack/pnpm metadata can fail offline; bootstrap
+  must use the exact `packageManager` version already exposed by the host and must not silently
+  download or activate another pnpm version.
+- The checksum-verified Windows portable `gh.exe` is intentionally ignored under `work/tools/` and is
+  absent from managed worktrees. GitHub CLI remains a host prerequisite and must not be copied into
+  worktrees or into macOS setup.
+
+Minimum files:
+
+- Platform-specific, tracked bootstrap scripts under `scripts/`.
+- `docs/LOCAL_ENVIRONMENT.md` with verified desktop-app setup instructions, prerequisites, failure
+  diagnostics, and the exact schema/API blocker.
+- `CODEX.md`, repository map, known issues, and session log for durable handoff.
+- `.worktreeinclude` only if validation identifies a safe ignored setup file that is genuinely
+  required; otherwise leave it absent.
+
+Acceptance criteria:
+
+- Windows bootstrap discovers a compatible host or Codex-bundled Node without a username or absolute
+  machine path, exposes it to dependency lifecycle scripts, verifies Node `>=24`, and invokes exact
+  pnpm `11.9.0` without relying on missing online package-manager metadata.
+- macOS bootstrap verifies Node `>=24` and exact pnpm `11.9.0` from the host environment before using
+  them; it contains no Windows binary or path.
+- Both platform scripts run `pnpm install --frozen-lockfile`, then prove `node`, `pnpm`,
+  `pnpm exec`, and one static repository command work.
+- Official Codex behavior and the current callable-tool boundary are documented. If the Local
+  Environment file can only be generated through desktop UI, no unverified schema is committed; the
+  documented UI setup points to the tracked platform scripts.
+- Existing `.codex/config.toml` still parses and retains `workspace-write`, `on-request`,
+  `auto_review`, approved network access, and the existing secret-safe optional MCP configuration.
+- No product source, dependency version, lockfile, credential, auth state, portable `gh`, or secret is
+  changed or copied.
+
+Deferred: Slice 1.3, Phase 2, product tests, full Level D validation, global installation of Node/pnpm,
+and installation or authentication of GitHub CLI on contributor hosts.
+
+Validation commands:
+
+- Parse `.codex/config.toml` and every new structured config with a standard parser.
+- Run the Windows bootstrap from a clean dependency state or equivalent disposable copy and capture
+  versions plus frozen-install evidence.
+- Run `bash scripts/bootstrap-worktree.sh` from a clean macOS managed worktree and capture versions,
+  frozen-install evidence, the static check, and final Git status.
+- Run `pnpm exec prettier --check` on the changed documentation/scripts and one affected static command
+  only; do not run the full product suite.
+- Scan the diff for secrets, generated artifacts, absolute machine paths, dependency/lockfile changes,
+  and unintended `.worktreeinclude` entries.
+
+Validation result: passed on Windows and macOS 2026-07-18. From an empty Windows dependency state, the bootstrap found
+Codex-bundled Node `v24.14.0` and pnpm `11.9.0`, completed the frozen install of 257 packages with the
+lockfile resolution skipped, resolved root Prettier `3.9.5` through `pnpm exec`, and passed its static
+format check. PowerShell parsing, POSIX `bash -n`, TOML parsing/policy assertions, changed-document
+Prettier, `git diff --check`, secret/absolute-path scans, and the scoped diff review passed. The first
+changed-document Prettier attempt was classified as a sandbox restriction because pnpm could not
+access its host store; the identical targeted check passed once with scoped access.
+
+From a clean detached macOS worktree at commit `5e75b72b21c01290afaa4f89dadf01c591ea803a`,
+`bash scripts/bootstrap-worktree.sh` selected Homebrew Node `v26.3.0` and pnpm `11.9.0`, completed the
+frozen install of 257 packages with lockfile resolution skipped, resolved Prettier `3.9.5` through
+`pnpm exec`, passed the static Prettier check, printed `Managed-worktree bootstrap completed.`, and
+left `git status` clean. No product source, dependency, lockfile, Local Environment schema,
+`.worktreeinclude`, credential, or portable binary changed.
+
+Merge-readiness update (2026-07-18): merge exact `origin/main`
+`c3f1830c77f4eda4da7cf1ce729439aa1fd0fd12` into PR #4 without rebase or history rewrite, preserving
+all Phase 1 product/launcher completion evidence and the bootstrap/local-environment contract.
+
+Acceptance and validation:
+
+- The merge commit is a descendant of both `origin/main` and PR #4 head
+  `99dfc5f7a086808b25d8a57988524769bca0cf87`.
+- Conflict resolution is limited to project memory and retains the Phase 1 E2E/Level D evidence plus
+  the Windows/macOS bootstrap decisions and commands.
+- The PR diff against `main` contains only bootstrap/local-environment changes and merge-resolution
+  documentation; no Phase 1 product, launcher, manifest, lockfile, or test is reversed or deleted.
+- Run changed-file formatting, `git diff --check`, a secret/absolute-path scan, PowerShell parsing, and
+  the Windows bootstrap from a fresh temporary export with frozen-lockfile/root-tool evidence.
+- Do not rerun browser E2E or the full product suite because their inputs come unchanged from green
+  `main`; CI covers repository validation. Fresh macOS QA of the post-merge head remains pending.
+
+Windows merge-readiness result: a fresh temporary export of the prospective merge index contained no
+dependencies or local pnpm store and retained the Phase 1 launcher. PowerShell parsing passed, then
+`powershell -NoProfile -ExecutionPolicy Bypass -File scripts/bootstrap-worktree.ps1` selected Node
+`v24.14.0` and pnpm `11.9.0`, installed 259 packages with lockfile resolution skipped, resolved root
+Prettier `3.9.5`, passed the static check, and completed in `6.893s`. Post-merge macOS QA remains the
+only platform validation pending before PR #4 can leave draft.
+
 ### Slice 1.3 — Evidence display
 
 Status: complete on `codex-mac/slice-1-3-evidence-display`, stacked on exact Slice 1.2 commit
@@ -369,14 +473,127 @@ Exact next action: create and push the non-rewriting merge commit, verify draft 
 and follow exactly one CI run created by that push. Stop after PR/CI evidence; do not begin Phase 2,
 change product code, or integrate PR #4.
 
+### Phase 1 launcher port-race CI hotfix
+
+Status: local validation passed from exact `origin/main`
+`f86dc552c6cb5805eb1a6b032a1b90a683a9a84f` after main CI run `29649047565`, job `88092112833`,
+failed with `EADDRINUSE` in `tests/integration/report-launcher.test.ts`. Draft-PR CI remains pending.
+
+Objective: remove the integration-test TOCTOU window between finding, closing, and rebinding a free
+port without changing product behavior, browser-launcher runtime behavior, or beginning Phase 2.
+
+Minimum files:
+
+- `tests/integration/report-launcher.test.ts` for atomic `port: 0` binding and the focused regression.
+- `docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md`, and `docs/SESSION_LOG.md` for CI evidence and
+  handoff.
+
+Acceptance criteria:
+
+- Test-owned HTTP listeners bind atomically to port `0` and use the actual bound port reported by the
+  server; no close-then-rebind free-port probe remains in the failing cleanup contract.
+- The managed descendant-tree cleanup contract still reaches HTTP readiness, terminates only its own
+  process tree, and proves the selected listener is released.
+- Changed-file Prettier, affected ESLint, and
+  `pnpm exec vitest run tests/integration/report-launcher.test.ts` pass. After the first post-fix pass,
+  run the focused file at most five additional consecutive times to assess flakiness.
+- Diff, conflict-marker, secret, and worktree reviews pass; one conventional commit is pushed to a
+  draft PR based on `main`, followed by exactly one new CI run without rerunning the failed main run.
+
+Deferred: browser E2E, the full suite, builds, product/UI/API changes, PR #4 reversal, and all Phase 2
+work. Browser E2E remains deferred because the launcher runtime contract is unchanged; this fix only
+changes test-owned listener allocation.
+
+Validation result on Windows, 2026-07-18:
+
+- The focused pre-fix file passed locally once in `13.103s`, so the defect is classified as test
+  flakiness from the exact CI `EADDRINUSE` evidence rather than a deterministic local failure.
+- The readiness contract keeps its HTTP server bound to OS-assigned port `0` while the port is used.
+  The cleanup descendant now binds its own port `0`, reports the actual bound port through stdout, and
+  is probed only after that atomic bind succeeds; no retry, sleep, or random fixed range was added.
+- Changed-file Prettier passed in `1.971s` and affected ESLint passed in `3.355s`.
+- The first post-fix focused run passed 3/3 in `2.61s` (`5.079s` wall). Five additional consecutive
+  focused runs also passed 3/3 each in `22.681s` total.
+
+Exact next action: update project memory, review the scoped diff and secret/conflict markers, create one
+conventional commit, push the fix branch, open a draft PR against `main`, and follow exactly one CI run.
+Do not rerun the failed main run, merge the fix PR, or begin Phase 2.
+
+### Phase 1 post-merge Level D closure
+
+Status: passed on `phase/phase1-post-merge-closure` from exact integrated `origin/main`
+`ab1559e3a8364e8c65aeed7407fd4ddfb2390cec`. Supplied main CI run `29649987430`, job
+`88094568246`, is green; PR #4 bootstrap and PR #8 port-race fix are both merged and remain intact.
+
+Objective: run the final Phase 1 Level D checkpoint on the fully integrated main tree, prove the
+credential-free canonical fixture flow, and publish docs-only closure evidence without starting Phase 2.
+
+Minimum files:
+
+- `docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md`, and `docs/SESSION_LOG.md` for the integrated
+  validation record and handoff.
+- No product, test, launcher, bootstrap, manifest, lockfile, or repository-map change unless a
+  classified gate failure requires a targeted in-scope fix.
+
+Acceptance criteria:
+
+- The merged Windows bootstrap verifies Node/pnpm and frozen dependencies before repository commands.
+- Repository format, lint, all workspace type-checks, the complete unit/integration/smoke test suite,
+  all production builds, and the primary artifact smoke pass exactly once through `pnpm validate`.
+- Exactly one `pnpm test:e2e:report` completes
+  `submit -> processing -> completed -> full evidence display` in under three minutes, resolves every
+  hypothesis evidence reference, reports no browser console warning/error, and leaves no selected
+  listener or launcher descendant behind.
+- Diff, secret, conflict-marker, generated-junk, ancestry, and clean-worktree reviews pass; a docs-only
+  conventional commit is pushed to one draft PR based on `main`, followed by exactly one new CI run.
+
+Validation commands:
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/bootstrap-worktree.ps1`
+- `pnpm validate`
+- `pnpm test:e2e:report`
+- Changed-doc Prettier plus read-only diff/secret/conflict/generated-junk/worktree review after the gate.
+
+Validation result on Windows, 2026-07-18:
+
+- Bootstrap selected Node `v24.14.0` and pnpm `11.9.0`, confirmed the frozen workspace was already up
+  to date, resolved Prettier `3.9.5`, and passed its static check in `5.356s`.
+- The single `pnpm validate` wrapper stopped at its first step after `8.734s` because this checkpoint's
+  newly added plan section needed formatting; lint/typecheck/test/build/smoke had not run. After the
+  targeted docs-only Prettier write, repository format passed in `2.798s`. The remaining unchanged
+  wrapper components then ran once each: lint passed in `31.434s`; type-check passed for 6/7 workspace
+  projects in `36.859s`; build passed for 6/7 projects in `15.967s` with 109 web modules; and smoke
+  passed both API/web artifacts in `0.905s`.
+- The first full test attempt reported 15/17 passing and two `5s` API timeouts despite the logged
+  health response completing in `15.49ms`. The exact failing pair then passed 5/5 in `1.88s`
+  (`3.731s` wall), classifying the failure as transient environment contention rather than an
+  implementation defect. The one recovery run of the full suite passed 7 files/17 tests in `2.64s`
+  (`4.568s` wall); no product or test fix was made.
+- Exactly one `pnpm test:e2e:report` selected API `http://127.0.0.1:61369` and web
+  `http://127.0.0.1:61370`, then passed the canonical fixture flow in `32.400s` (`43.082s` wall), under
+  three minutes. Its assertions covered processing, completed/full evidence display, real hypothesis
+  evidence references, and clean browser console output. Read-only post-run probes found zero
+  listeners on both ports and zero launcher-related processes.
+- Phase 1 is fully integrated and closed on the exact main tree above. No Phase 2 implementation was
+  started.
+
+Deferred: all DataHub implementation, additional fixture scenarios, durable persistence, broader
+cross-browser coverage, deployment, and Phase 2. The exact next implementation step after this gate
+passes is a separate Phase 2 Slice 2.1 DataHub client task.
+
+Exact next step: after the docs-only closure PR is reviewed and merged, create a separate project task
+for Phase 2 Slice 2.1 — DataHub client health/error normalization from the then-current exact `main`.
+Do not begin that slice in this checkpoint.
+
 Phase completion: a clean clone can select a demo incident and receive a complete report.
 
 ## Phase 2 — DataHub integration
 
 ### Slice 2.1 — DataHub health and provider error normalization
 
-Status: Level C passed locally on `codex/phase-2-1-datahub-health` from exact Phase 1 closure commit
-`db7dba58d7ecae0505b0596d0f735cbae96b2b4c`; stacked draft PR and CI are pending.
+Status: Level C and draft-PR CI passed on `codex/phase-2-1-datahub-health`; affected validation also
+passes for the prospective merge of integrated `main` into PR #7. Merge commit, push, PR retarget, and
+final-head CI are pending.
 
 Objective: show the selected metadata source and its readiness from the existing web shell through a
 shared `GET /metadata/health` contract. Fixture mode must remain deterministic and credential-free;
@@ -456,9 +673,9 @@ Validation result on the Windows managed worktree, 2026-07-18:
   metadata ready before submit, processing, completed full evidence display, resolved evidence
   references, clean console output, the three-minute limit, and selected-port cleanup.
 
-Exact next action: review secrets/diff/generated artifacts, create `feat: add datahub health status`,
-push without rewrite, open the stacked draft PR against `codex/phase-1-level-d-closure`, and follow
-exactly one CI run. Slice 2.2 entity search remains blocked until that CI and merge-readiness check pass.
+Exact next action: finish the integrated-main sync review, create and push the non-rewriting merge
+commit, retarget draft PR #7 to `main`, and follow exactly one final-head CI run. Slice 2.2 entity search
+remains out of scope and PR #10 must not be modified.
 
 Base-advance merge-readiness follow-up: after draft PR #7 was opened, the remote base was found at
 direct child `c7e6fbe527a813879c06d5f79f26133affb8766c` (`test: harden Windows pnpm shim fallback`) rather
@@ -468,6 +685,49 @@ append-only `docs/SESSION_LOG.md` conflict. The resolution keeps both entries. F
 0.522 seconds, ESLint in 1.407 seconds, and the launcher regression passed 3/3 in 1.10 seconds (1.774
 seconds wall). The browser flow was not repeated: the base commit preserves the validated `.cjs` path
 used by the already-passing Slice 2.1 flow and changes only the unused native-shim fallback.
+
+Integrated-main sync follow-up (2026-07-18): merge exact green `origin/main`
+`54945b80a27685ce81e476173a3466e585f42112` into PR #7 head
+`325b21c5d4ca106e3b01b3926d4eecd5378dedd7` without rebase or rewrite, then retarget the draft PR to
+`main`. Preserve feature commit `95ad76d4b02ab4c5bd005b2389b17034af3fd957`, all Slice 2.1
+contracts and tests, and all integrated Phase 1 bootstrap, port-race, and closure evidence. The only
+merge conflict is append-only project memory in `docs/SESSION_LOG.md`; resolution must retain both
+histories. The prospective PR diff against `main` must contain only Slice 2.1 behavior, tests, and
+documentation, with no Slice 2.2 source or Phase 1 reversal.
+
+Sync validation commands:
+
+- Project-local Prettier on the Slice 2.1 PR diff plus the resolved implementation-plan, known-issues,
+  and session-log files.
+- Affected ESLint for shared-types, datahub-client, API, web, Slice 2.1 tests, and the merged launcher
+  regression.
+- Type-check `@dii/shared-types`, `@dii/datahub-client`, `@dii/api`, and `@dii/web`.
+- Run the focused shared/DataHub health/API/web/compatibility Vitest files plus
+  `tests/integration/report-launcher.test.ts`.
+- Build the same four workspaces.
+- Defer a second browser run only if the prospective merge tree is byte-identical to validated head
+  `325b21c5d4ca106e3b01b3926d4eecd5378dedd7` for API source, web source, shared/DataHub source, and
+  `tests/e2e`; otherwise run exactly one fixture browser flow.
+
+Sync validation result on Windows:
+
+- Changed-file Prettier write passed in `9.351s`; only the new session entry required wrapping.
+  Affected ESLint passed in `101.748s`.
+- Type-checks passed for shared-types in `15.356s`, datahub-client in `15.361s`, API in `17.677s`, and
+  web in `18.680s`.
+- The sandboxed focused Vitest command was classified as environment-only before tests because esbuild
+  could not read managed-worktree ancestor metadata. Its single scoped retry ran 8 files/35 tests:
+  33 passed, while the first request in each of two API files hit the known transient `5s` parallel-load
+  timeout; all health normalization, fake-server, web, compatibility, and launcher cases otherwise
+  passed. One exact two-file recovery passed 2/2 files and 7/7 tests in `1.88s` (`3.084s` wall) without
+  a code or timeout change.
+- All four affected builds passed in `15.251s`; web transformed 109 modules and built in `4.58s`.
+- Browser E2E was not repeated because the API, web, shared/DataHub, and complete E2E input trees are
+  byte-identical to validated `325b21c…`. The merged main change affects only the focused launcher
+  integration test, which passed all 3 tests in the 8-file run.
+
+Deferred: live DataHub smoke, full Level D/release validation, PR readiness/merge, PR #10 changes, and
+all Slice 2.2/2.3 implementation.
 
 Slices: client health/error normalization; entity search; bounded/cycle-safe lineage; metadata and recent
 changes. Completion requires fixture and DataHub adapters to run through unchanged business logic.

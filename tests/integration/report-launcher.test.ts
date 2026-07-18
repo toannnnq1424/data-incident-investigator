@@ -33,6 +33,54 @@ function close(server) {
   });
 }
 
+function boundPort(server, host) {
+  const address = server.address();
+  if (!address || typeof address === 'string') {
+    throw new Error(`Could not read the bound port on ${host}.`);
+  }
+
+  return address.port;
+}
+
+function waitForBoundPort(entry, { timeoutMs = 8_000 } = {}) {
+  return new Promise((resolve, reject) => {
+    const finish = (error, port) => {
+      clearTimeout(timeout);
+      entry.child.stdout.off('data', onData);
+      entry.child.off('error', onError);
+      entry.child.off('exit', onExit);
+      if (error) {
+        reject(error);
+      } else {
+        resolve(port);
+      }
+    };
+    const readPort = () => {
+      const match = /DII_TEST_PORT=(\d+)/.exec(entry.logs);
+      if (match) {
+        finish(undefined, Number(match[1]));
+      }
+    };
+    const onData = () => readPort();
+    const onError = (error) => finish(error);
+    const onExit = (code, signal) =>
+      finish(
+        new Error(
+          `${entry.name} exited before reporting its bound port: code=${code} signal=${signal}\n${entry.logs}`,
+        ),
+      );
+    const timeout = setTimeout(
+      () => finish(new Error(`${entry.name} did not report its bound port.\n${entry.logs}`)),
+      timeoutMs,
+    );
+
+    entry.child.stdout.on('data', onData);
+    entry.child.once('error', onError);
+    entry.child.once('exit', onExit);
+    readPort();
+  });
+}
+
 describe('Phase 1 browser launcher contracts', () => {
   it('resolves pnpm through the current Node runtime and has a safe Windows fallback', () => {
     for (const npmExecPath of ['C:\\tools\\pnpm.mjs', 'C:\\tools\\pnpm.cjs']) {
@@ -84,49 +132,45 @@ describe('Phase 1 browser launcher contracts', () => {
 
   it('keeps dynamic commands, proxy, readiness, and browser URLs synchronized', async () => {
     const host = '127.0.0.1';
-    const apiPort = await findFreePort(host);
-    let webPort = await findFreePort(host);
-    while (webPort === apiPort) {
-      webPort = await findFreePort(host);
-    }
-
-    const runtime = createRuntimeConfig({
-      apiPort,
-      host,
-      viteConfigPath,
-      webPort,
-    });
-
-    expect(runtime.apiEnv).toEqual({ API_HOST: host, API_PORT: String(apiPort) });
-    expect(runtime.apiHealthUrl).toBe(`http://${host}:${apiPort}/health`);
-    expect(runtime.webEnv.DII_E2E_API_URL).toBe(runtime.apiUrl);
-    expect(runtime.webUrl).toBe(`http://${host}:${webPort}`);
-    expect(runtime.webArgs).not.toContain('--');
-    expect(runtime.webArgs).toContain(String(webPort));
-
-    const previousE2eEnv = Object.fromEntries(
-      Object.keys(runtime.webEnv).map((key) => [key, process.env[key]]),
-    );
-    Object.assign(process.env, runtime.webEnv);
+    const server = createServer((_request, response) => response.end('ready'));
+    await listen(server, host, 0);
     try {
-      const viteConfig = await resolveConfig({ configFile: viteConfigPath }, 'serve');
-      expect(viteConfig.server.host).toBe(host);
-      expect(viteConfig.server.port).toBe(webPort);
-      expect(viteConfig.server.strictPort).toBe(true);
-      expect(viteConfig.server.proxy?.['/api']?.target).toBe(runtime.apiUrl);
-    } finally {
-      for (const [key, value] of Object.entries(previousE2eEnv)) {
-        if (value === undefined) {
-          delete process.env[key];
-        } else {
-          process.env[key] = value;
+      const webPort = boundPort(server, host);
+      const apiPort = await findFreePort(host);
+      const runtime = createRuntimeConfig({
+        apiPort,
+        host,
+        viteConfigPath,
+        webPort,
+      });
+
+      expect(runtime.apiEnv).toEqual({ API_HOST: host, API_PORT: String(apiPort) });
+      expect(runtime.apiHealthUrl).toBe(`http://${host}:${apiPort}/health`);
+      expect(runtime.webEnv.DII_E2E_API_URL).toBe(runtime.apiUrl);
+      expect(runtime.webUrl).toBe(`http://${host}:${webPort}`);
+      expect(runtime.webArgs).not.toContain('--');
+      expect(runtime.webArgs).toContain(String(webPort));
+
+      const previousE2eEnv = Object.fromEntries(
+        Object.keys(runtime.webEnv).map((key) => [key, process.env[key]]),
+      );
+      Object.assign(process.env, runtime.webEnv);
+      try {
+        const viteConfig = await resolveConfig({ configFile: viteConfigPath }, 'serve');
+        expect(viteConfig.server.host).toBe(host);
+        expect(viteConfig.server.port).toBe(webPort);
+        expect(viteConfig.server.strictPort).toBe(true);
+        expect(viteConfig.server.proxy?.['/api']?.target).toBe(runtime.apiUrl);
+      } finally {
+        for (const [key, value] of Object.entries(previousE2eEnv)) {
+          if (value === undefined) {
+            delete process.env[key];
+          } else {
+            process.env[key] = value;
+          }
         }
       }
-    }
 
-    const server = createServer((_request, response) => response.end('ready'));
-    await listen(server, host, webPort);
-    try {
       const entry = {
         child: { exitCode: null, signalCode: null },
         logs: '',
@@ -141,11 +185,16 @@ describe('Phase 1 browser launcher contracts', () => {
 
   it('terminates only the managed descendant process tree and releases its listener', async () => {
     const host = '127.0.0.1';
-    const port = await findFreePort(host);
     const childSource = `
         const { createServer } = require('node:http');
-        createServer((_request, response) => response.end('ready'))
-          .listen(${port}, '${host}', () => console.log('ready'));
+        const server = createServer((_request, response) => response.end('ready'));
+        server.listen(0, '${host}', () => {
+          const address = server.address();
+          if (!address || typeof address === 'string') {
+            throw new Error('Could not read the cleanup fixture port.');
+          }
+          console.log('DII_TEST_PORT=' + address.port);
+        });
         setInterval(() => {}, 1000);
       `;
     const parentSource = `
@@ -160,7 +209,9 @@ describe('Phase 1 browser launcher contracts', () => {
       parentSource,
     ]);
 
+    let port;
     try {
+      port = await waitForBoundPort(entry);
       await waitForHttpReady(entry, `http://${host}:${port}`, { timeoutMs: 8_000 });
     } finally {
       await stopManagedProcesses([entry]);
