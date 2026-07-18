@@ -299,3 +299,78 @@ bootstrap dependency upstream or rerun this closure from a clean environment. Ad
 pnpm launch, dedicated/dynamic ports with a matching URL/readiness contract, and process-tree cleanup as
 one bounded browser-test fix; then rerun `pnpm test:e2e:report` once and proceed to merge-readiness only
 after it proves the complete clean-console flow.
+
+## 2026-07-18 — Phase 1 browser launcher stabilization follow-up
+
+### Objective
+
+Sửa duy nhất browser-launcher blocker trên branch/PR closure hiện tại, giữ nguyên Slice 1.3
+product/UI/API, rồi dùng đúng một controlled e2e run để thử đóng Phase 1 gate.
+
+### Completed
+
+Tách launcher helper test-only để resolve pnpm qua current Node/`npm_execpath` với Windows fallback an
+toàn; chọn hai port trống do OS cấp; đồng bộ API host/port, Vite proxy, readiness URL và browser URL;
+bỏ sentinel `--` sai; và cleanup exact process tree do launcher tạo bằng Windows tree kill hoặc POSIX
+process group. Thêm Vite config riêng trong `tests/e2e` nên không đổi app config. Mở rộng canonical flow
+để kiểm tra mọi hypothesis evidence reference có evidence ID thật, giới hạn tổng thời lượng dưới ba
+phút, và chỉ log pass sau browser close, process cleanup và port-release checks.
+
+### Files changed
+
+`tests/e2e/report-launcher.mjs`; `tests/e2e/vite.config.mjs`;
+`tests/e2e/report-display.spec.mjs`; `tests/integration/report-launcher.test.ts`;
+`docs/IMPLEMENTATION_PLAN.md`; `docs/KNOWN_ISSUES.md`; `docs/SESSION_LOG.md`.
+Không đổi product/UI/API, package manifest, lockfile hoặc `docs/REPOSITORY_MAP.md`.
+
+### Decisions
+
+Không kill hoặc inspect ownership để chiếm fixed ports; launcher luôn dùng dynamic ports. Windows
+cleanup dùng `taskkill /T /F` chỉ với root PID mà launcher vừa spawn; POSIX cleanup dùng process group
+riêng. Targeted cleanup contract thực sự tạo parent/child listener thuộc test rồi chứng minh listener
+được giải phóng. PR #4 vẫn là dependency riêng và không được merge/cherry-pick.
+
+Incident scope-correction trước đó vẫn được giữ nguyên trong entry liền trước; follow-up này không chạm
+worktree `6219` hoặc PID của task khác. Sau controlled run, PID `23972` được xác minh tạo lúc 20:08:46,
+trước run hiện tại khoảng 34 phút, nên không phải descendant của launcher và không bị dừng.
+
+### Validation performed
+
+- Changed-file Prettier passed. Affected ESLint ban đầu fail với hai Node globals chưa qualified và một
+  unused import; sau targeted fix, affected ESLint passed trong 1.3 giây.
+- Targeted Vitest discovery đầu tiên không chạy test vì `.mjs` nằm ngoài include
+  `tests/**/*.test.ts`; test được chuyển sang `.test.ts`. Launcher contracts sau đó passed 3/3 trong
+  949 ms. Assertion Vite resolved config đầu tiên không collect vì root không sở hữu dependency
+  `vite`; resolution được scope qua `apps/web/package.json` mà không thêm dependency. Final targeted
+  command passed 3/3 trong 1.20 giây (409 ms test time).
+- Đúng một controlled `pnpm test:e2e:report` được chạy sau targeted checks. Launcher chọn API
+  `http://127.0.0.1:52289` và web `http://127.0.0.1:52290`; cả hai HTTP readiness checks pass. Command
+  fail sau 3.9 giây trước browser creation vì thiếu
+  `chromium_headless_shell-1228/chrome-headless-shell-win64/chrome-headless-shell.exe`. Không rerun.
+- Post-failure cleanup check xác nhận 0 listener trên `52289`/`52290` và 0 managed Node process mới
+  trong năm phút gần nhất. Core Level D không được rerun vì input tương ứng không đổi.
+- Sau lượt e2e đã khóa, `pnpm exec playwright install chromium` được chạy bằng bundled Node/pnpm và
+  provision thành công executable revision `1228`; binary báo `Google Chrome for Testing
+149.0.7827.55`.
+- Sau khi controller cấp đúng một lượt mới cho external state đã thay đổi, `pnpm test:e2e:report`
+  chọn API `http://127.0.0.1:51439` và web `http://127.0.0.1:51440`, rồi PASS canonical fixture flow
+  trong `9361ms` (`15.219s` wall). Flow đi qua submit -> processing -> completed -> full evidence
+  display, kiểm tra mọi hypothesis evidence reference phân giải tới displayed evidence ID, fail trên
+  console warning/error, và enforce giới hạn ba phút.
+- Post-run check có 0 listener trên `51439`/`51440` và 0 launcher-related process mới sau khi loại
+  chính read-only probe. Core Level D không rerun vì input tương ứng không đổi. Phase 1 Level D PASS.
+
+### Validation intentionally deferred
+
+Không rerun core Level D vì input tương ứng không đổi. Không có Phase 2, DataHub, Stitch, deployment
+hoặc cross-browser expansion.
+
+### Known issues
+
+Không còn blocker cho Phase 1 acceptance. Process-local incident persistence và single fixture vẫn như
+trước và được defer ngoài checkpoint. Xem `docs/KNOWN_ISSUES.md`.
+
+### Exact next step
+
+Hoàn tất merge-readiness review cho stacked draft PR #5. Không bắt đầu Phase 2 trong task này, không
+đổi product code và không tích hợp PR #4.

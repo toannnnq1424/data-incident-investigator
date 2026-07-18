@@ -2,13 +2,13 @@
 
 Last updated: 2026-07-18.
 
-- The Phase 1 Level D core gate passes on the Windows managed worktree, but the canonical browser gate
-  remains blocked. The Slice 1.3 e2e launcher uses bare `spawn('pnpm')`, fixed ports, and a readiness
-  check tied to `localhost`; temporary diagnostic changes exposed Windows pnpm-shim portability,
-  leaked dev-server process trees, and a mismatch when Vite correctly reported
-  `http://127.0.0.1:5173/`. The diagnostic code was not retained. Phase 1 closure and Phase 2 must
-  remain blocked until one bounded launcher fix uses isolated ports/URLs, cleans its process tree, and
-  `pnpm test:e2e:report` proves the under-three-minute, no-console-warning/error flow.
+- The Phase 1 Level D core gate passes on the Windows managed worktree, and the browser launcher now
+  resolves pnpm cross-platform, uses synchronized dynamic ports/URLs, and cleans only its own process
+  tree. Three targeted launcher contracts pass. After Windows Playwright Chromium headless shell
+  revision `1228` was provisioned, the single newly authorized e2e run passed the canonical flow in
+  `9361ms` on dynamic ports `51439`/`51440`, with evidence-reference resolution and clean-console
+  assertions enabled. Both ports and the launcher process tree were clean afterward. The Phase 1
+  browser gate is no longer a blocker.
 - Managed dependency bootstrap required the bundled Node directory in process `PATH`, created an
   untracked repository-local `.pnpm-store`, and needed scoped access for Vitest to read `esbuild`.
   PR #4 (`codex/stabilize-managed-worktree-bootstrap`, commit
