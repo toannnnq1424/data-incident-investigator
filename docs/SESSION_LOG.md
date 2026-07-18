@@ -1454,3 +1454,72 @@ public paging/window input.
 Format/review hai docs resolution, tạo normal merge commit, push fast-forward, retarget draft PR #13
 sang `main`, rồi theo dõi đúng một CI run của final HEAD tới terminal. Giữ PR draft/open; không merge PR
 hoặc bắt đầu Phase 2 integration checkpoint.
+
+## 2026-07-19 — Phase 2 integration checkpoint
+
+### Objective
+
+Close Phase 2 on exact Slice 2.4 final HEAD `43e6d35c9e7881e668eb7cd4837542e8a7fab8dd`
+with one repository Level D gate and one combined fixture browser flow. Preserve feature commit
+`9afc729bbe92625d8b92a3dfc943ad7134363666`, avoid product changes, do not merge PR #13, and do
+not begin Phase 3.
+
+### Completed
+
+Created `codex/phase-2-integration-checkpoint` from the required HEAD. Read the durable project state
+and direct shared/adapter/API/browser contracts. Recorded the checkpoint plan before validation, then
+proved health/error normalization, entity search, bounded/cycle-safe lineage, recent metadata changes,
+and the canonical evidence-linked incident flow through the existing fixture/DataHub adapter boundary.
+
+### Files changed
+
+`docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md`, and this session entry only. No product,
+fixture, contract, test, launcher, dependency, manifest, lockfile, generated artifact, or repository
+structure file changed.
+
+### Decisions
+
+Keep this checkpoint docs-only. Treat the bootstrap workspace-binary resolution failure as the known
+managed Windows environment issue because the frozen install and supply-chain verification passed,
+the root shim exists, a process-local verified runtime path resolved it, and the complete Level D gate
+then passed unchanged. Defer live DataHub smoke without newly supplied authorization; never read or use
+credentials previously exposed in chat.
+
+### Validation performed
+
+- The tracked Windows bootstrap ran first. Process-scoped execution-policy bypass installed the frozen
+  259-package workspace and passed supply-chain verification, then reproduced the known `pnpm exec`
+  workspace-shim issue. The verified bundled Node/exact pnpm/root `.bin` process path resolved
+  Prettier `3.9.5`; repository files remained unchanged.
+- Exactly one `pnpm validate` PASS in `29s`: format, lint, six type-checks, 19/19 test files and
+  139/139 tests, six production builds, and API/web artifact smoke.
+- Exactly one `pnpm test:e2e:report` PASS in `5314ms` (`11.4s` wall) on API/web ports
+  `52655`/`52656`. It covered fixture readiness -> deterministic search -> selected truncated,
+  cycle-safe lineage -> selected ordered/truncated recent changes -> incident processing -> completed
+  full evidence, plus focus/accessibility, resolved evidence IDs, clean console, responsive overflow,
+  under-three-minute duration, selected-port release, and launcher process cleanup.
+- Pre-commit review PASS with exactly three intended documentation files. `git diff --check`, full
+  scoped diff, both required ancestry checks, and conflict-marker, high-risk secret,
+  generated-status-path, name/stat, branch, and worktree reviews found zero unintended matches or
+  files. Repository structure is unchanged.
+
+### Validation intentionally deferred
+
+Live DataHub smoke is deferred because no new authorization was supplied. Stitch, additional
+providers, impact analysis, correlation, investigation reasoning, all Phase 3 behavior, dependency
+changes, and UI redesign remain outside this checkpoint.
+
+### Known issues
+
+No local product or test blocker remains. The managed Windows fallback-pnpm shim issue remains an
+environment limitation with a verified process-local workaround. Final docs review, checkpoint commit,
+push, stacked draft PR publication, one final-HEAD CI run, and conflict-free/merge-ready verification
+remain pending at the time of this entry.
+
+### Exact next step
+
+Format and review the three documentation files, create conventional commit
+`docs: close phase 2 integration checkpoint`, push `codex/phase-2-integration-checkpoint`, open a
+stacked draft PR based on `codex/phase-2-4-recent-changes`, and follow exactly one CI run for final HEAD
+to terminal. Only after gate and CI are green, hand off Phase 3 Slice 3.1 — parse and gather to a
+separate Project/worktree task; do not begin it here.

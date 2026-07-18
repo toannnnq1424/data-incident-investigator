@@ -1176,6 +1176,92 @@ PR against `codex/phase-2-3-bounded-lineage`, and observe exactly one CI run to 
 handoff, create a separate task for the Phase 2 integration checkpoint; do not begin impact analysis,
 correlation, agent reasoning, or the checkpoint here.
 
+### Phase 2 integration checkpoint — Level D closure
+
+Status: local Level D passed on `codex/phase-2-integration-checkpoint` from exact Slice 2.4 final HEAD
+`43e6d35c9e7881e668eb7cd4837542e8a7fab8dd`, which preserves feature commit
+`9afc729bbe92625d8b92a3dfc943ad7134363666`. Draft PR #13 is already retargeted to `main`, is
+conflict-free, and passed CI run `29654741893`, job `88106955273`.
+
+Objective: close Phase 2 with one repository-level integration checkpoint proving the complete Slice
+2.1–2.4 capability chain and the canonical incident report on the exact green handoff, without adding a
+feature, changing a provider contract, merging PR #13, or beginning Phase 3.
+
+Minimum files:
+
+- `docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md`, and `docs/SESSION_LOG.md` for the planned gate,
+  exact local/CI evidence, deferred credential boundary, and next implementation task.
+- No product, fixture, contract, test, launcher, manifest, lockfile, or repository-map change unless a
+  classified checkpoint failure proves a genuine in-scope blocker.
+
+Acceptance criteria:
+
+- One fixture browser flow proves metadata health -> entity search -> selected bounded/cycle-safe
+  lineage -> selected recent changes -> canonical incident submit -> processing -> completed -> full
+  evidence display in under three minutes, with resolved evidence references, retained accessibility
+  states, no horizontal overflow, clean console output, and clean selected ports/process descendants.
+- Fixture mode remains deterministic and credential-free. DataHub boundary contract/fake-server tests
+  prove safe Bearer/env handling, total timeouts and normalized typed errors, bounded inputs, stable
+  order/dedup, cycle/depth/node/request/window/limit/provider caps, evidenced truncation, and no raw
+  provider payload, invented entity, or synthetic cursor leakage.
+- Health, search, lineage, recent changes, and the incident runner continue through the shared
+  provider-neutral contracts without a business-logic fork outside the established adapter boundary.
+- Exactly one Level D `pnpm validate` passes, followed by exactly one
+  `pnpm test:e2e:report`; successful unchanged inputs are not rerun.
+- Secret, conflict-marker, diff-scope, generated-artifact, ancestry, and worktree reviews pass. A
+  docs-only conventional commit is pushed to a stacked draft PR based on
+  `codex/phase-2-4-recent-changes`, and exactly one CI run for final HEAD reaches a passing terminal
+  state with the PR conflict-free and merge-ready.
+
+Deferred: live DataHub smoke when no newly supplied authorization is available, Stitch, additional
+providers, impact analysis, change correlation, investigation reasoning, Phase 3 behavior, dependency
+changes, and all UI redesign. Previously exposed chat credentials must not be read, requested, copied,
+stored, or used.
+
+Exact checkpoint commands, with the verified bundled Node/pnpm/root-bin paths prepended only to the
+current Windows process because the managed fallback shim otherwise cannot resolve workspace binaries:
+
+- `pnpm validate`
+- `pnpm test:e2e:report`
+- `& .\node_modules\.bin\prettier.CMD --write docs/IMPLEMENTATION_PLAN.md docs/KNOWN_ISSUES.md docs/SESSION_LOG.md`
+- `& .\node_modules\.bin\prettier.CMD --check docs/IMPLEMENTATION_PLAN.md docs/KNOWN_ISSUES.md docs/SESSION_LOG.md`
+- `git diff --check`, tracked-plus-untracked secret/conflict/generated-artifact scans, scoped full diff,
+  name/stat/ancestry review, and `git status --short --branch` before commit; only the final status is
+  repeated after commit/push.
+
+Validation result on the Windows managed worktree, 2026-07-19:
+
+- The tracked bootstrap was invoked before repository commands. The host first blocked `.ps1`
+  execution; the process-scoped execution-policy bypass then installed the frozen 259-package
+  workspace and passed supply-chain verification, but reproduced the known fallback-pnpm workspace
+  binary resolution issue at `pnpm exec prettier`. A second bootstrap invocation reproduced the same
+  environment-only result. Adding the already-verified bundled Node, exact pnpm fallback, and root
+  `.bin` paths to this process resolved Prettier `3.9.5`; no script, dependency, manifest, or lockfile
+  changed.
+- Exactly one `pnpm validate` passed in `29s`: repository format and lint, all six buildable workspace
+  type-checks, 19/19 test files with 139/139 tests, all six production builds, and both API/web artifact
+  smoke targets. The suite includes fixture credential-read guards plus DataHub fake-server contract
+  coverage for Bearer auth, safe error normalization, total timeouts, official bounded queries,
+  deterministic order/dedup, lineage cycle/depth/node/request caps, timeline window/limit/provider
+  caps, and truncation evidence.
+- Exactly one `pnpm test:e2e:report` selected API `http://127.0.0.1:52655` and web
+  `http://127.0.0.1:52656`, then passed the combined fixture health -> six-result search -> selected
+  three-node truncated/cycle-safe lineage -> selected deterministic truncated recent changes ->
+  canonical incident processing -> completed/full evidence flow in `5314ms` (`11.4s` command wall).
+  Terminal focus/accessibility, resolved evidence references, desktop/mobile overflow, clean console,
+  three-minute bound, selected-port release, and launcher descendant cleanup assertions all passed.
+- Live DataHub smoke is intentionally deferred because no new authorization was supplied. No
+  credential from chat or local environment was read, requested, copied, stored, logged, or used;
+  fixture and fake-provider gates are sufficient for this checkpoint.
+- Pre-commit review passed with exactly three intended documentation files; `git diff --check`, full
+  scoped diff, handoff/feature ancestry, conflict-marker, high-risk secret, generated-status-path,
+  name/stat, branch, and worktree reviews found zero unintended matches or files. Repository structure
+  is unchanged, so `docs/REPOSITORY_MAP.md` remains untouched.
+
+Exact next implementation task after the docs-only checkpoint commit, stacked draft PR, green final-HEAD
+CI, and conflict-free/merge-ready review: Phase 3 Slice 3.1 — parse and gather in a separate
+Project/worktree task. Do not begin Phase 3 in this checkpoint.
+
 Slices: client health/error normalization; entity search; bounded/cycle-safe lineage; metadata and recent
 changes. Completion requires fixture and DataHub adapters to run through unchanged business logic.
 
