@@ -1,5 +1,22 @@
 import { z } from 'zod';
 
+export const MetadataSourceModeSchema = z.enum(['fixture', 'datahub']);
+
+export const MetadataHealthStatusSchema = z.enum([
+  'ready',
+  'unconfigured',
+  'unauthorized',
+  'unavailable',
+  'timeout',
+  'invalid_response',
+]);
+
+export const MetadataHealthResponseSchema = z.object({
+  mode: MetadataSourceModeSchema,
+  status: MetadataHealthStatusSchema,
+  message: z.string().min(1).max(300),
+});
+
 export const EntityKindSchema = z.enum(['dataset', 'dashboard', 'pipeline', 'chart']);
 
 export const EntityRefSchema = z.object({
@@ -90,6 +107,9 @@ export const IncidentRetrievalResponseSchema = z.discriminatedUnion('status', [
 
 export type EntityKind = z.infer<typeof EntityKindSchema>;
 export type EntityRef = z.infer<typeof EntityRefSchema>;
+export type MetadataSourceMode = z.infer<typeof MetadataSourceModeSchema>;
+export type MetadataHealthStatus = z.infer<typeof MetadataHealthStatusSchema>;
+export type MetadataHealthResponse = z.infer<typeof MetadataHealthResponseSchema>;
 export type IncidentRequest = z.infer<typeof IncidentRequestSchema>;
 export type IncidentStatus = z.infer<typeof IncidentStatusSchema>;
 export type IncidentAcceptedResponse = z.infer<typeof IncidentAcceptedResponseSchema>;

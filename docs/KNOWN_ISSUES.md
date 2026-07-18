@@ -24,8 +24,10 @@ Last updated: 2026-07-18.
   API removes existing incident IDs; durable persistence remains deferred.
 - Fixture mode currently contains only the canonical removed-schema-column scenario. Additional
   canonical scenarios and generic scenario selection remain deferred.
-- DataHub integration, model reasoning, evaluation CLI, cross-browser automation, and public deployment
-  are intentionally deferred to their phases.
+- Slice 2.1 adds only a bounded DataHub GMS `/config` health probe and normalized source status. DataHub
+  entity search remains Slice 2.2; lineage, recent changes, model reasoning, evaluation CLI,
+  cross-browser automation, and public deployment remain deferred to their phases. A live DataHub
+  smoke is credential-gated and is not required for deterministic fixture validation.
 - Stitch MCP configuration is tracked without a key. A rotated `STITCH_API_KEY` must be set in the Codex
   process environment on each machine, then Codex must reload the trusted project.
 - Stitch tools are not expected in the current task because project-scoped MCP configuration loads when

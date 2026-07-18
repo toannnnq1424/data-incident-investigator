@@ -5,6 +5,7 @@ import {
   IncidentRequestSchema,
   IncidentRetrievalResponseSchema,
   InvestigationReportSchema,
+  MetadataHealthResponseSchema,
 } from '../../packages/shared-types/src/index.js';
 
 describe('shared investigation contracts', () => {
@@ -35,6 +36,35 @@ describe('shared investigation contracts', () => {
     });
 
     expect(response.error.code).toBe('VALIDATION_ERROR');
+  });
+
+  it('accepts every normalized metadata health status and rejects provider-specific values', () => {
+    const statuses = [
+      'ready',
+      'unconfigured',
+      'unauthorized',
+      'unavailable',
+      'timeout',
+      'invalid_response',
+    ] as const;
+
+    for (const status of statuses) {
+      expect(
+        MetadataHealthResponseSchema.safeParse({
+          mode: status === 'ready' ? 'fixture' : 'datahub',
+          status,
+          message: 'Safe metadata health message.',
+        }).success,
+      ).toBe(true);
+    }
+
+    expect(
+      MetadataHealthResponseSchema.safeParse({
+        mode: 'datahub',
+        status: 'ECONNREFUSED',
+        message: 'Provider-specific error.',
+      }).success,
+    ).toBe(false);
   });
 
   it('requires every hypothesis to cite evidence', () => {

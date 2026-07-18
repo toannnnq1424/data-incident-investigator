@@ -373,6 +373,93 @@ Phase completion: a clean clone can select a demo incident and receive a complet
 
 ## Phase 2 — DataHub integration
 
+### Slice 2.1 — DataHub health and provider error normalization
+
+Status: Level C passed locally on `codex/phase-2-1-datahub-health` from exact Phase 1 closure commit
+`db7dba58d7ecae0505b0596d0f735cbae96b2b4c`; stacked draft PR and CI are pending.
+
+Objective: show the selected metadata source and its readiness from the existing web shell through a
+shared `GET /metadata/health` contract. Fixture mode must remain deterministic and credential-free;
+DataHub mode must probe the configured GMS through a bounded client boundary and expose only safe,
+actionable normalized health states.
+
+Minimum files:
+
+- `packages/shared-types/src/index.ts` and `tests/integration/contracts.test.ts` for the stable metadata
+  mode, health-status, and response schemas.
+- `packages/datahub-client/src/index.ts` and `tests/integration/datahub-health.test.ts` for the
+  provider-neutral health boundary, deterministic fixture readiness, and a short DataHub `/config`
+  probe tested with a local fake HTTP server.
+- `apps/api/src/index.ts` and `tests/integration/metadata-health-api.test.ts` for API composition and
+  `GET /metadata/health` behavior in fixture and DataHub modes.
+- `apps/web/src/App.tsx`, `apps/web/src/styles.css`, and
+  `tests/integration/web-metadata-health.test.ts` for compact accessible loading, ready, and normalized
+  problem states without replacing the incident form or completed report.
+- `tests/e2e/report-display.spec.mjs` for the single canonical browser flow assertion that fixture
+  metadata is ready before incident completion and full evidence display.
+- `docs/API_CONTRACTS.md`, `docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md`, and
+  `docs/SESSION_LOG.md` for the durable contract and handoff. `.env.example` changes only if the
+  existing `APP_MODE`, `DATAHUB_GMS_URL`, and `DATAHUB_TOKEN` contract proves incomplete.
+
+Acceptance criteria:
+
+- Fixture `GET /metadata/health` returns a deterministic, schema-valid `ready` result without reading
+  or requiring DataHub credentials.
+- DataHub mode calls the client health boundary with a bounded timeout and AbortSignal. Success,
+  missing configuration, 401/403, connection/DNS failure, timeout, and invalid/non-JSON responses map
+  to `ready`, `unconfigured`, `unauthorized`, `unavailable`, `timeout`, or `invalid_response`.
+- Neither health responses nor logs include a configured URL, token, Authorization header, raw
+  provider body, or provider-specific response type.
+- The web shows a compact semantic metadata-source region with loading, ready, and actionable problem
+  states while preserving the incident form, compact summary, top hypothesis, and detailed evidence.
+- Shared hypothesis/evidence contracts and the provider-neutral investigation boundary remain
+  unchanged; the canonical fixture flow still transitions through processing to a complete report.
+- Targeted shared, DataHub client, API, and web tests and all four affected builds pass, followed by
+  exactly one fixture browser flow under three minutes with clean console output and full evidence.
+
+Deferred: entity search (Slice 2.2), DataHub lineage, recent changes, live-credential smoke, additional
+providers, model reasoning, controller changes, durable persistence, and broader cross-browser work.
+
+Exact Level C commands (run once after the coherent implementation):
+
+- `pnpm exec prettier --check packages/shared-types/src/index.ts packages/datahub-client/src/index.ts apps/api/src/index.ts apps/web/src/App.tsx apps/web/src/styles.css tests/integration/contracts.test.ts tests/integration/fixture-adapter.test.ts tests/integration/datahub-health.test.ts tests/integration/metadata-health-api.test.ts tests/integration/web-metadata-health.test.ts tests/e2e/report-display.spec.mjs docs/API_CONTRACTS.md docs/IMPLEMENTATION_PLAN.md docs/KNOWN_ISSUES.md docs/SESSION_LOG.md`
+- `pnpm exec eslint packages/shared-types/src packages/datahub-client/src apps/api/src apps/web/src tests/integration/contracts.test.ts tests/integration/fixture-adapter.test.ts tests/integration/datahub-health.test.ts tests/integration/metadata-health-api.test.ts tests/integration/web-metadata-health.test.ts tests/integration/incidents-api.test.ts tests/integration/web-report.test.ts tests/e2e/report-display.spec.mjs`
+- `pnpm --filter @dii/shared-types typecheck`
+- `pnpm --filter @dii/datahub-client typecheck`
+- `pnpm --filter @dii/api typecheck`
+- `pnpm --filter @dii/web typecheck`
+- `pnpm exec vitest run tests/integration/contracts.test.ts tests/integration/fixture-adapter.test.ts tests/integration/datahub-health.test.ts tests/integration/metadata-health-api.test.ts tests/integration/web-metadata-health.test.ts tests/integration/incidents-api.test.ts tests/integration/web-report.test.ts`
+- `pnpm --filter @dii/shared-types --filter @dii/datahub-client --filter @dii/api --filter @dii/web build`
+- Exactly one `pnpm test:e2e:report` run asserting fixture metadata ready, submit -> processing ->
+  completed -> full evidence display, resolved evidence references, clean console output, and a total
+  duration under three minutes.
+
+Validation result on the Windows managed worktree, 2026-07-18:
+
+- Project-local changed-file Prettier check passed in 0.901 seconds and affected ESLint passed in 2.862
+  seconds. The initial formatter bootstrap could not resolve `node` for `esbuild`; a bundled-Node retry
+  completed dependency installation but exposed the known managed-runtime `pnpm exec` shim issue. The
+  verified project-local `.CMD` shim was used, and the generated repository-local `.pnpm-store` was
+  removed after its resolved path was confirmed inside this worktree.
+- All four affected type checks passed: shared-types 2.736 seconds, datahub-client 2.879 seconds, API
+  3.452 seconds, and web 3.410 seconds.
+- The initial sandboxed Vitest command was classified as environment-only because esbuild could not
+  read managed-worktree ancestor metadata. One scoped retry passed 7/7 files and 32/32 tests in 1.46
+  seconds (2.175 seconds wall), covering every health status, real local fake HTTP responses, fixture
+  no-credential behavior, API normalization, web presentation, canonical incidents, and report
+  compatibility.
+- The first sandboxed build reached shared-types/datahub-client but hit the same ancestor-metadata
+  denial in Vite. One scoped retry passed all four affected builds in 6.902 seconds; web transformed
+  109 modules and built in 1.22 seconds.
+- Exactly one `pnpm test:e2e:report` selected API `http://127.0.0.1:62669` and web
+  `http://127.0.0.1:62670`, then passed in 5.422 seconds (11.281 seconds wall). It asserted fixture
+  metadata ready before submit, processing, completed full evidence display, resolved evidence
+  references, clean console output, the three-minute limit, and selected-port cleanup.
+
+Exact next action: review secrets/diff/generated artifacts, create `feat: add datahub health status`,
+push without rewrite, open the stacked draft PR against `codex/phase-1-level-d-closure`, and follow
+exactly one CI run. Slice 2.2 entity search remains blocked until that CI and merge-readiness check pass.
+
 Slices: client health/error normalization; entity search; bounded/cycle-safe lineage; metadata and recent
 changes. Completion requires fixture and DataHub adapters to run through unchanged business logic.
 

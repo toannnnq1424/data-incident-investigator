@@ -19,6 +19,48 @@ Response `200`:
 
 This endpoint does not reveal credentials or provider URLs.
 
+### `GET /metadata/health`
+
+The browser calls `/api/metadata/health`; direct API clients use `/metadata/health`. The response is
+always validated by `MetadataHealthResponseSchema` and reports provider readiness without returning a
+provider payload, URL, token, request header, or raw error.
+
+Fixture response `200`:
+
+```json
+{
+  "mode": "fixture",
+  "status": "ready",
+  "message": "Fixture metadata is ready."
+}
+```
+
+DataHub responses also use HTTP `200` because the metadata health request itself succeeded and the
+body reports provider state. `status` is one of:
+
+- `ready`: the configured GMS returned a valid JSON configuration response;
+- `unconfigured`: `DATAHUB_GMS_URL` or `DATAHUB_TOKEN` is blank or the URL is unsafe/invalid;
+- `unauthorized`: GMS returned HTTP `401` or `403`;
+- `unavailable`: connection/DNS failed or GMS returned another non-success status;
+- `timeout`: the bounded probe was aborted at its short timeout or by the caller signal;
+- `invalid_response`: GMS returned a non-JSON, malformed, non-object, or otherwise unexpected success
+  response.
+
+Example normalized DataHub problem response:
+
+```json
+{
+  "mode": "datahub",
+  "status": "unauthorized",
+  "message": "DataHub rejected the configured credentials. Check the access token."
+}
+```
+
+DataHub mode probes `GET /config` relative to `DATAHUB_GMS_URL` through the datahub-client boundary,
+using `DATAHUB_TOKEN` as a Bearer token and a two-second default timeout. Fixture mode constructs no
+DataHub client and does not read either DataHub environment variable. Provider failures are logged
+only with normalized mode/status fields.
+
 ### `POST /incidents`
 
 The browser calls `/api/incidents`; the Vite development proxy removes `/api` before forwarding to

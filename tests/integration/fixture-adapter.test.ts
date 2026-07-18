@@ -4,7 +4,10 @@ import { createFixtureMetadataAdapter } from '../../packages/datahub-client/src/
 describe('fixture metadata adapter', () => {
   it('returns only bounded entities, lineage, and recent changes from the canonical fixture', async () => {
     const adapter = createFixtureMetadataAdapter();
-    await expect(adapter.healthCheck()).resolves.toBeUndefined();
+    await expect(adapter.healthCheck()).resolves.toEqual({
+      status: 'ready',
+      message: 'Fixture metadata is ready.',
+    });
 
     const matches = await adapter.searchEntities('analytics.daily_revenue', 1);
     expect(matches).toHaveLength(1);

@@ -6,19 +6,31 @@ import {
   type InvestigationLimits,
   type InvestigationRunner,
 } from '@dii/agent-core';
-import { createFixtureMetadataAdapter, type MetadataAdapter } from '@dii/datahub-client';
+import {
+  createDataHubHealthClient,
+  createFixtureMetadataAdapter,
+  type MetadataAdapter,
+  type MetadataHealthProvider,
+} from '@dii/datahub-client';
 import {
   ApiErrorSchema,
   IncidentAcceptedResponseSchema,
   IncidentRequestSchema,
   IncidentRetrievalResponseSchema,
+  MetadataHealthResponseSchema,
+  MetadataSourceModeSchema,
   type InvestigationReport,
+  type MetadataHealthResponse,
+  type MetadataSourceMode,
 } from '@dii/shared-types';
 import Fastify from 'fastify';
 
 interface BuildServerOptions {
+  environment?: NodeJS.ProcessEnv;
   logger?: boolean;
   metadata?: MetadataAdapter;
+  metadataHealth?: MetadataHealthProvider;
+  mode?: MetadataSourceMode;
   runner?: InvestigationRunner;
   limits?: InvestigationLimits;
 }
@@ -30,9 +42,35 @@ type StoredIncident =
 
 const fixtureProcessingDelayMs = 250;
 
+function metadataMode(value: string | undefined): MetadataSourceMode {
+  const parsedMode = MetadataSourceModeSchema.safeParse(value);
+  return parsedMode.success ? parsedMode.data : 'fixture';
+}
+
+function unavailableMetadataHealth(mode: MetadataSourceMode): MetadataHealthResponse {
+  return MetadataHealthResponseSchema.parse({
+    mode,
+    status: 'unavailable',
+    message:
+      mode === 'datahub'
+        ? 'DataHub metadata is unavailable. Check the service and network connection.'
+        : 'Fixture metadata is unavailable. Restart the application and try again.',
+  });
+}
+
 export function buildServer(options: BuildServerOptions = {}) {
   const server = Fastify({ logger: options.logger ?? true });
+  const environment = options.environment ?? process.env;
+  const mode = options.mode ?? metadataMode(environment.APP_MODE);
   const metadata = options.metadata ?? createFixtureMetadataAdapter();
+  const metadataHealth =
+    options.metadataHealth ??
+    (mode === 'fixture'
+      ? metadata
+      : createDataHubHealthClient({
+          gmsUrl: environment.DATAHUB_GMS_URL,
+          token: environment.DATAHUB_TOKEN,
+        }));
   const runner = options.runner ?? new DeterministicInvestigationRunner();
   const limits = options.limits ?? FIXTURE_INVESTIGATION_LIMITS;
   const incidents = new Map<string, StoredIncident>();
@@ -40,8 +78,28 @@ export function buildServer(options: BuildServerOptions = {}) {
   server.get('/health', async () => ({
     status: 'ok',
     service: 'data-incident-investigator-api',
-    mode: process.env.APP_MODE ?? 'fixture',
+    mode,
   }));
+
+  server.get('/metadata/health', async (_request, reply) => {
+    let response: MetadataHealthResponse;
+
+    try {
+      const providerHealth = await metadataHealth.healthCheck();
+      response = MetadataHealthResponseSchema.parse({ mode, ...providerHealth });
+    } catch {
+      response = unavailableMetadataHealth(mode);
+    }
+
+    if (response.status !== 'ready') {
+      server.log.warn(
+        { mode: response.mode, status: response.status },
+        'Metadata source is not ready',
+      );
+    }
+
+    return reply.code(200).send(response);
+  });
 
   server.post('/incidents', async (request, reply) => {
     const parsedRequest = IncidentRequestSchema.safeParse(request.body);

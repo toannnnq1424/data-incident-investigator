@@ -433,3 +433,75 @@ vẫn deferred như trước.
 
 Tạo merge commit không rewrite, push cùng branch, xác minh draft PR #5 hết conflict và theo dõi đúng
 một CI run mới. Dừng sau PR/CI evidence; không bắt đầu Phase 2 và không tích hợp PR #4.
+
+## 2026-07-18 — Phase 2 Slice 2.1 DataHub health và provider error normalization
+
+### Objective
+
+Triển khai đúng một vertical slice từ exact Phase 1 closure HEAD
+`db7dba58d7ecae0505b0596d0f735cbae96b2b4c`: hiển thị metadata source/readiness xuyên suốt shared
+contract, DataHub client boundary, API và web mà không bắt đầu entity search, controller hoặc tích hợp
+PR nền.
+
+### Completed
+
+Thêm shared schema cho `GET /metadata/health` với mode `fixture|datahub`, sáu normalized status và safe
+message. Fixture adapter trả ready deterministic. DataHub client probe `GET /config` với Bearer token,
+bounded timeout/AbortSignal và normalize missing config, 401/403, refusal/non-success, timeout cùng
+invalid/non-JSON response mà không trả raw payload. API compose fixture/DataHub health theo mode và
+catch unexpected provider failure. Web thêm metadata-source region compact, accessible với loading,
+ready và problem states, giữ nguyên incident form/report. Thêm contract, fake-server, API, web behavior
+tests và mở rộng duy nhất canonical e2e flow để assert fixture readiness trước khi submit.
+
+### Files changed
+
+`packages/shared-types/src/index.ts`; `packages/datahub-client/src/index.ts`; `apps/api/src/index.ts`;
+`apps/web/src/App.tsx`; `apps/web/src/styles.css`; `tests/integration/contracts.test.ts`;
+`tests/integration/fixture-adapter.test.ts`; `tests/integration/datahub-health.test.ts`;
+`tests/integration/metadata-health-api.test.ts`; `tests/integration/web-metadata-health.test.ts`;
+`tests/e2e/report-display.spec.mjs`; `docs/API_CONTRACTS.md`; `docs/IMPLEMENTATION_PLAN.md`;
+`docs/KNOWN_ISSUES.md`; `docs/SESSION_LOG.md`. Không đổi cấu trúc repository, `.env.example`, manifest
+hoặc lockfile.
+
+### Decisions
+
+Dùng GMS `/config` vì đây là connection probe của DataHub client chính thức và hoạt động với cả direct
+GMS URL lẫn frontend GMS proxy base. DataHub mode coi URL hoặc token trống/unsafe là `unconfigured`;
+mọi provider outcome trả HTTP `200` với normalized body để UI phân biệt provider readiness với API
+transport failure. Chỉ mode/status đã normalize được log; URL, token, Authorization header, raw body và
+raw exception không được log hoặc đưa ra shared contract. DataHub investigation vẫn deferred cho Slice
+2.2; canonical incident tiếp tục dùng fixture adapter.
+
+### Validation performed
+
+Changed-file Prettier check PASS trong 0.901 giây và affected ESLint PASS trong 2.862 giây. Bốn affected
+typecheck PASS: shared-types 2.736 giây, datahub-client 2.879 giây, API 3.452 giây, web 3.410 giây.
+Targeted Vitest PASS 7/7 files, 32/32 tests trong 1.46 giây (2.175 giây wall). Bốn affected builds PASS
+trong 6.902 giây; web transform 109 modules và build 1.22 giây. Đúng một `pnpm test:e2e:report` chọn API
+`http://127.0.0.1:62669`, web `http://127.0.0.1:62670`, rồi PASS fixture metadata ready -> submit ->
+processing -> completed -> full evidence display trong 5.422 giây (11.281 giây wall), evidence
+references resolve, console sạch, dưới ba phút và selected ports được cleanup.
+
+Environment classification: formatter bootstrap đầu tiên fail vì subprocess `esbuild` không resolve
+`node`; bundled-Node retry install thành công nhưng `pnpm exec` không resolve tool shim. Sau hai attempts,
+project-local `.CMD` đã được dùng và `.pnpm-store` phát sinh được xóa sau exact path verification.
+Sandboxed Vitest và build lần đầu fail vì esbuild không đọc ancestor metadata; mỗi command được scoped
+retry đúng một lần và PASS, không có product fix nào phát sinh từ các environment failure này.
+
+### Validation intentionally deferred
+
+Live DataHub smoke cần credential nên deferred. Không chạy full Level D, không rerun unchanged Phase 1
+core gates, không chạy entity search, lineage, recent changes, controller hoặc broader cross-browser.
+
+### Known issues
+
+Dependency bootstrap trong managed Windows runtime vẫn cần bundled Node trên process `PATH`, và
+`pnpm exec` có thể không resolve tool shim dù project-local `.CMD` tồn tại. Đây là environment issue đã
+có workaround, không phải product failure. Slice 2.1 không còn local acceptance blocker; live DataHub
+smoke vẫn credential-gated và deferred.
+
+### Exact next step
+
+Review secret/diff/generated artifacts, tạo commit `feat: add datahub health status`, push branch, mở
+stacked draft PR base `codex/phase-1-level-d-closure` và theo dõi đúng một CI run. Chỉ handoff Slice 2.2
+entity search sau khi CI và merge-readiness pass; không bắt đầu Slice 2.2 trong task này.
