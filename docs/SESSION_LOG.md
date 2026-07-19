@@ -2123,3 +2123,106 @@ Format/check final docs. Sau đó commit conventional, push thường, mở stac
 Draft PR base `codex/phase-4-integration-checkpoint`, theo dõi exact final-HEAD CI tới terminal, xác minh
 conflict-free/merge-ready và dừng. Không merge PR, tạo task mới, archive/pin lịch sử, bắt đầu Slice 5.2
 hay Phase 6.
+
+## 2026-07-19 — Phase 5 integration checkpoint / Level D
+
+### Objective
+
+Close Phase 5 with one docs-first Level D checkpoint on exact Slice 5.1 final HEAD
+`883bf9bf8cd80625b369f615416f65552d20552e`, proving the canonical selector and the full existing
+investigation/report chain remain coherent, deterministic, bounded, accessible, credential-free, and
+free of external mutation. Do not add a feature or reliability behavior, redesign a stage, begin
+Slice 5.2/Phase 6, or invoke a live provider/model/network/credential boundary.
+
+### Completed
+
+Ran the tracked Windows bootstrap with `ExecutionPolicy Bypass` before repository commands; Node
+`v24.14.0`, pnpm `11.9.0`, the frozen 259-package install, supply-chain policy, Prettier `3.9.5`, and
+the static format check passed. Read the complete operating contract and persistent project state plus
+the directly relevant frontend, test, API, data-model, agent, and security contracts. Verified a clean
+detached exact Slice 5.1 HEAD, its exact parent/ancestry, the 11-file Slice 5.1 scope, and matching local/
+remote-tracking handoff refs. Local and remote-tracking refs had no checkpoint-name collision; the
+authenticated in-app GitHub branch search also returned no match, so created unique branch
+`codex/phase-5-integration-checkpoint` without overwriting or deleting any branch. Recorded this exact
+objective, acceptance, deferred scope, commands, and handoff before the gate. The Level D repository
+components now pass with classified environment-only recovery. The first browser invocation exposed a
+stale E2E question expectation; corrected only that assertion to the exact shared-catalog scenario
+prefill, then the final-input browser recovery passed the complete selector-to-report chain.
+
+### Files changed
+
+`docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md`, this session entry, and the one-line stale
+expectation in `tests/e2e/report-display.spec.mjs`. Product source, shared/API/evaluation contracts,
+fixtures/providers, report formulas, manifests, lockfile, dependencies, bootstrap, generated artifacts,
+and repository structure remain unchanged.
+
+### Decisions
+
+Keep the checkpoint docs-first and docs-only unless a classified in-scope gate failure proves a
+minimum correction. The browser gate proved exactly one stale assertion, so final scope is the three
+persistent docs plus that one test line; product behavior remains unchanged.
+Use the one shared seven-case catalog and existing tests as the selector/evaluation identity boundary;
+do not duplicate canonical facts. Run exactly one repository `pnpm validate`, then one intended
+`pnpm test:e2e:report`; permit only the exact final-input browser recovery after the classified test
+correction, and do not rerun green unchanged input. A known Windows sandbox-only esbuild or root-bin
+restriction may use only the documented exact-component, process-scoped recovery. Defer live
+DataHub without reading or using a credential. Because host `gh` is absent and the GitHub connector
+cannot see the private repository, use only the authenticated in-app Browser fallback for remote
+branch/PR/CI metadata without inspecting authentication material. Classify the browser finding as a
+test regression: the selected scenario correctly changed the submitted question, while the E2E context
+assertion still expected the former manual value. Align the assertion only; do not change the catalog,
+form state, request, API, context, report, timeout, or launcher.
+
+### Validation performed
+
+- Tracked bootstrap PASS in `16.5s`: frozen install completed in `6.9s`, supply-chain policy passed,
+  Prettier `3.9.5` resolved, and repository formatting was already clean.
+- Read-only handoff review PASS: exact HEAD `883bf9bf8cd80625b369f615416f65552d20552e`, exact parent and
+  Phase 4 checkpoint `19bb0d3a57e47340c8bf78928d9574892bf0e45a`, Slice 4.1 merge-base
+  `319a0755e566ee2011e73a386e6c77c1546ede48`, clean worktree, and exact Slice 5.1 diff of 11 files,
+  824 additions, and 71 deletions.
+- GitHub branch search found no `codex/phase-5-integration-checkpoint` collision. Local branch creation
+  succeeded from the exact locked HEAD.
+- Exactly one `pnpm validate` wrapper ran for `112.740s`. Format, lint, and six typechecks passed; test
+  collection then stopped at the known esbuild junction/ancestor `ERR_MODULE_NOT_FOUND`. The exact
+  scoped full-test recovery ran 29 files/198 tests in `21.60s` (`27.028s` wall): 23 files/192 tests
+  passed, with six first-test `5s` timeouts under parallel API load despite a logged health response in
+  `10.31ms`. One exact six-file reproducer passed 6 files/60 tests in `4.13s` (`5.629s` wall) without
+  code or timeout changes. All 198 unique tests therefore have passing evidence.
+- The not-yet-started build component passed 6/6 workspaces in `19.650s`; web transformed 109 modules
+  and built in `2.21s`. Smoke passed both API/web artifacts in `0.733s`.
+- The first browser invocation selected ports `60503`/`60504` and failed after `21.811s` only because
+  line 257 still expected `Why did revenue drop today?` after the selector submitted the canonical
+  `Why did revenue drop after the morning warehouse refresh?`. Launcher cleanup completed. The
+  one-line E2E assertion correction passed targeted format/lint in `0.383s`/`1.795s`.
+- The final-input browser recovery selected ports `54390`/`54391` and passed in `6429ms` (`12.639s`
+  wall): native scenario selection, editable custom prefill, submit, all processing stages, completed
+  context, exact suspicious change, `0.85` scoring, two resolved `not_executed` recommendations, and
+  full report. Existing checks cover semantic accessibility/keyboard links, reference resolution,
+  clean console, desktop/mobile overflow, three-minute limit, port release, browser close, and owned-
+  process cleanup.
+- Final Prettier write/check passed in `1.374s`/`1.914s` without rewriting a file. The pre-commit
+  read-only audit found exactly four intended paths and zero untracked, secret, conflict, debug/raw-
+  provider/model, generated report/store, manifest/lock/dependency/product, ancestry, listener, or
+  owned-E2E-process finding. Full patch review and `git diff --check` passed; repository structure is
+  unchanged.
+
+### Validation intentionally deferred
+
+Commit/push, Draft PR creation, exact final-head CI observation, and mergeability review. Live
+credentialed DataHub, provider/model/network evaluation, mutation, redesign, Slice 5.2, Phase 6, and
+every subsequent task remain outside this worker.
+
+### Known issues
+
+No local product/test/browser blocker remains. Host `gh` is unavailable and the installed GitHub
+connector returns private-repository `404`; the handoff-authorized signed-in in-app Browser is the
+publication/CI metadata fallback. The known managed Windows esbuild ancestor/root-bin restriction and
+parallel first-test timeout contention required only exact process-scoped recovery, not a product or
+timeout change.
+
+### Exact next step
+
+Create and push one conventional checkpoint commit, open a stacked Draft PR against
+`codex/phase-5-1-scenario-demo`, follow exact final-head CI to terminal, verify Draft/conflict-free/
+auto-mergeable state, and stop without merging or starting another task.

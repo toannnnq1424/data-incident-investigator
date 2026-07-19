@@ -2,6 +2,22 @@
 
 Last updated: 2026-07-19.
 
+- Phase 5 integration checkpoint local Level D evidence passes on exact Slice 5.1 final HEAD
+  `883bf9bf` and unique branch `codex/phase-5-integration-checkpoint`. The single `pnpm validate`
+  wrapper passed format/lint/six typechecks before the known sandbox-only esbuild resolution stopped
+  test collection. Its exact scoped test recovery plus one six-file contention reproducer provide
+  passing evidence for all 29 files/198 tests; all six builds and both smoke artifacts also pass. The
+  first browser command exposed one stale E2E question expectation after scenario selection, so the
+  checkpoint contains the minimum one-line test correction and no product change. The final-input
+  recovery browser flow passed in `6429ms` on ports `54390`/`54391` with full selector-to-report,
+  reference, accessibility, console, overflow, port, and owned-process assertions. Final formatting
+  and pre-commit audit pass for exactly the three persistent docs plus the one-line E2E correction,
+  with zero secret/conflict/debug/provider/model/generated/manifest/lock/dependency, listener, owned-
+  process, ancestry, scope, or worktree finding. Conventional commit, normal push, a stacked Draft PR
+  based on
+  `codex/phase-5-1-scenario-demo`, exact final-head CI, and Draft/conflict-free/auto-mergeable review
+  are pending. Live DataHub, credentials, providers/models/network, mutation, Slice 5.2, Phase 6, and
+  subsequent tasks remain deferred.
 - Phase 5 Slice 5.1 passes local Level C, the single combined browser gate, and the pre-commit final audit
   on exact Phase 4 checkpoint `19bb0d3` and branch `codex/phase-5-1-scenario-demo`; publication and CI
   evidence are pending. A strict browser-safe catalog in `@dii/shared-types` now owns the exact

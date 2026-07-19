@@ -254,7 +254,7 @@ try {
     selectedContextEntities.length !== 1 ||
     !selectedContextEntities[0]?.includes('analytics.daily_revenue') ||
     !contextFactIds.includes('change-removed-gross-revenue') ||
-    !contextText.includes('Why did revenue drop today?') ||
+    !contextText.includes('Why did revenue drop after the morning warehouse refresh?') ||
     !contextText.includes('Revenue is 42% below the seven-day baseline.') ||
     !contextText.includes('raw.orders') ||
     !contextText.includes('No bounded context gaps were recorded.') ||
