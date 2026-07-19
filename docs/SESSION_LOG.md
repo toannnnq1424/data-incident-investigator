@@ -1954,3 +1954,84 @@ Format/check final docs; chạy final diff/secret/conflict/generated/scope/ances
 conventional commit, push branch, mở stacked Draft PR base `codex/phase-3-integration-checkpoint`, theo dõi
 đúng final-HEAD CI tới terminal và xác minh conflict-free/merge-ready. Không bắt đầu reliability hardening,
 Phase 4 closure hoặc Phase 5.
+
+## 2026-07-19 — Phase 4 integration checkpoint / Level D
+
+### Objective
+
+Đóng Phase 4 bằng một docs-first Level D checkpoint trên exact Slice 4.1 final HEAD
+`319a0755e566ee2011e73a386e6c77c1546ede48`, parent chính xác
+`6499cb3aeaf8c346f0a4ec35b94600344aba522d`: chứng minh bảy canonical evaluation cases và chuỗi product
+context → suspicious changes → scored hypothesis → remediation/safe fallback → full report vẫn
+deterministic, bounded, credential-free và audit được. Không thêm feature/reliability behavior, không
+bắt đầu Phase 5, provider/model/network hoặc automatic mutation.
+
+### Completed
+
+Đã chạy tracked Windows bootstrap bằng `ExecutionPolicy Bypass` trước repository work. Lượt đầu cài đủ
+frozen 259 packages và supply-chain check nhưng gặp known fallback-pnpm root-Prettier resolution;
+process-scoped PATH gồm verified bundled Node và root `.bin` làm retry PASS với Prettier `3.9.5`, không
+sửa bootstrap/manifest/lockfile. Đã đọc đầy đủ operating contract và persistent docs bắt buộc, xác minh
+clean detached exact HEAD/parent/ancestry, local/remote-tracking/worktree collision, rồi tạo branch duy
+nhất `codex/phase-4-integration-checkpoint`. Đã ghi objective/acceptance/deferred/commands trước gate.
+Existing tests và direct source review đủ bao phủ acceptance; ba Level D gates đã PASS bằng exact
+component recovery cho hai sandbox-only esbuild restrictions, nên checkpoint giữ docs-only.
+
+### Files changed
+
+Chỉ `docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md` và entry `docs/SESSION_LOG.md` này. Không đổi
+product source, test/browser file, fixture/provider, evaluation contract, manifest, lockfile, bootstrap,
+dependency hoặc repository map trừ khi gate failure được phân loại chứng minh blocker in-scope.
+
+### Decisions
+
+Giữ checkpoint docs-only theo exact Slice 4.1 tree. Chạy đúng một `pnpm validate`; chỉ sau core PASS chạy
+đúng một compiled evaluation invocation ra JSON/Markdown trong verified ignored temp output, inspect/hash
+rồi xóa sạch; sau đó chạy đúng một `pnpm test:e2e:report`. Không rerun lệnh xanh khi input không đổi. Live
+DataHub/provider/model validation được defer mà không kiểm tra, đọc, yêu cầu, log hoặc dùng credential.
+
+### Validation performed
+
+- Đúng một `pnpm validate` chạy trên coherent input. Format, lint và 6/6 typechecks PASS rồi Vitest dừng
+  trước collection do known esbuild ancestor-path `Access is denied`; wrapper wall khoảng `47.1s` và
+  không được rerun. Exact scoped `pnpm test` recovery PASS `28/28` files, `193/193` tests trong `5.07s`
+  (`6.95s` wall). Build lượt đầu PASS shared-types/evaluation/datahub-client rồi web gặp cùng restriction;
+  retry chỉ web/agent-core/API PASS, đủ 6/6 builds, web 109 modules/`1.62s`. Smoke PASS hai artifacts
+  trong `1.18s`; tổng core evidence wall khoảng `74.6s` kể cả environment-only stops.
+- Sau core PASS, đúng một compiled evaluation invocation chạy `1.78s`. Do cwd package-scoped, hai file
+  nằm trong verified ignored nested output; audit PASS đúng bảy ID/order, 7 completed/0 failed, 110 exact
+  cross-links, safe zero denominators, ordered bounded tool events và byte identity với Slice 4.1. JSON
+  hash `A711480268C955AA13D26CBF543E31F7A0F3A1A0C0B0C80DF22779F447DF58ED`; Markdown hash
+  `1074A06E64A38A5FB44DC13A5CDD7F2D26C1E89E9D8E10B7C11B1A3A7CE05538`. Metrics: retrieval
+  `14/14`, top-1/top-3 `6/6`, evidence `6/6`, reference support `110/110`, unsupported `0/18`, declared
+  latency `168/24/29 ms`, tool calls `26/3.714286/4`, tokens `0/0/0`. Exact generated subtree chỉ có hai
+  report và đã bị xóa hoàn toàn.
+- Đúng một `pnpm test:e2e:report` chọn API `54796`, web `54797` và PASS `13261ms` (`20.16s` wall):
+  context facts → suspicious change → exact `0.85` plausible inference/evidence → hai resolved
+  `not_executed` recommendations với verification/reversibility → full report. Clean console, semantic
+  accessibility, keyboard links, desktop/mobile overflow, dưới ba phút, port release và owned-process
+  cleanup đều PASS. Post-probe có zero listener và zero owned E2E runtime; CIM read-only probe cần scoped
+  retry vì Windows sandbox chặn.
+- Fixture/fake-provider suite và source review xác nhận zero credential/environment read, zero live
+  DataHub/network/provider/model/LLM call, zero automatic mutation/retry/external write. Không có product,
+  evaluation contract, test/browser, fixture/provider, manifest, lockfile, dependency, bootstrap hoặc
+  repository-map change.
+
+### Validation intentionally deferred
+
+Live credentialed DataHub/provider/model evaluation, statistical timing, scenario-selection UI,
+authentication, persistence, deployment, rate limiting, autonomous execution, external mutation, mọi
+feature/reliability behavior mới và Phase 5.
+
+### Known issues
+
+Managed Windows fallback-pnpm root-bin limitation đã được xử lý chỉ trong process; đây là environment
+issue đã biết, không phải product/CI blocker. Sandboxed esbuild ancestor-path và CIM process probe cũng
+được retry đúng affected command với scoped access. Không có credential hoặc live provider cần dùng.
+
+### Exact next step
+
+Format/check ba docs evidence; chạy final diff/secret/conflict/generated/debug/raw-provider/model/scope/
+ancestry/worktree audit; tạo một conventional docs commit, push thường, mở stacked Draft PR base
+`codex/phase-4-1-canonical-evaluation`, theo dõi exact final-HEAD CI tới terminal và xác minh
+conflict-free/merge-ready. Không merge PR, không tạo task mới và không bắt đầu Phase 5.
