@@ -2,6 +2,24 @@
 
 Last updated: 2026-07-19.
 
+- Phase 5 Slice 5.1 passes local Level C, the single combined browser gate, and the pre-commit final audit
+  on exact Phase 4 checkpoint `19bb0d3` and branch `codex/phase-5-1-scenario-demo`; publication and CI
+  evidence are pending. A strict browser-safe catalog in `@dii/shared-types` now owns the exact
+  seven canonical IDs/order, labels/descriptions, and existing validated incident request prefills.
+  Evaluation derives its case identity/intake from that catalog while retaining expected outcomes and
+  fake telemetry internally. The web adds only a native single-select guided intake with explicit
+  manual/scenario/custom state, editable fields, clear reset, and no hidden request payload. No API,
+  provider, fixture, report, scoring formula, credential, model, network, mutation, dependency,
+  manifest, or lockfile behavior is intentionally changed. Live DataHub remains credential-gated and
+  is not a fixture/fake-provider gate for this slice. Final evidence is format/lint, six typechecks,
+  5 files/40 tests, six builds, and one `119127ms` browser flow on ports `61984`/`61985` with 7/7
+  scenario IDs/order, selected/editable custom intake, full context-to-report chain, clean console,
+  desktop/mobile overflow protection, and zero port/process/temp-file leak. The sandboxed initial test
+  command stopped before collection on the known esbuild ancestor-path denial; its exact scoped recovery
+  passed without a code change or rerunning any green step. The audit covers exactly 10 tracked
+  modifications plus one new test, with zero missing/unexpected path, whitespace, secret, conflict,
+  debug/raw-provider/model, manifest/lockfile/dependency, out-of-scope runtime, ancestry, or temporary/
+  generated-artifact finding.
 - Phase 4 local integration closure passes on exact Slice 4.1 final HEAD `319a0755`, exact parent
   checkpoint `6499cb3`, and unique branch `codex/phase-4-integration-checkpoint`. The docs-only Level D
   gate covers repository format/lint, six typechecks, 28 files/193 tests, six builds, and two smoke

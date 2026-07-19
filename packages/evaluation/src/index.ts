@@ -1,5 +1,6 @@
 import {
   CANONICAL_EVALUATION_CASE_IDS,
+  CANONICAL_INCIDENT_SCENARIOS,
   CanonicalEvaluationSuiteSchema,
   EvaluationCaseFailureSchema,
   EvaluationCaseSuccessSchema,
@@ -29,17 +30,21 @@ const ZERO_TOKEN_USAGE: EvaluationTokenUsage = Object.freeze({
 
 interface ResolvedCaseInput {
   id: Exclude<CanonicalEvaluationCaseId, 'insufficient-evidence'>;
-  title: string;
-  question: string;
-  entityHint: string;
-  occurredAt: string;
-  symptom: string;
   entities: EvaluationExpectedOutcome['entities'];
   change: EvaluationExpectedOutcome['changes'][number];
   hypothesisSummary: string;
 }
 
+function getCanonicalScenario(id: CanonicalEvaluationCaseId) {
+  const scenario = CANONICAL_INCIDENT_SCENARIOS.find((candidate) => candidate.id === id);
+  if (!scenario) {
+    throw new Error('Canonical evaluation case must reference a shared incident scenario.');
+  }
+  return scenario;
+}
+
 function createResolvedCase(input: ResolvedCaseInput): EvaluationCase {
+  const scenario = getCanonicalScenario(input.id);
   const evidenceId = input.change.id;
   const hypothesisId = `hypothesis-${input.change.id}`;
   const primaryEntity = input.entities.find((entity) => entity.urn === input.change.entityUrn);
@@ -48,15 +53,10 @@ function createResolvedCase(input: ResolvedCaseInput): EvaluationCase {
   }
 
   return {
-    id: input.id,
-    title: input.title,
+    id: scenario.id,
+    title: scenario.title,
     sourceMode: 'fixture',
-    incident: {
-      question: input.question,
-      entityHint: input.entityHint,
-      occurredAt: input.occurredAt,
-      symptom: input.symptom,
-    },
+    incident: scenario.incident,
     expected: {
       facts: [
         {
@@ -108,16 +108,13 @@ function createResolvedCase(input: ResolvedCaseInput): EvaluationCase {
   };
 }
 
+const unresolvedScenario = getCanonicalScenario('insufficient-evidence');
+
 const unresolvedCase: EvaluationCase = {
-  id: 'insufficient-evidence',
-  title: 'Insufficient evidence to conclude',
+  id: unresolvedScenario.id,
+  title: unresolvedScenario.title,
   sourceMode: 'fixture',
-  incident: {
-    question: 'Why did the unknown metric move without retained metadata history?',
-    entityHint: 'analytics.unknown_metric',
-    occurredAt: '2026-07-18T08:30:00.000Z',
-    symptom: 'The metric changed, but the bounded fixture has no retained change evidence.',
-  },
+  incident: unresolvedScenario.incident,
   expected: {
     facts: [
       {
@@ -147,11 +144,6 @@ const unresolvedCase: EvaluationCase = {
 const canonicalCaseInputs: EvaluationCase[] = [
   createResolvedCase({
     id: 'removed-schema-column',
-    title: 'Removed schema column',
-    question: 'Why did revenue drop after the morning warehouse refresh?',
-    entityHint: 'analytics.daily_revenue',
-    occurredAt: '2026-07-18T08:30:00.000Z',
-    symptom: 'Revenue is 42% below the seven-day baseline.',
     entities: [
       {
         urn: 'urn:li:dataset:(urn:li:dataPlatform:snowflake,analytics.daily_revenue,PROD)',
@@ -182,11 +174,6 @@ const canonicalCaseInputs: EvaluationCase[] = [
   }),
   createResolvedCase({
     id: 'stale-pipeline',
-    title: 'Stale pipeline',
-    question: 'Why has the daily orders table stopped refreshing?',
-    entityHint: 'analytics.daily_orders',
-    occurredAt: '2026-07-18T09:00:00.000Z',
-    symptom: 'The table is six hours behind its expected refresh.',
     entities: [
       {
         urn: 'urn:li:dataJob:(airflow,warehouse,daily-orders)',
@@ -212,11 +199,6 @@ const canonicalCaseInputs: EvaluationCase[] = [
   }),
   createResolvedCase({
     id: 'upstream-type-change',
-    title: 'Upstream type change',
-    question: 'Why did customer session aggregation start rejecting records?',
-    entityHint: 'analytics.customer_sessions',
-    occurredAt: '2026-07-18T10:00:00.000Z',
-    symptom: 'Session builds reject customer_id values after the upstream refresh.',
     entities: [
       {
         urn: 'urn:li:dataset:(urn:li:dataPlatform:snowflake,raw.customer_events,PROD)',
@@ -242,11 +224,6 @@ const canonicalCaseInputs: EvaluationCase[] = [
   }),
   createResolvedCase({
     id: 'wrong-dashboard-dataset',
-    title: 'Dashboard linked to the wrong dataset',
-    question: 'Why does the executive revenue dashboard show staging values?',
-    entityHint: 'Executive revenue dashboard',
-    occurredAt: '2026-07-18T11:00:00.000Z',
-    symptom: 'Dashboard totals match staging instead of the certified production dataset.',
     entities: [
       {
         urn: 'urn:li:dashboard:(looker,executive-revenue)',
@@ -277,11 +254,6 @@ const canonicalCaseInputs: EvaluationCase[] = [
   }),
   createResolvedCase({
     id: 'delayed-ingestion',
-    title: 'Delayed ingestion',
-    question: 'Why are mobile events missing from the morning funnel?',
-    entityHint: 'analytics.mobile_funnel',
-    occurredAt: '2026-07-18T12:00:00.000Z',
-    symptom: 'The newest mobile events are four hours late.',
     entities: [
       {
         urn: 'urn:li:dataJob:(airflow,ingestion,mobile-events)',
@@ -307,11 +279,6 @@ const canonicalCaseInputs: EvaluationCase[] = [
   }),
   createResolvedCase({
     id: 'incorrect-owner-or-domain',
-    title: 'Incorrect owner or domain',
-    question: 'Why was the finance dataset routed to the wrong incident owner?',
-    entityHint: 'finance.monthly_close',
-    occurredAt: '2026-07-18T13:00:00.000Z',
-    symptom: 'The catalog routes escalation to marketing instead of finance.',
     entities: [
       {
         urn: 'urn:li:dataset:(urn:li:dataPlatform:snowflake,finance.monthly_close,PROD)',

@@ -179,10 +179,43 @@ try {
     fail('Fixture recent changes did not render deterministic focused facts and truncation.');
   }
 
-  await page.locator('#question').fill('Why did revenue drop today?');
-  await page.locator('#entity-hint').fill('analytics.daily_revenue');
-  await page.locator('#occurred-at').fill('2026-07-18T15:30');
-  await page.locator('#symptom').fill('Revenue is 42% below the seven-day baseline.');
+  const scenarioSelector = page.getByLabel('Canonical incident scenario');
+  await scenarioSelector.focus();
+  await page.keyboard.press('ArrowDown');
+  if ((await scenarioSelector.inputValue()) !== 'removed-schema-column') {
+    fail('Native keyboard selection did not choose the first canonical scenario.');
+  }
+  await page
+    .getByText(
+      'Removed schema column prefill selected. You can edit every field before submitting.',
+      {
+        exact: true,
+      },
+    )
+    .waitFor({ timeout: 2_000 });
+  if (
+    (await page.locator('#question').inputValue()) !==
+      'Why did revenue drop after the morning warehouse refresh?' ||
+    (await page.locator('#entity-hint').inputValue()) !== 'analytics.daily_revenue' ||
+    !(await page.locator('#occurred-at').inputValue()) ||
+    (await page.locator('#symptom').inputValue()) !== 'Revenue is 42% below the seven-day baseline.'
+  ) {
+    fail('Canonical scenario selection did not prefill the existing incident fields.');
+  }
+
+  await page
+    .locator('#symptom')
+    .fill('Revenue is 42% below the seven-day baseline. Finance confirmed the demo segment.');
+  if (
+    (await scenarioSelector.inputValue()) !== 'custom' ||
+    !(await page
+      .getByText('Custom values based on Removed schema column. Your edits will be submitted.', {
+        exact: true,
+      })
+      .isVisible())
+  ) {
+    fail('Editable scenario prefill did not transition to an explicit custom state.');
+  }
   await page.getByRole('button', { name: 'Start investigation' }).click();
 
   await page.getByText('Investigation processing').waitFor({ timeout: 2_000 });

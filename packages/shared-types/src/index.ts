@@ -432,6 +432,137 @@ export const IncidentRequestSchema = z
   })
   .strict();
 
+export const CANONICAL_INCIDENT_SCENARIO_IDS = [
+  'removed-schema-column',
+  'stale-pipeline',
+  'upstream-type-change',
+  'wrong-dashboard-dataset',
+  'delayed-ingestion',
+  'incorrect-owner-or-domain',
+  'insufficient-evidence',
+] as const;
+
+export const CanonicalIncidentScenarioIdSchema = z.enum(CANONICAL_INCIDENT_SCENARIO_IDS);
+
+export const CanonicalIncidentScenarioSchema = z
+  .object({
+    id: CanonicalIncidentScenarioIdSchema,
+    title: z.string().trim().min(1).max(120),
+    description: z.string().trim().min(1).max(300),
+    incident: IncidentRequestSchema,
+  })
+  .strict();
+
+export const CanonicalIncidentScenarioCatalogSchema = z
+  .array(CanonicalIncidentScenarioSchema)
+  .length(CANONICAL_INCIDENT_SCENARIO_IDS.length)
+  .superRefine((scenarios, context) => {
+    scenarios.forEach((scenario, index) => {
+      if (scenario.id !== CANONICAL_INCIDENT_SCENARIO_IDS[index]) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Canonical incident scenarios must follow the shared stable order.',
+          path: [index, 'id'],
+        });
+      }
+    });
+  });
+
+const canonicalIncidentScenarioInputs = [
+  {
+    id: 'removed-schema-column',
+    title: 'Removed schema column',
+    description:
+      'Trace a removed upstream revenue column through lineage and recent metadata evidence.',
+    incident: {
+      question: 'Why did revenue drop after the morning warehouse refresh?',
+      entityHint: 'analytics.daily_revenue',
+      occurredAt: '2026-07-18T08:30:00.000Z',
+      symptom: 'Revenue is 42% below the seven-day baseline.',
+    },
+  },
+  {
+    id: 'stale-pipeline',
+    title: 'Stale pipeline',
+    description: 'Investigate a failed refresh that leaves daily orders behind schedule.',
+    incident: {
+      question: 'Why has the daily orders table stopped refreshing?',
+      entityHint: 'analytics.daily_orders',
+      occurredAt: '2026-07-18T09:00:00.000Z',
+      symptom: 'The table is six hours behind its expected refresh.',
+    },
+  },
+  {
+    id: 'upstream-type-change',
+    title: 'Upstream type change',
+    description:
+      'Inspect an upstream type change after session aggregation starts rejecting records.',
+    incident: {
+      question: 'Why did customer session aggregation start rejecting records?',
+      entityHint: 'analytics.customer_sessions',
+      occurredAt: '2026-07-18T10:00:00.000Z',
+      symptom: 'Session builds reject customer_id values after the upstream refresh.',
+    },
+  },
+  {
+    id: 'wrong-dashboard-dataset',
+    title: 'Dashboard linked to the wrong dataset',
+    description: 'Follow a dashboard source-link change from certified production data to staging.',
+    incident: {
+      question: 'Why does the executive revenue dashboard show staging values?',
+      entityHint: 'Executive revenue dashboard',
+      occurredAt: '2026-07-18T11:00:00.000Z',
+      symptom: 'Dashboard totals match staging instead of the certified production dataset.',
+    },
+  },
+  {
+    id: 'delayed-ingestion',
+    title: 'Delayed ingestion',
+    description: 'Check delayed mobile-event ingestion behind a missing morning funnel.',
+    incident: {
+      question: 'Why are mobile events missing from the morning funnel?',
+      entityHint: 'analytics.mobile_funnel',
+      occurredAt: '2026-07-18T12:00:00.000Z',
+      symptom: 'The newest mobile events are four hours late.',
+    },
+  },
+  {
+    id: 'incorrect-owner-or-domain',
+    title: 'Incorrect owner or domain',
+    description: 'Review an ownership change that routes a finance incident to the wrong team.',
+    incident: {
+      question: 'Why was the finance dataset routed to the wrong incident owner?',
+      entityHint: 'finance.monthly_close',
+      occurredAt: '2026-07-18T13:00:00.000Z',
+      symptom: 'The catalog routes escalation to marketing instead of finance.',
+    },
+  },
+  {
+    id: 'insufficient-evidence',
+    title: 'Insufficient evidence to conclude',
+    description:
+      'Exercise the safe fallback when retained change evidence cannot support a conclusion.',
+    incident: {
+      question: 'Why did the unknown metric move without retained metadata history?',
+      entityHint: 'analytics.unknown_metric',
+      occurredAt: '2026-07-18T08:30:00.000Z',
+      symptom: 'The metric changed, but the bounded fixture has no retained change evidence.',
+    },
+  },
+] as const;
+
+export const CANONICAL_INCIDENT_SCENARIOS = Object.freeze(
+  CanonicalIncidentScenarioCatalogSchema.parse(canonicalIncidentScenarioInputs).map((scenario) =>
+    Object.freeze({
+      ...scenario,
+      incident: Object.freeze({ ...scenario.incident }),
+    }),
+  ),
+);
+
+export const CANONICAL_EVALUATION_CASE_IDS = CANONICAL_INCIDENT_SCENARIO_IDS;
+export const CanonicalEvaluationCaseIdSchema = CanonicalIncidentScenarioIdSchema;
+
 export const IncidentIntentSchema = z
   .object({
     question: z.string().trim().min(3).max(2_000),
@@ -2162,16 +2293,6 @@ export const IncidentRetrievalResponseSchema = z
     }
   });
 
-export const CANONICAL_EVALUATION_CASE_IDS = [
-  'removed-schema-column',
-  'stale-pipeline',
-  'upstream-type-change',
-  'wrong-dashboard-dataset',
-  'delayed-ingestion',
-  'incorrect-owner-or-domain',
-  'insufficient-evidence',
-] as const;
-
 export const EVALUATION_MAX_FACTS = 20;
 export const EVALUATION_MAX_ENTITIES = 20;
 export const EVALUATION_MAX_CHANGES = 10;
@@ -2192,8 +2313,6 @@ const EvaluationStableIdSchema = z
 const EvaluationUrnSchema = z.string().trim().min(1).max(1_000);
 const EvaluationReferenceArraySchema = z.array(EvaluationStableIdSchema).max(10);
 const EvaluationEntityReferenceArraySchema = z.array(EvaluationUrnSchema).max(10);
-
-export const CanonicalEvaluationCaseIdSchema = z.enum(CANONICAL_EVALUATION_CASE_IDS);
 
 export const EvaluationEntitySchema = z
   .object({
@@ -2917,6 +3036,8 @@ export type IncidentRetrievalResponse = z.infer<typeof IncidentRetrievalResponse
 export type ApiError = z.infer<typeof ApiErrorSchema>;
 export type Evidence = z.infer<typeof EvidenceSchema>;
 export type InvestigationReport = z.infer<typeof InvestigationReportSchema>;
+export type CanonicalIncidentScenarioId = z.infer<typeof CanonicalIncidentScenarioIdSchema>;
+export type CanonicalIncidentScenario = z.infer<typeof CanonicalIncidentScenarioSchema>;
 export type CanonicalEvaluationCaseId = z.infer<typeof CanonicalEvaluationCaseIdSchema>;
 export type EvaluationEntity = z.infer<typeof EvaluationEntitySchema>;
 export type EvaluationChange = z.infer<typeof EvaluationChangeSchema>;

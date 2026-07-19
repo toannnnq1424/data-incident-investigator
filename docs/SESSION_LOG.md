@@ -2035,3 +2035,91 @@ Format/check ba docs evidence; chạy final diff/secret/conflict/generated/debug
 ancestry/worktree audit; tạo một conventional docs commit, push thường, mở stacked Draft PR base
 `codex/phase-4-1-canonical-evaluation`, theo dõi exact final-HEAD CI tới terminal và xác minh
 conflict-free/merge-ready. Không merge PR, không tạo task mới và không bắt đầu Phase 5.
+
+## 2026-07-19 — Phase 5 Slice 5.1 canonical scenario guided intake
+
+### Objective
+
+Từ exact Phase 4 integration checkpoint `19bb0d3a57e47340c8bf78928d9574892bf0e45a`, thêm một
+canonical scenario selector nhỏ gọn, accessible vào incident intake để chọn đúng một trong bảy case,
+prefill các field request hiện có, cho phép sửa trước submit, rồi đi qua nguyên investigation/report
+path. Không làm evaluation-runner UI, report redesign, provider/model/network call hay mutation.
+
+### Completed
+
+Đã chạy tracked Windows bootstrap bằng `ExecutionPolicy Bypass` trước repo commands; frozen install và
+supply-chain verification hoàn tất nhưng bước root Prettier tái hiện known fallback-pnpm shim issue.
+Đã đọc đầy đủ operating contract, persistent docs bắt buộc và frontend workflow; xác minh detached HEAD
+đúng `19bb0d3…`, parent trực tiếp `319a075…`, ancestry/worktree/collision sạch, rồi tạo branch duy nhất
+`codex/phase-5-1-scenario-demo`. Đã ghi plan trước source. Shared-types hiện sở hữu catalog strict gồm
+đúng bảy ID/order, label/description và `IncidentRequest` prefill; evaluation lấy identity/intake từ
+catalog nhưng giữ expected facts/telemetry nội bộ. Web dùng native single-select với manual mặc định,
+selected scenario, custom-after-edit và clear/reset rõ ràng; submit vẫn parse và gửi chính các field
+hiện tại. Focused contracts, evaluation identity, web state/accessibility/stale guard và combined E2E
+đã được cập nhật trước Level C.
+
+### Files changed
+
+`packages/shared-types/src/index.ts`; `packages/evaluation/src/index.ts`; `apps/web/src/App.tsx`;
+`apps/web/src/styles.css`; `tests/integration/contracts.test.ts`;
+`tests/integration/evaluation.test.ts`; `tests/integration/web-scenario-intake.test.ts`;
+`tests/e2e/report-display.spec.mjs`; `docs/IMPLEMENTATION_PLAN.md`; `docs/KNOWN_ISSUES.md`; và entry này.
+Không đổi API/provider/fixture/report formula, manifest, lockfile, dependency hay repository structure.
+
+### Decisions
+
+Giữ dependency direction web/evaluation -> shared-types: browser không import evaluation runtime và
+evaluation-only expected facts không vào bundle. Catalog chỉ expose demo-safe ID/title/description cùng
+bốn field đã được `IncidentRequestSchema` validate. Native `<select>` giữ single-selection và keyboard/
+screen-reader semantics mà không thêm dependency. Canonical UTC được đổi sang giá trị local của
+`datetime-local`, rồi existing submit path đổi ngược về ISO; request không chứa hidden scenario ID.
+Field edit chỉ đổi selection provenance sang custom, không mất dữ liệu; reset/manual selection xóa rõ
+ràng bốn field. Existing request guard/AbortController tiếp tục sở hữu stale-response protection.
+
+### Validation performed
+
+- Bootstrap recovery PASS với Node `v24.14.0`, pnpm `11.9.0`, Prettier `3.9.5` và frozen install up to
+  date trong `643ms`, sau khi lượt đầu cài 259 packages rồi tái hiện known fallback-pnpm root-binary
+  limitation. Không đổi bootstrap/manifest/lockfile/dependency/generated store.
+- Prettier write/check PASS `8.466s`/`6.752s`; affected ESLint PASS `80.170s`. Sáu typecheck PASS:
+  shared-types `14.571s`, datahub-client `2.982s`, agent-core `2.923s`, evaluation `2.881s`, API
+  `4.972s`, web `10.807s`.
+- Sandboxed focused Vitest dừng trước collection sau `10.023s` do known esbuild ancestor `Access is
+denied`. Exact scoped recovery PASS 5/5 files, 40/40 tests trong `14.22s` Vitest (`16.165s` wall):
+  contracts 17, evaluation 7, guided intake 4, incident API 11 và full-report 1. Không rerun step xanh.
+- Sáu affected builds chưa bắt đầu ở wrapper được chạy đúng một lần với scoped access và PASS 6/6 trong
+  `28.476s`; web transform 109 modules/build `4.71s`.
+- Sau Level C, đúng một combined browser flow chạy bằng available Browser skill cùng dynamic/owned
+  launcher helpers của repo, không chạy thêm standalone Playwright process. Flow PASS `119127ms` trên
+  API `61984`, web `61985`: manual + đúng bảy canonical options, chọn removed-column, exact four-field
+  prefill, sửa symptom -> explicit custom, submit, processing đủ context/suspicious/scoring/remediation,
+  completed context -> exact change -> `0.85` -> hai `not_executed` recommendations -> full report.
+  Bảy fragment references resolve, console warning/error `0`, desktop scroll/client `1265/1265`, mobile
+  `375/375`, semantic accessibility và keyboard evidence-link focus PASS. Cleanup chỉ dừng exact temp
+  launcher tree; hai ports bind lại được, launcher process `0`, temp file bị xóa, viewport reset và tab
+  finalize.
+- Pre-commit read-only audit PASS đúng 11 path dự kiến: 10 tracked modifications + một focused test mới,
+  zero path thừa/thiếu. `git diff --check`, exact HEAD `19bb0d3…`, parent `319a075…`, merge-base Phase 4,
+  Slice 4.1 ancestry, tracked/untracked scope, manifest/lockfile/dependency và out-of-scope runtime review,
+  secret/conflict/debug/raw-provider/model sentinels, cùng temp/generated-artifact check đều sạch. Browser
+  temp launcher không còn tồn tại; không có API/provider/fixture/report-formula/repository-map change.
+
+### Validation intentionally deferred
+
+Level D và live credentialed DataHub smoke; evaluation-runner UI; broad evidence timeline/lineage/report
+redesign; provider/model judging; persistence/auth/deployment/rate limiting; automatic execution;
+Slice 5.2; Phase 6; và mọi task kế tiếp.
+
+### Known issues
+
+Managed Windows `pnpm exec` root-binary resolution cần verified process-local Node/root `.bin` PATH như
+các phase trước; sandboxed Vitest/Vite ancestor access cần scoped command. Đây là environment limitation,
+không phải product/CI blocker. Local product/test/browser/audit gate không còn blocker;
+publication/final-HEAD CI và merge-readiness đang chờ.
+
+### Exact next step
+
+Format/check final docs. Sau đó commit conventional, push thường, mở stacked
+Draft PR base `codex/phase-4-integration-checkpoint`, theo dõi exact final-HEAD CI tới terminal, xác minh
+conflict-free/merge-ready và dừng. Không merge PR, tạo task mới, archive/pin lịch sử, bắt đầu Slice 5.2
+hay Phase 6.
