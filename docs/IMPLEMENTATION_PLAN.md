@@ -2022,6 +2022,119 @@ branch, open a stacked Draft PR based on `codex/phase-3-integration-checkpoint`,
 final-HEAD CI run to terminal while verifying conflict-free/merge-ready. Do not begin Phase 4 reliability
 hardening or Phase 5.
 
+### Phase 4 integration checkpoint — Level D closure
+
+Status: local Level D passed on `codex/phase-4-integration-checkpoint` from exact Slice 4.1 final HEAD
+`319a0755e566ee2011e73a386e6c77c1546ede48`, whose exact parent is Phase 3 checkpoint
+`6499cb3aeaf8c346f0a4ec35b94600344aba522d`. This checkpoint is docs-first and remains docs-only unless
+a classified gate failure proves a genuine in-scope blocker. Publication, final-HEAD CI, and
+merge-readiness verification are pending.
+
+Objective: close Phase 4 with one repository-level integration checkpoint proving the canonical
+seven-case deterministic evaluation and the complete credential-free product chain from factual context
+through suspicious changes, scored hypotheses, remediation/safe fallback, and the full report. Add no
+feature or reliability behavior, do not begin Phase 5, and do not add or invoke a live provider, model,
+credential, network dependency, or automatic mutation.
+
+Minimum files:
+
+- `docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md`, and `docs/SESSION_LOG.md` for the planned Level D
+  gate, exact local/CI evidence, deferred live boundary, and final handoff.
+- No product source, test/browser file, fixture, provider, evaluation contract, manifest, lockfile,
+  bootstrap, dependency, generated report, or repository-map change unless a classified gate failure
+  proves an in-scope blocker.
+
+Acceptance criteria:
+
+- Exactly one `pnpm validate` passes on coherent final docs and the exact Slice 4.1 tree, covering
+  repository format/lint, all six typechecks, the complete unit/integration/smoke suite, all six builds,
+  and both artifact smoke targets.
+- The catalog retains exactly these IDs in this order: `removed-schema-column`, `stale-pipeline`,
+  `upstream-type-change`, `wrong-dashboard-dataset`, `delayed-ingestion`,
+  `incorrect-owner-or-domain`, and `insufficient-evidence`. Every case, observation, expected item,
+  result, and report cross-link resolves under the strict shared schemas.
+- Evaluation tests prove byte-stable JSON and Markdown from the same validated report; exact ratio math
+  returns `0` for zero denominators and aggregates summed numerators/denominators rather than averaging
+  rounded case rates. Safe per-case failures remain sanitized and isolated without aborting later cases.
+- After the core gate passes, exactly one compiled evaluation invocation writes JSON and Markdown only
+  under a verified ignored temporary output directory. The reports are inspected and hashed, must retain
+  seven completed/zero failed cases and the canonical metrics, and are then removed completely.
+- Declared latency and ordered tool events remain bounded and deterministic; prompt, completion, and
+  total tokens remain zero for every case and aggregate. Unsupported claims remain explicit and cannot
+  fabricate or dangle a reference, while plausible hypotheses never become confirmed causes.
+- Fixture and fake-provider coverage plus source/diff review prove no credential/environment read, live
+  DataHub/network/provider/model/LLM call, retry, external write, automatic remediation, or production
+  mutation. Live DataHub validation remains deferred without inspecting or using a credential.
+- After evaluation cleanup, exactly one `pnpm test:e2e:report` proves the canonical product chain
+  context -> suspicious changes -> scored inference -> remediation/fallback -> completed full report in
+  under three minutes, with clean console, semantic accessibility, keyboard reference links,
+  desktop/mobile overflow protection, dynamic-port release, and owned-process cleanup.
+- Final secret/conflict/generated/debug/raw-provider/model-output, manifest/lockfile, scope, exact
+  ancestry, ignored-output, and clean-worktree audits pass. A docs-only conventional commit is pushed
+  normally to one stacked Draft PR based on `codex/phase-4-1-canonical-evaluation`; the exact final-HEAD
+  CI reaches a passing terminal state and the PR is conflict-free and merge-ready.
+
+Deferred: live credentialed DataHub/provider/model evaluation, statistical wall-clock benchmarking,
+provider/model judging, scenario-selection UI, persistence, authentication, rate limiting, deployment,
+autonomous execution, external mutation, Phase 5, and any new reliability behavior or dependency.
+
+Exact Level D commands, run once each on unchanged successful inputs with only the documented
+process-scoped Windows runtime PATH workaround:
+
+- `pnpm validate`
+- `pnpm --filter @dii/evaluation evaluate -- --output-dir packages/evaluation/dist/phase-4-level-d-report`
+- `pnpm test:e2e:report`
+
+Level D result on the Windows managed worktree, 2026-07-19:
+
+- Tracked bootstrap ran with `ExecutionPolicy Bypass` before repository work. Its first process
+  completed the frozen 259-package install and supply-chain verification, then reproduced the known
+  fallback-pnpm root-Prettier resolution failure. Prepending the verified bundled Node and root `.bin`
+  paths only to the retry process completed bootstrap with Prettier `3.9.5`. No bootstrap, manifest,
+  lockfile, dependency, or generated store changed.
+- Exactly one `pnpm validate` wrapper ran on coherent docs and product inputs. Repository format, lint,
+  and all six typechecks passed before sandboxed Vitest stopped prior to collection on the known esbuild
+  ancestor-directory `Access is denied` restriction (`47.1s` wrapper wall). The wrapper and its green
+  components were not rerun. The exact affected `pnpm test` retry with scoped access passed 28/28 files
+  and 193/193 tests in `5.07s` (`6.95s` command wall), including seven evaluation tests and all launcher,
+  contract, adapter, agent, API, web, and smoke regressions.
+- The not-yet-started build sequence passed shared-types, evaluation, and datahub-client before web met
+  the same environment restriction. A scoped retry only for web, agent-core, and API passed, so all six
+  production builds are green; web transformed 109 modules and built in `1.62s`. The two API/web artifact
+  smoke targets then passed in `1.18s`. Total Level D core evidence wall, including the two environment-
+  only stops, was about `74.6s`.
+- After core PASS, exactly one compiled evaluation invocation ran in `1.78s`. Because the package-scoped
+  command resolves relative output from `packages/evaluation`, it wrote the two reports under verified
+  ignored `packages/evaluation/packages/evaluation/dist/phase-4-level-d-report`. Artifact audit proved
+  exact seven-case order, 7 completed/0 failed, 110 resolved cross-links, stable ordered tool events,
+  safe zero denominators, and byte identity with Slice 4.1. JSON SHA-256 is
+  `A711480268C955AA13D26CBF543E31F7A0F3A1A0C0B0C80DF22779F447DF58ED`; Markdown SHA-256 is
+  `1074A06E64A38A5FB44DC13A5CDD7F2D26C1E89E9D8E10B7C11B1A3A7CE05538`. The verified subtree contained
+  only those two files and was removed completely.
+- Aggregate metrics remain retrieval precision/recall `14/14 = 1`, plausible-hypothesis top-1/top-3
+  `6/6 = 1`, evidence precision/recall `6/6 = 1`, reference support `110/110 = 1`, unsupported claims
+  `0/18`, declared latency total/average/max `168/24/29 ms`, tool calls total/average/max
+  `26/3.714286/4`, and prompt/completion/total tokens `0/0/0`. Aggregate sums, insufficient-case zero
+  denominators, exact references, plausible-only wording, and `not_executed` remediation all passed.
+- Exactly one `pnpm test:e2e:report` selected API `54796` and web `54797`, then passed the canonical
+  product chain in `13261ms` (`20.16s` command wall): factual context -> suspicious change -> exact
+  `0.85` scored plausible inference with evidence -> two resolved `not_executed` recommendations with
+  verification/reversibility -> full report. Clean console, semantic accessibility, keyboard links,
+  desktop/mobile overflow, the three-minute bound, selected-port release, and launcher-owned process
+  cleanup all passed. Post-run probes found zero listeners and zero owned E2E runtime processes; the CIM
+  probe alone needed an environment-only scoped retry.
+- Fixture/fake-provider tests and direct evaluation-source review prove no credential/environment read,
+  live DataHub/network/provider/model/LLM call, retry, external mutation, or automatic execution. Live
+  validation remains intentionally deferred without inspecting or using a credential. No production,
+  evaluation, test/browser, fixture/provider, dependency, manifest, lockfile, bootstrap, or repository-
+  map file changed.
+
+After the three gates, format/check the three persistent documents and run the required read-only
+diff/secret/conflict/generated/scope/ancestry/worktree audits. Do not rerun a green gate while its input
+is unchanged. Then create one docs-only conventional commit, push normally, open the stacked Draft PR,
+follow only the exact final-HEAD CI run to terminal, verify conflict-free/merge-ready, and stop without
+merging or starting Phase 5.
+
 ## Phase 5 — UX and demo
 
 Deliver the incident input, scenario selector, progress, root-cause summary, evidence timeline, lineage,

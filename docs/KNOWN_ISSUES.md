@@ -2,6 +2,18 @@
 
 Last updated: 2026-07-19.
 
+- Phase 4 local integration closure passes on exact Slice 4.1 final HEAD `319a0755`, exact parent
+  checkpoint `6499cb3`, and unique branch `codex/phase-4-integration-checkpoint`. The docs-only Level D
+  gate covers repository format/lint, six typechecks, 28 files/193 tests, six builds, and two smoke
+  artifacts. The one `pnpm validate` wrapper stopped before test collection only because sandboxed
+  esbuild could not read managed-worktree ancestor metadata; exact component recovery passed without a
+  code change, and no green command was rerun. One compiled evaluation invocation retained 7 completed/
+  0 failed cases, exact aggregate metrics, stable Slice 4.1 JSON/Markdown hashes, zero tokens, and zero
+  unsupported claims; its verified ignored output was removed completely. One browser flow passed in
+  `13261ms` on ports `54796`/`54797` with the full context-to-report chain, clean console/accessibility/
+  overflow, and clean port/process teardown. Live DataHub/provider/model evaluation, credential access,
+  network calls, automatic mutation, new reliability behavior, Phase 5, publication, final-HEAD CI, and
+  merge-readiness remain deferred or pending as applicable.
 - Phase 4 Slice 4.1 canonical evaluation is implemented locally from exact Phase 3 checkpoint
   `6499cb3`. Strict shared schemas and `packages/evaluation` now own exactly seven stable ordered cases,
   a deterministic provider-neutral fake runner, JSON/Markdown reporters, safe per-case failure, and
