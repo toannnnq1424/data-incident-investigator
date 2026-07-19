@@ -351,8 +351,9 @@ Validation response `400`:
 accepted response remains compatible with Slice 1.1: it always uses HTTP `202` and `processing` even
 though fixture investigation begins immediately in the background.
 
-The accepted body intentionally remains unchanged through Slice 3.2. Clients retrieve the additive
-parse-and-gather and suspicious-change lifecycles through `GET /incidents/:incidentId`.
+The accepted body intentionally remains unchanged through Slice 3.3. Clients retrieve the additive
+parse-and-gather, suspicious-change, and evidence-linked scoring lifecycles through
+`GET /incidents/:incidentId`.
 
 ### `GET /incidents/:incidentId`
 
@@ -371,6 +372,9 @@ Processing response `200`:
   },
   "suspiciousChangeStage": {
     "status": "detecting"
+  },
+  "hypothesisScoringStage": {
+    "status": "scoring"
   }
 }
 ```
@@ -518,7 +522,70 @@ missing-information item explaining absent incident time/symptom, empty/truncate
 incident-specific signal, or output-cap omission. Neither result permits hypothesis, confidence,
 root-cause, recommendation, remediation, or raw-provider fields.
 
-Completed response `200` (legacy report values abridged; context contracts described above):
+`hypothesisScoringStage` is additive and does not make an adapter, provider, network, model, or retry
+call. It is `scoring` while context/detection or the report evidence catalog is assembling. Failed
+context returns safe `CONTEXT_UNAVAILABLE`; unavailable detection returns safe
+`SUSPICIOUS_CHANGES_UNAVAILABLE`; unexpected scoring validation returns safe `SCORING_INVALID`.
+Provider URL, token, payload, raw exception, stack, model output, and credential data never enter the
+stage.
+
+A completed scoring result has at most three ranked inference objects. The canonical fixture returns:
+
+```json
+{
+  "status": "completed",
+  "hypotheses": [
+    {
+      "id": "hypothesis-change-removed-gross-revenue",
+      "rank": 1,
+      "sourceChangeId": "change-removed-gross-revenue",
+      "observedAt": "2026-07-18T07:45:00.000Z",
+      "summary": "Plausible contributor: the removed schema change on raw.orders may have contributed to the incident.",
+      "confidence": 0.85,
+      "evidenceIds": ["change-removed-gross-revenue"],
+      "factors": [
+        {
+          "code": "change_recency",
+          "label": "Change recency within the supplied incident window.",
+          "contributionBasisPoints": 3000,
+          "weightBasisPoints": 3000
+        },
+        {
+          "code": "lineage_position",
+          "label": "Adapter-evidenced selected or upstream lineage position.",
+          "contributionBasisPoints": 2000,
+          "weightBasisPoints": 2000
+        },
+        {
+          "code": "symptom_category_fit",
+          "label": "Bounded incident symptom or category fit.",
+          "contributionBasisPoints": 1500,
+          "weightBasisPoints": 3000
+        },
+        {
+          "code": "evidence_quality",
+          "label": "Resolved factual evidence quality and context completeness.",
+          "contributionBasisPoints": 2000,
+          "weightBasisPoints": 2000
+        }
+      ]
+    }
+  ],
+  "missingInformation": []
+}
+```
+
+The four factor weights total 10,000 basis points. Confidence is their exact clamped contribution sum
+divided by 10,000, with at most two decimal places. Ordering is confidence descending, factual
+observation time descending, change ID ascending, then hypothesis ID ascending; ranks are contiguous
+from one. Every source change and evidence ID resolves to exact completed-context and report evidence.
+Recent-change truncation, a detector candidate cap, missing evidence mapping, or an insufficient
+suspicious result produces `insufficient`, `hypotheses: []`, and explicit unique missing information
+instead of a low-confidence root cause. Unknown recommendation/remediation/action/raw-provider/model
+fields, causal copy, duplicate IDs/references, factor/score/rank mismatch, and invalid ordering are
+rejected.
+
+Completed response `200` (legacy report fields remain compatible; scoring values abridged):
 
 ```json
 {
@@ -554,6 +621,16 @@ Completed response `200` (legacy report values abridged; context contracts descr
       }
     ]
   },
+  "hypothesisScoringStage": {
+    "status": "insufficient",
+    "hypotheses": [],
+    "missingInformation": [
+      {
+        "code": "suspicious_changes_insufficient",
+        "message": "Suspicious-change detection returned no candidate to score."
+      }
+    ]
+  },
   "report": {
     "incidentId": "576982bc-da91-4d69-a5ad-52206b3e17e2",
     "summary": "The strongest evidence-backed inference is: ...",
@@ -568,8 +645,8 @@ Completed response `200` (legacy report values abridged; context contracts descr
     "hypotheses": [
       {
         "id": "hypothesis-recent-change",
-        "summary": "A recent schema change likely caused the reported incident.",
-        "confidence": 0.92,
+        "summary": "A recent schema change remains a legacy plausible contributor.",
+        "confidence": 0.8,
         "evidenceIds": ["change-removed-gross-revenue"]
       }
     ],
@@ -580,10 +657,12 @@ Completed response `200` (legacy report values abridged; context contracts descr
 }
 ```
 
-The actual fixture report contains at least one hypothesis and its cited evidence. Shared report
-validation rejects any hypothesis evidence ID that is absent from `report.evidence`. Evidence
-statements are fixture facts; hypotheses are ranked inferences; assumptions, missing information, and
-recommendations remain separate report fields.
+When scoring completes, the actual fixture report uses the exact scored hypotheses and cited evidence
+shown by `hypothesisScoringStage`; shared validation rejects any divergence or unresolved evidence ID.
+When scoring is insufficient or unavailable, the compatible legacy report remains separately
+schema-valid and the scoring stage contains no fabricated fallback. Evidence statements are fixture
+facts; hypotheses are ranked inferences; assumptions, missing information, and recommendations remain
+separate report fields.
 
 Unknown incident response `404`:
 

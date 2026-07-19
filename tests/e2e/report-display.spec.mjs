@@ -263,6 +263,51 @@ try {
     fail('Suspicious-change detection did not render the exact bounded factual signal candidate.');
   }
 
+  const hypothesisScoringStage = page.locator('.hypothesis-scoring-stage');
+  await hypothesisScoringStage
+    .getByRole('heading', { name: 'Ranked evidence-linked hypotheses' })
+    .waitFor({ timeout: 2_000 });
+  const scoredHypotheses = await hypothesisScoringStage
+    .locator('.scored-hypothesis-list > li')
+    .evaluateAll((rows) =>
+      rows.map((row) => ({
+        id: row.getAttribute('data-hypothesis-id'),
+        rank: row.getAttribute('data-hypothesis-rank'),
+        text: row.textContent ?? '',
+        timestamp: row.querySelector('time')?.getAttribute('datetime') ?? '',
+        factorCodes: [...row.querySelectorAll('.score-factor-list code')].map(
+          (factor) => factor.textContent ?? '',
+        ),
+        evidenceLinks: [...row.querySelectorAll('.scored-evidence-list a')].map((link) => ({
+          href: link.getAttribute('href'),
+          text: link.textContent ?? '',
+        })),
+      })),
+    );
+  const hypothesisScoringText = await hypothesisScoringStage.innerText();
+  if (
+    scoredHypotheses.length !== 1 ||
+    scoredHypotheses[0]?.id !== 'hypothesis-change-removed-gross-revenue' ||
+    scoredHypotheses[0]?.rank !== '1' ||
+    scoredHypotheses[0]?.timestamp !== '2026-07-18T07:45:00.000Z' ||
+    !scoredHypotheses[0]?.text.includes(
+      'Plausible contributor: the removed schema change on raw.orders may have contributed to the incident.',
+    ) ||
+    !scoredHypotheses[0]?.text.includes('85% confidence') ||
+    !scoredHypotheses[0]?.text.includes('3000 / 3000 bp') ||
+    !scoredHypotheses[0]?.text.includes('2000 / 2000 bp') ||
+    !scoredHypotheses[0]?.text.includes('1500 / 3000 bp') ||
+    scoredHypotheses[0]?.factorCodes.join('|') !==
+      'change_recency|lineage_position|symptom_category_fit|evidence_quality' ||
+    scoredHypotheses[0]?.evidenceLinks[0]?.text.trim() !== 'change-removed-gross-revenue' ||
+    scoredHypotheses[0]?.evidenceLinks[0]?.href !== '#evidence-change-removed-gross-revenue' ||
+    scoredHypotheses[0]?.text.includes('confirmed cause') ||
+    scoredHypotheses[0]?.text.includes('caused the incident') ||
+    !hypothesisScoringText.includes('not a confirmed cause or recommendation')
+  ) {
+    fail('Hypothesis scoring did not render the exact ranked factors and evidence link.');
+  }
+
   const reportText = await page.locator('body').innerText();
   assertText(reportText, /Related entities/i, 'related entities section');
   assertText(reportText, /analytics\.daily_revenue/i, 'seed entity');
@@ -273,7 +318,7 @@ try {
   assertText(reportText, /Relevant lineage/i, 'lineage section');
   assertText(reportText, /lineage-upstream-1/i, 'lineage evidence ID');
   assertText(reportText, /Hypotheses/i, 'inference section');
-  assertText(reportText, /92% confidence/i, 'confidence label');
+  assertText(reportText, /85% confidence/i, 'confidence label');
   assertText(reportText, /Assumptions/i, 'assumption section');
   assertText(reportText, /Missing information/i, 'missing information section');
   assertText(reportText, /Recommended actions/i, 'recommendations section');
@@ -289,6 +334,16 @@ try {
   );
   if (unresolvedEvidenceIds.length > 0) {
     fail(`Browser report contains unresolved evidence IDs: ${unresolvedEvidenceIds.join(', ')}`);
+  }
+  const scoredEvidenceTargets = await page
+    .locator('.scored-evidence-list a')
+    .evaluateAll((links) =>
+      links.map((link) => link.getAttribute('href') ?? '').filter((href) => href.startsWith('#')),
+    );
+  for (const target of scoredEvidenceTargets) {
+    if ((await page.locator(target).count()) !== 1) {
+      fail(`Scored hypothesis evidence link does not resolve exactly once: ${target}`);
+    }
   }
 
   await assertNoHorizontalOverflow(page, 'desktop report');

@@ -72,6 +72,46 @@ therefore marks `change-removed-gross-revenue` on upstream `raw.orders` as poten
 incident-window, upstream-lineage, and disruptive-operation signals. This classification is not a
 root-cause claim, hypothesis, evidence chain, confidence score, or recommendation.
 
+## Slice 3.3 evidence-linked scoring boundary
+
+Slice 3.3 implements stages 6-7 only. `DeterministicHypothesisScorer` receives one validated completed
+context, the terminal suspicious-change result, and the already assembled factual report evidence. It
+has no adapter, provider, network, retry, model, Stitch, credential, environment, or fallback input.
+The scorer first verifies that every suspicious candidate resolves to the exact context change and to
+report evidence with the same ID, category, statement, entity, and observation time. A missing mapping
+returns `insufficient`; it never substitutes a synthetic evidence ID.
+
+Each qualifying change produces one inference prefixed `Plausible contributor:` and cites the exact
+change evidence ID. Confidence is the clamped sum of four ordered integer basis-point factors, divided
+by 10,000 and serialized with at most two decimal places:
+
+- `change_recency` (maximum 3,000): 3,000 only for the validated `incident_window` signal, otherwise
+  zero;
+- `lineage_position` (maximum 2,000): 2,000 for depth-one upstream, 1,200 for deeper upstream, 1,000
+  for the selected depth-zero entity, otherwise zero;
+- `symptom_category_fit` (maximum 3,000): 3,000 for the validated `category_intent_match` signal,
+  otherwise 1,500 for one bounded normalized token shared by incident question/symptom and the factual
+  change summary/field/category, otherwise zero; and
+- `evidence_quality` (maximum 2,000): 2,000 for exact evidence with complete lineage context or 1,000
+  when the returned lineage graph is truncated.
+
+Every returned factor includes its allowlisted code/label, contribution, and fixed maximum weight, so
+the confidence is exactly reproducible. Recent-change truncation or a detector candidate cap makes the
+whole scoring result `insufficient` because the global rank would be incomplete. Missing incident time
+or symptom remains explicit and contributes zero where the input is unavailable.
+
+Hypotheses sort by confidence descending, factual observation time descending, change ID ascending,
+then hypothesis ID ascending; ranks are contiguous from one and output is capped at three. The
+canonical removed-column fixture contributes 3,000 recency + 2,000 depth-one lineage + 1,500 bounded
+revenue-token fit + 2,000 evidence quality = 8,500 basis points, or `0.85`.
+
+Incident retrieval exposes `hypothesisScoringStage: scoring | completed | insufficient | unavailable`.
+A context or suspicious-stage failure becomes a safe unavailable state without invoking the scorer.
+Completed scoring replaces the canonical report hypotheses with the exact scored list; legacy reports
+remain schema-compatible for upstream-unavailable/insufficient paths, but no new fallback hypothesis is
+fabricated. Slice 3.3 does not build stage 8 evidence-chain prose, recommendations, remediation, or
+fallback reasoning.
+
 ## Tool and provider rules
 
 - No invented URNs, owners, schemas, or pipelines.

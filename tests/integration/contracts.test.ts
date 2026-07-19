@@ -1,9 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
   ApiErrorSchema,
+  HYPOTHESIS_SCORE_FACTOR_LABELS,
+  HYPOTHESIS_SCORE_FACTOR_WEIGHTS,
+  HypothesisScoringResultSchema,
   INCIDENT_CONTEXT_DEFAULT_WINDOW_HOURS,
   IncidentContextCompletedStageSchema,
   IncidentContextFactsSchema,
+  IncidentHypothesisScoringSchema,
   IncidentSuspiciousChangeDetectionSchema,
   IncidentIntentSchema,
   IncidentAcceptedResponseSchema,
@@ -243,6 +247,157 @@ describe('shared investigation contracts', () => {
         candidates: Array.from({ length: 6 }, (_, index) => ({
           ...candidate,
           changeId: `change-${index}`,
+        })),
+      }).success,
+    ).toBe(false);
+
+    const factors = [
+      {
+        code: 'change_recency' as const,
+        label: HYPOTHESIS_SCORE_FACTOR_LABELS.change_recency,
+        contributionBasisPoints: 3_000,
+        weightBasisPoints: HYPOTHESIS_SCORE_FACTOR_WEIGHTS.change_recency,
+      },
+      {
+        code: 'lineage_position' as const,
+        label: HYPOTHESIS_SCORE_FACTOR_LABELS.lineage_position,
+        contributionBasisPoints: 2_000,
+        weightBasisPoints: HYPOTHESIS_SCORE_FACTOR_WEIGHTS.lineage_position,
+      },
+      {
+        code: 'symptom_category_fit' as const,
+        label: HYPOTHESIS_SCORE_FACTOR_LABELS.symptom_category_fit,
+        contributionBasisPoints: 3_000,
+        weightBasisPoints: HYPOTHESIS_SCORE_FACTOR_WEIGHTS.symptom_category_fit,
+      },
+      {
+        code: 'evidence_quality' as const,
+        label: HYPOTHESIS_SCORE_FACTOR_LABELS.evidence_quality,
+        contributionBasisPoints: 2_000,
+        weightBasisPoints: HYPOTHESIS_SCORE_FACTOR_WEIGHTS.evidence_quality,
+      },
+    ];
+    const hypothesis = {
+      id: 'hypothesis-change-removed-column',
+      rank: 1,
+      sourceChangeId: candidate.changeId,
+      observedAt: candidate.observedAt,
+      summary:
+        'Plausible contributor: the removed schema change on raw.orders may have contributed to the incident.',
+      confidence: 1,
+      evidenceIds: [candidate.changeId],
+      factors,
+    };
+    const scoringResult = {
+      status: 'completed' as const,
+      hypotheses: [hypothesis],
+      missingInformation: [],
+    };
+    const evidence = [
+      {
+        id: candidate.changeId,
+        category: 'schema-change' as const,
+        statement: candidate.summary,
+        sourceEntity: upstream,
+        observedAt: candidate.observedAt,
+      },
+    ];
+
+    expect(
+      IncidentHypothesisScoringSchema.safeParse({
+        contextStage,
+        suspiciousChangeResult: result,
+        evidence,
+        result: scoringResult,
+      }).success,
+    ).toBe(true);
+    expect(
+      HypothesisScoringResultSchema.safeParse({
+        ...scoringResult,
+        hypotheses: [{ ...hypothesis, confidence: 0.99 }],
+      }).success,
+    ).toBe(false);
+    expect(
+      HypothesisScoringResultSchema.safeParse({
+        ...scoringResult,
+        hypotheses: [{ ...hypothesis, rank: 2 }],
+      }).success,
+    ).toBe(false);
+    expect(
+      HypothesisScoringResultSchema.safeParse({
+        ...scoringResult,
+        hypotheses: [
+          {
+            ...hypothesis,
+            id: 'hypothesis-change-z',
+            sourceChangeId: 'change-z',
+            evidenceIds: ['change-z'],
+          },
+          {
+            ...hypothesis,
+            id: 'hypothesis-change-a',
+            rank: 2,
+            sourceChangeId: 'change-a',
+            evidenceIds: ['change-a'],
+          },
+        ],
+      }).success,
+    ).toBe(false);
+    expect(
+      HypothesisScoringResultSchema.safeParse({
+        ...scoringResult,
+        hypotheses: [{ ...hypothesis, factors: [...factors].reverse() }],
+      }).success,
+    ).toBe(false);
+    expect(
+      HypothesisScoringResultSchema.safeParse({
+        ...scoringResult,
+        hypotheses: [{ ...hypothesis, evidenceIds: [candidate.changeId, candidate.changeId] }],
+      }).success,
+    ).toBe(false);
+    expect(
+      HypothesisScoringResultSchema.safeParse({
+        ...scoringResult,
+        hypotheses: [{ ...hypothesis, summary: 'The change caused the incident.' }],
+      }).success,
+    ).toBe(false);
+    expect(
+      HypothesisScoringResultSchema.safeParse({
+        ...scoringResult,
+        hypotheses: [
+          {
+            ...hypothesis,
+            recommendation: 'Restore the field.',
+            rawProviderPayload: { confidence: 0.99 },
+          },
+        ],
+      }).success,
+    ).toBe(false);
+    expect(
+      IncidentHypothesisScoringSchema.safeParse({
+        contextStage,
+        suspiciousChangeResult: result,
+        evidence: [{ ...evidence[0], id: 'different-evidence' }],
+        result: scoringResult,
+      }).success,
+    ).toBe(false);
+    expect(
+      IncidentHypothesisScoringSchema.safeParse({
+        contextStage,
+        suspiciousChangeResult: result,
+        evidence: [evidence[0], evidence[0]],
+        result: scoringResult,
+      }).success,
+    ).toBe(false);
+    expect(
+      HypothesisScoringResultSchema.safeParse({
+        ...scoringResult,
+        hypotheses: Array.from({ length: 4 }, (_, index) => ({
+          ...hypothesis,
+          id: `hypothesis-${index}`,
+          rank: index + 1,
+          sourceChangeId: `change-${index}`,
+          evidenceIds: [`change-${index}`],
         })),
       }).success,
     ).toBe(false);
@@ -600,6 +755,16 @@ describe('shared investigation contracts', () => {
           },
         ],
       },
+      hypothesisScoringStage: {
+        status: 'insufficient',
+        hypotheses: [],
+        missingInformation: [
+          {
+            code: 'suspicious_changes_insufficient',
+            message: 'Suspicious-change detection returned no candidate to score.',
+          },
+        ],
+      },
       report: {
         incidentId: 'ba4ec0e8-da23-4f34-a3c7-9f25c44da800',
         summary: 'A removed source column is the strongest inference.',
@@ -614,7 +779,7 @@ describe('shared investigation contracts', () => {
         hypotheses: [
           {
             id: 'hypothesis-1',
-            summary: 'The removed column caused the incident.',
+            summary: 'The removed column is a plausible contributor.',
             confidence: 0.9,
             evidenceIds: ['change-1'],
           },

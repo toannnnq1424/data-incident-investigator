@@ -35,6 +35,9 @@ describe('deterministic fixture investigation runner', () => {
       'Revenue overview',
     ]);
     expect(firstReport.hypotheses[0]?.summary).toContain('schema change on raw.orders');
+    expect(firstReport.hypotheses[0]?.summary).toContain('Plausible contributor:');
+    expect(firstReport.hypotheses[0]?.confidence).toBe(0.85);
+    expect(firstReport.hypotheses[0]?.summary).not.toMatch(/confirmed cause|caused the incident/i);
 
     const evidenceIds = new Set(firstReport.evidence.map((evidence) => evidence.id));
     expect(

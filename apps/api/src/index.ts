@@ -3,11 +3,13 @@ import { pathToFileURL } from 'node:url';
 import {
   DEFAULT_INCIDENT_CONTEXT_LIMITS,
   DeterministicIncidentContextGatherer,
+  DeterministicHypothesisScorer,
   DeterministicInvestigationRunner,
   DeterministicSuspiciousChangeDetector,
   FIXTURE_INVESTIGATION_LIMITS,
   type IncidentContextGatherer,
   type IncidentContextGatheringLimits,
+  type HypothesisScorer,
   type InvestigationLimits,
   type InvestigationRunner,
   type SuspiciousChangeDetector,
@@ -29,8 +31,10 @@ import {
   ApiErrorSchema,
   IncidentAcceptedResponseSchema,
   IncidentContextStageSchema,
+  HypothesisScoringStageSchema,
   IncidentRequestSchema,
   IncidentRetrievalResponseSchema,
+  InvestigationReportSchema,
   MetadataEntitySearchRequestSchema,
   MetadataEntitySearchResponseSchema,
   MetadataHealthResponseSchema,
@@ -41,6 +45,7 @@ import {
   MetadataSourceModeSchema,
   SuspiciousChangeDetectionStageSchema,
   type IncidentContextStage,
+  type HypothesisScoringStage,
   type InvestigationReport,
   type MetadataHealthResponse,
   type MetadataSourceMode,
@@ -60,6 +65,7 @@ interface BuildServerOptions {
   contextGatherer?: IncidentContextGatherer;
   contextLimits?: IncidentContextGatheringLimits;
   suspiciousChangeDetector?: SuspiciousChangeDetector;
+  hypothesisScorer?: HypothesisScorer;
   runner?: InvestigationRunner;
   limits?: InvestigationLimits;
 }
@@ -69,11 +75,13 @@ type StoredIncident =
       status: 'processing';
       contextStage: IncidentContextStage;
       suspiciousChangeStage: SuspiciousChangeDetectionStage;
+      hypothesisScoringStage: HypothesisScoringStage;
     }
   | {
       status: 'completed';
       contextStage: IncidentContextStage;
       suspiciousChangeStage: SuspiciousChangeDetectionStage;
+      hypothesisScoringStage: HypothesisScoringStage;
       report: InvestigationReport;
     }
   | { status: 'failed' };
@@ -255,6 +263,22 @@ function unavailableSuspiciousChanges(
   });
 }
 
+function unavailableHypothesisScoring(
+  code: 'CONTEXT_UNAVAILABLE' | 'SUSPICIOUS_CHANGES_UNAVAILABLE' | 'SCORING_INVALID',
+): HypothesisScoringStage {
+  const messages = {
+    CONTEXT_UNAVAILABLE:
+      'Hypothesis scoring is unavailable because incident context did not complete.',
+    SUSPICIOUS_CHANGES_UNAVAILABLE:
+      'Hypothesis scoring is unavailable because suspicious-change detection did not complete.',
+    SCORING_INVALID: 'Hypothesis scoring could not validate the factual evidence mapping.',
+  } as const;
+  return HypothesisScoringStageSchema.parse({
+    status: 'unavailable',
+    error: { code, message: messages[code] },
+  });
+}
+
 export function buildServer(options: BuildServerOptions = {}) {
   const server = Fastify({ logger: options.logger ?? true });
   const environment = options.environment ?? process.env;
@@ -296,6 +320,7 @@ export function buildServer(options: BuildServerOptions = {}) {
   const contextLimits = options.contextLimits ?? DEFAULT_INCIDENT_CONTEXT_LIMITS;
   const suspiciousChangeDetector =
     options.suspiciousChangeDetector ?? new DeterministicSuspiciousChangeDetector();
+  const hypothesisScorer = options.hypothesisScorer ?? new DeterministicHypothesisScorer();
   const contextMetadata = {
     healthCheck: metadataHealth.healthCheck.bind(metadataHealth),
     searchEntities: metadataSearch.searchEntities.bind(metadataSearch),
@@ -523,6 +548,7 @@ export function buildServer(options: BuildServerOptions = {}) {
       status: 'processing',
       contextStage: IncidentContextStageSchema.parse({ status: 'gathering' }),
       suspiciousChangeStage: SuspiciousChangeDetectionStageSchema.parse({ status: 'detecting' }),
+      hypothesisScoringStage: HypothesisScoringStageSchema.parse({ status: 'scoring' }),
     });
     server.log.info({ incidentId: response.incidentId, mode }, 'Investigation accepted');
 
@@ -530,6 +556,7 @@ export function buildServer(options: BuildServerOptions = {}) {
       void (async () => {
         let contextStage: IncidentContextStage;
         let suspiciousChangeStage: SuspiciousChangeDetectionStage;
+        let hypothesisScoringStage: HypothesisScoringStage;
         try {
           contextStage = await contextGatherer.gather(parsedRequest.data, {
             metadata: contextMetadata,
@@ -538,13 +565,16 @@ export function buildServer(options: BuildServerOptions = {}) {
           });
           try {
             suspiciousChangeStage = suspiciousChangeDetector.detect(contextStage);
+            hypothesisScoringStage = HypothesisScoringStageSchema.parse({ status: 'scoring' });
           } catch {
             suspiciousChangeStage = unavailableSuspiciousChanges('DETECTION_INVALID');
+            hypothesisScoringStage = unavailableHypothesisScoring('SUSPICIOUS_CHANGES_UNAVAILABLE');
           }
           incidents.set(response.incidentId, {
             status: 'processing',
             contextStage,
             suspiciousChangeStage,
+            hypothesisScoringStage,
           });
           server.log.info(
             {
@@ -568,10 +598,12 @@ export function buildServer(options: BuildServerOptions = {}) {
         } catch (error: unknown) {
           contextStage = failedIncidentContext(error);
           suspiciousChangeStage = unavailableSuspiciousChanges('CONTEXT_UNAVAILABLE');
+          hypothesisScoringStage = unavailableHypothesisScoring('CONTEXT_UNAVAILABLE');
           incidents.set(response.incidentId, {
             status: 'processing',
             contextStage,
             suspiciousChangeStage,
+            hypothesisScoringStage,
           });
           server.log.warn(
             {
@@ -590,17 +622,46 @@ export function buildServer(options: BuildServerOptions = {}) {
             metadata,
             limits,
           });
+          let completedReport = report;
+          if (
+            contextStage.status === 'completed' &&
+            (suspiciousChangeStage.status === 'completed' ||
+              suspiciousChangeStage.status === 'insufficient')
+          ) {
+            try {
+              hypothesisScoringStage = hypothesisScorer.score(
+                contextStage,
+                suspiciousChangeStage,
+                report.evidence,
+              );
+              if (hypothesisScoringStage.status === 'completed') {
+                const topHypothesis = hypothesisScoringStage.hypotheses[0];
+                if (!topHypothesis) {
+                  throw new Error('Completed hypothesis scoring returned no top inference.');
+                }
+                completedReport = InvestigationReportSchema.parse({
+                  ...report,
+                  summary: `The strongest evidence-backed inference is: ${topHypothesis.summary}`,
+                  hypotheses: hypothesisScoringStage.hypotheses,
+                });
+              }
+            } catch {
+              hypothesisScoringStage = unavailableHypothesisScoring('SCORING_INVALID');
+            }
+          }
           incidents.set(response.incidentId, {
             status: 'completed',
             contextStage,
             suspiciousChangeStage,
-            report,
+            hypothesisScoringStage,
+            report: completedReport,
           });
           server.log.info(
             {
               incidentId: response.incidentId,
-              entityCount: report.entities.length,
-              evidenceCount: report.evidence.length,
+              entityCount: completedReport.entities.length,
+              evidenceCount: completedReport.evidence.length,
+              hypothesisScoringStatus: hypothesisScoringStage.status,
             },
             'Fixture investigation completed',
           );
@@ -656,6 +717,7 @@ export function buildServer(options: BuildServerOptions = {}) {
                 status: 'completed',
                 contextStage: incident.contextStage,
                 suspiciousChangeStage: incident.suspiciousChangeStage,
+                hypothesisScoringStage: incident.hypothesisScoringStage,
                 report: incident.report,
               }
             : {
@@ -663,6 +725,7 @@ export function buildServer(options: BuildServerOptions = {}) {
                 status: 'processing',
                 contextStage: incident.contextStage,
                 suspiciousChangeStage: incident.suspiciousChangeStage,
+                hypothesisScoringStage: incident.hypothesisScoringStage,
               },
         ),
       );

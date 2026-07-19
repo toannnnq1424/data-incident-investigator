@@ -37,6 +37,16 @@ describe('completed report presentation', () => {
           },
         ],
       },
+      hypothesisScoringStage: {
+        status: 'insufficient',
+        hypotheses: [],
+        missingInformation: [
+          {
+            code: 'suspicious_changes_insufficient',
+            message: 'Suspicious-change detection returned no candidate to score.',
+          },
+        ],
+      },
       report: {
         incidentId: 'ba4ec0e8-da23-4f34-a3c7-9f25c44da800',
         summary: 'The removed source column is the strongest evidence-backed inference.',
@@ -78,8 +88,8 @@ describe('completed report presentation', () => {
         hypotheses: [
           {
             id: 'hypothesis-1',
-            summary: 'A schema change caused the incident.',
-            confidence: 0.92,
+            summary: 'A schema change is a plausible contributor.',
+            confidence: 0.8,
             evidenceIds: ['change-1', 'lineage-upstream-1'],
           },
         ],
@@ -95,7 +105,7 @@ describe('completed report presentation', () => {
     expect(getCompletedReportContent(incident)).toEqual({
       status: 'completed',
       summary: 'The removed source column is the strongest evidence-backed inference.',
-      topHypothesis: 'A schema change caused the incident.',
+      topHypothesis: 'A schema change is a plausible contributor.',
       relatedEntities: [
         {
           urn: 'urn:li:dataset:(urn:li:dataPlatform:snowflake,analytics.daily_revenue,PROD)',
@@ -146,9 +156,9 @@ describe('completed report presentation', () => {
       inferences: [
         {
           id: 'hypothesis-1',
-          summary: 'A schema change caused the incident.',
-          confidence: 0.92,
-          confidenceLabel: '92%',
+          summary: 'A schema change is a plausible contributor.',
+          confidence: 0.8,
+          confidenceLabel: '80%',
           evidenceIds: ['change-1', 'lineage-upstream-1'],
         },
       ],
