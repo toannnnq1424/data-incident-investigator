@@ -2272,6 +2272,138 @@ normally, open one stacked Draft PR based on
 `codex/phase-4-integration-checkpoint`, follow exact final-HEAD CI to terminal, verify conflict-free/
 merge-ready, and stop. Do not merge the PR, create another task, begin Slice 5.2, or begin Phase 6.
 
+### Phase 5 integration checkpoint — Level D closure
+
+Status: local Level D evidence and the final-input browser recovery pass on
+`codex/phase-5-integration-checkpoint` from exact Slice 5.1 final HEAD
+`883bf9bf8cd80625b369f615416f65552d20552e`, whose exact parent is Phase 4 checkpoint
+`19bb0d3a57e47340c8bf78928d9574892bf0e45a`. Slice 5.1 Draft PR #31 targets
+`codex/phase-4-integration-checkpoint`; its exact final-head CI run `29674242433`, job
+`88158482447`, is green. The checkpoint began docs-first and contains one minimal E2E assertion
+correction proven necessary by the browser gate; product behavior remains unchanged. Publication,
+final-HEAD CI, and merge-readiness verification for this checkpoint are pending.
+
+Objective: close Phase 5 with one docs-first repository integration checkpoint proving that the exact
+canonical scenario-selector contract and the complete existing investigation/report flow remain
+coherent, deterministic, bounded, accessible, credential-free, and free of external mutation. Add no
+feature or reliability behavior, do not redesign any investigation/report stage, do not begin Slice
+5.2 or Phase 6, and do not add or invoke a provider, model, network dependency, credential, or
+automatic action.
+
+Minimum files:
+
+- `docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md`, and `docs/SESSION_LOG.md` for the planned
+  Level D gate, exact evidence, deferred live boundary, and final handoff.
+- No product source, contract, API, evaluation, fixture, provider, test/browser, report formula,
+  launcher, manifest, lockfile, dependency, bootstrap, generated artifact, or repository-map change
+  unless a classified in-scope gate failure proves the smallest necessary correction.
+
+Acceptance criteria:
+
+- The one shared browser-safe catalog retains exactly these stable IDs in this order:
+  `removed-schema-column`, `stale-pipeline`, `upstream-type-change`,
+  `wrong-dashboard-dataset`, `delayed-ingestion`, `incorrect-owner-or-domain`, and
+  `insufficient-evidence`. The UI adds exactly one manual option, and evaluation continues to derive
+  case identity/intake from the same catalog without moving evaluation-only facts or telemetry into
+  the browser bundle.
+- Selecting a scenario prefills only the four existing `IncidentRequestSchema` fields. All values
+  remain editable; editing a selected prefill changes provenance to explicit custom without losing
+  the edit. Initial manual state, clear/reset, scenario replacement, success/failure ownership, and
+  older-response rejection remain explicit and stale-safe; submission sends only the current
+  validated fields with no hidden scenario payload.
+- The complete canonical path remains selector -> editable prefill -> submit -> processing/context ->
+  suspicious changes -> evidence-linked scoring -> remediation/safe fallback -> full report. Exact
+  factual references, hypothesis/evidence/remediation links, deterministic ordering/deduplication,
+  and all shared caps continue to resolve without invented entities, evidence, causes, or actions.
+- The selector and report retain native keyboard behavior, programmatic labels, screen-reader status,
+  semantic headings and links, clean console output, and no desktop/mobile horizontal overflow. The
+  browser launcher continues to select dynamic ports and removes only its owned processes and
+  temporary state on success or failure.
+- Evaluation JSON/Markdown contracts and metrics, API and report schemas, evidence references, fixture
+  mode, and fake-provider coverage do not regress. Prompt/completion/total token use remains
+  `0/0/0`; no credential is read or used, and no live DataHub, provider, model/LLM, network call,
+  autonomous execution, or external mutation is performed.
+- Exactly one `pnpm validate` runs on coherent docs-only inputs. After that repository gate completes,
+  the intended browser gate is exactly one `pnpm test:e2e:report`; if it proves a classified in-scope
+  defect, only the exact final-input recovery after the minimum correction is permitted. A known
+  Windows sandbox-only esbuild/root-bin failure may recover only by retrying the exact affected
+  component with the documented process-scoped workaround; no green command is repeated while its
+  input remains unchanged and no product change is made for an environment-only failure.
+- Final changed-doc formatting and read-only audits prove the exact branch/base/ancestry/diff, secret,
+  conflict-marker, debug/raw-provider/model/generated-artifact, manifest/lockfile/dependency, and clean
+  worktree state. One conventional docs commit is pushed normally, then one stacked Draft PR targets
+  `codex/phase-5-1-scenario-demo`; the exact final-head CI reaches a terminal passing state and the PR
+  is Draft, conflict-free, and auto-mergeable. The PR is not merged.
+
+Deferred: live credentialed DataHub; provider/model judging or network evaluation; evaluation-runner
+UI; any incident-input, progress, root-cause, evidence-timeline, lineage, report, recommendation, or
+remediation redesign; new reliability behavior; persistence, authentication, deployment, rate
+limiting, automatic execution, external mutation, Slice 5.2, Phase 6, and every subsequent task. No
+credential is inspected, requested, copied, logged, or used.
+
+Exact checkpoint commands, run once on coherent inputs with only the documented process-scoped Windows
+runtime workaround if required:
+
+- `pnpm validate`
+- `pnpm test:e2e:report`
+- final changed-document Prettier write/check if needed, followed by `git diff --check`, exact
+  tracked/untracked scope and full patch review, secret/conflict/debug/raw-provider/model/generated-
+  artifact scans, manifest/lockfile/dependency review, exact branch/base/ancestry review, owned-process/
+  port/temp review, and final worktree status.
+
+Level D result on the Windows managed worktree, 2026-07-19:
+
+- The tracked bootstrap ran first with `ExecutionPolicy Bypass` and passed in `16.5s`: Node
+  `v24.14.0`, pnpm `11.9.0`, frozen 259-package installation in `6.9s`, supply-chain policy,
+  Prettier `3.9.5`, and the repository static format check. A later direct changed-doc formatter
+  process initially could not find Node; the exact process-scoped PATH recovery completed in `4.3s`
+  with all three docs unchanged. No bootstrap, manifest, lockfile, dependency, or generated-store
+  change was made.
+- Exactly one `pnpm validate` wrapper ran on coherent docs-only inputs. Repository format, lint, and
+  all six workspace typechecks passed before Vitest stopped prior to collection at the known managed-
+  worktree esbuild junction/ancestor resolution (`ERR_MODULE_NOT_FOUND`); wrapper wall was
+  `112.740s` and the wrapper/green components were not rerun. The exact scoped `pnpm test` recovery
+  then ran all 29 files/198 tests: 23 files and 192 tests passed, while the first fixture API/smoke
+  test in six files reached the existing `5s` timeout under parallel load even though health logged
+  HTTP `200` in `10.31ms`. A single exact six-file reproducer passed 6/6 files and 60/60 tests in
+  `4.13s` (`5.629s` wall) without a timeout or product change, so every one of the 198 unique tests has
+  passing evidence.
+- The two wrapper components not started after the test stop ran once. All 6/6 production builds
+  passed in `19.650s`; web transformed 109 modules and built in `2.21s`. Smoke passed both API/web
+  artifacts in `0.733s`. Together with the wrapper successes and classified exact recoveries, the
+  Level D repository gate is green without rerunning an unchanged successful component.
+- The first `pnpm test:e2e:report` invocation selected API/web ports `60503`/`60504`, reached the
+  completed context, and exposed one in-scope stale test expectation after `21.811s`: the test still
+  required the former manual question while the selected canonical scenario correctly submitted
+  `Why did revenue drop after the morning warehouse refresh?`. Product output and selector state were
+  correct. The one-line assertion now verifies the actual shared-catalog prefill; targeted E2E format
+  and lint passed in `0.383s` and `1.795s`.
+- One final-input recovery `pnpm test:e2e:report` selected API/web ports `54390`/`54391` and passed the
+  complete fixture flow in `6429ms` (`12.639s` wall): selector -> editable custom prefill -> submit ->
+  processing/context -> exact suspicious change -> exact `0.85` evidence-linked inference -> two
+  resolved `not_executed` recommendations -> full report. The checked-in flow asserts native keyboard
+  operation, semantic labels/headings/status, exact reference resolution, clean console,
+  desktop/mobile overflow protection, the three-minute bound, dynamic-port release, browser close,
+  and owned-process cleanup. The failed pre-fix invocation also completed its `finally` cleanup.
+- Evaluation, shared/API/report schemas, fixture/fake-provider bounds, deterministic order/dedup/caps,
+  safe errors, and zero-token model boundary are covered by the green 198-test repository evidence.
+  No credential was inspected or used; no live DataHub/provider/model/network call, autonomous action,
+  or external mutation ran. The only non-document change is the classified one-line E2E expectation;
+  product, contract, API, evaluation, provider, fixture, report formula, manifest, lockfile,
+  dependency, bootstrap, and repository-map paths remain unchanged.
+- Final Prettier write/check passed in `1.374s`/`1.914s` with no rewrite. The read-only pre-commit
+  audit covers exactly four intended paths (three persistent documents plus the one-line E2E
+  correction): exact branch/base/ancestry and local/remote Slice 5.1 refs, full patch and
+  `git diff --check`, zero untracked file, zero high-risk secret/conflict/debug/raw-provider/model
+  sentinel, zero manifest/lock/dependency/product path, zero local pnpm store or generated evaluation
+  report, zero listener on all four browser ports, and zero owned E2E runtime process.
+
+Exact next handoff: after this checkpoint commit is pushed, the stacked Draft PR is open
+against `codex/phase-5-1-scenario-demo`, exact final-head CI is terminal green, and Draft/conflict-free/
+auto-mergeable state is verified, stop this worker. A later controller may create a separate
+Project/worktree task for Phase 6 only after the checkpoint PR is reviewed and integrated; do not
+create that task, merge the PR, begin Slice 5.2, or begin Phase 6 here.
+
 #### Targeted cross-platform browser defect — macOS native select
 
 Objective: fix only the Slice 5.1 canonical browser test assumption exposed by Mac QA at exact head
