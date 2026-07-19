@@ -1777,6 +1777,13 @@ recommendation/ref, tối đa năm missing items và năm allowlisted fallback s
 - Final security scan phát hiện planner test tự đọc `process.env.DATAHUB_TOKEN` chỉ để so sánh state.
   Đã bỏ hoàn toàn hai credential reads, thay bằng assertion planner không có environment state; targeted
   format/check/lint và planner test 4/4 PASS. Product input không đổi nên không rerun build/browser xanh.
+- Publication tạo commit `4fa01ef50c76f32b1ca5fc51391bab719a93568c`, push branch và stacked
+  Draft PR #18 đúng base. CI run đầu `29667788737`, job `88141257409` terminal FAILURE sau `1m04s`:
+  strict Linux pnpm không resolve direct root import `react` ở web integration test vì React chỉ thuộc
+  `@dii/web`. Phân loại test dependency-boundary, không phải product/environment. Test đã chuyển sang
+  resolve React và `react-dom/server` từ existing web workspace manifest qua `createRequire`, không đổi
+  manifest/lock/dependency; targeted format/check/lint và 4/4 tests PASS. Không rerun failed run; push
+  follow-up commit sẽ tạo đúng final-HEAD CI gate mới.
 
 ### Validation intentionally deferred
 
@@ -1796,8 +1803,6 @@ chỉ còn reviewed commit payload trước publication.
 
 ### Exact next step
 
-Format/check docs evidence; chạy final diff/secret/conflict/generated/ancestry/worktree audit; commit
-`feat: add remediation and fallback`; push và mở stacked Draft PR base
-`codex/phase-3-3-evidence-linked-scoring`; theo dõi đúng một final-HEAD CI run và xác minh conflict-free/
-merge-ready. Sau đó hand off task Project/worktree riêng cho Phase 3 integration checkpoint/Level D;
-không bắt đầu checkpoint đó trong Slice 3.4.
+Format/check CI-fix docs, chạy targeted final audit, commit/push test fix, theo dõi đúng final-HEAD CI run
+và xác minh Draft PR #18 vẫn conflict-free/merge-ready. Sau đó hand off task Project/worktree riêng cho
+Phase 3 integration checkpoint/Level D; không bắt đầu checkpoint đó trong Slice 3.4.

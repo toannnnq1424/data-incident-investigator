@@ -1,5 +1,5 @@
-import { createElement } from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
+import { createRequire } from 'node:module';
+import { pathToFileURL } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import {
   createLatestRequestGuard,
@@ -11,6 +11,12 @@ import {
   RemediationPlanningStageSchema,
   type RemediationPlanningStage,
 } from '../../packages/shared-types/src/index.js';
+
+const requireFromWeb = createRequire(new URL('../../apps/web/package.json', import.meta.url));
+const { createElement } = await import(pathToFileURL(requireFromWeb.resolve('react')).href);
+const { renderToStaticMarkup } = await import(
+  pathToFileURL(requireFromWeb.resolve('react-dom/server')).href
+);
 
 function completedRemediation(): RemediationPlanningStage {
   return RemediationPlanningStageSchema.parse({

@@ -16,8 +16,11 @@ Last updated: 2026-07-19.
   reads from the test itself; its targeted format/lint and 4/4 tests passed. Review is clean across 17
   intended files for diff whitespace/scope, secret/conflict/unsafe-output/generated artifacts,
   manifest/lock/bootstrap/fixture/provider/dependency changes, exact branch/base/ancestry, and owned
-  processes. Publication and CI evidence remain pending. Level D, live DataHub smoke, generic
-  controller/model integration, autonomous execution, and Phase 3 integration closure remain deferred.
+  processes. The first PR CI run `29667788737` failed because the root integration test imported React
+  outside its owning web workspace under strict Linux pnpm resolution. The test now resolves the existing
+  web-declared runtime without a dependency change; targeted format/lint and 4/4 tests pass. A new
+  final-HEAD CI run remains pending. Level D, live DataHub smoke, generic controller/model integration,
+  autonomous execution, and Phase 3 integration closure remain deferred.
 - Slice 3.3 evidence-linked scoring is implemented locally on exact Slice 3.2 commit `96476f8`.
   The scorer is pure over validated context/suspicious/report-evidence inputs, emits at most three
   exact evidence-linked plausible-contributor inferences, and owns a four-factor 10,000-basis-point

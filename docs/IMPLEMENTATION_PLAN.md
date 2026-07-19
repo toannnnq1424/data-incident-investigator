@@ -1781,6 +1781,13 @@ Level C result:
   `git diff --check`, secret/conflict/unsafe-output/generated-artifact scans, no manifest/lock/bootstrap/
   fixture/provider/dependency change, exact branch/base/ancestry, and no command/listener owned by this
   worktree. The worktree contains only the reviewed commit payload before publication.
+- The first PR CI run `29667788737` / job `88141257409` failed in `1m04s` because the new root-level
+  web test imported `react` directly even though React is declared only by `@dii/web`; strict Linux pnpm
+  correctly returned `ERR_MODULE_NOT_FOUND`. This was classified as a test dependency-boundary defect,
+  not product or environment. The test now resolves React and `react-dom/server` from the existing web
+  workspace manifest via `createRequire`, with no manifest/lock/dependency change. Its targeted
+  format/check/lint and 4/4 tests passed. The failed run was not rerun; the follow-up final-HEAD CI run
+  is the publication gate.
 - Level D and live DataHub smoke were not run. The next task remains the separate Phase 3 integration
   checkpoint/Level D worktree after this stacked Draft PR and final-HEAD CI are green.
 
