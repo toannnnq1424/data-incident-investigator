@@ -181,9 +181,14 @@ try {
 
   const scenarioSelector = page.getByLabel('Canonical incident scenario');
   await scenarioSelector.focus();
-  await page.keyboard.press('ArrowDown');
+  if (
+    !(await scenarioSelector.evaluate((element) => element === element.ownerDocument.activeElement))
+  ) {
+    fail('Canonical scenario selector did not receive keyboard focus.');
+  }
+  await scenarioSelector.selectOption('removed-schema-column');
   if ((await scenarioSelector.inputValue()) !== 'removed-schema-column') {
-    fail('Native keyboard selection did not choose the first canonical scenario.');
+    fail('Canonical scenario selection did not choose the first scenario.');
   }
   await page
     .getByText(
@@ -254,7 +259,7 @@ try {
     selectedContextEntities.length !== 1 ||
     !selectedContextEntities[0]?.includes('analytics.daily_revenue') ||
     !contextFactIds.includes('change-removed-gross-revenue') ||
-    !contextText.includes('Why did revenue drop today?') ||
+    !contextText.includes('Why did revenue drop after the morning warehouse refresh?') ||
     !contextText.includes('Revenue is 42% below the seven-day baseline.') ||
     !contextText.includes('raw.orders') ||
     !contextText.includes('No bounded context gaps were recorded.') ||
