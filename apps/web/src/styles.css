@@ -27,6 +27,7 @@ body {
 
 button,
 input,
+select,
 textarea {
   font: inherit;
 }
@@ -729,6 +730,57 @@ button:hover:not(:disabled) {
 button:disabled {
   cursor: wait;
   opacity: 0.65;
+}
+
+.scenario-selector {
+  min-width: 0;
+  margin: 0;
+  padding: 1rem;
+  border: 1px solid #2d555a;
+  border-radius: 0.9rem;
+  background: #0a2227;
+}
+
+.scenario-selector legend {
+  padding: 0 0.35rem;
+  color: #9ceade;
+  font-size: 0.78rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.scenario-selector-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 0.8rem;
+}
+
+.scenario-reset {
+  min-height: 3rem;
+  border: 1px solid #46656d;
+  color: #dce8eb;
+  background: #102a30;
+  white-space: nowrap;
+}
+
+.scenario-reset:hover:not(:disabled) {
+  background: #183840;
+}
+
+.scenario-selection-status,
+.scenario-description {
+  margin: 0.75rem 0 0;
+  overflow-wrap: anywhere;
+  color: #b9d0d4;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.scenario-selection-status {
+  color: #9ceade;
+  font-weight: 750;
 }
 
 .privacy-note {
@@ -1587,6 +1639,7 @@ dd {
 
 @media (max-width: 640px) {
   .form-grid,
+  .scenario-selector-controls,
   .metadata-search-form,
   .metadata-search-result-list,
   .metadata-lineage-node-list,

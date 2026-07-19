@@ -2,6 +2,36 @@
 
 Last updated: 2026-07-19.
 
+- Mac QA at exact Slice 5.1 head `78a8fcde` passed bootstrap, 3 targeted files/28 tests, and the web
+  build, then the one canonical browser gate failed before submit because one bare `ArrowDown` did not
+  change a focused native scenario `<select>` in macOS Chromium. Exact comparison with checkpoint
+  `160aa0da` proves its only E2E change fixes a later stale context-question assertion, not selection.
+  The selector remains a labeled, focusable controlled native select with standard change semantics, so
+  this is classified as a cross-platform test assumption. The focused E2E now asserts focus explicitly
+  and uses `selectOption('removed-schema-column')`; product and previously green test/build inputs are
+  unchanged. The first Windows reproducer crossed selection/submit and exposed only PR #32's known stale
+  context-question assertion; its exact one-line correction was applied without cherry-picking the
+  checkpoint. Final affected format/lint passed and the classified E2E retry passed in `6867ms`
+  (`13.225s` wall) on ports `57888`/`57889`. Mac should rerun only that browser gate on the exact new head
+  after CI.
+- Phase 5 Slice 5.1 passes local Level C, the single combined browser gate, and the pre-commit final audit
+  on exact Phase 4 checkpoint `19bb0d3` and branch `codex/phase-5-1-scenario-demo`; publication and CI
+  evidence are pending. A strict browser-safe catalog in `@dii/shared-types` now owns the exact
+  seven canonical IDs/order, labels/descriptions, and existing validated incident request prefills.
+  Evaluation derives its case identity/intake from that catalog while retaining expected outcomes and
+  fake telemetry internally. The web adds only a native single-select guided intake with explicit
+  manual/scenario/custom state, editable fields, clear reset, and no hidden request payload. No API,
+  provider, fixture, report, scoring formula, credential, model, network, mutation, dependency,
+  manifest, or lockfile behavior is intentionally changed. Live DataHub remains credential-gated and
+  is not a fixture/fake-provider gate for this slice. Final evidence is format/lint, six typechecks,
+  5 files/40 tests, six builds, and one `119127ms` browser flow on ports `61984`/`61985` with 7/7
+  scenario IDs/order, selected/editable custom intake, full context-to-report chain, clean console,
+  desktop/mobile overflow protection, and zero port/process/temp-file leak. The sandboxed initial test
+  command stopped before collection on the known esbuild ancestor-path denial; its exact scoped recovery
+  passed without a code change or rerunning any green step. The audit covers exactly 10 tracked
+  modifications plus one new test, with zero missing/unexpected path, whitespace, secret, conflict,
+  debug/raw-provider/model, manifest/lockfile/dependency, out-of-scope runtime, ancestry, or temporary/
+  generated-artifact finding.
 - Phase 4 local integration closure passes on exact Slice 4.1 final HEAD `319a0755`, exact parent
   checkpoint `6499cb3`, and unique branch `codex/phase-4-integration-checkpoint`. The docs-only Level D
   gate covers repository format/lint, six typechecks, 28 files/193 tests, six builds, and two smoke

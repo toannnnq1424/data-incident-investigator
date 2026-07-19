@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState, type FormEvent, type ReactNode, type RefObject } from 'react';
 import {
   ApiErrorSchema,
+  CANONICAL_INCIDENT_SCENARIOS,
+  CanonicalIncidentScenarioIdSchema,
   METADATA_LINEAGE_DEFAULT_DEPTH,
   METADATA_LINEAGE_DEFAULT_MAX_NODES,
   METADATA_RECENT_CHANGES_DEFAULT_LIMIT,
@@ -8,6 +10,7 @@ import {
   type EntityKind,
   type EntityRef,
   type Evidence,
+  type CanonicalIncidentScenarioId,
   type HypothesisScoringStage,
   IncidentAcceptedResponseSchema,
   type IncidentContextStage,
@@ -94,6 +97,152 @@ export function createLatestRequestGuard() {
 function optionalText(value: string) {
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : undefined;
+}
+
+export type IncidentFormValues = {
+  question: string;
+  entityHint: string;
+  occurredAt: string;
+  symptom: string;
+};
+
+export type CanonicalScenarioSelection =
+  | { kind: 'manual' }
+  | { kind: 'scenario'; scenarioId: CanonicalIncidentScenarioId }
+  | { kind: 'custom'; sourceScenarioId: CanonicalIncidentScenarioId };
+
+export const EMPTY_INCIDENT_FORM_VALUES: IncidentFormValues = Object.freeze({
+  question: '',
+  entityHint: '',
+  occurredAt: '',
+  symptom: '',
+});
+
+function toDatetimeLocalValue(timestamp: string) {
+  const date = new Date(timestamp);
+  const localTime = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
+  return localTime.toISOString().slice(0, 16);
+}
+
+export function createCanonicalScenarioFormState(
+  scenarioId: CanonicalIncidentScenarioId | 'manual',
+): { selection: CanonicalScenarioSelection; values: IncidentFormValues } {
+  if (scenarioId === 'manual') {
+    return {
+      selection: { kind: 'manual' },
+      values: { ...EMPTY_INCIDENT_FORM_VALUES },
+    };
+  }
+
+  const scenario = CANONICAL_INCIDENT_SCENARIOS.find((candidate) => candidate.id === scenarioId);
+  if (!scenario) {
+    throw new Error('Canonical scenario selection must resolve to the shared catalog.');
+  }
+
+  return {
+    selection: { kind: 'scenario', scenarioId },
+    values: {
+      question: scenario.incident.question,
+      entityHint: scenario.incident.entityHint ?? '',
+      occurredAt: scenario.incident.occurredAt
+        ? toDatetimeLocalValue(scenario.incident.occurredAt)
+        : '',
+      symptom: scenario.incident.symptom ?? '',
+    },
+  };
+}
+
+export function markCanonicalScenarioCustom(
+  selection: CanonicalScenarioSelection,
+): CanonicalScenarioSelection {
+  if (selection.kind !== 'scenario') {
+    return selection;
+  }
+  return { kind: 'custom', sourceScenarioId: selection.scenarioId };
+}
+
+function getScenarioSelectionValue(selection: CanonicalScenarioSelection) {
+  if (selection.kind === 'scenario') {
+    return selection.scenarioId;
+  }
+  return selection.kind;
+}
+
+function getScenarioSelectionSource(selection: CanonicalScenarioSelection) {
+  if (selection.kind === 'manual') {
+    return undefined;
+  }
+  const sourceId =
+    selection.kind === 'scenario' ? selection.scenarioId : selection.sourceScenarioId;
+  return CANONICAL_INCIDENT_SCENARIOS.find((scenario) => scenario.id === sourceId);
+}
+
+export function CanonicalScenarioSelector({
+  onReset,
+  onSelect,
+  selection,
+}: {
+  onReset: () => void;
+  onSelect: (scenarioId: CanonicalIncidentScenarioId | 'manual') => void;
+  selection: CanonicalScenarioSelection;
+}) {
+  const sourceScenario = getScenarioSelectionSource(selection);
+  const selectionValue = getScenarioSelectionValue(selection);
+  const status =
+    selection.kind === 'manual'
+      ? 'Manual input is active. Enter or paste incident details.'
+      : selection.kind === 'scenario'
+        ? `${sourceScenario?.title ?? 'Canonical scenario'} prefill selected. You can edit every field before submitting.`
+        : `Custom values based on ${sourceScenario?.title ?? 'a canonical scenario'}. Your edits will be submitted.`;
+
+  return (
+    <fieldset className="scenario-selector">
+      <legend>Guided demo</legend>
+      <div className="scenario-selector-controls">
+        <div className="field">
+          <label htmlFor="canonical-scenario">Canonical incident scenario</label>
+          <select
+            id="canonical-scenario"
+            name="canonicalScenario"
+            value={selectionValue}
+            aria-describedby="canonical-scenario-help canonical-scenario-status"
+            onChange={(event) => {
+              if (event.target.value === 'manual') {
+                onSelect('manual');
+                return;
+              }
+              const parsedScenarioId = CanonicalIncidentScenarioIdSchema.safeParse(
+                event.target.value,
+              );
+              if (parsedScenarioId.success) {
+                onSelect(parsedScenarioId.data);
+              }
+            }}
+          >
+            <option value="manual">Manual input (default)</option>
+            {selection.kind === 'custom' && (
+              <option value="custom">Custom values based on {sourceScenario?.title}</option>
+            )}
+            {CANONICAL_INCIDENT_SCENARIOS.map((scenario) => (
+              <option key={scenario.id} value={scenario.id}>
+                {scenario.title}
+              </option>
+            ))}
+          </select>
+          <span className="field-help" id="canonical-scenario-help">
+            Selecting a scenario fills the existing incident fields; all fields remain editable.
+          </span>
+        </div>
+        <button className="scenario-reset" type="button" onClick={onReset}>
+          Clear and use manual input
+        </button>
+      </div>
+      <p className="scenario-selection-status" id="canonical-scenario-status" aria-live="polite">
+        {status}
+      </p>
+      {sourceScenario && <p className="scenario-description">{sourceScenario.description}</p>}
+    </fieldset>
+  );
 }
 
 function delay(milliseconds: number) {
@@ -1406,6 +1555,9 @@ export function App() {
   const [entityHint, setEntityHint] = useState('');
   const [occurredAt, setOccurredAt] = useState('');
   const [symptom, setSymptom] = useState('');
+  const [scenarioSelection, setScenarioSelection] = useState<CanonicalScenarioSelection>({
+    kind: 'manual',
+  });
   const [state, setState] = useState<SubmissionState>({ kind: 'idle' });
   const [metadataHealth, setMetadataHealth] = useState<MetadataHealthState>(undefined);
   const [metadataQuery, setMetadataQuery] = useState('');
@@ -1440,6 +1592,19 @@ export function App() {
   const metadataLineageGuard = useRef(createLatestRequestGuard());
   const metadataRecentChangesGuard = useRef(createLatestRequestGuard());
   const incidentRequestGuard = useRef(createLatestRequestGuard());
+
+  function selectCanonicalScenario(scenarioId: CanonicalIncidentScenarioId | 'manual') {
+    const next = createCanonicalScenarioFormState(scenarioId);
+    setScenarioSelection(next.selection);
+    setQuestion(next.values.question);
+    setEntityHint(next.values.entityHint);
+    setOccurredAt(next.values.occurredAt);
+    setSymptom(next.values.symptom);
+  }
+
+  function markIncidentFormCustom() {
+    setScenarioSelection((current) => markCanonicalScenarioCustom(current));
+  }
 
   useEffect(() => {
     const controller = new AbortController();
@@ -2005,6 +2170,12 @@ export function App() {
         </div>
 
         <form onSubmit={submitIncident} noValidate>
+          <CanonicalScenarioSelector
+            selection={scenarioSelection}
+            onSelect={selectCanonicalScenario}
+            onReset={() => selectCanonicalScenario('manual')}
+          />
+
           <div className="field field-wide">
             <label htmlFor="question">
               Incident question <span aria-hidden="true">*</span>
@@ -2017,7 +2188,10 @@ export function App() {
               minLength={3}
               maxLength={2000}
               value={question}
-              onChange={(event) => setQuestion(event.target.value)}
+              onChange={(event) => {
+                setQuestion(event.target.value);
+                markIncidentFormCustom();
+              }}
               aria-describedby="question-help"
               placeholder="Why did revenue drop unexpectedly today?"
             />
@@ -2035,7 +2209,10 @@ export function App() {
                 type="text"
                 maxLength={500}
                 value={entityHint}
-                onChange={(event) => setEntityHint(event.target.value)}
+                onChange={(event) => {
+                  setEntityHint(event.target.value);
+                  markIncidentFormCustom();
+                }}
                 placeholder="analytics.daily_revenue"
               />
             </div>
@@ -2047,7 +2224,10 @@ export function App() {
                 name="occurredAt"
                 type="datetime-local"
                 value={occurredAt}
-                onChange={(event) => setOccurredAt(event.target.value)}
+                onChange={(event) => {
+                  setOccurredAt(event.target.value);
+                  markIncidentFormCustom();
+                }}
               />
             </div>
           </div>
@@ -2060,7 +2240,10 @@ export function App() {
               rows={3}
               maxLength={2000}
               value={symptom}
-              onChange={(event) => setSymptom(event.target.value)}
+              onChange={(event) => {
+                setSymptom(event.target.value);
+                markIncidentFormCustom();
+              }}
               placeholder="Revenue is 42% below the seven-day baseline."
             />
           </div>

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   CANONICAL_EVALUATION_CASE_IDS,
+  CANONICAL_INCIDENT_SCENARIOS,
   CanonicalEvaluationSuiteSchema,
   EvaluationCaseSchema,
   EvaluationObservationSchema,
@@ -36,6 +37,11 @@ describe('canonical deterministic evaluation', () => {
     ]);
     expect(canonicalEvaluationCases).toHaveLength(7);
     expect(CANONICAL_EVALUATION_CASE_IDS).toHaveLength(7);
+    expect(
+      canonicalEvaluationCases.map(({ id, incident, title }) => ({ id, incident, title })),
+    ).toEqual(
+      CANONICAL_INCIDENT_SCENARIOS.map(({ id, incident, title }) => ({ id, incident, title })),
+    );
     expect(CanonicalEvaluationSuiteSchema.safeParse(canonicalEvaluationCases).success).toBe(true);
     expect(Object.isFrozen(canonicalEvaluationCases)).toBe(true);
     expect(Object.isFrozen(canonicalEvaluationCases[0]?.expected)).toBe(true);

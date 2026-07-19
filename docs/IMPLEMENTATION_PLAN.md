@@ -2141,6 +2141,191 @@ Deliver the incident input, scenario selector, progress, root-cause summary, evi
 and recommended actions. Use Stitch only as optional design assistance under
 `docs/FRONTEND_WORKFLOW.md`.
 
+### Slice 5.1 — Canonical scenario selector and guided demo intake
+
+Status: local Level C, the single combined browser gate, and the pre-commit final audit passed on
+`codex/phase-5-1-scenario-demo` from exact Phase 4 integration checkpoint
+`19bb0d3a57e47340c8bf78928d9574892bf0e45a`, whose exact parent is Slice 4.1
+`319a0755e566ee2011e73a386e6c77c1546ede48`. Commit, publication, final-HEAD CI, and
+merge-readiness evidence are pending.
+
+Objective: add one compact, accessible guided-demo selector to the existing incident intake so a user
+can choose exactly one of the seven canonical incident scenarios, receive a validated editable prefill,
+submit through the unchanged investigation path, and continue through the existing progress -> factual
+context -> suspicious changes -> scored hypothesis -> remediation/safe fallback -> full canonical
+report. This is an intake aid, not an evaluation-runner UI or a report redesign.
+
+Minimum files:
+
+- `packages/shared-types/src/index.ts` for bounded browser-safe canonical scenario IDs, order, labels,
+  descriptions, and existing `IncidentRequest` prefill fields. The catalog is validated once and shared
+  by evaluation and web so canonical IDs/order/intake cannot diverge.
+- `packages/evaluation/src/index.ts` and its focused regression only to derive the existing seven case
+  IDs/order/intake from that shared catalog while retaining evaluation-only expected facts, references,
+  fake observations, metrics, JSON, and Markdown inside the evaluation package.
+- `apps/web/src/App.tsx` and `apps/web/src/styles.css` for stable selected/custom state, editable prefill,
+  accessible keyboard/screen-reader behavior, clear default/custom semantics, and responsive layout.
+- `tests/integration/contracts.test.ts`, `tests/integration/evaluation.test.ts`, a focused web scenario
+  intake test, and directly affected incident/report regressions for exact catalog order, prefill/edit/
+  custom/manual behavior, accessibility, stale ownership, and unchanged full-report handoff.
+- `tests/e2e/report-display.spec.mjs` for exactly one final combined browser flow after Level C.
+- `docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md`, and `docs/SESSION_LOG.md` for durable state.
+
+Acceptance criteria:
+
+- One validated catalog contains exactly these stable IDs in this order: `removed-schema-column`,
+  `stale-pipeline`, `upstream-type-change`, `wrong-dashboard-dataset`, `delayed-ingestion`,
+  `incorrect-owner-or-domain`, and `insufficient-evidence`. Evaluation and web consume the same bounded
+  catalog; evaluation-only expected facts and fake observations do not enter the browser bundle.
+- Every scenario exposes only a stable ID, concise demo-safe label/description, and fields already
+  accepted by `IncidentRequestSchema`. Selecting a scenario replaces the four intake fields with a
+  schema-valid prefill; the user may edit any field before submit, and submission sends exactly the
+  current validated form values rather than a hidden scenario payload.
+- Initial state is explicit manual/custom input with no hidden scenario. A selected scenario remains
+  stable while its untouched prefill is displayed; editing a prefilled field moves the form to an
+  explicit custom state without erasing the edit. Resetting or choosing another scenario has one clear,
+  tested result, and request success/failure does not silently change selected/custom state.
+- The selector has a programmatic group label, every choice has an accessible name and selected state,
+  keyboard operation follows native controls, help/status copy is screen-reader available, and the
+  controls do not overflow at the existing desktop or mobile viewports.
+- Existing latest-request ownership remains authoritative: an older poll/response cannot overwrite a
+  newer scenario or manual submission. Manual intake, client/API validation, HTTP lifecycle, provider-
+  neutral fixture/DataHub contracts, evaluation JSON/Markdown, canonical report, evidence references,
+  caps/order/dedup, safe errors, and the full report remain compatible.
+- Fixture mode is deterministic and credential-free. DataHub mode keeps existing contracts and no code
+  in this slice reads or writes a credential. No provider/model/LLM/network call, new hypothesis formula,
+  causal claim, automatic mutation, persistence, authentication, deployment, or rate limiting is added.
+- Focused tests cover exactly seven IDs/order, catalog-to-evaluation identity, every validated prefill,
+  editable/custom/manual/reset behavior, accessible semantics, stale-response ownership, and the
+  existing complete report handoff. One coherent Level C passes before one combined browser flow proves
+  scenario selection -> editable prefill -> submit -> full canonical chain/report in under three
+  minutes with keyboard/accessibility checks, clean console, responsive overflow, dynamic ports, and
+  owned-process cleanup.
+
+Deferred: evaluation runner UI; broad evidence-timeline, lineage, or report redesign; additional
+scenarios or fixture/provider facts; live DataHub smoke when no new authorization is available; Stitch;
+provider/model judging; statistical timing; persistence; authentication; deployment; rate limiting;
+automatic execution or external mutation; Level D; Phase 6; and all later Phase 5 slices.
+
+Exact Level C commands, run once after source, tests, and docs form one coherent input (rerun only a
+classified affected failure):
+
+- `pnpm exec prettier --write packages/shared-types/src/index.ts packages/evaluation/src/index.ts apps/web/src/App.tsx apps/web/src/styles.css tests/integration/contracts.test.ts tests/integration/evaluation.test.ts tests/integration/web-scenario-intake.test.ts tests/integration/incidents-api.test.ts tests/integration/web-report.test.ts tests/e2e/report-display.spec.mjs docs/IMPLEMENTATION_PLAN.md docs/KNOWN_ISSUES.md docs/SESSION_LOG.md`
+- `pnpm exec prettier --check packages/shared-types/src/index.ts packages/evaluation/src/index.ts apps/web/src/App.tsx apps/web/src/styles.css tests/integration/contracts.test.ts tests/integration/evaluation.test.ts tests/integration/web-scenario-intake.test.ts tests/integration/incidents-api.test.ts tests/integration/web-report.test.ts tests/e2e/report-display.spec.mjs docs/IMPLEMENTATION_PLAN.md docs/KNOWN_ISSUES.md docs/SESSION_LOG.md`
+- `pnpm exec eslint packages/shared-types/src packages/evaluation/src apps/web/src tests/integration/contracts.test.ts tests/integration/evaluation.test.ts tests/integration/web-scenario-intake.test.ts tests/integration/incidents-api.test.ts tests/integration/web-report.test.ts tests/e2e/report-display.spec.mjs`
+- `pnpm --filter @dii/shared-types typecheck`
+- `pnpm --filter @dii/datahub-client typecheck`
+- `pnpm --filter @dii/agent-core typecheck`
+- `pnpm --filter @dii/evaluation typecheck`
+- `pnpm --filter @dii/api typecheck`
+- `pnpm --filter @dii/web typecheck`
+- `pnpm exec vitest run tests/integration/contracts.test.ts tests/integration/evaluation.test.ts tests/integration/web-scenario-intake.test.ts tests/integration/incidents-api.test.ts tests/integration/web-report.test.ts`
+- `pnpm --filter @dii/shared-types --filter @dii/datahub-client --filter @dii/agent-core --filter @dii/evaluation --filter @dii/api --filter @dii/web build`
+- After Level C, exactly one `pnpm test:e2e:report` run proving scenario selection -> editable prefill ->
+  submit -> context -> suspicious changes -> exact scored inference -> remediation/fallback -> full
+  report, with native keyboard operation, semantic accessibility, clean console, desktop/mobile
+  overflow protection, the three-minute bound, selected-port release, and launcher cleanup.
+- `git diff --check`, tracked/untracked secret/conflict/debug/raw-provider/model/generated-artifact scans,
+  full scoped diff/name/stat review, manifest/lockfile/dependency review, exact branch/base/ancestry review,
+  and final worktree review before one conventional commit.
+
+Level C and browser result on the Windows managed worktree, 2026-07-19:
+
+- The required tracked bootstrap first installed the frozen 259-package workspace and passed the
+  supply-chain check, then reproduced the known fallback-pnpm root-Prettier resolution limitation.
+  Prepending the verified bundled Node and root `.bin` paths only to the recovery process completed
+  bootstrap with Node `v24.14.0`, pnpm `11.9.0`, Prettier `3.9.5`, and an up-to-date install in `643ms`.
+  No bootstrap, dependency, manifest, lockfile, or generated-store file changed.
+- Changed-file Prettier write/check passed in `8.466s`/`6.752s`; affected ESLint passed in `80.170s`.
+  All six affected typechecks passed: shared-types `14.571s`, datahub-client `2.982s`, agent-core
+  `2.923s`, evaluation `2.881s`, API `4.972s`, and web `10.807s`.
+- The one sandboxed focused Vitest command stopped before collection after `10.023s` on the known
+  esbuild ancestor-directory `Access is denied` restriction. The exact scoped recovery passed 5/5
+  files and 40/40 tests in `14.22s` Vitest time (`16.165s` wall), including 17 shared contracts, seven
+  evaluation tests, four guided-intake tests, 11 incident API tests, and the full-report regression.
+  No implementation or test failure was present, and no green step was rerun.
+- The not-yet-started six-package build command ran once with scoped access and passed all 6/6 builds
+  in `28.476s`; the web build transformed 109 modules and completed in `4.71s`.
+- After Level C, exactly one combined fixture browser flow ran through the browser runtime required by
+  the available Browser skill, using the repository's dynamic-port and owned-process launcher helpers
+  rather than a second standalone Playwright process. It passed in `119127ms` on API/web ports
+  `61984`/`61985`: native single selection from manual to `removed-schema-column`, exact four-field
+  prefill, editable symptom, explicit custom provenance, submit, visible four-stage processing,
+  completed factual context, exact suspicious change, `0.85` scored inference, two resolved
+  `not_executed` recommendations, and the full canonical report.
+- The browser audit found exactly seven canonical scenario options plus manual by default; all seven
+  scored/remediation fragment references resolved, console warnings/errors were `0`, desktop
+  scroll/client width was `1265/1265`, and mobile was `375/375`. Keyboard focus reached the scored
+  evidence link, semantic headings/labels/status regions were present, and the three-minute bound passed.
+  Cleanup terminated only the exact temporary launcher tree; both ports rebound successfully, launcher
+  process count was `0`, the temporary file was deleted, the viewport override was reset, and the browser
+  tab was finalized.
+- The read-only pre-commit audit found exactly 11 intended paths: 10 tracked modifications and one new
+  focused test, with zero unexpected or missing paths. `git diff --check`, exact HEAD/parent/base ancestry,
+  full tracked/untracked scope, manifest/lockfile/dependency and out-of-scope runtime checks, plus
+  high-risk secret/conflict/debug/raw-provider/model and temporary/generated-artifact sentinels all passed.
+  No package manifest, lockfile, dependency, API/provider/fixture/report-formula, or repository-map path
+  changed; the temporary browser launcher was absent.
+
+Exact next step: format/check the final persistent documents, create one conventional commit, push
+normally, open one stacked Draft PR based on
+`codex/phase-4-integration-checkpoint`, follow exact final-HEAD CI to terminal, verify conflict-free/
+merge-ready, and stop. Do not merge the PR, create another task, begin Slice 5.2, or begin Phase 6.
+
+#### Targeted cross-platform browser defect — macOS native select
+
+Objective: fix only the Slice 5.1 canonical browser test assumption exposed by Mac QA at exact head
+`78a8fcde7a2f31e782a240a67e2bfe6b901f2333`. Bootstrap, 3 targeted files/28 tests, and the web build
+passed; the one canonical browser gate failed before submit because a focused native `<select>` did not
+change from `manual` after one bare `ArrowDown` in macOS Chromium.
+
+Classification and minimum files: this is a cross-platform E2E test defect, not a product accessibility
+defect. The controlled native selector retains its programmatic label, focusability, exact options,
+selected value, and standard `onChange` contract. Exact diff against checkpoint commit
+`160aa0da22a8e104907cf58b034b701da39bd939` changes only a later stale context-question assertion and
+does not fix selection. Change only `tests/e2e/report-display.spec.mjs` to assert focus explicitly and
+use Playwright's native `selectOption` action for a deterministic cross-platform change event. Update
+only this plan, `docs/KNOWN_ISSUES.md`, and the latest `docs/SESSION_LOG.md` entry for durable evidence.
+
+Acceptance: the scenario selector is found through its accessible label, receives focus, selects exact
+`removed-schema-column`, renders the canonical editable prefill, and completes the unchanged full
+report flow. Product source, canonical facts, API/provider/model behavior, dependencies, manifests,
+lockfile, and prior green test/build inputs remain byte-identical.
+
+Validation commands, once on the coherent final input:
+
+- `pnpm exec prettier --write tests/e2e/report-display.spec.mjs docs/IMPLEMENTATION_PLAN.md docs/KNOWN_ISSUES.md docs/SESSION_LOG.md`
+- `pnpm exec prettier --check tests/e2e/report-display.spec.mjs docs/IMPLEMENTATION_PLAN.md docs/KNOWN_ISSUES.md docs/SESSION_LOG.md`
+- `pnpm exec eslint tests/e2e/report-display.spec.mjs`
+- exactly one `pnpm test:e2e:report`
+- final changed-path, diff, secret/conflict/debug/generated, manifest/lockfile/dependency, branch/base,
+  worktree, and process/port audit before one conventional fix commit
+
+Deferred: Mac reruns only the canonical browser gate on the exact new head. Do not rerun bootstrap,
+the already-green 3 targeted files/28 tests, web build, Level C, or any unrelated browser/test gate.
+
+Validation result on Windows, 2026-07-19:
+
+- Changed-file Prettier write/check passed in `4.982s`/`2.420s`. The initial 30-second wrapper expired
+  only while ESLint was still running; exact ESLint recovery passed in `20.859s`, without rerunning the
+  green formatter steps.
+- The first canonical E2E invocation selected the scenario, rendered the prefill, and submitted, proving
+  the macOS selection blocker was removed. It then failed after `33.680s` on the exact stale context
+  question covered by PR #32's one-line test diff. Applying only that line changed the expected text to
+  `Why did revenue drop after the morning warehouse refresh?`; no checkpoint/docs were cherry-picked.
+- On the coherent final test input, affected Prettier check and ESLint passed in `1.241s`/`3.466s`. The
+  classified affected E2E retry passed in `6867ms` (`13.225s` wall) on API/web ports `57888`/`57889`,
+  completing the full canonical report flow. No product, dependency, manifest, lockfile, targeted-test,
+  build, or Level C input changed.
+- Pre-commit audit passed for exactly the intended E2E plus three persistent docs: zero unexpected,
+  missing, untracked, product-runtime, manifest/lockfile, generated, secret, conflict, or debug/raw-model
+  path/finding. Both failed-run ports `64117`/`64118` and final-run ports `57888`/`57889` rebound cleanly.
+
+Exact next step: update final evidence docs, format/check them, audit the intended test/docs-only diff and
+runtime cleanup, create one conventional fix commit, push normally to PR #31, follow only the exact
+new-head CI to terminal, retain Draft/main/conflict-free state, and stop before merge for Mac browser-only
+rerun.
+
 ## Phase 6 — Minimum production readiness
 
 Input/request limits, sanitized logs, timeouts, limited retries, secret checks, rate limiting, and public

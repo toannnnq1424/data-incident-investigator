@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   ApiErrorSchema,
+  CANONICAL_INCIDENT_SCENARIOS,
+  CANONICAL_INCIDENT_SCENARIO_IDS,
+  CanonicalIncidentScenarioCatalogSchema,
+  CanonicalIncidentScenarioSchema,
   HYPOTHESIS_SCORE_FACTOR_LABELS,
   HYPOTHESIS_SCORE_FACTOR_WEIGHTS,
   HypothesisScoringResultSchema,
@@ -35,6 +39,26 @@ describe('shared investigation contracts', () => {
     });
 
     expect(result.success).toBe(true);
+  });
+
+  it('owns the strict ordered browser-safe canonical scenario catalog', () => {
+    expect(CANONICAL_INCIDENT_SCENARIOS.map((scenario) => scenario.id)).toEqual(
+      CANONICAL_INCIDENT_SCENARIO_IDS,
+    );
+    expect(CANONICAL_INCIDENT_SCENARIOS).toHaveLength(7);
+    expect(
+      CanonicalIncidentScenarioCatalogSchema.safeParse(CANONICAL_INCIDENT_SCENARIOS).success,
+    ).toBe(true);
+    expect(
+      CanonicalIncidentScenarioSchema.safeParse({
+        ...CANONICAL_INCIDENT_SCENARIOS[0],
+        expectedRootCause: 'not browser safe',
+      }).success,
+    ).toBe(false);
+
+    const wrongOrder = structuredClone(CANONICAL_INCIDENT_SCENARIOS);
+    [wrongOrder[0], wrongOrder[1]] = [wrongOrder[1]!, wrongOrder[0]!];
+    expect(CanonicalIncidentScenarioCatalogSchema.safeParse(wrongOrder).success).toBe(false);
   });
 
   it('accepts the incident processing response contract', () => {
