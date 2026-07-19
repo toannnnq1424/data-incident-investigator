@@ -1791,6 +1791,96 @@ Level C result:
 - Level D and live DataHub smoke were not run. The next task remains the separate Phase 3 integration
   checkpoint/Level D worktree after this stacked Draft PR and final-HEAD CI are green.
 
+### Phase 3 integration checkpoint — Level D closure
+
+Status: local Level D passed on `codex/phase-3-integration-checkpoint` from exact Slice 3.4 final HEAD
+`c316f8f1bed78dbfb4a56416e478860cd0338d84`, preserving feature commit
+`4fa01ef50c76f32b1ca5fc51391bab719a93568c` and the complete Slice 3.1–3.4 ancestry. Publication,
+final-HEAD CI, and merge-readiness verification are pending.
+
+Objective: close Phase 3 with one repository-level integration checkpoint proving the complete
+credential-free deterministic chain from parsed incident intent and factual metadata gathering through
+suspicious-change detection, evidence-linked hypothesis scoring, remediation/safe fallback, and the
+existing canonical report. This checkpoint adds no product capability and does not begin Phase 4.
+
+Minimum files:
+
+- `docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md`, and `docs/SESSION_LOG.md` for the planned gate,
+  exact local/CI evidence, deferred credential boundary, and final handoff.
+- No product source, test, browser blob, fixture, provider, manifest, lockfile, bootstrap, or repository-
+  map change unless a classified gate failure proves a genuine in-scope blocker.
+
+Acceptance criteria:
+
+- Shared context, suspicious-change, scored-hypothesis, remediation/fallback, and report schemas remain
+  strict and lifecycle-compatible. Every hypothesis/evidence/entity/change reference resolves to an
+  existing factual object; no dangling or invented reference crosses the boundary.
+- Deterministic gather call/timeout/lineage bounds, cycle safety, order/dedup, suspicious cap five,
+  scored-hypothesis cap three, exact four-factor 10,000-basis-point sum/clamp, and remediation cap five
+  with stable IDs remain enforced by the complete repository suite.
+- The canonical removed-column fixture proves normalized intent, candidate/selected entities, factual
+  lineage/change references and explicit missing information; exact suspicious change
+  `change-removed-gross-revenue`; rank-one plausible-contributor confidence `0.85` with transparent
+  factors; two resolved `not_executed` recommendations with verification/reversibility; and the full
+  evidence report.
+- Insufficient, unavailable, provider-error, and stale-response states remain typed and safe, disclose no
+  raw provider/model/credential payload, create no causal confirmation, and retain only allowlisted
+  credential-free fallback guidance.
+- Fixture and fake-DataHub gates run without credentials or live DataHub/Stitch. Detector, scorer, and
+  planner make zero provider/model/credential calls; no stage performs automatic execution or external
+  mutation. The UI continues to label hypotheses as plausible inferences and recommendations as not
+  executed.
+- Exactly one `pnpm validate` passes on coherent checkpoint inputs. After that pass, exactly one
+  `pnpm test:e2e:report` proves loading -> factual context -> suspicious changes -> scored inference ->
+  remediation/fallback -> completed full report under three minutes, with semantic accessibility,
+  keyboard links, desktop/mobile overflow, clean console, dynamic ports, and process cleanup.
+- Final secret/conflict/generated/debug/raw-provider/model-output, scope, ancestry, and clean-worktree
+  audits pass. A docs-first conventional checkpoint commit is pushed normally to one stacked Draft PR
+  based on `codex/phase-3-4-remediation-fallback`; its final-HEAD CI passes and the PR is conflict-free and
+  merge-ready.
+
+Deferred: live DataHub smoke remains credential-gated and is not a fixture/fake-provider blocker. Do
+not read, request, display, log, or use a credential in this checkpoint. Phase 4, evaluation expansion,
+generic controller/model integration, autonomous execution, external mutation, provider expansion,
+authentication, persistence, dependency changes, and UI redesign remain outside scope.
+
+Exact Level D commands, run once on coherent inputs with the documented process-scoped Windows runtime
+PATH workaround only:
+
+- `pnpm validate`
+- `pnpm test:e2e:report`
+
+Validation result on the Windows managed worktree, 2026-07-19:
+
+- The tracked bootstrap ran before repository work. Its first process completed the frozen 259-package
+  install and supply-chain verification, then reproduced the documented fallback-pnpm root-Prettier
+  resolution failure. Prepending the verified bundled Node, exact pnpm fallback, and root `.bin` paths
+  only to the next process completed bootstrap, resolved Prettier `3.9.5`, and passed the static check.
+  No bootstrap, manifest, lockfile, dependency, or generated-store file changed.
+- Exactly one `pnpm validate` passed in about `30.0s`: repository format and lint; all six buildable
+  workspace typechecks; 27/27 test files with 186/186 tests; all six production builds; and both API/web
+  artifact smoke targets. The web build transformed 109 modules and completed in `1.06s`.
+- After the core gate passed, exactly one `pnpm test:e2e:report` selected API
+  `http://127.0.0.1:60759` and web `http://127.0.0.1:60760`, then passed in `4730ms` (`10.613s` command
+  wall). It proved metadata tools -> completed context facts -> exact suspicious change -> ranked `0.85`
+  plausible contributor with all four factors and resolved evidence -> two resolved `not_executed`
+  recommendations with verification/reversibility -> completed full report. Semantic accessibility,
+  keyboard/reference links, clean console, desktop/mobile overflow, the three-minute bound, selected-
+  port release, and managed-process cleanup all passed.
+- Live DataHub smoke remains intentionally deferred without checking, reading, requesting, logging, or
+  using a credential. Fixture and fake-provider coverage is the checkpoint gate, and no Phase 4,
+  controller/model integration, autonomous execution, or external mutation was added.
+- During final audit, the stacked base branch advanced to two-parent merge commit
+  `2cd66fb90ec73e59cbf670f3ae625aa091d7da37`, whose first parent is the locked Slice 3.4 final HEAD and
+  whose second parent is integrated `main` `0ca33b94504dc2f2e74d422d463bb780421a0103`. The tree diff from
+  `c316f8f1bed78dbfb4a56416e478860cd0338d84` to `2cd66fb…` is empty, so all locally validated inputs are
+  byte-identical. The checkpoint branch remains based on the locked handoff without merge, rebase, or
+  rerunning green gates; the Draft PR still targets the required base branch name.
+
+After the gates, run changed-document formatting plus the required read-only diff, secret, conflict,
+generated-artifact, scope, ancestry, and worktree audits. Do not rerun a green Level D command while its
+inputs are unchanged.
+
 Slices: parse and gather; suspicious-change detection; evidence-linked hypothesis scoring; remediation
 and fallback. Completion requires fact/inference/missing-information separation and deterministic limits.
 

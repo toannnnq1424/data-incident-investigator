@@ -1806,3 +1806,72 @@ chỉ còn reviewed commit payload trước publication.
 Format/check CI-fix docs, chạy targeted final audit, commit/push test fix, theo dõi đúng final-HEAD CI run
 và xác minh Draft PR #18 vẫn conflict-free/merge-ready. Sau đó hand off task Project/worktree riêng cho
 Phase 3 integration checkpoint/Level D; không bắt đầu checkpoint đó trong Slice 3.4.
+
+## 2026-07-19 — Phase 3 integration checkpoint / Level D
+
+### Objective
+
+Đóng Phase 3 bằng một integration checkpoint trên exact Slice 3.4 final HEAD
+`c316f8f1bed78dbfb4a56416e478860cd0338d84`: chứng minh chuỗi parse/gather factual context → suspicious
+changes → evidence-linked scored hypotheses → remediation/safe fallback → canonical report hoàn chỉnh,
+deterministic, bounded, credential-free và audit được. Không bắt đầu Phase 4 hoặc thêm capability mới.
+
+### Completed
+
+Đã chạy tracked Windows bootstrap trước repository work, đọc đúng project memory bắt buộc, xác minh clean
+detached exact HEAD cùng ancestry Slice 3.1–3.4, kiểm tra local/worktree/remote collision và tạo branch duy
+nhất `codex/phase-3-integration-checkpoint`. Đã ghi persistent plan trước validation, inspect trực tiếp
+shared contract, pure detector/scorer/planner tests, API/web regressions và dynamic-port launcher. Existing
+coverage đủ acceptance nên checkpoint giữ docs-only; Level D core và browser gate đều PASS ngay lần chạy
+duy nhất trên coherent inputs. Trong final audit, branch nền tiến tới merge commit `2cd66fb…`; Git history
+và GitHub UI đều xác nhận parent đầu là locked `c316f8f…`, và tree diff giữa hai commit rỗng.
+
+### Files changed
+
+Chỉ `docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md` và entry `docs/SESSION_LOG.md` này. Không đổi
+product source, test/browser blob, fixture, provider, manifest, lockfile, bootstrap, dependency hoặc
+repository map.
+
+### Decisions
+
+Giữ nguyên strict shared lifecycles và deterministic caps: gather bounded/cycle-safe, suspicious cap 5,
+scored hypotheses cap 3 với exact 10.000 basis points, remediation cap 5 với stable IDs. Canonical `0.85`
+và hai `not_executed` recommendations là integration evidence; không tạo score/cause/reference/action mới.
+Live DataHub smoke được defer theo locked credential boundary mà không kiểm tra, đọc, yêu cầu, log hoặc dùng
+credential. Generic controller/model integration, autonomous execution, external mutation và Phase 4 vẫn
+ngoài scope. Base advance `2cd66fb…` content-identical không đổi gate input, nên giữ checkpoint từ locked
+handoff, không merge/rebase và không rerun lệnh xanh; stacked PR vẫn target đúng tên branch nền bắt buộc.
+
+### Validation performed
+
+- Bootstrap attempt đầu hoàn tất frozen 259-package install và supply-chain check nhưng dừng ở known
+  fallback-pnpm root-Prettier resolution. Workaround PATH process-scoped với verified bundled Node, exact
+  pnpm fallback và root `.bin` làm bootstrap PASS, Prettier `3.9.5`, không sửa repo tooling.
+- Đúng một `pnpm validate` PASS trong khoảng `30.0s`: format, lint, 6 typechecks, 27/27 files và 186/186
+  tests, 6 builds, 2 API/web smoke artifacts. Web build transform 109 modules trong `1.06s`.
+- Sau core PASS, đúng một `pnpm test:e2e:report` chọn API `60759`, web `60760` và PASS `4730ms`
+  (`10.613s` command wall): context facts → exact suspicious change → ranked `0.85` với bốn factors và
+  resolved evidence → hai resolved `not_executed` recommendations có verification/reversibility → full
+  report. Accessibility/keyboard links, clean console, desktop/mobile overflow, dưới ba phút, port release
+  và managed-process cleanup đều PASS.
+
+### Validation intentionally deferred
+
+Live credentialed DataHub smoke, Phase 4/evaluation, generic controller/model integration, autonomous
+execution, external mutation, provider expansion, authentication, persistence, dependency changes và UI
+redesign.
+
+### Known issues
+
+Managed Windows fallback-pnpm workspace-binary limitation vẫn cần PATH workaround chỉ trong process; đây
+không phải product/CI blocker. Host không có `gh` và GitHub connector không thấy private repository, nên
+authenticated in-app Browser được dùng để xác minh remote branch collision và sẽ dùng cho PR/CI metadata;
+không credential nào được đọc hoặc hiển thị. Git remote probe không tương tác đã bị dừng sạch cùng đúng cây
+process do checkpoint tạo.
+
+### Exact next step
+
+Format/check ba docs, chạy final diff/secret/conflict/generated/scope/ancestry/worktree audit, tạo một
+conventional docs checkpoint commit, push branch thường, mở stacked Draft PR base
+`codex/phase-3-4-remediation-fallback`, theo dõi đúng final-HEAD CI tới terminal và xác minh conflict-free/
+merge-ready. Sau handoff xanh thì dừng; không tạo task hoặc bắt đầu Phase 4.

@@ -2,6 +2,20 @@
 
 Last updated: 2026-07-19.
 
+- Phase 3 local integration closure passes on exact Slice 3.4 final HEAD `c316f8f` on branch
+  `codex/phase-3-integration-checkpoint`. Exactly one `pnpm validate` passed format/lint, six
+  typechecks, 27 files/186 tests, six builds, and two smoke artifacts in about `30.0s`. Exactly one
+  combined fixture browser flow passed in `4730ms` on dynamic API/web ports `60759`/`60760`, proving
+  factual context -> exact suspicious change -> ranked `0.85` plausible contributor with transparent
+  factors/resolved evidence -> two resolved `not_executed` recommendations with verification and
+  reversibility -> full report, plus accessibility/keyboard links, clean console/overflow, and clean
+  port/process teardown. The initial bootstrap process reproduced the existing fallback-pnpm
+  root-Prettier resolution limitation after a successful frozen install/supply-chain check; the
+  documented process-scoped bundled Node/pnpm/root-bin PATH completed bootstrap without a repository
+  change. Live DataHub smoke remains credential-gated and deferred without inspecting or using a
+  credential. The stacked base branch subsequently advanced to content-identical merge commit
+  `2cd66fb`; no validated input changed and no merge/rebase/gate rerun is needed. Publication,
+  final-HEAD CI, and Draft PR merge-readiness evidence remain pending.
 - Slice 3.4 remediation/fallback is implemented locally from exact Slice 3.3 final commit `3a1c5c7`.
   The pure deterministic planner consumes only validated context, exact scored hypotheses, and factual
   report evidence; supports bounded schema/pipeline/ownership/domain/tag human-review guidance; emits
