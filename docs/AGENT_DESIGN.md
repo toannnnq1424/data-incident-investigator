@@ -112,6 +112,31 @@ remain schema-compatible for upstream-unavailable/insufficient paths, but no new
 fabricated. Slice 3.3 does not build stage 8 evidence-chain prose, recommendations, remediation, or
 fallback reasoning.
 
+## Slice 3.4 remediation and safe-fallback boundary
+
+Slice 3.4 adds `DeterministicRemediationPlanner` after scored hypotheses and the factual report are
+complete. The planner is a synchronous pure function over validated context, the exact Slice 3.3
+scoring result, and report evidence. It has no adapter, provider, network, retry, model, LLM, credential,
+environment, clock, or mutation input. It neither deploys nor changes schema, reruns jobs, rolls back,
+sends messages, creates tickets, or performs any other external action.
+
+Recommendations are created only for scored changes in the bounded `schema`, `pipeline`, `ownership`,
+`domain`, or `tag` category allowlist. In hypothesis-rank order, each supported change yields a
+read-only `recommended_verification` followed by a manually reviewed `potential_remediation`. Priority
+is derived only from the Slice 3.3 rank (`high` for rank one, `medium` for rank two, `low` thereafter);
+the planner creates no new confidence. Stable IDs are `verify-{changeId}` and
+`remediate-{changeId}`. Exact hypothesis, evidence, entity, and change references must all resolve.
+Semantic duplicates are removed, order is deterministic, and output is capped at five recommendations.
+
+Every item remains `not_executed`, uses recommendation/potential language, includes a safe verification
+step and a reversibility note, and treats the scored hypothesis as a plausible contributor rather than
+a confirmed cause. Unsupported categories, incomplete report evidence, or unresolved references return
+`insufficient` with zero recommendations. Upstream failure returns provider-safe `unavailable` with
+zero recommendations. Both terminal fallbacks expose bounded allowlisted read-only diagnostics and a
+fixture-mode continuation step; they never invent a reference. The lifecycle is
+`planning | completed | insufficient | unavailable` and the runner/API integration preserves the
+existing stale-request guard and sanitized errors.
+
 ## Tool and provider rules
 
 - No invented URNs, owners, schemas, or pipelines.

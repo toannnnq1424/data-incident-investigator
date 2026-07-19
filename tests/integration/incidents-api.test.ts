@@ -87,6 +87,7 @@ describe('incident API', () => {
       contextStage: { status: 'gathering' },
       suspiciousChangeStage: { status: 'detecting' },
       hypothesisScoringStage: { status: 'scoring' },
+      remediationStage: { status: 'planning' },
     });
   });
 
@@ -152,6 +153,29 @@ describe('incident API', () => {
       throw new Error('Expected completed hypothesis scoring.');
     }
     expect(completed.report.hypotheses).toEqual(completed.hypothesisScoringStage.hypotheses);
+    expect(completed.remediationStage).toMatchObject({
+      status: 'completed',
+      recommendations: [
+        {
+          id: 'verify-change-removed-gross-revenue',
+          type: 'recommended_verification',
+          priority: 'high',
+          status: 'not_executed',
+          references: {
+            hypothesisIds: ['hypothesis-change-removed-gross-revenue'],
+            evidenceIds: ['change-removed-gross-revenue'],
+            entityUrns: ['urn:li:dataset:(urn:li:dataPlatform:snowflake,raw.orders,PROD)'],
+            changeIds: ['change-removed-gross-revenue'],
+          },
+        },
+        {
+          id: 'remediate-change-removed-gross-revenue',
+          type: 'potential_remediation',
+          priority: 'high',
+          status: 'not_executed',
+        },
+      ],
+    });
   });
 
   it('uses the same provider-neutral context contracts in DataHub mode', async () => {
@@ -237,6 +261,14 @@ describe('incident API', () => {
         expect.objectContaining({ code: 'suspicious_changes_insufficient' }),
       ]),
     });
+    expect(completed.remediationStage).toMatchObject({
+      status: 'insufficient',
+      recommendations: [],
+      missingInformation: [expect.objectContaining({ code: 'scored_hypotheses_insufficient' })],
+      nextSteps: expect.arrayContaining([
+        expect.objectContaining({ id: 'continue_fixture_mode', status: 'not_executed' }),
+      ]),
+    });
   });
 
   it('returns insufficient scoring when suspicious changes do not resolve to report evidence', async () => {
@@ -287,6 +319,11 @@ describe('incident API', () => {
       status: 'insufficient',
       hypotheses: [],
       missingInformation: [expect.objectContaining({ code: 'evidence_reference_unresolved' })],
+    });
+    expect(completed.remediationStage).toMatchObject({
+      status: 'insufficient',
+      recommendations: [],
+      missingInformation: [expect.objectContaining({ code: 'scored_hypotheses_insufficient' })],
     });
     expect(completed.report.hypotheses[0]?.id).toBe('legacy-metadata-hypothesis');
   });
@@ -343,6 +380,12 @@ describe('incident API', () => {
         message: 'Hypothesis scoring is unavailable because incident context did not complete.',
       },
     });
+    expect(completed.remediationStage).toMatchObject({
+      status: 'unavailable',
+      recommendations: [],
+      error: { code: 'CONTEXT_UNAVAILABLE' },
+      nextSteps: expect.arrayContaining([expect.objectContaining({ id: 'continue_fixture_mode' })]),
+    });
     expect(completed.report.hypotheses).toHaveLength(1);
   });
 
@@ -385,6 +428,11 @@ describe('incident API', () => {
           'Hypothesis scoring is unavailable because suspicious-change detection did not complete.',
       },
     });
+    expect(completed.remediationStage).toMatchObject({
+      status: 'unavailable',
+      recommendations: [],
+      error: { code: 'SCORING_UNAVAILABLE' },
+    });
     expect(completed.report.hypotheses).toHaveLength(1);
   });
 
@@ -422,7 +470,53 @@ describe('incident API', () => {
     expect(JSON.stringify(completed.hypothesisScoringStage)).not.toMatch(
       /provider\.invalid|secret|model/i,
     );
+    expect(completed.remediationStage).toMatchObject({
+      status: 'unavailable',
+      recommendations: [],
+      error: { code: 'SCORING_UNAVAILABLE' },
+    });
     expect(completed.report.hypotheses).toHaveLength(1);
+  });
+
+  it('normalizes remediation-planner validation failure without leaking or executing anything', async () => {
+    let plannerCalls = 0;
+    const server = buildServer({
+      logger: false,
+      remediationPlanner: {
+        plan() {
+          plannerCalls += 1;
+          throw new Error('raw provider/model https://provider.invalid secret-token deploy now');
+        },
+      },
+    });
+    servers.push(server);
+    const accepted = await server.inject({
+      method: 'POST',
+      url: '/incidents',
+      payload: IncidentRequestSchema.parse(canonicalIncident.request),
+    });
+
+    const completed = await waitForCompleted(
+      server,
+      accepted.json<{ incidentId: string }>().incidentId,
+    );
+
+    expect(plannerCalls).toBe(1);
+    expect(completed.remediationStage).toMatchObject({
+      status: 'unavailable',
+      recommendations: [],
+      error: {
+        code: 'PLANNING_INVALID',
+        message: 'Remediation planning could not validate the factual recommendation references.',
+      },
+      nextSteps: expect.arrayContaining([
+        expect.objectContaining({ id: 'continue_fixture_mode', status: 'not_executed' }),
+      ]),
+    });
+    expect(JSON.stringify(completed.remediationStage)).not.toMatch(
+      /provider\.invalid|secret|model|deploy now|stack/i,
+    );
+    expect(completed.report.hypotheses[0]?.confidence).toBe(0.85);
   });
 
   it('normalizes malformed provider context responses without leaking raw details', async () => {
@@ -456,6 +550,11 @@ describe('incident API', () => {
     expect(JSON.stringify(completed.contextStage)).not.toContain('urn:provider:invalid');
     expect(completed.hypothesisScoringStage).toMatchObject({
       status: 'unavailable',
+      error: { code: 'CONTEXT_UNAVAILABLE' },
+    });
+    expect(completed.remediationStage).toMatchObject({
+      status: 'unavailable',
+      recommendations: [],
       error: { code: 'CONTEXT_UNAVAILABLE' },
     });
   });

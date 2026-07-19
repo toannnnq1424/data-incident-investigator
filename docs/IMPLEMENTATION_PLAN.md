@@ -1647,6 +1647,143 @@ Validation result on the Windows managed worktree, 2026-07-19:
   modified tracked files plus two new focused integration tests; no unrelated or generated file is
   present. The worktree is intentionally dirty only with that reviewed commit payload.
 
+### Slice 3.4 — Remediation and safe fallback
+
+Status: Level C passed locally on `codex/phase-3-4-remediation-fallback` from exact Slice 3.3 final
+commit `3a1c5c763c2e4fcbee8796120ba4ca2096a75c25`.
+
+Objective: after factual context, suspicious-change detection, and evidence-linked hypothesis scoring,
+produce a pure, deterministic, bounded remediation/fallback stage for human review. Completed scoring
+may yield safe verification and potential-remediation recommendations linked only to existing
+hypothesis/evidence/entity/change facts. Insufficient or unavailable inputs yield explicit missing
+information and safe diagnostic next steps without inventing a cause, evidence, reference, or action.
+
+Minimum files:
+
+- `packages/shared-types/src/index.ts` and `tests/integration/contracts.test.ts` for a strict
+  `planning | completed | insufficient | unavailable` lifecycle, allowlisted recommendation type and
+  priority, stable IDs, hard caps of five recommendations/fallback steps, ordering/deduplication,
+  lifecycle combination, forbidden-field, and hypothesis/evidence/entity/change cross-reference
+  invariants.
+- `packages/agent-core/src/index.ts` and `tests/integration/remediation-planner.test.ts` for a pure
+  deterministic planner over validated completed context/scoring/report evidence, allowlisted factual
+  derivation rules, exact output, completed/insufficient/unavailable behavior, zero provider/model/
+  network/credential calls, and no mutation or automatic execution path.
+- `apps/api/src/index.ts` and `tests/integration/incidents-api.test.ts` for additive
+  `remediationStage` composition after scoring, safe typed errors, preserved stale ownership, no extra
+  adapter calls, and unchanged context/suspicious/scoring/report compatibility.
+- `apps/web/src/App.tsx`, `apps/web/src/styles.css`, and
+  `tests/integration/web-remediation-fallback.test.ts` for compact accessible planning/completed/
+  insufficient/unavailable rendering, exact links, verification/reversibility text, explicit
+  `not executed` semantics, keyboard navigation, and stale-response protection.
+- Existing scorer, runner, context, suspicious, report, and combined E2E tests for direct regressions,
+  canonical `0.85` inference, resolved references, one safe insufficient fixture, and exactly one final
+  metadata-to-remediation browser flow.
+- `docs/AGENT_DESIGN.md`, `docs/API_CONTRACTS.md`, `docs/DATA_MODEL.md`, this plan,
+  `docs/KNOWN_ISSUES.md`, and `docs/SESSION_LOG.md` for exact derivation rules, bounds, lifecycle,
+  validation evidence, deferred work, and the Phase 3 checkpoint handoff. `docs/REPOSITORY_MAP.md`
+  remains unchanged unless an entrypoint or directory moves.
+
+Acceptance criteria:
+
+- The planner accepts only validated terminal factual/scoring/report inputs and has no adapter,
+  provider, network, retry, model/LLM, Stitch, credential, environment, clock, mutation, deployment,
+  rollback, ticket, message, or job-execution dependency. Gathering/scoring, malformed, dangling, or
+  incomplete input never produces a recommendation.
+- Every completed recommendation has a stable unique ID, allowlisted type and priority, concise
+  human-review wording, rationale, one safe verification step, one rollback/reversibility note, an
+  explicit `not_executed` status, and unique exact references only to existing hypothesis, evidence,
+  entity, and change IDs. Unknown fields, duplicate IDs/references, invalid status combinations,
+  dangling references, causal overclaim, and more than five recommendations are rejected.
+- Recommendation derivation uses only allowlisted factual change categories/operations and the Slice
+  3.3 rank/score order. It does not create a second confidence, re-rank hypotheses, or claim a
+  confirmed root cause. Output order is deterministic by scored hypothesis rank, recommendation type
+  order, priority order, source ID, then recommendation ID; exact duplicates are removed before the
+  cap.
+- `insufficient` and `unavailable` contain zero recommendations and references. They expose unique
+  bounded missing information, at most five safe diagnostic/fallback next steps, a provider-neutral
+  safe message where applicable, and an explicit fixture-mode continuation step. No fallback step
+  mutates data, schema, deployment, pipeline, ticketing, or external systems.
+- The removed-column fixture preserves the exact ranked `0.85` inference and emits resolved manual
+  recommendations for schema verification and a reversible potential remediation. Every potentially
+  dangerous operation remains a review-only proposal with guardrail/reversibility text and is visibly
+  marked not executed.
+- Incident retrieval adds the remediation lifecycle after scoring without extra adapter calls or
+  changes to the accepted `202`, context, suspicious, scoring, or completed report shapes. Safe upstream
+  failure/insufficiency is normalized; stale responses cannot overwrite a newer request.
+- The web preserves the compact summary, ranked factors, evidence links, and full report while adding
+  semantic headings/lists for recommendation type/priority/status, rationale, linked facts,
+  verification, reversibility, and fallback. Loading, completed, insufficient, unavailable/error,
+  focus/accessibility, keyboard links, and responsive overflow are covered.
+- Targeted contracts/planner/API/web/regression tests, five affected typechecks and builds, and exactly
+  one final combined browser flow pass with fixture-only inputs, canonical `0.85`, resolved references,
+  safe fallback coverage, clean console/accessibility/overflow, under-three-minute duration, and clean
+  dynamic-port/process teardown.
+
+Deferred: evidence-chain narrative beyond bounded recommendation rationale, impact analysis, generic
+controller/model integration, autonomous execution, provider expansion, authentication, persistence,
+dependency changes, UI redesign, live DataHub smoke, Phase 3 integration closure, and Level D
+validation. The exact next task after a green Slice 3.4 PR/CI is a separate Phase 3 integration
+checkpoint/Level D worktree; it is not started here.
+
+Exact Level C commands (run once as one coherent sequence on final product/test inputs; rerun only a
+classified affected failure):
+
+- `pnpm exec prettier --write packages/shared-types/src/index.ts packages/agent-core/src/index.ts apps/api/src/index.ts apps/web/src/App.tsx apps/web/src/styles.css tests/integration/contracts.test.ts tests/integration/remediation-planner.test.ts tests/integration/hypothesis-scorer.test.ts tests/integration/suspicious-change-detector.test.ts tests/integration/incident-context-gatherer.test.ts tests/integration/investigation-runner.test.ts tests/integration/incidents-api.test.ts tests/integration/web-incident-context.test.ts tests/integration/web-suspicious-changes.test.ts tests/integration/web-hypothesis-scoring.test.ts tests/integration/web-remediation-fallback.test.ts tests/integration/web-report.test.ts tests/e2e/report-display.spec.mjs docs/AGENT_DESIGN.md docs/API_CONTRACTS.md docs/DATA_MODEL.md docs/IMPLEMENTATION_PLAN.md docs/KNOWN_ISSUES.md docs/SESSION_LOG.md`
+- `pnpm exec prettier --check packages/shared-types/src/index.ts packages/agent-core/src/index.ts apps/api/src/index.ts apps/web/src/App.tsx apps/web/src/styles.css tests/integration/contracts.test.ts tests/integration/remediation-planner.test.ts tests/integration/hypothesis-scorer.test.ts tests/integration/suspicious-change-detector.test.ts tests/integration/incident-context-gatherer.test.ts tests/integration/investigation-runner.test.ts tests/integration/incidents-api.test.ts tests/integration/web-incident-context.test.ts tests/integration/web-suspicious-changes.test.ts tests/integration/web-hypothesis-scoring.test.ts tests/integration/web-remediation-fallback.test.ts tests/integration/web-report.test.ts tests/e2e/report-display.spec.mjs docs/AGENT_DESIGN.md docs/API_CONTRACTS.md docs/DATA_MODEL.md docs/IMPLEMENTATION_PLAN.md docs/KNOWN_ISSUES.md docs/SESSION_LOG.md`
+- `pnpm exec eslint packages/shared-types/src packages/agent-core/src apps/api/src apps/web/src tests/integration/contracts.test.ts tests/integration/remediation-planner.test.ts tests/integration/hypothesis-scorer.test.ts tests/integration/suspicious-change-detector.test.ts tests/integration/incident-context-gatherer.test.ts tests/integration/investigation-runner.test.ts tests/integration/incidents-api.test.ts tests/integration/web-incident-context.test.ts tests/integration/web-suspicious-changes.test.ts tests/integration/web-hypothesis-scoring.test.ts tests/integration/web-remediation-fallback.test.ts tests/integration/web-report.test.ts tests/e2e/report-display.spec.mjs`
+- `pnpm --filter @dii/shared-types typecheck`
+- `pnpm --filter @dii/datahub-client typecheck`
+- `pnpm --filter @dii/agent-core typecheck`
+- `pnpm --filter @dii/api typecheck`
+- `pnpm --filter @dii/web typecheck`
+- `pnpm exec vitest run tests/integration/contracts.test.ts tests/integration/fixture-adapter.test.ts tests/integration/incident-context-gatherer.test.ts tests/integration/suspicious-change-detector.test.ts tests/integration/hypothesis-scorer.test.ts tests/integration/remediation-planner.test.ts tests/integration/investigation-runner.test.ts tests/integration/incidents-api.test.ts tests/integration/web-incident-context.test.ts tests/integration/web-suspicious-changes.test.ts tests/integration/web-hypothesis-scoring.test.ts tests/integration/web-remediation-fallback.test.ts tests/integration/web-report.test.ts`
+- `pnpm --filter @dii/shared-types --filter @dii/datahub-client --filter @dii/agent-core --filter @dii/api --filter @dii/web build`
+- Exactly one final `pnpm test:e2e:report` run proving fixture metadata tools -> completed context facts
+  -> suspicious candidates -> exact `0.85` scored inference -> remediation/fallback lifecycle with
+  resolved references and `not executed` semantics -> completed full report, plus focus/accessibility,
+  clean console, desktop/mobile overflow, three-minute duration, selected-port release, and launcher
+  cleanup.
+- `git diff --check`, tracked-plus-untracked secret/conflict/causal/debug/raw-provider/model/generated-
+  artifact scans, changed-file and full scoped diff review, `git diff --stat`,
+  `git diff --name-status`, manifest/lockfile and exact ancestry/base review, and
+  `git status --short --branch` before the single conventional commit; only final status is repeated
+  after commit/push.
+
+Level C result:
+
+- Tracked bootstrap PASS with the existing process-scoped execution-policy/root-bin workaround and no
+  bootstrap, manifest, lockfile, dependency, or generated-store change. The first formatting launcher
+  stopped before Prettier because `node` was absent from the inherited PATH; loading the verified
+  Codex-bundled Node/pnpm runtime resolved this environment-only blocker.
+- Final-input Prettier write/check PASS. Affected ESLint first found one unused type-only import in the
+  new planner test; that test-only issue was removed and its targeted format/check/lint retry passed.
+  Five affected typechecks passed; after the shared causal matcher changed, all five dependent
+  typechecks passed again.
+- The first 13-file Vitest run executed 72 tests and exposed one product-contract false positive: the
+  causal filter rejected the required explicit negation `not a confirmed cause`, producing 6 failures
+  while 66 tests passed. The matcher now strips only that safe negation before checking asserted causal
+  phrases. The affected combined suite then passed 13/13 files and 72/72 tests in `3.90s`, covering
+  lifecycle strictness, caps/order/dedup, allowlisted categories, exact references, deterministic pure
+  output, fallbacks, safe errors, stale ownership, zero provider/model/credential work, and report/
+  context/suspicious/scoring regressions.
+- All five production builds passed; web transformed 109 modules and Vite built in `1.19s`.
+- Exactly one final browser flow passed in `7255ms` on dynamic API/web ports `61164`/`61165`: submit ->
+  completed context -> suspicious change -> exact `0.85` ranked hypothesis -> two resolved
+  `not_executed` schema recommendations -> full report. The test verified linked references,
+  verification/reversibility text, no causal overclaim, semantic accessibility, clean console,
+  desktop/mobile overflow, under-three-minute duration, selected-port release, and launcher cleanup.
+- Final security review found that the planner test itself read `process.env.DATAHUB_TOKEN` only to
+  compare before/after state. Both reads were removed to honor the no-credential-read boundary; the
+  test now checks the planner has no environment state, and its affected format/check/lint plus 4/4
+  tests passed. No product input changed, so green builds/browser gates were not rerun.
+- Final review passed for 17 intended files (15 modified and two new focused tests): full scoped patch,
+  `git diff --check`, secret/conflict/unsafe-output/generated-artifact scans, no manifest/lock/bootstrap/
+  fixture/provider/dependency change, exact branch/base/ancestry, and no command/listener owned by this
+  worktree. The worktree contains only the reviewed commit payload before publication.
+- Level D and live DataHub smoke were not run. The next task remains the separate Phase 3 integration
+  checkpoint/Level D worktree after this stacked Draft PR and final-HEAD CI are green.
+
 Slices: parse and gather; suspicious-change detection; evidence-linked hypothesis scoring; remediation
 and fallback. Completion requires fact/inference/missing-information separation and deterministic limits.
 

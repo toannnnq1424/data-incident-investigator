@@ -18,8 +18,11 @@ import {
   HYPOTHESIS_SCORE_FACTOR_WEIGHTS,
   HYPOTHESIS_SCORING_MAX_HYPOTHESES,
   HypothesisScoringResultSchema,
+  HypothesisScoringStageSchema,
   IncidentContextCompletedStageSchema,
+  IncidentContextStageSchema,
   IncidentHypothesisScoringSchema,
+  IncidentRemediationPlanningSchema,
   IncidentSuspiciousChangeDetectionSchema,
   IncidentIntentSchema,
   IncidentRequestSchema,
@@ -32,12 +35,17 @@ import {
   MetadataHealthResponseSchema,
   MetadataLineageResponseSchema,
   MetadataRecentChangesResponseSchema,
+  REMEDIATION_FALLBACK_STEP_TEXT,
+  REMEDIATION_MAX_RECOMMENDATIONS,
+  REMEDIATION_SUPPORTED_CHANGE_CATEGORIES,
+  RemediationPlanningStageSchema,
   SUSPICIOUS_CHANGE_MAX_CANDIDATES,
   SUSPICIOUS_CHANGE_SIGNAL_LABELS,
   SUSPICIOUS_CHANGE_SIGNAL_ORDER,
   SUSPICIOUS_CHANGE_SIGNAL_WEIGHTS,
   type Evidence,
   type IncidentContextCompletedStage,
+  type IncidentContextStage,
   type IncidentContextMissingInformation,
   type IncidentIntent,
   type IncidentRequest,
@@ -45,8 +53,13 @@ import {
   type HypothesisScoreFactor,
   type HypothesisScoringMissingInformation,
   type HypothesisScoringResult,
+  type HypothesisScoringStage,
   type MetadataRecentChangeCategory,
   type MetadataSourceMode,
+  type RemediationFallbackStep,
+  type RemediationMissingInformation,
+  type RemediationPlanningStage,
+  type RemediationRecommendation,
   type SuspiciousChangeCandidate,
   type SuspiciousChangeDetectionResult,
   type SuspiciousChangeMissingInformation,
@@ -821,6 +834,302 @@ export class DeterministicHypothesisScorer implements HypothesisScorer {
       contextStage: parsedContext,
       suspiciousChangeResult: validatedDetection,
       evidence: parsedEvidence,
+      result,
+    }).result;
+  }
+}
+
+export interface RemediationPlanner {
+  plan(
+    contextStage: IncidentContextStage,
+    hypothesisScoringStage: HypothesisScoringStage,
+    report?: InvestigationReport,
+  ): RemediationPlanningStage;
+}
+
+type RemediationFallbackStepId = keyof typeof REMEDIATION_FALLBACK_STEP_TEXT;
+type RemediationChange =
+  IncidentContextCompletedStage['facts']['recentChanges'][number]['changes'][number];
+
+const remediationChangeCategories = new Set<MetadataRecentChangeCategory>([
+  ...REMEDIATION_SUPPORTED_CHANGE_CATEGORIES,
+]);
+
+function remediationFallbackStep(id: RemediationFallbackStepId): RemediationFallbackStep {
+  return {
+    id,
+    kind: id === 'continue_fixture_mode' ? 'fixture_continuation' : 'safe_diagnostic',
+    status: 'not_executed',
+    description: REMEDIATION_FALLBACK_STEP_TEXT[id],
+  };
+}
+
+function remediationFallbackSteps(includeProviderReview = false) {
+  const stepIds: RemediationFallbackStepId[] = includeProviderReview
+    ? ['review_provider_availability', 'collect_runtime_records', 'continue_fixture_mode']
+    : [
+        'inspect_scored_evidence',
+        'collect_runtime_records',
+        'verify_metadata_history',
+        'continue_fixture_mode',
+      ];
+  return stepIds.map(remediationFallbackStep);
+}
+
+function insufficientRemediation(
+  missingInformation: RemediationMissingInformation[],
+): RemediationPlanningStage {
+  return RemediationPlanningStageSchema.parse({
+    status: 'insufficient',
+    recommendations: [],
+    missingInformation,
+    nextSteps: remediationFallbackSteps(),
+  });
+}
+
+function unavailableRemediation(
+  code: 'CONTEXT_UNAVAILABLE' | 'SCORING_UNAVAILABLE',
+  message: string,
+): RemediationPlanningStage {
+  return RemediationPlanningStageSchema.parse({
+    status: 'unavailable',
+    recommendations: [],
+    missingInformation: [
+      {
+        code: 'scoring_unavailable',
+        message: 'Validated scored hypotheses are unavailable for safe remediation planning.',
+      },
+    ],
+    nextSteps: remediationFallbackSteps(true),
+    error: { code, message },
+  });
+}
+
+function remediationPriority(rank: number): RemediationRecommendation['priority'] {
+  return rank === 1 ? 'high' : rank === 2 ? 'medium' : 'low';
+}
+
+function remediationCopy(
+  change: RemediationChange,
+  entityName: string,
+): Pick<
+  RemediationRecommendation,
+  'title' | 'rationale' | 'verificationStep' | 'reversibilityNote'
+>[] {
+  const rationale = `The rank-linked ${change.operation} ${change.category} fact on ${entityName} is cited by exact evidence ${change.id}; it supports human review of a plausible contributor, not a confirmed cause.`;
+  if (change.category === 'schema') {
+    return [
+      {
+        title: 'Recommended verification: confirm the observed schema change',
+        rationale,
+        verificationStep:
+          'Verify the current schema contract and downstream field usage against the cited change evidence in a read-only review.',
+        reversibilityNote: 'Read-only verification makes no change, so no rollback is required.',
+      },
+      {
+        title: 'Potential remediation: prepare a reversible schema compatibility change',
+        rationale,
+        verificationStep:
+          'Verify in a non-production review that the proposed compatibility change preserves downstream consumers before approval.',
+        reversibilityNote:
+          'Do not apply automatically; require a versioned backup and a reviewed rollback to the prior schema contract.',
+      },
+    ];
+  }
+  if (change.category === 'pipeline') {
+    return [
+      {
+        title: 'Recommended verification: inspect the observed pipeline state',
+        rationale,
+        verificationStep:
+          'Verify scheduler state, bounded job logs, dependency readiness, and output freshness without rerunning the job.',
+        reversibilityNote: 'Read-only verification makes no change, so no rollback is required.',
+      },
+      {
+        title: 'Potential remediation: prepare a manually reviewed pipeline recovery plan',
+        rationale,
+        verificationStep:
+          'Verify input freshness, dependency health, and an idempotent dry-run plan before any job rerun is approved.',
+        reversibilityNote:
+          'Do not rerun automatically; retain last-known-good outputs and a reviewed restoration path before approval.',
+      },
+    ];
+  }
+
+  const metadataLabel =
+    change.category === 'ownership' ? 'ownership' : change.category === 'domain' ? 'domain' : 'tag';
+  return [
+    {
+      title: `Recommended verification: confirm the observed ${metadataLabel} metadata`,
+      rationale,
+      verificationStep:
+        'Verify the current metadata assignment, its audit history, and the intended steward or policy in read-only views.',
+      reversibilityNote: 'Read-only verification makes no change, so no rollback is required.',
+    },
+    {
+      title: `Potential remediation: prepare a reversible ${metadataLabel} metadata correction`,
+      rationale,
+      verificationStep:
+        'Verify the proposed metadata value with the responsible human owner before any correction is approved.',
+      reversibilityNote:
+        'Do not apply automatically; record the current value and require a reviewed restoration path before approval.',
+    },
+  ];
+}
+
+export class DeterministicRemediationPlanner implements RemediationPlanner {
+  plan(
+    contextStage: IncidentContextStage,
+    hypothesisScoringStage: HypothesisScoringStage,
+    report?: InvestigationReport,
+  ): RemediationPlanningStage {
+    const parsedContext = IncidentContextStageSchema.parse(contextStage);
+    const parsedScoring = HypothesisScoringStageSchema.parse(hypothesisScoringStage);
+
+    if (parsedContext.status === 'gathering' || parsedScoring.status === 'scoring') {
+      return RemediationPlanningStageSchema.parse({ status: 'planning' });
+    }
+    if (parsedContext.status === 'failed') {
+      return unavailableRemediation(
+        'CONTEXT_UNAVAILABLE',
+        'Remediation planning is unavailable because incident context did not complete.',
+      );
+    }
+    if (parsedScoring.status === 'unavailable') {
+      return unavailableRemediation(
+        'SCORING_UNAVAILABLE',
+        'Remediation planning is unavailable because scored hypotheses did not complete.',
+      );
+    }
+    if (parsedScoring.status === 'insufficient') {
+      return insufficientRemediation([
+        {
+          code: 'scored_hypotheses_insufficient',
+          message:
+            'Scored hypotheses are insufficient, so no evidence-linked remediation recommendation was created.',
+        },
+      ]);
+    }
+    if (!report) {
+      return insufficientRemediation([
+        {
+          code: 'report_evidence_incomplete',
+          message:
+            'The factual report and evidence catalog are incomplete for remediation planning.',
+        },
+      ]);
+    }
+
+    const parsedReport = InvestigationReportSchema.parse(report);
+    if (JSON.stringify(parsedReport.hypotheses) !== JSON.stringify(parsedScoring.hypotheses)) {
+      return insufficientRemediation([
+        {
+          code: 'report_evidence_incomplete',
+          message: 'The report does not contain the exact completed scored hypotheses.',
+        },
+      ]);
+    }
+
+    const changesById = new Map(
+      parsedContext.facts.recentChanges.flatMap((response) =>
+        response.changes.map((change) => [change.id, change] as const),
+      ),
+    );
+    const evidenceIds = new Set(parsedReport.evidence.map((evidence) => evidence.id));
+    const contextEntityUrns = new Set([
+      ...parsedContext.facts.candidateEntities.map((entity) => entity.urn),
+      ...(parsedContext.facts.lineage?.nodes.map((entity) => entity.urn) ?? []),
+    ]);
+    const reportEntitiesByUrn = new Map(
+      parsedReport.entities.map((entity) => [entity.urn, entity]),
+    );
+
+    const unresolved = parsedScoring.hypotheses.some((hypothesis) => {
+      const change = changesById.get(hypothesis.sourceChangeId);
+      return (
+        !change ||
+        !hypothesis.evidenceIds.every((evidenceId) => evidenceIds.has(evidenceId)) ||
+        !contextEntityUrns.has(change.entityUrn) ||
+        !reportEntitiesByUrn.has(change.entityUrn)
+      );
+    });
+    if (unresolved) {
+      return insufficientRemediation([
+        {
+          code: 'reference_unresolved',
+          message:
+            'A scored hypothesis does not resolve to exact report evidence, entity, and recent-change facts.',
+        },
+      ]);
+    }
+
+    const unsupportedCategory = parsedScoring.hypotheses.some((hypothesis) => {
+      const change = changesById.get(hypothesis.sourceChangeId);
+      return change !== undefined && !remediationChangeCategories.has(change.category);
+    });
+    if (unsupportedCategory) {
+      return insufficientRemediation([
+        {
+          code: 'unsupported_change_category',
+          message:
+            'A scored change category is outside the bounded remediation allowlist, so no recommendation was created.',
+        },
+      ]);
+    }
+
+    const generated: RemediationRecommendation[] = [];
+    for (const hypothesis of parsedScoring.hypotheses) {
+      const change = changesById.get(hypothesis.sourceChangeId);
+      if (!change) continue;
+      const entity = reportEntitiesByUrn.get(change.entityUrn);
+      if (!entity) continue;
+      for (const [index, copy] of remediationCopy(change, entity.name).entries()) {
+        const type = index === 0 ? 'recommended_verification' : 'potential_remediation';
+        generated.push({
+          id: `${type === 'recommended_verification' ? 'verify' : 'remediate'}-${change.id}`,
+          type,
+          priority: remediationPriority(hypothesis.rank),
+          status: 'not_executed',
+          sourceHypothesisRank: hypothesis.rank,
+          ...copy,
+          references: {
+            hypothesisIds: [hypothesis.id],
+            evidenceIds: hypothesis.evidenceIds,
+            entityUrns: [change.entityUrn],
+            changeIds: [change.id],
+          },
+        });
+      }
+    }
+
+    const deduplicated = [
+      ...new Map(
+        generated.map((recommendation) => [
+          `${recommendation.type}:${recommendation.references.hypothesisIds.join('|')}:${recommendation.references.changeIds.join('|')}`,
+          recommendation,
+        ]),
+      ).values(),
+    ];
+    const missingInformation: RemediationMissingInformation[] = [];
+    if (deduplicated.length > REMEDIATION_MAX_RECOMMENDATIONS) {
+      missingInformation.push({
+        code: 'recommendation_limit_reached',
+        message: 'Additional recommendations were omitted by the five-recommendation output cap.',
+      });
+    }
+    const result = RemediationPlanningStageSchema.parse({
+      status: 'completed',
+      recommendations: deduplicated.slice(0, REMEDIATION_MAX_RECOMMENDATIONS),
+      missingInformation,
+      nextSteps: [],
+    });
+    if (result.status !== 'completed') {
+      throw new Error('Completed remediation planning unexpectedly changed lifecycle state.');
+    }
+    return IncidentRemediationPlanningSchema.parse({
+      contextStage: parsedContext,
+      scoringResult: parsedScoring,
+      report: parsedReport,
       result,
     }).result;
   }

@@ -1361,6 +1361,342 @@ export const IncidentHypothesisScoringSchema = z
     });
   });
 
+export const REMEDIATION_MAX_RECOMMENDATIONS = 5;
+export const REMEDIATION_MAX_FALLBACK_STEPS = 5;
+
+export const REMEDIATION_RECOMMENDATION_TYPE_ORDER = [
+  'recommended_verification',
+  'potential_remediation',
+] as const;
+export const REMEDIATION_PRIORITY_ORDER = ['high', 'medium', 'low'] as const;
+export const REMEDIATION_SUPPORTED_CHANGE_CATEGORIES = [
+  'schema',
+  'pipeline',
+  'ownership',
+  'domain',
+  'tag',
+] as const;
+const remediationSupportedChangeCategorySet = new Set<string>(
+  REMEDIATION_SUPPORTED_CHANGE_CATEGORIES,
+);
+
+export const RemediationRecommendationTypeSchema = z.enum(REMEDIATION_RECOMMENDATION_TYPE_ORDER);
+export const RemediationPrioritySchema = z.enum(REMEDIATION_PRIORITY_ORDER);
+
+const RemediationReferencesSchema = z
+  .object({
+    hypothesisIds: z.array(z.string().trim().min(1).max(240)).min(1).max(3),
+    evidenceIds: z.array(z.string().trim().min(1).max(200)).min(1).max(6),
+    entityUrns: z.array(z.string().trim().min(1).max(500)).min(1).max(5),
+    changeIds: z.array(z.string().trim().min(1).max(200)).min(1).max(5),
+  })
+  .strict()
+  .superRefine((references, context) => {
+    for (const [key, values] of Object.entries(references)) {
+      const seen = new Set<string>();
+      values.forEach((value, index) => {
+        if (seen.has(value)) {
+          context.addIssue({
+            code: 'custom',
+            message: 'Remediation references must be unique within each reference kind.',
+            path: [key, index],
+          });
+        }
+        seen.add(value);
+      });
+    }
+  });
+
+export const RemediationRecommendationSchema = z
+  .object({
+    id: z.string().trim().min(1).max(240),
+    type: RemediationRecommendationTypeSchema,
+    priority: RemediationPrioritySchema,
+    status: z.literal('not_executed'),
+    sourceHypothesisRank: z.number().int().min(1).max(HYPOTHESIS_SCORING_MAX_HYPOTHESES),
+    title: z.string().trim().min(1).max(200),
+    rationale: z.string().trim().min(1).max(500),
+    verificationStep: z.string().trim().min(1).max(500),
+    reversibilityNote: z.string().trim().min(1).max(500),
+    references: RemediationReferencesSchema,
+  })
+  .strict()
+  .superRefine((recommendation, context) => {
+    const requiredTitlePrefix =
+      recommendation.type === 'recommended_verification'
+        ? 'Recommended verification:'
+        : 'Potential remediation:';
+    if (!recommendation.title.startsWith(requiredTitlePrefix)) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Recommendation titles must use the allowlisted non-executing language.',
+        path: ['title'],
+      });
+    }
+    const recommendationCopy = `${recommendation.title} ${recommendation.rationale} ${recommendation.verificationStep} ${recommendation.reversibilityNote}`;
+    const assertedCausalCopy = recommendationCopy.replace(
+      /\bnot (?:a |the )?confirmed (?:root )?cause\b/gi,
+      '',
+    );
+    if (
+      /\b(?:confirmed (?:root )?cause|caused the incident|will fix|definitive remediation)\b/i.test(
+        assertedCausalCopy,
+      )
+    ) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Recommendations cannot claim a confirmed cause or guaranteed outcome.',
+        path: ['rationale'],
+      });
+    }
+    const expectedPriority = ['high', 'medium', 'low'][recommendation.sourceHypothesisRank - 1];
+    if (recommendation.priority !== expectedPriority) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Recommendation priority must preserve the scored-hypothesis rank.',
+        path: ['priority'],
+      });
+    }
+  });
+
+export const REMEDIATION_FALLBACK_STEP_TEXT = {
+  inspect_scored_evidence:
+    'Review the available factual evidence and scored-hypothesis gaps before proposing a change.',
+  collect_runtime_records:
+    'Collect bounded runtime query or pipeline records for the incident window without changing production state.',
+  verify_metadata_history:
+    'Verify metadata history and lineage completeness through read-only provider access.',
+  review_provider_availability:
+    'Review metadata-provider availability and retry the investigation only after the provider is healthy.',
+  continue_fixture_mode:
+    'Continue in deterministic fixture mode with the checked-in scenario; no credential is required.',
+} as const;
+
+export const REMEDIATION_FALLBACK_STEP_ORDER = [
+  'inspect_scored_evidence',
+  'review_provider_availability',
+  'collect_runtime_records',
+  'verify_metadata_history',
+  'continue_fixture_mode',
+] as const;
+
+export const RemediationFallbackStepCodeSchema = z.enum(REMEDIATION_FALLBACK_STEP_ORDER);
+
+export const RemediationFallbackStepSchema = z
+  .object({
+    id: RemediationFallbackStepCodeSchema,
+    kind: z.enum(['safe_diagnostic', 'fixture_continuation']),
+    status: z.literal('not_executed'),
+    description: z.string().trim().min(1).max(300),
+  })
+  .strict()
+  .superRefine((step, context) => {
+    if (step.description !== REMEDIATION_FALLBACK_STEP_TEXT[step.id]) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Fallback-step text must match the provider-neutral safety allowlist.',
+        path: ['description'],
+      });
+    }
+    const expectedKind =
+      step.id === 'continue_fixture_mode' ? 'fixture_continuation' : 'safe_diagnostic';
+    if (step.kind !== expectedKind) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Fallback-step kind must match its allowlisted behavior.',
+        path: ['kind'],
+      });
+    }
+  });
+
+export const REMEDIATION_MISSING_INFORMATION_ORDER = [
+  'scored_hypotheses_insufficient',
+  'scoring_unavailable',
+  'report_evidence_incomplete',
+  'reference_unresolved',
+  'unsupported_change_category',
+  'recommendation_limit_reached',
+] as const;
+
+export const RemediationMissingInformationCodeSchema = z.enum(
+  REMEDIATION_MISSING_INFORMATION_ORDER,
+);
+
+export const RemediationMissingInformationSchema = z
+  .object({
+    code: RemediationMissingInformationCodeSchema,
+    message: z.string().trim().min(1).max(300),
+  })
+  .strict();
+
+function compareRemediationRecommendations(
+  left: z.infer<typeof RemediationRecommendationSchema>,
+  right: z.infer<typeof RemediationRecommendationSchema>,
+) {
+  if (left.sourceHypothesisRank !== right.sourceHypothesisRank) {
+    return left.sourceHypothesisRank - right.sourceHypothesisRank;
+  }
+  const typeDifference =
+    REMEDIATION_RECOMMENDATION_TYPE_ORDER.indexOf(left.type) -
+    REMEDIATION_RECOMMENDATION_TYPE_ORDER.indexOf(right.type);
+  if (typeDifference !== 0) return typeDifference;
+  const priorityDifference =
+    REMEDIATION_PRIORITY_ORDER.indexOf(left.priority) -
+    REMEDIATION_PRIORITY_ORDER.indexOf(right.priority);
+  if (priorityDifference !== 0) return priorityDifference;
+  const leftChangeId = left.references.changeIds[0] ?? '';
+  const rightChangeId = right.references.changeIds[0] ?? '';
+  if (leftChangeId !== rightChangeId) return leftChangeId < rightChangeId ? -1 : 1;
+  return left.id < right.id ? -1 : left.id > right.id ? 1 : 0;
+}
+
+function refineRemediationTerminal(
+  value: {
+    recommendations: z.infer<typeof RemediationRecommendationSchema>[];
+    missingInformation: z.infer<typeof RemediationMissingInformationSchema>[];
+    nextSteps: z.infer<typeof RemediationFallbackStepSchema>[];
+  },
+  context: z.RefinementCtx,
+) {
+  const recommendationIds = new Set<string>();
+  const recommendationKeys = new Set<string>();
+  value.recommendations.forEach((recommendation, index) => {
+    if (recommendationIds.has(recommendation.id)) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Remediation recommendation IDs must be unique.',
+        path: ['recommendations', index, 'id'],
+      });
+    }
+    const semanticKey = `${recommendation.type}:${recommendation.references.hypothesisIds.join('|')}:${recommendation.references.changeIds.join('|')}`;
+    if (recommendationKeys.has(semanticKey)) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Duplicate remediation recommendations are not allowed.',
+        path: ['recommendations', index],
+      });
+    }
+    const previous = value.recommendations[index - 1];
+    if (previous && compareRemediationRecommendations(previous, recommendation) > 0) {
+      context.addIssue({
+        code: 'custom',
+        message:
+          'Recommendations must follow deterministic hypothesis/type/priority/reference order.',
+        path: ['recommendations', index],
+      });
+    }
+    recommendationIds.add(recommendation.id);
+    recommendationKeys.add(semanticKey);
+  });
+
+  const missingCodes = new Set<string>();
+  value.missingInformation.forEach((item, index) => {
+    if (missingCodes.has(item.code)) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Remediation missing-information codes must be unique.',
+        path: ['missingInformation', index, 'code'],
+      });
+    }
+    const previous = value.missingInformation[index - 1];
+    if (
+      previous &&
+      REMEDIATION_MISSING_INFORMATION_ORDER.indexOf(previous.code) >
+        REMEDIATION_MISSING_INFORMATION_ORDER.indexOf(item.code)
+    ) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Remediation missing information must follow deterministic code order.',
+        path: ['missingInformation', index],
+      });
+    }
+    missingCodes.add(item.code);
+  });
+
+  const nextStepIds = new Set<string>();
+  value.nextSteps.forEach((step, index) => {
+    if (nextStepIds.has(step.id)) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Fallback next-step IDs must be unique.',
+        path: ['nextSteps', index, 'id'],
+      });
+    }
+    const previous = value.nextSteps[index - 1];
+    if (
+      previous &&
+      REMEDIATION_FALLBACK_STEP_ORDER.indexOf(previous.id) >
+        REMEDIATION_FALLBACK_STEP_ORDER.indexOf(step.id)
+    ) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Fallback next steps must follow deterministic allowlist order.',
+        path: ['nextSteps', index],
+      });
+    }
+    nextStepIds.add(step.id);
+  });
+  if (value.nextSteps.length > 0 && !nextStepIds.has('continue_fixture_mode')) {
+    context.addIssue({
+      code: 'custom',
+      message: 'A fallback must include the credential-free fixture continuation step.',
+      path: ['nextSteps'],
+    });
+  }
+}
+
+export const RemediationPlanningCompletedSchema = z
+  .object({
+    status: z.literal('completed'),
+    recommendations: z
+      .array(RemediationRecommendationSchema)
+      .min(1)
+      .max(REMEDIATION_MAX_RECOMMENDATIONS),
+    missingInformation: z.array(RemediationMissingInformationSchema).max(5),
+    nextSteps: z.array(RemediationFallbackStepSchema).max(0),
+  })
+  .strict()
+  .superRefine(refineRemediationTerminal);
+
+export const RemediationPlanningInsufficientSchema = z
+  .object({
+    status: z.literal('insufficient'),
+    recommendations: z.array(RemediationRecommendationSchema).max(0),
+    missingInformation: z.array(RemediationMissingInformationSchema).min(1).max(5),
+    nextSteps: z.array(RemediationFallbackStepSchema).min(1).max(REMEDIATION_MAX_FALLBACK_STEPS),
+  })
+  .strict()
+  .superRefine(refineRemediationTerminal);
+
+export const RemediationPlanningUnavailableCodeSchema = z.enum([
+  'CONTEXT_UNAVAILABLE',
+  'SCORING_UNAVAILABLE',
+  'PLANNING_INVALID',
+]);
+
+export const RemediationPlanningUnavailableSchema = z
+  .object({
+    status: z.literal('unavailable'),
+    recommendations: z.array(RemediationRecommendationSchema).max(0),
+    missingInformation: z.array(RemediationMissingInformationSchema).min(1).max(5),
+    nextSteps: z.array(RemediationFallbackStepSchema).min(1).max(REMEDIATION_MAX_FALLBACK_STEPS),
+    error: z
+      .object({
+        code: RemediationPlanningUnavailableCodeSchema,
+        message: z.string().trim().min(1).max(300),
+      })
+      .strict(),
+  })
+  .strict()
+  .superRefine(refineRemediationTerminal);
+
+export const RemediationPlanningStageSchema = z.union([
+  z.object({ status: z.literal('planning') }).strict(),
+  RemediationPlanningCompletedSchema,
+  RemediationPlanningInsufficientSchema,
+  RemediationPlanningUnavailableSchema,
+]);
+
 export const LegacyHypothesisSchema = z
   .object({
     id: z.string().min(1),
@@ -1444,6 +1780,151 @@ export const InvestigationReportSchema = z
     });
   });
 
+export const IncidentRemediationPlanningSchema = z
+  .object({
+    contextStage: IncidentContextCompletedStageSchema,
+    scoringResult: HypothesisScoringCompletedSchema,
+    report: InvestigationReportSchema,
+    result: RemediationPlanningCompletedSchema,
+  })
+  .strict()
+  .superRefine((value, context) => {
+    if (
+      JSON.stringify(value.report.hypotheses) !== JSON.stringify(value.scoringResult.hypotheses)
+    ) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Remediation planning requires the exact scored hypotheses in the report.',
+        path: ['report', 'hypotheses'],
+      });
+    }
+
+    const hypothesesById = new Map(
+      value.scoringResult.hypotheses.map((hypothesis) => [hypothesis.id, hypothesis]),
+    );
+    const evidenceIds = new Set(value.report.evidence.map((evidence) => evidence.id));
+    const reportEntityUrns = new Set(value.report.entities.map((entity) => entity.urn));
+    const contextEntityUrns = new Set([
+      ...value.contextStage.facts.candidateEntities.map((entity) => entity.urn),
+      ...(value.contextStage.facts.lineage?.nodes.map((entity) => entity.urn) ?? []),
+    ]);
+    const changesById = new Map(
+      value.contextStage.facts.recentChanges.flatMap((response) =>
+        response.changes.map((change) => [change.id, change] as const),
+      ),
+    );
+
+    value.result.recommendations.forEach((recommendation, recommendationIndex) => {
+      const referencedHypotheses = recommendation.references.hypothesisIds.map((hypothesisId) =>
+        hypothesesById.get(hypothesisId),
+      );
+      if (referencedHypotheses.some((hypothesis) => hypothesis === undefined)) {
+        context.addIssue({
+          code: 'custom',
+          message: 'A recommendation hypothesis reference does not exist.',
+          path: ['result', 'recommendations', recommendationIndex, 'references', 'hypothesisIds'],
+        });
+        return;
+      }
+      const hypotheses = referencedHypotheses.filter(
+        (hypothesis): hypothesis is z.infer<typeof ScoredHypothesisSchema> =>
+          hypothesis !== undefined,
+      );
+      if (
+        hypotheses.some((hypothesis) => hypothesis.rank !== recommendation.sourceHypothesisRank)
+      ) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Recommendation rank must resolve to its scored hypothesis.',
+          path: ['result', 'recommendations', recommendationIndex, 'sourceHypothesisRank'],
+        });
+      }
+
+      const citedEvidenceIds = new Set(hypotheses.flatMap((hypothesis) => hypothesis.evidenceIds));
+      recommendation.references.evidenceIds.forEach((evidenceId, evidenceIndex) => {
+        if (!evidenceIds.has(evidenceId) || !citedEvidenceIds.has(evidenceId)) {
+          context.addIssue({
+            code: 'custom',
+            message: 'Recommendation evidence must resolve to evidence cited by its hypothesis.',
+            path: [
+              'result',
+              'recommendations',
+              recommendationIndex,
+              'references',
+              'evidenceIds',
+              evidenceIndex,
+            ],
+          });
+        }
+      });
+
+      recommendation.references.entityUrns.forEach((entityUrn, entityIndex) => {
+        if (!reportEntityUrns.has(entityUrn) || !contextEntityUrns.has(entityUrn)) {
+          context.addIssue({
+            code: 'custom',
+            message: 'Recommendation entities must resolve to report and context facts.',
+            path: [
+              'result',
+              'recommendations',
+              recommendationIndex,
+              'references',
+              'entityUrns',
+              entityIndex,
+            ],
+          });
+        }
+      });
+
+      recommendation.references.changeIds.forEach((changeId, changeIndex) => {
+        const change = changesById.get(changeId);
+        if (
+          !change ||
+          !hypotheses.some((hypothesis) => hypothesis.sourceChangeId === changeId) ||
+          !recommendation.references.entityUrns.includes(change.entityUrn) ||
+          !recommendation.references.evidenceIds.includes(changeId)
+        ) {
+          context.addIssue({
+            code: 'custom',
+            message:
+              'Recommendation changes must resolve to exact hypothesis, evidence, and entity facts.',
+            path: [
+              'result',
+              'recommendations',
+              recommendationIndex,
+              'references',
+              'changeIds',
+              changeIndex,
+            ],
+          });
+        }
+        if (change && !remediationSupportedChangeCategorySet.has(change.category)) {
+          context.addIssue({
+            code: 'custom',
+            message: 'Recommendation source changes must use the bounded category allowlist.',
+            path: [
+              'result',
+              'recommendations',
+              recommendationIndex,
+              'references',
+              'changeIds',
+              changeIndex,
+            ],
+          });
+        }
+      });
+
+      const primaryChangeId = recommendation.references.changeIds[0];
+      const expectedId = `${recommendation.type === 'recommended_verification' ? 'verify' : 'remediate'}-${primaryChangeId ?? ''}`;
+      if (recommendation.id !== expectedId) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Recommendation IDs must be stable derivations of type and source change.',
+          path: ['result', 'recommendations', recommendationIndex, 'id'],
+        });
+      }
+    });
+  });
+
 export const IncidentRetrievalResponseSchema = z
   .discriminatedUnion('status', [
     z
@@ -1453,6 +1934,7 @@ export const IncidentRetrievalResponseSchema = z
         contextStage: IncidentContextStageSchema,
         suspiciousChangeStage: SuspiciousChangeDetectionStageSchema,
         hypothesisScoringStage: HypothesisScoringStageSchema,
+        remediationStage: RemediationPlanningStageSchema,
       })
       .strict(),
     z
@@ -1465,6 +1947,7 @@ export const IncidentRetrievalResponseSchema = z
         ]),
         suspiciousChangeStage: SuspiciousChangeDetectionStageSchema,
         hypothesisScoringStage: HypothesisScoringStageSchema,
+        remediationStage: RemediationPlanningStageSchema,
         report: InvestigationReportSchema,
       })
       .strict(),
@@ -1472,6 +1955,79 @@ export const IncidentRetrievalResponseSchema = z
   .superRefine((response, context) => {
     const detection = response.suspiciousChangeStage;
     const scoring = response.hypothesisScoringStage;
+    const remediation = response.remediationStage;
+    if (response.contextStage.status === 'gathering' && remediation.status !== 'planning') {
+      context.addIssue({
+        code: 'custom',
+        message: 'A gathering context requires an active remediation-planning stage.',
+        path: ['remediationStage'],
+      });
+    }
+    if (response.status === 'completed' && remediation.status === 'planning') {
+      context.addIssue({
+        code: 'custom',
+        message: 'A completed incident cannot retain an active remediation-planning stage.',
+        path: ['remediationStage'],
+      });
+    }
+    if (scoring.status === 'scoring' && remediation.status !== 'planning') {
+      context.addIssue({
+        code: 'custom',
+        message: 'Active hypothesis scoring requires active remediation planning.',
+        path: ['remediationStage'],
+      });
+    }
+    if (
+      scoring.status === 'insufficient' &&
+      remediation.status !== 'insufficient' &&
+      (remediation.status !== 'unavailable' || remediation.error.code !== 'PLANNING_INVALID')
+    ) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Insufficient hypothesis scoring requires a safe remediation fallback.',
+        path: ['remediationStage'],
+      });
+    }
+    if (
+      scoring.status === 'unavailable' &&
+      (remediation.status !== 'unavailable' ||
+        remediation.error.code !==
+          (scoring.error.code === 'CONTEXT_UNAVAILABLE'
+            ? 'CONTEXT_UNAVAILABLE'
+            : 'SCORING_UNAVAILABLE'))
+    ) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Unavailable scoring requires a provider-safe unavailable remediation fallback.',
+        path: ['remediationStage'],
+      });
+    }
+    if (remediation.status === 'completed') {
+      if (
+        response.status !== 'completed' ||
+        response.contextStage.status !== 'completed' ||
+        scoring.status !== 'completed'
+      ) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Completed remediation requires completed context, scoring, and report stages.',
+          path: ['remediationStage'],
+        });
+      } else if (
+        !IncidentRemediationPlanningSchema.safeParse({
+          contextStage: response.contextStage,
+          scoringResult: scoring,
+          report: response.report,
+          result: remediation,
+        }).success
+      ) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Remediation recommendations do not resolve to exact scored and factual inputs.',
+          path: ['remediationStage'],
+        });
+      }
+    }
     if (response.contextStage.status === 'gathering' && scoring.status !== 'scoring') {
       context.addIssue({
         code: 'custom',
@@ -1651,6 +2207,12 @@ export type HypothesisScoringMissingInformation = z.infer<
 >;
 export type HypothesisScoringResult = z.infer<typeof HypothesisScoringResultSchema>;
 export type HypothesisScoringStage = z.infer<typeof HypothesisScoringStageSchema>;
+export type RemediationRecommendationType = z.infer<typeof RemediationRecommendationTypeSchema>;
+export type RemediationPriority = z.infer<typeof RemediationPrioritySchema>;
+export type RemediationRecommendation = z.infer<typeof RemediationRecommendationSchema>;
+export type RemediationFallbackStep = z.infer<typeof RemediationFallbackStepSchema>;
+export type RemediationMissingInformation = z.infer<typeof RemediationMissingInformationSchema>;
+export type RemediationPlanningStage = z.infer<typeof RemediationPlanningStageSchema>;
 export type IncidentStatus = z.infer<typeof IncidentStatusSchema>;
 export type IncidentAcceptedResponse = z.infer<typeof IncidentAcceptedResponseSchema>;
 export type IncidentRetrievalResponse = z.infer<typeof IncidentRetrievalResponseSchema>;

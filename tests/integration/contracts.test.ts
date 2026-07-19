@@ -8,6 +8,7 @@ import {
   IncidentContextCompletedStageSchema,
   IncidentContextFactsSchema,
   IncidentHypothesisScoringSchema,
+  IncidentRemediationPlanningSchema,
   IncidentSuspiciousChangeDetectionSchema,
   IncidentIntentSchema,
   IncidentAcceptedResponseSchema,
@@ -21,6 +22,8 @@ import {
   MetadataLineageResponseSchema,
   MetadataRecentChangesRequestSchema,
   MetadataRecentChangesResponseSchema,
+  REMEDIATION_FALLBACK_STEP_TEXT,
+  RemediationPlanningStageSchema,
   SUSPICIOUS_CHANGE_SIGNAL_LABELS,
   SuspiciousChangeDetectionResultSchema,
 } from '../../packages/shared-types/src/index.js';
@@ -403,6 +406,317 @@ describe('shared investigation contracts', () => {
     ).toBe(false);
   });
 
+  it('strictly bounds remediation lifecycle, ordering, fallback, and factual references', () => {
+    const selected = {
+      urn: 'urn:li:dataset:analytics.revenue',
+      kind: 'dataset' as const,
+      name: 'analytics.revenue',
+    };
+    const upstream = {
+      urn: 'urn:li:dataset:raw.orders',
+      kind: 'dataset' as const,
+      name: 'raw.orders',
+    };
+    const contextStage = IncidentContextCompletedStageSchema.parse({
+      status: 'completed',
+      intent: {
+        question: 'Why did revenue drop after the schema change?',
+        entityHints: [selected.name],
+        symptoms: ['Revenue field is missing.'],
+        timeWindow: {
+          basis: 'incident_time',
+          endTime: '2026-07-18T08:30:00.000Z',
+          hours: 168,
+        },
+      },
+      facts: {
+        sourceMode: 'fixture',
+        candidateEntities: [selected],
+        selectedEntity: selected,
+        lineage: {
+          rootUrn: selected.urn,
+          direction: 'upstream',
+          requestedDepth: 2,
+          maxNodes: 5,
+          visitedNodeCount: 2,
+          truncated: false,
+          nodes: [
+            { ...selected, depth: 0 },
+            { ...upstream, depth: 1 },
+          ],
+          edges: [{ sourceUrn: upstream.urn, targetUrn: selected.urn }],
+        },
+        recentChanges: [
+          {
+            entityUrn: upstream.urn,
+            window: {
+              startTime: '2026-07-11T08:30:00.000Z',
+              endTime: '2026-07-18T08:30:00.000Z',
+              hours: 168,
+            },
+            limit: 10,
+            returnedCount: 1,
+            truncated: false,
+            changes: [
+              {
+                id: 'change-removed-column',
+                entityUrn: upstream.urn,
+                timestamp: '2026-07-18T07:45:00.000Z',
+                category: 'schema',
+                operation: 'removed',
+                source: 'fixture',
+                summary: 'Column gross_revenue was removed from raw.orders.',
+                field: 'gross_revenue',
+              },
+            ],
+          },
+        ],
+      },
+      missingInformation: [],
+    });
+    const hypothesis = {
+      id: 'hypothesis-change-removed-column',
+      rank: 1,
+      sourceChangeId: 'change-removed-column',
+      observedAt: '2026-07-18T07:45:00.000Z',
+      summary:
+        'Plausible contributor: the removed schema change on raw.orders may have contributed to the incident.',
+      confidence: 0.85,
+      evidenceIds: ['change-removed-column'],
+      factors: [
+        {
+          code: 'change_recency' as const,
+          label: HYPOTHESIS_SCORE_FACTOR_LABELS.change_recency,
+          contributionBasisPoints: 3_000,
+          weightBasisPoints: HYPOTHESIS_SCORE_FACTOR_WEIGHTS.change_recency,
+        },
+        {
+          code: 'lineage_position' as const,
+          label: HYPOTHESIS_SCORE_FACTOR_LABELS.lineage_position,
+          contributionBasisPoints: 2_000,
+          weightBasisPoints: HYPOTHESIS_SCORE_FACTOR_WEIGHTS.lineage_position,
+        },
+        {
+          code: 'symptom_category_fit' as const,
+          label: HYPOTHESIS_SCORE_FACTOR_LABELS.symptom_category_fit,
+          contributionBasisPoints: 1_500,
+          weightBasisPoints: HYPOTHESIS_SCORE_FACTOR_WEIGHTS.symptom_category_fit,
+        },
+        {
+          code: 'evidence_quality' as const,
+          label: HYPOTHESIS_SCORE_FACTOR_LABELS.evidence_quality,
+          contributionBasisPoints: 2_000,
+          weightBasisPoints: HYPOTHESIS_SCORE_FACTOR_WEIGHTS.evidence_quality,
+        },
+      ],
+    };
+    const scoringResult = {
+      status: 'completed' as const,
+      hypotheses: [hypothesis],
+      missingInformation: [],
+    };
+    const report = InvestigationReportSchema.parse({
+      incidentId: 'incident-remediation-contract',
+      summary: 'A scored plausible contributor is available for human review.',
+      entities: [selected, upstream],
+      evidence: [
+        {
+          id: 'change-removed-column',
+          category: 'schema-change',
+          statement: 'Column gross_revenue was removed from raw.orders.',
+          sourceEntity: upstream,
+          observedAt: '2026-07-18T07:45:00.000Z',
+        },
+      ],
+      hypotheses: [hypothesis],
+      recommendations: [],
+      assumptions: [],
+      missingInformation: [],
+    });
+    const references = {
+      hypothesisIds: [hypothesis.id],
+      evidenceIds: ['change-removed-column'],
+      entityUrns: [upstream.urn],
+      changeIds: ['change-removed-column'],
+    };
+    const verification = {
+      id: 'verify-change-removed-column',
+      type: 'recommended_verification' as const,
+      priority: 'high' as const,
+      status: 'not_executed' as const,
+      sourceHypothesisRank: 1,
+      title: 'Recommended verification: confirm the observed schema change',
+      rationale:
+        'The ranked factual change supports human review of a plausible contributor, not a confirmed cause.',
+      verificationStep: 'Verify the schema contract in a read-only review.',
+      reversibilityNote: 'Read-only verification requires no rollback.',
+      references,
+    };
+    const potentialRemediation = {
+      ...verification,
+      id: 'remediate-change-removed-column',
+      type: 'potential_remediation' as const,
+      title: 'Potential remediation: prepare a reversible schema compatibility change',
+      verificationStep: 'Verify a non-production compatibility plan before approval.',
+      reversibilityNote: 'Do not apply automatically; require a reviewed rollback plan.',
+    };
+    const result = {
+      status: 'completed' as const,
+      recommendations: [verification, potentialRemediation],
+      missingInformation: [],
+      nextSteps: [],
+    };
+
+    expect(RemediationPlanningStageSchema.safeParse({ status: 'planning' }).success).toBe(true);
+    expect(
+      IncidentRemediationPlanningSchema.safeParse({
+        contextStage,
+        scoringResult,
+        report,
+        result,
+      }).success,
+    ).toBe(true);
+    expect(
+      RemediationPlanningStageSchema.safeParse({
+        ...result,
+        recommendations: [potentialRemediation, verification],
+      }).success,
+    ).toBe(false);
+    expect(
+      RemediationPlanningStageSchema.safeParse({
+        ...result,
+        recommendations: [verification, { ...verification, id: 'verify-duplicate' }],
+      }).success,
+    ).toBe(false);
+    expect(
+      RemediationPlanningStageSchema.safeParse({
+        ...result,
+        recommendations: Array.from({ length: 6 }, (_, index) => ({
+          ...verification,
+          id: `verify-change-${index}`,
+          references: { ...references, changeIds: [`change-${index}`] },
+        })),
+      }).success,
+    ).toBe(false);
+    expect(
+      RemediationPlanningStageSchema.safeParse({
+        ...result,
+        recommendations: [{ ...verification, rawProviderPayload: { secret: true } }],
+      }).success,
+    ).toBe(false);
+    expect(
+      RemediationPlanningStageSchema.safeParse({
+        ...result,
+        recommendations: [
+          {
+            ...verification,
+            rationale: 'This change is the confirmed root cause and caused the incident.',
+          },
+        ],
+      }).success,
+    ).toBe(false);
+
+    for (const [referenceKind, value] of [
+      ['hypothesisIds', ['hypothesis-invented']],
+      ['evidenceIds', ['evidence-invented']],
+      ['entityUrns', ['urn:li:dataset:invented']],
+      ['changeIds', ['change-invented']],
+    ] as const) {
+      expect(
+        IncidentRemediationPlanningSchema.safeParse({
+          contextStage,
+          scoringResult,
+          report,
+          result: {
+            ...result,
+            recommendations: [
+              {
+                ...verification,
+                references: { ...references, [referenceKind]: value },
+              },
+            ],
+          },
+        }).success,
+      ).toBe(false);
+    }
+
+    const insufficient = {
+      status: 'insufficient' as const,
+      recommendations: [],
+      missingInformation: [
+        {
+          code: 'scored_hypotheses_insufficient' as const,
+          message: 'No complete scored hypothesis is available.',
+        },
+      ],
+      nextSteps: [
+        {
+          id: 'inspect_scored_evidence' as const,
+          kind: 'safe_diagnostic' as const,
+          status: 'not_executed' as const,
+          description: REMEDIATION_FALLBACK_STEP_TEXT.inspect_scored_evidence,
+        },
+        {
+          id: 'continue_fixture_mode' as const,
+          kind: 'fixture_continuation' as const,
+          status: 'not_executed' as const,
+          description: REMEDIATION_FALLBACK_STEP_TEXT.continue_fixture_mode,
+        },
+      ],
+    };
+    expect(RemediationPlanningStageSchema.safeParse(insufficient).success).toBe(true);
+    expect(
+      RemediationPlanningStageSchema.safeParse({
+        ...insufficient,
+        nextSteps: insufficient.nextSteps.slice(0, 1),
+      }).success,
+    ).toBe(false);
+    expect(
+      RemediationPlanningStageSchema.safeParse({
+        ...insufficient,
+        nextSteps: [...insufficient.nextSteps].reverse(),
+      }).success,
+    ).toBe(false);
+    expect(
+      RemediationPlanningStageSchema.safeParse({
+        ...insufficient,
+        recommendations: [verification],
+      }).success,
+    ).toBe(false);
+    expect(
+      RemediationPlanningStageSchema.safeParse({
+        ...insufficient,
+        status: 'unavailable',
+        error: {
+          code: 'SCORING_UNAVAILABLE',
+          message: 'Scored hypotheses are unavailable.',
+          stack: 'secret stack',
+        },
+      }).success,
+    ).toBe(false);
+    const unsupportedContext = IncidentContextCompletedStageSchema.parse({
+      ...contextStage,
+      facts: {
+        ...contextStage.facts,
+        recentChanges: contextStage.facts.recentChanges.map((response) => ({
+          ...response,
+          changes: response.changes.map((change) => ({
+            ...change,
+            category: 'documentation',
+          })),
+        })),
+      },
+    });
+    expect(
+      IncidentRemediationPlanningSchema.safeParse({
+        contextStage: unsupportedContext,
+        scoringResult,
+        report,
+        result,
+      }).success,
+    ).toBe(false);
+  });
+
   it('accepts the stable validation error envelope', () => {
     const response = ApiErrorSchema.parse({
       error: {
@@ -762,6 +1076,30 @@ describe('shared investigation contracts', () => {
           {
             code: 'suspicious_changes_insufficient',
             message: 'Suspicious-change detection returned no candidate to score.',
+          },
+        ],
+      },
+      remediationStage: {
+        status: 'insufficient',
+        recommendations: [],
+        missingInformation: [
+          {
+            code: 'scored_hypotheses_insufficient',
+            message: 'Scored hypotheses are insufficient for remediation planning.',
+          },
+        ],
+        nextSteps: [
+          {
+            id: 'inspect_scored_evidence',
+            kind: 'safe_diagnostic',
+            status: 'not_executed',
+            description: REMEDIATION_FALLBACK_STEP_TEXT.inspect_scored_evidence,
+          },
+          {
+            id: 'continue_fixture_mode',
+            kind: 'fixture_continuation',
+            status: 'not_executed',
+            description: REMEDIATION_FALLBACK_STEP_TEXT.continue_fixture_mode,
           },
         ],
       },

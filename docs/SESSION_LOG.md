@@ -1719,3 +1719,85 @@ Format/check final docs evidence; review tracked/untracked diff/secret/generated
 conventional commit `feat: score evidence-linked hypotheses`, push branch, mở stacked Draft PR base
 `codex/phase-3-2-suspicious-changes`, theo dõi đúng một final-HEAD CI run và xác minh conflict-free/
 merge-ready. Không bắt đầu Slice 3.4.
+
+## 2026-07-19 — Phase 3 Slice 3.4 remediation và safe fallback
+
+### Objective
+
+Từ exact Slice 3.3 final commit `3a1c5c763c2e4fcbee8796120ba4ca2096a75c25`, tạo stage
+remediation/fallback pure, bounded và deterministic từ completed scored hypotheses cùng factual
+report/evidence; expose additively qua runner/API và hiển thị guidance accessible cho con người review.
+Không thực thi mutation, provider/model call, controller, autonomous action, Level D hoặc Phase 4.
+
+### Completed
+
+Đã chạy tracked Windows bootstrap bằng process-scoped execution-policy/PATH workaround, xác minh exact
+HEAD/ancestry, worktree sạch trước source và branch duy nhất
+`codex/phase-3-4-remediation-fallback`, rồi ghi plan trước khi code. Đã thêm strict shared lifecycle và
+cross-reference contracts, pure deterministic planner, additive API storage/composition, compact web
+recommendation/fallback states, targeted contract/agent-core/API/web/E2E coverage và tài liệu derivation.
+
+### Files changed
+
+Shared types; agent-core; API; web App/styles; contract, planner, API, web report/fallback và combined
+browser tests; cùng `AGENT_DESIGN.md`, `API_CONTRACTS.md`, `DATA_MODEL.md`, `IMPLEMENTATION_PLAN.md`,
+`KNOWN_ISSUES.md` và entry này. Không đổi fixture/provider, repository map, manifest, lockfile,
+dependency, auth, persistence hoặc bootstrap.
+
+### Decisions
+
+Planner chỉ nhận context completed, exact Slice 3.3 scoring và factual report/evidence. Chỉ category
+`schema | pipeline | ownership | domain | tag` được phép sinh guidance. Theo hypothesis rank, mỗi change
+sinh `recommended_verification` trước `potential_remediation`; priority chỉ map rank một/hai/còn lại sang
+`high | medium | low`. Stable ID là `verify-{changeId}` hoặc `remediate-{changeId}`, semantic dedup chạy
+trước cap năm, và mọi item luôn `not_executed`, có safe verification, reversibility note cùng exact
+hypothesis/evidence/entity/change refs. Không có confidence mới. Insufficient/unavailable luôn zero
+recommendation/ref, tối đa năm missing items và năm allowlisted fallback steps, bắt buộc có
+`continue_fixture_mode`; provider error chỉ dùng normalized safe code/message.
+
+### Validation performed
+
+- Tracked bootstrap PASS với process-scoped execution-policy/root-bin workaround, không đổi bootstrap,
+  manifest, lockfile, dependency hoặc generated store. Format attempt đầu dừng trước Prettier vì inherited
+  PATH không có `node`; nạp verified Codex-bundled Node/pnpm runtime đã xử lý environment blocker.
+- Final-input Prettier write/check PASS. Affected ESLint ban đầu phát hiện đúng một unused type import ở
+  planner test; bỏ import và targeted format/check/lint PASS. Năm typechecks PASS; sau shared contract
+  fix, cả năm affected typechecks PASS lại.
+- Targeted Vitest attempt đầu chạy đủ 72 tests: 66 PASS, 6 FAIL trong 4 files vì product-contract causal
+  matcher bắt nhầm disclaimer bắt buộc `not a confirmed cause`. Matcher được narrow để bỏ explicit
+  negation trước khi tìm asserted causal claim. Exact affected suite sau đó PASS 13/13 files, 72/72 tests
+  trong `3.90s`, bao phủ strict lifecycle/bounds/order/dedup/category allowlist/cross-reference, exact
+  deterministic output, completed/insufficient/unavailable, safe errors/stale ownership, zero provider/
+  model/credential/mutation và regressions context/suspicious/scoring/report.
+- 5/5 production builds PASS; web transform 109 modules và Vite build `1.19s`.
+- Đúng một final combined browser flow PASS `7255ms` trên dynamic API `61164`, web `61165`: submit →
+  context → suspicious → exact ranked `0.85` → hai recommendation resolve thật, `not executed`, có
+  verification/reversibility → full report. Console warning/error, semantic accessibility, keyboard
+  links, desktop/mobile overflow, causal copy, three-minute bound, port release và launcher cleanup sạch.
+- Final security scan phát hiện planner test tự đọc `process.env.DATAHUB_TOKEN` chỉ để so sánh state.
+  Đã bỏ hoàn toàn hai credential reads, thay bằng assertion planner không có environment state; targeted
+  format/check/lint và planner test 4/4 PASS. Product input không đổi nên không rerun build/browser xanh.
+
+### Validation intentionally deferred
+
+Level D, live credentialed DataHub smoke, generic controller/model integration, autonomous execution,
+external mutation, persistence/auth/provider expansion, Phase 3 integration checkpoint và Phase 4.
+
+### Known issues
+
+Managed Windows fallback-pnpm workspace-binary và sandbox esbuild ancestor-path limitations vẫn dùng
+process-scoped workaround; không phải product defect. Host không có `gh`; publish sẽ dùng authenticated
+GitHub/browser fallback theo handoff, không yêu cầu credential. Không có lệnh hoặc launcher nào của
+worktree này còn treo; các process dài hạn đã xác minh thuộc task/worktree khác và được giữ nguyên.
+Final review PASS cho 17 intended files (15 modified, hai focused tests mới): full scoped patch,
+`git diff --check`, secret/conflict/unsafe-output/generated-artifact scans, không đổi manifest/lock/
+bootstrap/fixture/provider/dependency, exact branch/base/ancestry và clean owned-process state. Worktree
+chỉ còn reviewed commit payload trước publication.
+
+### Exact next step
+
+Format/check docs evidence; chạy final diff/secret/conflict/generated/ancestry/worktree audit; commit
+`feat: add remediation and fallback`; push và mở stacked Draft PR base
+`codex/phase-3-3-evidence-linked-scoring`; theo dõi đúng một final-HEAD CI run và xác minh conflict-free/
+merge-ready. Sau đó hand off task Project/worktree riêng cho Phase 3 integration checkpoint/Level D;
+không bắt đầu checkpoint đó trong Slice 3.4.

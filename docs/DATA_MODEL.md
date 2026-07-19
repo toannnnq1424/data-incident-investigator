@@ -147,6 +147,39 @@ observation time. Unresolved evidence, incomplete recent-change rank inputs, or 
 suspicious result yields zero hypotheses plus explicit missing information. It does not generate a
 low-confidence fallback.
 
+## Remediation planning and safe fallback
+
+Incident retrieval includes additive `remediationStage` with lifecycle
+`planning | completed | insufficient | unavailable`. `planning` has no terminal payload. A completed
+result has one to five strictly ordered recommendations; terminal fallback results have zero
+recommendations, one to five unique missing-information items, and one to five allowlisted next steps.
+Every fallback includes `continue_fixture_mode` so fixture investigation remains available without a
+credential.
+
+Each recommendation contains:
+
+- a stable unique ID derived exactly as `verify-{changeId}` or `remediate-{changeId}`;
+- allowlisted type `recommended_verification | potential_remediation`, rank-derived priority
+  `high | medium | low`, and literal status `not_executed`;
+- a concise recommendation/potential title and rationale that cannot claim a confirmed cause;
+- one safe verification step and one rollback/reversibility note; and
+- unique non-empty hypothesis, evidence, entity, and change reference arrays.
+
+Recommendations are derived only from exact completed scored hypotheses and factual changes in the
+`schema`, `pipeline`, `ownership`, `domain`, or `tag` allowlist. Rank is the only priority source: rank
+one is high, rank two is medium, and later rank is low. Generation preserves hypothesis rank, then
+verification before potential remediation; semantic duplicates are removed before the five-item cap.
+No confidence, score, provider/model output, executable command, mutation result, or automatic-action
+state is accepted.
+
+The cross-reference contract requires the report hypotheses to equal scoring output and resolves every
+recommendation through the cited scored hypothesis to its report evidence, context entity, and source
+change. Duplicate/unstable IDs, unknown fields, invalid lifecycle combinations, ordering drift,
+dangling references, unsupported categories, oversize payloads, and causal overclaims are rejected or
+become a zero-reference safe fallback. `unavailable` permits only normalized
+`CONTEXT_UNAVAILABLE | SCORING_UNAVAILABLE | PLANNING_INVALID` messages; raw provider payloads,
+credentials, exceptions, and stacks never enter the model.
+
 ## Evidence
 
 Evidence is an observed fact with:

@@ -27,6 +27,7 @@ import {
   MetadataRecentChangesRequestSchema,
   MetadataRecentChangesResponseSchema,
   type MetadataRecentChangesResponse,
+  type RemediationPlanningStage,
   type SuspiciousChangeDetectionStage,
 } from '@dii/shared-types';
 
@@ -899,6 +900,10 @@ function evidenceDomId(evidenceId: string) {
   return `evidence-${evidenceId.replace(/[^a-zA-Z0-9_-]/g, '-')}`;
 }
 
+function hypothesisDomId(hypothesisId: string) {
+  return `scored-${hypothesisId.replace(/[^a-zA-Z0-9_-]/g, '-')}`;
+}
+
 function HypothesisScoringStage({ stage }: { stage: HypothesisScoringStage }) {
   const presentation = getHypothesisScoringPresentation(stage);
 
@@ -927,6 +932,7 @@ function HypothesisScoringStage({ stage }: { stage: HypothesisScoringStage }) {
               {stage.hypotheses.map((hypothesis) => (
                 <li
                   key={hypothesis.id}
+                  id={hypothesisDomId(hypothesis.id)}
                   data-hypothesis-id={hypothesis.id}
                   data-hypothesis-rank={hypothesis.rank}
                 >
@@ -989,6 +995,183 @@ function HypothesisScoringStage({ stage }: { stage: HypothesisScoringStage }) {
           <p className="hypothesis-scoring-boundary">
             Confidence is the exact sum of bounded code-owned factors. Each item is an inference and
             plausible contributor, not a confirmed cause or recommendation.
+          </p>
+        </div>
+      )}
+    </section>
+  );
+}
+
+export function getRemediationPresentation(stage: RemediationPlanningStage) {
+  if (stage.status === 'planning') {
+    return {
+      heading: 'Planning safe verification and remediation',
+      message: 'Deriving bounded human-review steps from scored factual references…',
+      tone: 'loading' as const,
+    };
+  }
+  if (stage.status === 'unavailable') {
+    return {
+      heading: 'Remediation planning unavailable',
+      message: stage.error.message,
+      tone: 'error' as const,
+    };
+  }
+  if (stage.status === 'insufficient') {
+    return {
+      heading: 'Inconclusive remediation planning',
+      message: 'No recommendation was created; safe diagnostic fallback steps remain available.',
+      tone: 'missing' as const,
+    };
+  }
+  return {
+    heading: 'Safe recommendations for human review',
+    message: `${stage.recommendations.length} evidence-linked recommendation${stage.recommendations.length === 1 ? '' : 's'}; none has been executed.`,
+    tone: 'success' as const,
+  };
+}
+
+export function RemediationStage({ stage }: { stage: RemediationPlanningStage }) {
+  const presentation = getRemediationPresentation(stage);
+
+  return (
+    <section
+      className={`remediation-stage remediation-${presentation.tone}`}
+      aria-labelledby="remediation-heading"
+      aria-live="polite"
+      data-remediation-status={stage.status}
+    >
+      <p className="report-label">Human review only · no automatic action</p>
+      <h3 id="remediation-heading" tabIndex={-1}>
+        {presentation.heading}
+      </h3>
+      <p>{presentation.message}</p>
+
+      {stage.status === 'unavailable' && (
+        <p className="remediation-error" role="alert">
+          <code>{stage.error.code}</code>
+        </p>
+      )}
+
+      {stage.status !== 'planning' && (
+        <div className="remediation-content">
+          {stage.status === 'completed' ? (
+            <ol className="remediation-recommendation-list">
+              {stage.recommendations.map((recommendation) => (
+                <li key={recommendation.id} data-remediation-id={recommendation.id}>
+                  <div className="remediation-recommendation-heading">
+                    <div>
+                      <code>{recommendation.id}</code>
+                      <h4>{recommendation.title}</h4>
+                    </div>
+                    <ul aria-label="Recommendation classification">
+                      <li>{recommendation.type.replaceAll('_', ' ')}</li>
+                      <li>{recommendation.priority} priority</li>
+                      <li>Not executed</li>
+                    </ul>
+                  </div>
+                  <p>
+                    <strong>Rationale:</strong> {recommendation.rationale}
+                  </p>
+                  <p>
+                    <strong>Safe verification:</strong> {recommendation.verificationStep}
+                  </p>
+                  <p>
+                    <strong>Reversibility:</strong> {recommendation.reversibilityNote}
+                  </p>
+                  <section aria-label={`Linked references for ${recommendation.id}`}>
+                    <h5>Linked factual references</h5>
+                    <div className="remediation-reference-groups">
+                      <div>
+                        <span>Hypotheses</span>
+                        <ul>
+                          {recommendation.references.hypothesisIds.map((hypothesisId) => (
+                            <li key={hypothesisId}>
+                              <a href={`#${hypothesisDomId(hypothesisId)}`}>
+                                <code>{hypothesisId}</code>
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div>
+                        <span>Evidence</span>
+                        <ul>
+                          {recommendation.references.evidenceIds.map((evidenceId) => (
+                            <li key={evidenceId}>
+                              <a href={`#${evidenceDomId(evidenceId)}`}>
+                                <code>{evidenceId}</code>
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div>
+                        <span>Entities</span>
+                        <ul>
+                          {recommendation.references.entityUrns.map((entityUrn) => (
+                            <li key={entityUrn}>
+                              <code>{entityUrn}</code>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div>
+                        <span>Changes</span>
+                        <ul>
+                          {recommendation.references.changeIds.map((changeId) => (
+                            <li key={changeId}>
+                              <a href={`#${evidenceDomId(changeId)}`}>
+                                <code>{changeId}</code>
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </section>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <EmptyState message="No remediation recommendation was invented for incomplete evidence." />
+          )}
+
+          {stage.missingInformation.length > 0 && (
+            <section aria-labelledby="remediation-missing-heading">
+              <h4 id="remediation-missing-heading">Missing information</h4>
+              <ul className="remediation-missing-list">
+                {stage.missingInformation.map((item) => (
+                  <li key={item.code}>
+                    <code>{item.code}</code>
+                    <span>{item.message}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {stage.nextSteps.length > 0 && (
+            <section aria-labelledby="fallback-next-steps-heading">
+              <h4 id="fallback-next-steps-heading">Safe fallback next steps</h4>
+              <ol className="remediation-next-step-list">
+                {stage.nextSteps.map((step) => (
+                  <li key={step.id}>
+                    <div>
+                      <code>{step.id}</code>
+                      <span>{step.kind.replaceAll('_', ' ')}</span>
+                      <strong>Not executed</strong>
+                    </div>
+                    <p>{step.description}</p>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          )}
+
+          <p className="remediation-boundary">
+            Recommended verification and potential remediation are bounded proposals for manual
+            human review. Nothing in this stage has been executed.
           </p>
         </div>
       )}
@@ -1128,6 +1311,7 @@ function ProcessingStatus({ incident }: { incident: ProcessingIncident }) {
       <IncidentContextStage stage={incident.contextStage} />
       <SuspiciousChangeStage stage={incident.suspiciousChangeStage} />
       <HypothesisScoringStage stage={incident.hypothesisScoringStage} />
+      <RemediationStage stage={incident.remediationStage} />
       <EmptyState message="Report details will appear after fixture evidence is gathered." />
     </div>
   );
@@ -1152,6 +1336,7 @@ export function CompletedReport({ incident }: { incident: CompletedIncident }) {
       <IncidentContextStage stage={incident.contextStage} />
       <SuspiciousChangeStage stage={incident.suspiciousChangeStage} />
       <HypothesisScoringStage stage={incident.hypothesisScoringStage} />
+      <RemediationStage stage={incident.remediationStage} />
       <section className="report-summary" aria-labelledby="report-summary-heading">
         <p className="report-label">Incident report</p>
         <h3 id="report-summary-heading">Summary</h3>
@@ -1639,6 +1824,7 @@ export function App() {
           contextStage: { status: 'gathering' },
           suspiciousChangeStage: { status: 'detecting' },
           hypothesisScoringStage: { status: 'scoring' },
+          remediationStage: { status: 'planning' },
         },
       });
       await retrieveIncident(parsedResponse.data, requestId, controller);

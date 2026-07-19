@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { getCompletedReportContent } from '../../apps/web/src/App.js';
-import { IncidentRetrievalResponseSchema } from '../../packages/shared-types/src/index.js';
+import {
+  IncidentRetrievalResponseSchema,
+  REMEDIATION_FALLBACK_STEP_TEXT,
+} from '../../packages/shared-types/src/index.js';
 
 describe('completed report presentation', () => {
   it('selects the completed status, report summary, and top ranked hypothesis', () => {
@@ -44,6 +47,30 @@ describe('completed report presentation', () => {
           {
             code: 'suspicious_changes_insufficient',
             message: 'Suspicious-change detection returned no candidate to score.',
+          },
+        ],
+      },
+      remediationStage: {
+        status: 'insufficient',
+        recommendations: [],
+        missingInformation: [
+          {
+            code: 'scored_hypotheses_insufficient',
+            message: 'Scored hypotheses are insufficient for remediation planning.',
+          },
+        ],
+        nextSteps: [
+          {
+            id: 'inspect_scored_evidence',
+            kind: 'safe_diagnostic',
+            status: 'not_executed',
+            description: REMEDIATION_FALLBACK_STEP_TEXT.inspect_scored_evidence,
+          },
+          {
+            id: 'continue_fixture_mode',
+            kind: 'fixture_continuation',
+            status: 'not_executed',
+            description: REMEDIATION_FALLBACK_STEP_TEXT.continue_fixture_mode,
           },
         ],
       },
