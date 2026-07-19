@@ -1875,3 +1875,82 @@ Format/check ba docs, chạy final diff/secret/conflict/generated/scope/ancestry
 conventional docs checkpoint commit, push branch thường, mở stacked Draft PR base
 `codex/phase-3-4-remediation-fallback`, theo dõi đúng final-HEAD CI tới terminal và xác minh conflict-free/
 merge-ready. Sau handoff xanh thì dừng; không tạo task hoặc bắt đầu Phase 4.
+
+## 2026-07-19 — Phase 4 Slice 4.1 canonical deterministic evaluation
+
+### Objective
+
+Từ exact Phase 3 integration checkpoint `6499cb3aeaf8c346f0a4ec35b94600344aba522d`, triển khai đúng bảy
+canonical incident cases trong `packages/evaluation` và một runner/report path deterministic xuất cùng
+metrics JSON/Markdown cho retrieval, plausible-hypothesis match, evidence/reference support,
+unsupported claims, latency, tool calls và zero-model token use. Không dùng credential, live provider,
+network/model/LLM, automatic mutation, UI redesign, Phase 5 hoặc Level D.
+
+### Completed
+
+Đã đọc operating contract và persistent state bắt buộc, chạy tracked Windows bootstrap bằng
+`ExecutionPolicy Bypass` cùng process-local Node/pnpm/root-bin workaround cho known fallback-pnpm issue,
+xác minh clean detached exact starting HEAD, kiểm tra local/worktree branch collision, và tạo branch duy
+nhất `codex/phase-4-1-canonical-evaluation`. Đã ghi plan scope/acceptance/deferred/validation/next-step
+trước khi sửa source, package hoặc test. Đã thêm strict shared evaluation contracts, đúng bảy ordered
+cases, deterministic provider-neutral fake telemetry, per-case/aggregate metric runner, JSON/Markdown
+reporters, compiled CLI path và focused/regression tests. Level C đã xanh trên coherent inputs.
+
+### Files changed
+
+`packages/shared-types/src/index.ts`; `packages/evaluation/src/index.ts`, `src/cli.ts`, `package.json`;
+`tests/integration/evaluation.test.ts`; `docs/IMPLEMENTATION_PLAN.md`, `docs/REPOSITORY_MAP.md`,
+`docs/TEST_STRATEGY.md`, `docs/KNOWN_ISSUES.md` và entry này. Không đổi fixture/provider, API/web/report,
+root manifest, lockfile, dependency, bootstrap hoặc production browser path.
+
+### Decisions
+
+Evaluation dùng strict shared schemas và exact internal references; default pipeline là provider-neutral
+deterministic fake trên facts đã khai báo. Ratio zero denominator bằng `0`; aggregate cộng numerator và
+denominator trước khi chia. Latency/tool calls lấy từ bounded declared telemetry thay vì wall clock;
+prompt/completion/total tokens luôn bằng `0`. JSON và Markdown phải cùng render từ một validated report.
+
+### Validation performed
+
+Bootstrap PASS sau known process-local PATH workaround. Changed-file Prettier write/check, affected
+ESLint và 6/6 typechecks PASS. Sandboxed Vitest bị chặn trước test bởi known esbuild ancestor-path
+denial; exact scoped retry PASS 5 files, `36/36` tests trong `12.25s`, gồm 7 focused evaluation tests và
+canonical contract/runner/API/web-report regressions. Shared/evaluation/datahub builds PASS trước khi web
+gặp cùng environment denial; scoped retry chỉ cho agent/API/web PASS, web transform 109 modules và build
+`1.54s`, nên đủ 6/6 builds xanh.
+
+Direct runner attempt đầu phát hiện source `.ts` không resolve NodeNext `./index.js` và `C:\tmp` không
+writable trong sandbox. Package script chuyển sang compiled `dist/cli.js`; targeted package formatting
+PASS, runner sau đó ghi cả JSON/Markdown vào ignored build output và dọn sạch. Report có 7 completed/0
+failed; retrieval `14/14`, top-1/top-3 `6/6`, evidence `6/6`, reference support `1`, unsupported `0/18`,
+declared latency `168/24/29 ms`, tool calls `26/3.714286/4`, tokens `0/0/0`. Hash JSON/Markdown lần lượt là
+`A711480268C955AA13D26CBF543E31F7A0F3A1A0C0B0C80DF22779F447DF58ED` và
+`1074A06E64A38A5FB44DC13A5CDD7F2D26C1E89E9D8E10B7C11B1A3A7CE05538`.
+
+Final pre-commit audit PASS cho đúng 10 intended files (8 modified, 2 new): `git diff --check`, full
+tracked/untracked patch/scope/name/stat, high-risk secret/conflict/debug/raw-provider/model scan,
+manifest/lockfile/fixture/provider/browser-path, exact branch/base/ancestry và generated-output review.
+Hai report artifacts đã bị dọn; `packages/evaluation/dist/` chỉ là ignored build output. Các chuỗi
+`secret.invalid`, `do-not-leak` và `confirmed cause` chỉ xuất hiện như negative test sentinel hoặc historical
+docs, và test chứng minh chúng không leak qua report.
+
+### Validation intentionally deferred
+
+Combined browser không chạy vì production browser path không đổi. Level D, live DataHub/provider/model
+evaluation, statistical timing, reliability hardening, Phase 4 closure, Phase 5, deployment,
+auth/persistence và external mutation đều ngoài slice.
+
+### Known issues
+
+Host không có `gh`, đúng như persistent state đã ghi; publication sẽ ưu tiên GitHub connector và dùng
+authenticated in-app browser fallback nếu private repository không hiện qua connector. Remote
+`ls-remote` không tương tác trả exit `1` mà không có branch output; local và tracked-remote refs không có
+collision, nên branch chính được tạo mới mà không overwrite/delete ref cũ. Known fallback-pnpm root-bin
+và esbuild ancestor-path limitations đều đã dùng process-scoped workaround, không yêu cầu repo change.
+
+### Exact next step
+
+Format/check final docs; chạy final diff/secret/conflict/generated/scope/ancestry/worktree audit; tạo một
+conventional commit, push branch, mở stacked Draft PR base `codex/phase-3-integration-checkpoint`, theo dõi
+đúng final-HEAD CI tới terminal và xác minh conflict-free/merge-ready. Không bắt đầu reliability hardening,
+Phase 4 closure hoặc Phase 5.

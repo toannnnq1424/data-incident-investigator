@@ -1,6 +1,6 @@
 # Repository map
 
-Last verified: 2026-07-18 after Phase 1 Slice 1.3.
+Last verified: 2026-07-19 after Phase 4 Slice 4.1.
 
 ## Directories
 
@@ -11,7 +11,7 @@ Last verified: 2026-07-18 after Phase 1 Slice 1.3.
 | `packages/shared-types`   | Zod schemas and shared types                                | `src/index.ts`                                                                |
 | `packages/datahub-client` | Provider-neutral contract and deterministic fixture adapter | `src/index.ts`                                                                |
 | `packages/agent-core`     | Bounded deterministic investigation orchestration           | `src/index.ts`                                                                |
-| `packages/evaluation`     | Evaluation cases and metrics                                | `src/index.ts`                                                                |
+| `packages/evaluation`     | Canonical evaluation cases, runner, metrics, and reporters  | `src/index.ts`, `src/cli.ts`                                                  |
 | `fixtures`                | Deterministic metadata, incidents, and demo data            | `metadata/removed-schema-column.json`, `incidents/removed-schema-column.json` |
 | `tests/integration`       | Cross-package contract and slice tests                      | `contracts.test.ts`, `incidents-api.test.ts`                                  |
 | `tests/smoke`             | Primary health and build smoke tests                        | `health.test.ts`                                                              |
@@ -34,18 +34,19 @@ Last verified: 2026-07-18 after Phase 1 Slice 1.3.
 
 ## Commands
 
-| Command                | Purpose                                |
-| ---------------------- | -------------------------------------- |
-| `pnpm install`         | Install all workspace dependencies.    |
-| `pnpm dev`             | Run web and API development servers.   |
-| `pnpm format:check`    | Repository format check.               |
-| `pnpm lint`            | Repository lint.                       |
-| `pnpm typecheck`       | Recursive workspace type check.        |
-| `pnpm test`            | Vitest unit/integration/smoke tests.   |
-| `pnpm test:e2e:report` | Canonical fixture report browser flow. |
-| `pnpm build`           | Build packages and apps.               |
-| `pnpm smoke`           | Verify API and web build artifacts.    |
-| `pnpm validate`        | Full Phase 0/phase/release validation. |
+| Command                                                         | Purpose                                                                     |
+| --------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| `pnpm install`                                                  | Install all workspace dependencies.                                         |
+| `pnpm dev`                                                      | Run web and API development servers.                                        |
+| `pnpm format:check`                                             | Repository format check.                                                    |
+| `pnpm lint`                                                     | Repository lint.                                                            |
+| `pnpm typecheck`                                                | Recursive workspace type check.                                             |
+| `pnpm test`                                                     | Vitest unit/integration/smoke tests.                                        |
+| `pnpm test:e2e:report`                                          | Canonical fixture report browser flow.                                      |
+| `pnpm --filter @dii/evaluation evaluate -- --output-dir <path>` | Write validated canonical JSON and Markdown evaluation reports after build. |
+| `pnpm build`                                                    | Build packages and apps.                                                    |
+| `pnpm smoke`                                                    | Verify API and web build artifacts.                                         |
+| `pnpm validate`                                                 | Full Phase 0/phase/release validation.                                      |
 
 ## Shared contracts
 
