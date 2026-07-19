@@ -2226,3 +2226,53 @@ timeout change.
 Create and push one conventional checkpoint commit, open a stacked Draft PR against
 `codex/phase-5-1-scenario-demo`, follow exact final-head CI to terminal, verify Draft/conflict-free/
 auto-mergeable state, and stop without merging or starting another task.
+## 2026-07-19 — Slice 5.1 macOS native-select E2E portability fix
+
+### Objective
+
+Sửa đúng browser portability blocker do Mac QA phát hiện tại exact head `78a8fcde`: canonical browser
+gate fail trước submit vì một bare `ArrowDown` không đổi native scenario `<select>` sang
+`removed-schema-column`, trong khi bootstrap, 3 targeted files/28 tests và web build đều PASS.
+
+### Completed
+
+Đã đọc contract/state và kiểm chứng exact diff với PR #32 checkpoint `160aa0da`. Diff đó chỉ đổi stale
+context assertion từ câu hỏi cũ sang canonical question ở đoạn sau submit; nó không thay selection.
+Selector product vẫn là controlled native `<select>` có label, focus và standard `onChange`, nên lỗi được
+phân loại là E2E assumption phụ thuộc OS. Test giữ explicit focus assertion rồi dùng native Playwright
+`selectOption('removed-schema-column')` để phát change event ổn định cross-platform.
+
+### Files changed
+
+`tests/e2e/report-display.spec.mjs`, `docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md` và entry này.
+Không đổi product source, canonical facts, API/provider/model, dependency, manifest hoặc lockfile.
+
+### Decisions
+
+Không cherry-pick PR #32 và không sửa product. Chỉ chạy changed-file format/lint cùng đúng một canonical
+E2E reproducer trên Windows; không rerun bootstrap, 3 targeted files/28 tests, web build hay Level C.
+
+### Validation performed
+
+- Prettier write/check PASS `4.982s`/`2.420s`. Wrapper 30 giây hết hạn khi ESLint còn chạy; exact lint
+  recovery PASS `20.859s`, không rerun formatter xanh.
+- Windows E2E invocation đầu tiên đã vượt selection, prefill và submit, rồi FAIL sau `33.680s` tại exact
+  stale context-question assertion line 269. Áp dụng đúng one-line PR #32, không cherry-pick docs/checkpoint.
+- Final-input Prettier check/ESLint PASS `1.241s`/`3.466s`. Classified affected E2E retry PASS `6867ms`
+  (`13.225s` wall) trên API/web ports `57888`/`57889`, hoàn tất full canonical report flow.
+- Pre-commit audit PASS đúng 4 path dự kiến, zero path thừa/thiếu/untracked, product runtime,
+  manifest/lockfile, generated artifact, secret, conflict, debug/raw-model finding. Cả ports fail-run
+  `64117`/`64118` và final-run `57888`/`57889` đều bind lại được.
+
+### Validation intentionally deferred
+
+Mac rerun chỉ canonical browser gate trên exact new head sau khi PR #31 final-head CI xanh.
+
+### Known issues
+
+Không còn Windows product/test blocker; commit/push, final-head CI và Mac browser-only rerun đang chờ.
+
+### Exact next step
+
+Format/check final evidence docs, audit test/docs-only scope và runtime cleanup, commit/push cùng branch,
+theo dõi exact PR #31 CI tới terminal. Dừng trước merge và giao Mac browser-only rerun exact new head.

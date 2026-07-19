@@ -18,6 +18,18 @@ Last updated: 2026-07-19.
   `codex/phase-5-1-scenario-demo`, exact final-head CI, and Draft/conflict-free/auto-mergeable review
   are pending. Live DataHub, credentials, providers/models/network, mutation, Slice 5.2, Phase 6, and
   subsequent tasks remain deferred.
+- Mac QA at exact Slice 5.1 head `78a8fcde` passed bootstrap, 3 targeted files/28 tests, and the web
+  build, then the one canonical browser gate failed before submit because one bare `ArrowDown` did not
+  change a focused native scenario `<select>` in macOS Chromium. Exact comparison with checkpoint
+  `160aa0da` proves its only E2E change fixes a later stale context-question assertion, not selection.
+  The selector remains a labeled, focusable controlled native select with standard change semantics, so
+  this is classified as a cross-platform test assumption. The focused E2E now asserts focus explicitly
+  and uses `selectOption('removed-schema-column')`; product and previously green test/build inputs are
+  unchanged. The first Windows reproducer crossed selection/submit and exposed only PR #32's known stale
+  context-question assertion; its exact one-line correction was applied without cherry-picking the
+  checkpoint. Final affected format/lint passed and the classified E2E retry passed in `6867ms`
+  (`13.225s` wall) on ports `57888`/`57889`. Mac should rerun only that browser gate on the exact new head
+  after CI.
 - Phase 5 Slice 5.1 passes local Level C, the single combined browser gate, and the pre-commit final audit
   on exact Phase 4 checkpoint `19bb0d3` and branch `codex/phase-5-1-scenario-demo`; publication and CI
   evidence are pending. A strict browser-safe catalog in `@dii/shared-types` now owns the exact

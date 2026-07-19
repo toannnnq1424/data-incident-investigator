@@ -181,9 +181,14 @@ try {
 
   const scenarioSelector = page.getByLabel('Canonical incident scenario');
   await scenarioSelector.focus();
-  await page.keyboard.press('ArrowDown');
+  if (
+    !(await scenarioSelector.evaluate((element) => element === element.ownerDocument.activeElement))
+  ) {
+    fail('Canonical scenario selector did not receive keyboard focus.');
+  }
+  await scenarioSelector.selectOption('removed-schema-column');
   if ((await scenarioSelector.inputValue()) !== 'removed-schema-column') {
-    fail('Native keyboard selection did not choose the first canonical scenario.');
+    fail('Canonical scenario selection did not choose the first scenario.');
   }
   await page
     .getByText(

@@ -2403,6 +2403,59 @@ against `codex/phase-5-1-scenario-demo`, exact final-head CI is terminal green, 
 auto-mergeable state is verified, stop this worker. A later controller may create a separate
 Project/worktree task for Phase 6 only after the checkpoint PR is reviewed and integrated; do not
 create that task, merge the PR, begin Slice 5.2, or begin Phase 6 here.
+#### Targeted cross-platform browser defect — macOS native select
+
+Objective: fix only the Slice 5.1 canonical browser test assumption exposed by Mac QA at exact head
+`78a8fcde7a2f31e782a240a67e2bfe6b901f2333`. Bootstrap, 3 targeted files/28 tests, and the web build
+passed; the one canonical browser gate failed before submit because a focused native `<select>` did not
+change from `manual` after one bare `ArrowDown` in macOS Chromium.
+
+Classification and minimum files: this is a cross-platform E2E test defect, not a product accessibility
+defect. The controlled native selector retains its programmatic label, focusability, exact options,
+selected value, and standard `onChange` contract. Exact diff against checkpoint commit
+`160aa0da22a8e104907cf58b034b701da39bd939` changes only a later stale context-question assertion and
+does not fix selection. Change only `tests/e2e/report-display.spec.mjs` to assert focus explicitly and
+use Playwright's native `selectOption` action for a deterministic cross-platform change event. Update
+only this plan, `docs/KNOWN_ISSUES.md`, and the latest `docs/SESSION_LOG.md` entry for durable evidence.
+
+Acceptance: the scenario selector is found through its accessible label, receives focus, selects exact
+`removed-schema-column`, renders the canonical editable prefill, and completes the unchanged full
+report flow. Product source, canonical facts, API/provider/model behavior, dependencies, manifests,
+lockfile, and prior green test/build inputs remain byte-identical.
+
+Validation commands, once on the coherent final input:
+
+- `pnpm exec prettier --write tests/e2e/report-display.spec.mjs docs/IMPLEMENTATION_PLAN.md docs/KNOWN_ISSUES.md docs/SESSION_LOG.md`
+- `pnpm exec prettier --check tests/e2e/report-display.spec.mjs docs/IMPLEMENTATION_PLAN.md docs/KNOWN_ISSUES.md docs/SESSION_LOG.md`
+- `pnpm exec eslint tests/e2e/report-display.spec.mjs`
+- exactly one `pnpm test:e2e:report`
+- final changed-path, diff, secret/conflict/debug/generated, manifest/lockfile/dependency, branch/base,
+  worktree, and process/port audit before one conventional fix commit
+
+Deferred: Mac reruns only the canonical browser gate on the exact new head. Do not rerun bootstrap,
+the already-green 3 targeted files/28 tests, web build, Level C, or any unrelated browser/test gate.
+
+Validation result on Windows, 2026-07-19:
+
+- Changed-file Prettier write/check passed in `4.982s`/`2.420s`. The initial 30-second wrapper expired
+  only while ESLint was still running; exact ESLint recovery passed in `20.859s`, without rerunning the
+  green formatter steps.
+- The first canonical E2E invocation selected the scenario, rendered the prefill, and submitted, proving
+  the macOS selection blocker was removed. It then failed after `33.680s` on the exact stale context
+  question covered by PR #32's one-line test diff. Applying only that line changed the expected text to
+  `Why did revenue drop after the morning warehouse refresh?`; no checkpoint/docs were cherry-picked.
+- On the coherent final test input, affected Prettier check and ESLint passed in `1.241s`/`3.466s`. The
+  classified affected E2E retry passed in `6867ms` (`13.225s` wall) on API/web ports `57888`/`57889`,
+  completing the full canonical report flow. No product, dependency, manifest, lockfile, targeted-test,
+  build, or Level C input changed.
+- Pre-commit audit passed for exactly the intended E2E plus three persistent docs: zero unexpected,
+  missing, untracked, product-runtime, manifest/lockfile, generated, secret, conflict, or debug/raw-model
+  path/finding. Both failed-run ports `64117`/`64118` and final-run ports `57888`/`57889` rebound cleanly.
+
+Exact next step: update final evidence docs, format/check them, audit the intended test/docs-only diff and
+runtime cleanup, create one conventional fix commit, push normally to PR #31, follow only the exact
+new-head CI to terminal, retain Draft/main/conflict-free state, and stop before merge for Mac browser-only
+rerun.
 
 ## Phase 6 — Minimum production readiness
 
