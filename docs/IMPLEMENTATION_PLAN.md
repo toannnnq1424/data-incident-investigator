@@ -2403,6 +2403,7 @@ against `codex/phase-5-1-scenario-demo`, exact final-head CI is terminal green, 
 auto-mergeable state is verified, stop this worker. A later controller may create a separate
 Project/worktree task for Phase 6 only after the checkpoint PR is reviewed and integrated; do not
 create that task, merge the PR, begin Slice 5.2, or begin Phase 6 here.
+
 #### Targeted cross-platform browser defect — macOS native select
 
 Objective: fix only the Slice 5.1 canonical browser test assumption exposed by Mac QA at exact head
