@@ -2,6 +2,21 @@
 
 Last updated: 2026-07-19.
 
+- Phase 4 Slice 4.1 canonical evaluation is implemented locally from exact Phase 3 checkpoint
+  `6499cb3`. Strict shared schemas and `packages/evaluation` now own exactly seven stable ordered cases,
+  a deterministic provider-neutral fake runner, JSON/Markdown reporters, safe per-case failure, and
+  bounded audit telemetry. Level C passes changed-file format, affected lint, six typechecks, 5 files/
+  36 tests, and six builds; the known sandbox esbuild ancestor denial required scoped test/web-build
+  retries without a code workaround. The compiled runner produced 7 completed/0 failed cases with
+  retrieval/top-1/top-3/evidence/reference-support all `1`, unsupported claims `0/18`, declared latency
+  `168/24/29 ms`, tool calls `26/3.714286/4`, and tokens `0/0/0`; both temporary artifacts were removed.
+  The initial source-CLI attempt exposed NodeNext `.js` remapping under raw TypeScript execution, so the
+  package command now runs its already-built `dist/cli.js`; no dependency or lockfile changed. Browser
+  E2E is intentionally not rerun because production browser inputs are unchanged. Level D, live/provider/
+  model evaluation, reliability hardening, Phase 4 closure, and publication/CI remain deferred. Final
+  pre-commit audit is clean for ten intended files: whitespace, full tracked/untracked scope, secret/
+  conflict/debug/raw-provider/model sentinels, ignored/generated output, manifest/lockfile, out-of-scope
+  product paths, exact base ancestry, and branch state all passed.
 - Phase 3 local integration closure passes on exact Slice 3.4 final HEAD `c316f8f` on branch
   `codex/phase-3-integration-checkpoint`. Exactly one `pnpm validate` passed format/lint, six
   typechecks, 27 files/186 tests, six builds, and two smoke artifacts in about `30.0s`. Exactly one

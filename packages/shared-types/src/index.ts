@@ -2162,6 +2162,704 @@ export const IncidentRetrievalResponseSchema = z
     }
   });
 
+export const CANONICAL_EVALUATION_CASE_IDS = [
+  'removed-schema-column',
+  'stale-pipeline',
+  'upstream-type-change',
+  'wrong-dashboard-dataset',
+  'delayed-ingestion',
+  'incorrect-owner-or-domain',
+  'insufficient-evidence',
+] as const;
+
+export const EVALUATION_MAX_FACTS = 20;
+export const EVALUATION_MAX_ENTITIES = 20;
+export const EVALUATION_MAX_CHANGES = 10;
+export const EVALUATION_MAX_EVIDENCE = 20;
+export const EVALUATION_MAX_HYPOTHESES = 3;
+export const EVALUATION_MAX_REMEDIATIONS = 5;
+export const EVALUATION_MAX_CLAIMS = 30;
+export const EVALUATION_MAX_TOOL_CALLS = 10;
+export const EVALUATION_MAX_LATENCY_MS = 120_000;
+export const EVALUATION_RATE_DECIMALS = 6;
+
+const EvaluationStableIdSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(240)
+  .regex(/^[a-z0-9]+(?:[-.][a-z0-9]+)*$/);
+const EvaluationUrnSchema = z.string().trim().min(1).max(1_000);
+const EvaluationReferenceArraySchema = z.array(EvaluationStableIdSchema).max(10);
+const EvaluationEntityReferenceArraySchema = z.array(EvaluationUrnSchema).max(10);
+
+export const CanonicalEvaluationCaseIdSchema = z.enum(CANONICAL_EVALUATION_CASE_IDS);
+
+export const EvaluationEntitySchema = z
+  .object({
+    urn: EvaluationUrnSchema,
+    name: z.string().trim().min(1).max(300),
+    kind: EntityKindSchema,
+  })
+  .strict();
+
+export const EvaluationChangeSchema = z
+  .object({
+    id: EvaluationStableIdSchema,
+    entityUrn: EvaluationUrnSchema,
+    category: z.enum(['schema', 'pipeline', 'lineage', 'ingestion', 'ownership', 'domain']),
+    operation: z.enum(['added', 'modified', 'removed', 'failed', 'delayed']),
+    observedAt: CanonicalUtcTimestampSchema,
+    summary: z.string().trim().min(1).max(500),
+  })
+  .strict();
+
+export const EvaluationFactSchema = z
+  .object({
+    id: EvaluationStableIdSchema,
+    statement: z.string().trim().min(1).max(500),
+    entityUrns: EvaluationEntityReferenceArraySchema,
+    changeIds: EvaluationReferenceArraySchema,
+  })
+  .strict();
+
+export const EvaluationEvidenceSchema = z
+  .object({
+    id: EvaluationStableIdSchema,
+    statement: z.string().trim().min(1).max(500),
+    factIds: EvaluationReferenceArraySchema,
+    entityUrns: EvaluationEntityReferenceArraySchema,
+    changeIds: EvaluationReferenceArraySchema,
+  })
+  .strict();
+
+export const EvaluationHypothesisSchema = z
+  .object({
+    id: EvaluationStableIdSchema,
+    rank: z.number().int().min(1).max(EVALUATION_MAX_HYPOTHESES),
+    summary: z.string().trim().min(1).max(500),
+    evidenceIds: EvaluationReferenceArraySchema.min(1),
+    entityUrns: EvaluationEntityReferenceArraySchema,
+    changeIds: EvaluationReferenceArraySchema,
+  })
+  .strict()
+  .superRefine((hypothesis, context) => {
+    const assertedCopy = hypothesis.summary.replace(
+      /\bnot (?:a |the )?confirmed (?:root )?cause\b/gi,
+      '',
+    );
+    if (
+      !hypothesis.summary.startsWith('Plausible contributor:') ||
+      /\b(?:confirmed (?:root )?cause|caused the incident|definitive cause)\b/i.test(assertedCopy)
+    ) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Evaluation hypotheses must remain non-causal plausible contributors.',
+        path: ['summary'],
+      });
+    }
+  });
+
+export const EvaluationRemediationSchema = z
+  .object({
+    id: EvaluationStableIdSchema,
+    title: z.string().trim().min(1).max(300),
+    status: z.literal('not_executed'),
+    hypothesisIds: EvaluationReferenceArraySchema.min(1),
+    evidenceIds: EvaluationReferenceArraySchema.min(1),
+    entityUrns: EvaluationEntityReferenceArraySchema,
+    changeIds: EvaluationReferenceArraySchema,
+  })
+  .strict()
+  .superRefine((remediation, context) => {
+    if (!/^(?:Recommended verification|Potential remediation):/.test(remediation.title)) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Evaluation remediation must use bounded non-executing wording.',
+        path: ['title'],
+      });
+    }
+  });
+
+const EvaluationOutcomeShape = {
+  facts: z.array(EvaluationFactSchema).max(EVALUATION_MAX_FACTS),
+  entities: z.array(EvaluationEntitySchema).max(EVALUATION_MAX_ENTITIES),
+  changes: z.array(EvaluationChangeSchema).max(EVALUATION_MAX_CHANGES),
+  evidence: z.array(EvaluationEvidenceSchema).max(EVALUATION_MAX_EVIDENCE),
+  hypotheses: z.array(EvaluationHypothesisSchema).max(EVALUATION_MAX_HYPOTHESES),
+  remediations: z.array(EvaluationRemediationSchema).max(EVALUATION_MAX_REMEDIATIONS),
+};
+
+type EvaluationOutcomeForRefinement = {
+  facts: z.infer<typeof EvaluationFactSchema>[];
+  entities: z.infer<typeof EvaluationEntitySchema>[];
+  changes: z.infer<typeof EvaluationChangeSchema>[];
+  evidence: z.infer<typeof EvaluationEvidenceSchema>[];
+  hypotheses: z.infer<typeof EvaluationHypothesisSchema>[];
+  remediations: z.infer<typeof EvaluationRemediationSchema>[];
+};
+
+function refineEvaluationReferenceArray(
+  values: string[],
+  available: Set<string>,
+  context: z.RefinementCtx,
+  path: (string | number)[],
+  kind: string,
+) {
+  const seen = new Set<string>();
+  values.forEach((value, index) => {
+    if (seen.has(value)) {
+      context.addIssue({
+        code: 'custom',
+        message: `Evaluation ${kind} references must be unique.`,
+        path: [...path, index],
+      });
+    }
+    if (!available.has(value)) {
+      context.addIssue({
+        code: 'custom',
+        message: `Evaluation ${kind} reference does not resolve: ${value}`,
+        path: [...path, index],
+      });
+    }
+    seen.add(value);
+  });
+}
+
+function refineEvaluationCatalog(items: { id: string }[], context: z.RefinementCtx, path: string) {
+  const ids = new Set<string>();
+  items.forEach((item, index) => {
+    if (ids.has(item.id)) {
+      context.addIssue({
+        code: 'custom',
+        message: `Evaluation ${path} IDs must be unique.`,
+        path: [path, index, 'id'],
+      });
+    }
+    ids.add(item.id);
+  });
+}
+
+function refineEvaluationOutcome(value: EvaluationOutcomeForRefinement, context: z.RefinementCtx) {
+  refineEvaluationCatalog(value.facts, context, 'facts');
+  refineEvaluationCatalog(value.changes, context, 'changes');
+  refineEvaluationCatalog(value.evidence, context, 'evidence');
+  refineEvaluationCatalog(value.hypotheses, context, 'hypotheses');
+  refineEvaluationCatalog(value.remediations, context, 'remediations');
+
+  const entityUrns = new Set<string>();
+  value.entities.forEach((entity, index) => {
+    if (entityUrns.has(entity.urn)) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Evaluation entity URNs must be unique.',
+        path: ['entities', index, 'urn'],
+      });
+    }
+    entityUrns.add(entity.urn);
+  });
+  const factIds = new Set(value.facts.map((item) => item.id));
+  const changeIds = new Set(value.changes.map((item) => item.id));
+  const evidenceIds = new Set(value.evidence.map((item) => item.id));
+  const hypothesisIds = new Set(value.hypotheses.map((item) => item.id));
+
+  value.changes.forEach((change, index) => {
+    refineEvaluationReferenceArray(
+      [change.entityUrn],
+      entityUrns,
+      context,
+      ['changes', index, 'entityUrn'],
+      'change entity',
+    );
+  });
+  value.facts.forEach((fact, index) => {
+    refineEvaluationReferenceArray(
+      fact.entityUrns,
+      entityUrns,
+      context,
+      ['facts', index, 'entityUrns'],
+      'fact entity',
+    );
+    refineEvaluationReferenceArray(
+      fact.changeIds,
+      changeIds,
+      context,
+      ['facts', index, 'changeIds'],
+      'fact change',
+    );
+  });
+  value.evidence.forEach((evidence, index) => {
+    refineEvaluationReferenceArray(
+      evidence.factIds,
+      factIds,
+      context,
+      ['evidence', index, 'factIds'],
+      'evidence fact',
+    );
+    refineEvaluationReferenceArray(
+      evidence.entityUrns,
+      entityUrns,
+      context,
+      ['evidence', index, 'entityUrns'],
+      'evidence entity',
+    );
+    refineEvaluationReferenceArray(
+      evidence.changeIds,
+      changeIds,
+      context,
+      ['evidence', index, 'changeIds'],
+      'evidence change',
+    );
+  });
+  value.hypotheses.forEach((hypothesis, index) => {
+    if (hypothesis.rank !== index + 1) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Evaluation hypothesis ranks must be contiguous from one.',
+        path: ['hypotheses', index, 'rank'],
+      });
+    }
+    refineEvaluationReferenceArray(
+      hypothesis.evidenceIds,
+      evidenceIds,
+      context,
+      ['hypotheses', index, 'evidenceIds'],
+      'hypothesis evidence',
+    );
+    refineEvaluationReferenceArray(
+      hypothesis.entityUrns,
+      entityUrns,
+      context,
+      ['hypotheses', index, 'entityUrns'],
+      'hypothesis entity',
+    );
+    refineEvaluationReferenceArray(
+      hypothesis.changeIds,
+      changeIds,
+      context,
+      ['hypotheses', index, 'changeIds'],
+      'hypothesis change',
+    );
+  });
+  value.remediations.forEach((remediation, index) => {
+    refineEvaluationReferenceArray(
+      remediation.hypothesisIds,
+      hypothesisIds,
+      context,
+      ['remediations', index, 'hypothesisIds'],
+      'remediation hypothesis',
+    );
+    refineEvaluationReferenceArray(
+      remediation.evidenceIds,
+      evidenceIds,
+      context,
+      ['remediations', index, 'evidenceIds'],
+      'remediation evidence',
+    );
+    refineEvaluationReferenceArray(
+      remediation.entityUrns,
+      entityUrns,
+      context,
+      ['remediations', index, 'entityUrns'],
+      'remediation entity',
+    );
+    refineEvaluationReferenceArray(
+      remediation.changeIds,
+      changeIds,
+      context,
+      ['remediations', index, 'changeIds'],
+      'remediation change',
+    );
+  });
+}
+
+export const EvaluationExpectedOutcomeSchema = z
+  .object(EvaluationOutcomeShape)
+  .strict()
+  .superRefine(refineEvaluationOutcome);
+
+export const EvaluationCaseSchema = z
+  .object({
+    id: CanonicalEvaluationCaseIdSchema,
+    title: z.string().trim().min(1).max(200),
+    sourceMode: z.literal('fixture'),
+    incident: IncidentRequestSchema,
+    expected: EvaluationExpectedOutcomeSchema,
+  })
+  .strict();
+
+export const CanonicalEvaluationSuiteSchema = z
+  .array(EvaluationCaseSchema)
+  .length(CANONICAL_EVALUATION_CASE_IDS.length)
+  .superRefine((cases, context) => {
+    cases.forEach((evaluationCase, index) => {
+      if (evaluationCase.id !== CANONICAL_EVALUATION_CASE_IDS[index]) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Canonical evaluation cases must follow the shared stable order.',
+          path: [index, 'id'],
+        });
+      }
+    });
+  });
+
+export const EvaluationToolNameSchema = z.enum([
+  'metadata.health',
+  'metadata.search',
+  'metadata.lineage',
+  'metadata.recent_changes',
+]);
+
+export const EvaluationToolCallSchema = z
+  .object({
+    sequence: z.number().int().min(1).max(EVALUATION_MAX_TOOL_CALLS),
+    tool: EvaluationToolNameSchema,
+    status: z.enum(['completed', 'failed']),
+    durationMs: z.number().int().min(0).max(EVALUATION_MAX_LATENCY_MS),
+  })
+  .strict();
+
+export const EvaluationTokenUsageSchema = z
+  .object({
+    promptTokens: z.literal(0),
+    completionTokens: z.literal(0),
+    totalTokens: z.literal(0),
+  })
+  .strict();
+
+export const EvaluationTelemetrySchema = z
+  .object({
+    latencyMs: z.number().int().min(0).max(EVALUATION_MAX_LATENCY_MS),
+    toolCalls: z.array(EvaluationToolCallSchema).max(EVALUATION_MAX_TOOL_CALLS),
+    tokenUsage: EvaluationTokenUsageSchema,
+  })
+  .strict()
+  .superRefine((telemetry, context) => {
+    telemetry.toolCalls.forEach((call, index) => {
+      if (call.sequence !== index + 1) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Evaluation tool calls must have contiguous stable sequence numbers.',
+          path: ['toolCalls', index, 'sequence'],
+        });
+      }
+    });
+    const declaredToolDuration = telemetry.toolCalls.reduce(
+      (total, call) => total + call.durationMs,
+      0,
+    );
+    if (declaredToolDuration > telemetry.latencyMs) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Evaluation tool-call durations cannot exceed declared case latency.',
+        path: ['latencyMs'],
+      });
+    }
+  });
+
+export const EvaluationClaimSchema = z
+  .object({
+    id: EvaluationStableIdSchema,
+    kind: z.enum(['fact', 'inference', 'recommendation']),
+    statement: z.string().trim().min(1).max(500),
+    evidenceIds: EvaluationReferenceArraySchema,
+  })
+  .strict();
+
+export const EvaluationObservationSchema = z
+  .object({
+    ...EvaluationOutcomeShape,
+    claims: z.array(EvaluationClaimSchema).max(EVALUATION_MAX_CLAIMS),
+    telemetry: EvaluationTelemetrySchema,
+  })
+  .strict()
+  .superRefine((observation, context) => {
+    refineEvaluationOutcome(observation, context);
+    refineEvaluationCatalog(observation.claims, context, 'claims');
+    const evidenceIds = new Set(observation.evidence.map((item) => item.id));
+    observation.claims.forEach((claim, index) => {
+      refineEvaluationReferenceArray(
+        claim.evidenceIds,
+        evidenceIds,
+        context,
+        ['claims', index, 'evidenceIds'],
+        'claim evidence',
+      );
+    });
+  });
+
+function evaluationRoundedRatio(numerator: number, denominator: number) {
+  if (denominator === 0) return 0;
+  return Number((numerator / denominator).toFixed(EVALUATION_RATE_DECIMALS));
+}
+
+export const EvaluationMetricRateSchema = z
+  .object({
+    numerator: z.number().int().min(0),
+    denominator: z.number().int().min(0),
+    value: z.number().min(0).max(1),
+  })
+  .strict()
+  .superRefine((metric, context) => {
+    if (metric.numerator > metric.denominator) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Evaluation metric numerator cannot exceed its denominator.',
+        path: ['numerator'],
+      });
+    }
+    if (metric.value !== evaluationRoundedRatio(metric.numerator, metric.denominator)) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Evaluation metric value does not match the shared ratio definition.',
+        path: ['value'],
+      });
+    }
+  });
+
+export const EvaluationMetricSetSchema = z
+  .object({
+    retrieval: z
+      .object({
+        precision: EvaluationMetricRateSchema,
+        recall: EvaluationMetricRateSchema,
+      })
+      .strict(),
+    hypotheses: z
+      .object({
+        top1Match: z.boolean(),
+        top1Accuracy: EvaluationMetricRateSchema,
+        top3Recall: EvaluationMetricRateSchema,
+      })
+      .strict(),
+    evidence: z
+      .object({
+        precision: EvaluationMetricRateSchema,
+        recall: EvaluationMetricRateSchema,
+        referenceSupport: EvaluationMetricRateSchema,
+      })
+      .strict(),
+    unsupportedClaims: z
+      .object({
+        count: z.number().int().min(0).max(EVALUATION_MAX_CLAIMS),
+        rate: EvaluationMetricRateSchema,
+      })
+      .strict(),
+    latencyMs: z.number().int().min(0).max(EVALUATION_MAX_LATENCY_MS),
+    toolCallCount: z.number().int().min(0).max(EVALUATION_MAX_TOOL_CALLS),
+    tokenUsage: EvaluationTokenUsageSchema,
+  })
+  .strict()
+  .superRefine((metrics, context) => {
+    if (metrics.hypotheses.top1Match !== (metrics.hypotheses.top1Accuracy.numerator === 1)) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Top-1 match must agree with its accuracy numerator.',
+        path: ['hypotheses', 'top1Match'],
+      });
+    }
+    if (metrics.unsupportedClaims.count !== metrics.unsupportedClaims.rate.numerator) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Unsupported-claim count must agree with its rate numerator.',
+        path: ['unsupportedClaims', 'count'],
+      });
+    }
+  });
+
+export const EvaluationCaseSuccessSchema = z
+  .object({
+    caseId: CanonicalEvaluationCaseIdSchema,
+    status: z.literal('completed'),
+    observation: EvaluationObservationSchema,
+    metrics: EvaluationMetricSetSchema,
+  })
+  .strict()
+  .superRefine((result, context) => {
+    if (result.metrics.latencyMs !== result.observation.telemetry.latencyMs) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Case latency metric must come from validated observation telemetry.',
+        path: ['metrics', 'latencyMs'],
+      });
+    }
+    if (result.metrics.toolCallCount !== result.observation.telemetry.toolCalls.length) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Case tool-call count must come from validated observation telemetry.',
+        path: ['metrics', 'toolCallCount'],
+      });
+    }
+  });
+
+export const EvaluationCaseFailureSchema = z
+  .object({
+    caseId: CanonicalEvaluationCaseIdSchema,
+    status: z.literal('failed'),
+    error: z
+      .object({
+        code: z.literal('evaluation_case_failed'),
+        message: z.literal('Canonical evaluation case failed safely.'),
+      })
+      .strict(),
+    tokenUsage: EvaluationTokenUsageSchema,
+  })
+  .strict();
+
+export const EvaluationCaseResultSchema = z.discriminatedUnion('status', [
+  EvaluationCaseSuccessSchema,
+  EvaluationCaseFailureSchema,
+]);
+
+const EvaluationSummarySchema = z
+  .object({
+    total: z.number().int().min(0),
+    average: z.number().min(0),
+    max: z.number().int().min(0),
+  })
+  .strict();
+
+export const EvaluationAggregateMetricsSchema = z
+  .object({
+    retrieval: z
+      .object({
+        precision: EvaluationMetricRateSchema,
+        recall: EvaluationMetricRateSchema,
+      })
+      .strict(),
+    hypotheses: z
+      .object({
+        top1Accuracy: EvaluationMetricRateSchema,
+        top3Recall: EvaluationMetricRateSchema,
+      })
+      .strict(),
+    evidence: z
+      .object({
+        precision: EvaluationMetricRateSchema,
+        recall: EvaluationMetricRateSchema,
+        referenceSupport: EvaluationMetricRateSchema,
+      })
+      .strict(),
+    unsupportedClaims: z
+      .object({
+        count: z.number().int().min(0),
+        rate: EvaluationMetricRateSchema,
+      })
+      .strict(),
+    latencyMs: EvaluationSummarySchema,
+    toolCalls: EvaluationSummarySchema,
+    tokenUsage: EvaluationTokenUsageSchema,
+  })
+  .strict();
+
+export const EvaluationReportSchema = z
+  .object({
+    schemaVersion: z.literal(1),
+    suiteId: z.literal('canonical-incidents-v1'),
+    caseOrder: z
+      .array(CanonicalEvaluationCaseIdSchema)
+      .length(CANONICAL_EVALUATION_CASE_IDS.length),
+    caseCount: z.literal(CANONICAL_EVALUATION_CASE_IDS.length),
+    completedCaseCount: z.number().int().min(0).max(CANONICAL_EVALUATION_CASE_IDS.length),
+    failedCaseCount: z.number().int().min(0).max(CANONICAL_EVALUATION_CASE_IDS.length),
+    results: z.array(EvaluationCaseResultSchema).length(CANONICAL_EVALUATION_CASE_IDS.length),
+    metrics: EvaluationAggregateMetricsSchema,
+  })
+  .strict()
+  .superRefine((report, context) => {
+    report.caseOrder.forEach((caseId, index) => {
+      if (caseId !== CANONICAL_EVALUATION_CASE_IDS[index]) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Evaluation report case order must match the canonical suite.',
+          path: ['caseOrder', index],
+        });
+      }
+      if (report.results[index]?.caseId !== caseId) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Evaluation results must follow the declared canonical case order.',
+          path: ['results', index, 'caseId'],
+        });
+      }
+    });
+    const completed = report.results.filter((result) => result.status === 'completed');
+    const failed = report.results.length - completed.length;
+    if (report.completedCaseCount !== completed.length || report.failedCaseCount !== failed) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Evaluation report lifecycle counts do not match case results.',
+        path: ['completedCaseCount'],
+      });
+    }
+
+    const rates = [
+      ['retrieval', 'precision', report.metrics.retrieval.precision],
+      ['retrieval', 'recall', report.metrics.retrieval.recall],
+      ['hypotheses', 'top1Accuracy', report.metrics.hypotheses.top1Accuracy],
+      ['hypotheses', 'top3Recall', report.metrics.hypotheses.top3Recall],
+      ['evidence', 'precision', report.metrics.evidence.precision],
+      ['evidence', 'recall', report.metrics.evidence.recall],
+      ['evidence', 'referenceSupport', report.metrics.evidence.referenceSupport],
+      ['unsupportedClaims', 'rate', report.metrics.unsupportedClaims.rate],
+    ] as const;
+    for (const [group, metricName, aggregate] of rates) {
+      const componentRates = completed.map((result) => {
+        if (group === 'retrieval') return result.metrics.retrieval[metricName];
+        if (group === 'hypotheses') return result.metrics.hypotheses[metricName];
+        if (group === 'evidence') return result.metrics.evidence[metricName];
+        return result.metrics.unsupportedClaims.rate;
+      });
+      const numerator = componentRates.reduce((total, metric) => total + metric.numerator, 0);
+      const denominator = componentRates.reduce((total, metric) => total + metric.denominator, 0);
+      if (
+        aggregate.numerator !== numerator ||
+        aggregate.denominator !== denominator ||
+        aggregate.value !== evaluationRoundedRatio(numerator, denominator)
+      ) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Aggregate evaluation rates must be recomputed from summed case counts.',
+          path: ['metrics', group, metricName],
+        });
+      }
+    }
+
+    const latencyValues = completed.map((result) => result.metrics.latencyMs);
+    const toolValues = completed.map((result) => result.metrics.toolCallCount);
+    const validateSummary = (
+      values: number[],
+      summary: z.infer<typeof EvaluationSummarySchema>,
+      path: string,
+    ) => {
+      const total = values.reduce((sum, value) => sum + value, 0);
+      const average = values.length
+        ? Number((total / values.length).toFixed(EVALUATION_RATE_DECIMALS))
+        : 0;
+      const max = values.length ? Math.max(...values) : 0;
+      if (summary.total !== total || summary.average !== average || summary.max !== max) {
+        context.addIssue({
+          code: 'custom',
+          message: `Aggregate ${path} summary must be recomputed from completed cases.`,
+          path: ['metrics', path],
+        });
+      }
+    };
+    validateSummary(latencyValues, report.metrics.latencyMs, 'latencyMs');
+    validateSummary(toolValues, report.metrics.toolCalls, 'toolCalls');
+    const unsupportedCount = completed.reduce(
+      (total, result) => total + result.metrics.unsupportedClaims.count,
+      0,
+    );
+    if (report.metrics.unsupportedClaims.count !== unsupportedCount) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Aggregate unsupported-claim count must equal completed case counts.',
+        path: ['metrics', 'unsupportedClaims', 'count'],
+      });
+    }
+  });
+
 export type EntityKind = z.infer<typeof EntityKindSchema>;
 export type EntityRef = z.infer<typeof EntityRefSchema>;
 export type MetadataEntitySearchRequest = z.infer<typeof MetadataEntitySearchRequestSchema>;
@@ -2219,3 +2917,22 @@ export type IncidentRetrievalResponse = z.infer<typeof IncidentRetrievalResponse
 export type ApiError = z.infer<typeof ApiErrorSchema>;
 export type Evidence = z.infer<typeof EvidenceSchema>;
 export type InvestigationReport = z.infer<typeof InvestigationReportSchema>;
+export type CanonicalEvaluationCaseId = z.infer<typeof CanonicalEvaluationCaseIdSchema>;
+export type EvaluationEntity = z.infer<typeof EvaluationEntitySchema>;
+export type EvaluationChange = z.infer<typeof EvaluationChangeSchema>;
+export type EvaluationFact = z.infer<typeof EvaluationFactSchema>;
+export type EvaluationEvidence = z.infer<typeof EvaluationEvidenceSchema>;
+export type EvaluationHypothesis = z.infer<typeof EvaluationHypothesisSchema>;
+export type EvaluationRemediation = z.infer<typeof EvaluationRemediationSchema>;
+export type EvaluationExpectedOutcome = z.infer<typeof EvaluationExpectedOutcomeSchema>;
+export type EvaluationCase = z.infer<typeof EvaluationCaseSchema>;
+export type EvaluationToolCall = z.infer<typeof EvaluationToolCallSchema>;
+export type EvaluationTokenUsage = z.infer<typeof EvaluationTokenUsageSchema>;
+export type EvaluationTelemetry = z.infer<typeof EvaluationTelemetrySchema>;
+export type EvaluationClaim = z.infer<typeof EvaluationClaimSchema>;
+export type EvaluationObservation = z.infer<typeof EvaluationObservationSchema>;
+export type EvaluationMetricRate = z.infer<typeof EvaluationMetricRateSchema>;
+export type EvaluationMetricSet = z.infer<typeof EvaluationMetricSetSchema>;
+export type EvaluationCaseResult = z.infer<typeof EvaluationCaseResultSchema>;
+export type EvaluationAggregateMetrics = z.infer<typeof EvaluationAggregateMetricsSchema>;
+export type EvaluationReport = z.infer<typeof EvaluationReportSchema>;

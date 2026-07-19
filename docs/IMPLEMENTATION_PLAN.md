@@ -1889,6 +1889,139 @@ and fallback. Completion requires fact/inference/missing-information separation 
 Build the seven canonical incident cases and output Markdown/JSON metrics for retrieval, root cause,
 evidence, unsupported claims, latency, tool calls, and token use.
 
+### Slice 4.1 — Canonical deterministic evaluation
+
+Status: Level C passed locally on `codex/phase-4-1-canonical-evaluation` from exact Phase 3 integration
+checkpoint `6499cb3aeaf8c346f0a4ec35b94600344aba522d`. Publication, final-HEAD CI, and merge-readiness
+verification are pending.
+
+Objective: deliver one credential-free vertical slice in `packages/evaluation` containing exactly the
+seven product-spec canonical incident cases and a deterministic runner/report path that evaluates the
+existing provider-neutral fixture/fake boundary and renders the same validated metrics as JSON and
+Markdown. This slice measures retrieval, plausible-hypothesis matching, evidence/reference support,
+unsupported claims, declared fixture latency, tool calls, and the zero-model token boundary without
+changing the API, web UI, canonical demo, provider adapters, or production report.
+
+Minimum files:
+
+- `packages/shared-types/src/index.ts` for strict evaluation case, observation, telemetry, per-case
+  result, aggregate metrics, safe failure, and report schemas with bounded arrays, stable identifiers,
+  unknown-field rejection, and cross-reference validation.
+- `packages/evaluation/src/index.ts` for the ordered seven-case catalog, deterministic fixture/fake
+  observations, metric math, runner, aggregate report, and JSON/Markdown serializers. A small package
+  runner entrypoint and package script may be added only if needed to exercise both serializations
+  without committing generated output.
+- `tests/integration/evaluation.test.ts` plus directly affected contract/report regressions for schema
+  strictness, exactly seven stable case IDs/order, repeatability, metric math, zero denominators,
+  JSON/Markdown consistency, dangling/unsupported references and claims, safe failures, zero token
+  use, and unchanged canonical investigation behavior.
+- `docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md`, and `docs/SESSION_LOG.md` for scope, exact metric
+  definitions, validation evidence, deferred work, and handoff. Update `docs/REPOSITORY_MAP.md` only if
+  an entrypoint or directory responsibility changes.
+
+Acceptance criteria:
+
+- The catalog contains exactly these IDs in this order: `removed-schema-column`, `stale-pipeline`,
+  `upstream-type-change`, `wrong-dashboard-dataset`, `delayed-ingestion`,
+  `incorrect-owner-or-domain`, and `insufficient-evidence`. Every case has bounded incident input and
+  stable expected fact, entity, change, evidence, plausible-hypothesis, and remediation references;
+  every reference resolves inside that case and no expected item states causal certainty.
+- Case and report schemas are owned by `@dii/shared-types`, are strict at every object boundary, cap
+  collections/text/numeric telemetry, require unique stable IDs, and reject dangling or mismatched
+  entity/change/evidence/hypothesis/remediation references. Observations may contain an unsupported
+  claim only as an explicit claim with no fabricated reference; any supplied reference must resolve.
+- The default evaluation pipeline is a provider-neutral deterministic fake over the declared canonical
+  case facts. It performs no credential/environment read, live DataHub/network/provider/model/LLM call,
+  retry, clock-dependent ranking, external mutation, or automatic remediation, and it never converts a
+  plausible hypothesis into a confirmed cause.
+- Retrieval precision/recall, plausible-hypothesis top-1 match and top-3 recall, evidence/reference
+  precision/recall, unsupported-claim count/rate, latency, tool-call count, and prompt/completion/total
+  token use are computed from validated expected versus observed IDs. All ratios use one documented
+  bounded helper and return `0` for a zero denominator; aggregate values are recomputed from summed
+  numerators/denominators rather than averaging rounded case rates.
+- Latency and tool-call metrics come from bounded observation telemetry emitted by the fake pipeline,
+  not wall-clock test duration. Token usage is exactly prompt `0`, completion `0`, total `0` for every
+  case and aggregate because Slice 4.1 has no model boundary. Tool events are stable, ordered, bounded,
+  and counted from validated entries rather than a caller-supplied total.
+- Repeating the ordered suite produces byte-identical JSON and Markdown. Both serializers consume the
+  same schema-validated report, expose the same case order/count and metric values, and include no raw
+  error, provider payload, secret, timestamp generated from the current clock, or generated artifact in
+  Git.
+- A case pipeline failure becomes a bounded sanitized `evaluation_case_failed` result and does not
+  abort remaining cases, echo the raw exception, invent observed facts, or create non-zero token use.
+  Malformed observations and unsupported/dangling references fail safely at the schema boundary.
+- Focused schema/catalog/repeatability/report/metric/safe-failure tests pass together with directly
+  affected canonical contracts, runner, API, and web-report regressions. Affected lint, all transitive
+  typechecks, and affected builds pass in one Level C sequence. The production browser path is unchanged,
+  so no combined browser rerun is authorized for this slice.
+
+Deferred: Phase 4 reliability hardening beyond deterministic evaluation, live DataHub or credentialed
+evaluation, model/provider judging, statistical timing benchmarks, scenario selection UI, API exposure,
+persisted/generated evaluation artifacts, CI/release gate expansion, deployment, authentication,
+persistence, rate limiting, autonomous execution, external mutation, Phase 5, and Level D. This slice
+does not close Phase 4.
+
+Exact Level C commands, run once after source/tests/docs form one coherent final input (rerun only a
+classified affected failure):
+
+- changed-file Prettier write/check for shared-types, evaluation, focused tests, and project memory
+- affected ESLint for `packages/shared-types/src`, `packages/evaluation/src`, and the evaluation plus
+  directly affected regression tests
+- all six workspace typechecks because shared-types is transitive to the existing product packages
+- one scoped Vitest command covering the evaluation file and directly affected contracts,
+  investigation runner, incidents API, and web-report regressions
+- all six production builds because shared-types is a transitive build input
+- one direct evaluation runner invocation proving byte-stable JSON/Markdown and zero-model telemetry;
+  write any exercised output only to an ignored temporary directory and remove it after inspection
+- `git diff --check`, tracked/untracked secret/conflict/generated-artifact/debug/raw-provider/model
+  scans, full scoped diff/name/stat review, manifest/lockfile/fixture/provider/browser-path review,
+  exact base ancestry, and final worktree review before one conventional commit
+
+Level C result on the Windows managed worktree, 2026-07-19:
+
+- Tracked bootstrap completed the frozen 259-package install/supply-chain check, reproduced the known
+  fallback-pnpm root-Prettier resolution limitation, then passed with the documented process-scoped
+  bundled Node/pnpm/root-bin PATH. No bootstrap, dependency, lockfile, or generated-store change was
+  made.
+- Final-input changed-file Prettier write/check and affected ESLint passed. All six transitive workspace
+  typechecks passed for shared-types, datahub-client, agent-core, evaluation, API, and web.
+- Sandboxed scoped Vitest stopped before test execution on the known esbuild ancestor-path access
+  denial. The exact scoped retry passed 5/5 files and 36/36 tests in `12.25s`, including 7 focused
+  evaluation tests plus contract, investigation-runner, incidents-API, and web-report regressions.
+  Coverage proves strict schemas, exactly seven ordered cases, repeatability, JSON/Markdown consistency,
+  metric and zero-denominator math, unsupported/dangling references and claims, safe case isolation,
+  declared telemetry, and zero token use.
+- Shared-types, evaluation, and datahub-client builds passed before web reproduced the same esbuild
+  access denial. The scoped retry ran only the three builds without results: agent-core, API, and web;
+  all passed, with web transforming 109 modules and building in `1.54s`. Thus all six affected builds
+  are green without rerunning the three unchanged successes.
+- The first direct runner invocation exposed that raw Node execution of `src/cli.ts` cannot remap its
+  NodeNext `./index.js` import and that the sandbox did not allow the proposed `C:\tmp` output. The
+  package script now runs the already-built `dist/cli.js`; targeted manifest formatting passed, then the
+  runner wrote both reports under ignored build output, produced 7 completed/0 failed cases, and the
+  verified output directory was removed. JSON SHA-256 was
+  `A711480268C955AA13D26CBF543E31F7A0F3A1A0C0B0C80DF22779F447DF58ED`; Markdown SHA-256 was
+  `1074A06E64A38A5FB44DC13A5CDD7F2D26C1E89E9D8E10B7C11B1A3A7CE05538`.
+- Canonical aggregate metrics are retrieval precision/recall `14/14 = 1`, plausible-hypothesis top-1
+  and top-3 `6/6 = 1`, evidence precision/recall `6/6 = 1`, resolved reference support `1`, unsupported
+  claims `0/18`, declared latency total/average/max `168/24/29 ms`, tool-call total/average/max
+  `26/3.714286/4`, and prompt/completion/total tokens `0/0/0`.
+- No production browser source, web/API/report behavior, fixture adapter, provider, credential boundary,
+  model path, or automatic mutation changed. Per slice policy the combined browser gate and Level D were
+  not run.
+- Pre-commit final audit passed for ten intended files (eight modified and two new). `git diff --check`,
+  tracked/untracked scope and full patch review, high-risk secret/conflict/debug/raw-provider/model scans,
+  manifest/lockfile/fixture/provider/browser-path checks, exact branch/base/ancestry, and generated-output
+  review were clean. The only ignored build path is the expected `packages/evaluation/dist/`; both
+  exercised report artifacts were removed. Secret-like and causal phrases are limited to negative test
+  sentinels and historical documentation, and the tests prove they do not cross the report boundary.
+
+Exact next step: format/check the final persistent documents, run the read-only final
+diff/secret/conflict/generated/scope/ancestry/worktree audit, create one conventional commit, push the
+branch, open a stacked Draft PR based on `codex/phase-3-integration-checkpoint`, and follow exactly the
+final-HEAD CI run to terminal while verifying conflict-free/merge-ready. Do not begin Phase 4 reliability
+hardening or Phase 5.
+
 ## Phase 5 — UX and demo
 
 Deliver the incident input, scenario selector, progress, root-cause summary, evidence timeline, lineage,
