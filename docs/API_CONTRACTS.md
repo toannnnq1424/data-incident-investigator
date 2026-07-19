@@ -351,8 +351,8 @@ Validation response `400`:
 accepted response remains compatible with Slice 1.1: it always uses HTTP `202` and `processing` even
 though fixture investigation begins immediately in the background.
 
-The accepted body intentionally remains unchanged through Slice 3.3. Clients retrieve the additive
-parse-and-gather, suspicious-change, and evidence-linked scoring lifecycles through
+The accepted body intentionally remains unchanged through Slice 3.4. Clients retrieve the additive
+parse-and-gather, suspicious-change, evidence-linked scoring, and remediation/fallback lifecycles through
 `GET /incidents/:incidentId`.
 
 ### `GET /incidents/:incidentId`
@@ -375,6 +375,9 @@ Processing response `200`:
   },
   "hypothesisScoringStage": {
     "status": "scoring"
+  },
+  "remediationStage": {
+    "status": "planning"
   }
 }
 ```
@@ -585,6 +588,98 @@ instead of a low-confidence root cause. Unknown recommendation/remediation/actio
 fields, causal copy, duplicate IDs/references, factor/score/rank mismatch, and invalid ordering are
 rejected.
 
+`remediationStage` is additive after completed scoring and report evidence. It is `planning` while any
+required upstream stage is active, and it never makes an adapter, provider, network, model, credential,
+retry, or mutation call. A completed result contains at most five deterministic, deduplicated items in
+hypothesis-rank order, with verification before potential remediation for each change. Priority comes
+only from the Slice 3.3 rank; no new score or confidence is accepted. The canonical `0.85` fixture
+returns (rationale and exact URN abridged):
+
+```json
+{
+  "status": "completed",
+  "recommendations": [
+    {
+      "id": "verify-change-removed-gross-revenue",
+      "type": "recommended_verification",
+      "priority": "high",
+      "status": "not_executed",
+      "sourceHypothesisRank": 1,
+      "title": "Recommended verification: confirm the observed schema change",
+      "rationale": "The rank-linked removed schema fact is exact evidence for a plausible contributor, not a confirmed cause.",
+      "verificationStep": "Verify the schema contract and downstream field usage in a read-only review.",
+      "reversibilityNote": "Read-only verification makes no change, so no rollback is required.",
+      "references": {
+        "hypothesisIds": ["hypothesis-change-removed-gross-revenue"],
+        "evidenceIds": ["change-removed-gross-revenue"],
+        "entityUrns": ["urn:li:dataset:(...,raw.orders,PROD)"],
+        "changeIds": ["change-removed-gross-revenue"]
+      }
+    },
+    {
+      "id": "remediate-change-removed-gross-revenue",
+      "type": "potential_remediation",
+      "priority": "high",
+      "status": "not_executed",
+      "sourceHypothesisRank": 1,
+      "title": "Potential remediation: prepare a reversible schema compatibility change",
+      "rationale": "The same ranked factual change supports human review, not a confirmed cause.",
+      "verificationStep": "Verify the proposed compatibility change in a non-production review before approval.",
+      "reversibilityNote": "Do not apply automatically; require a versioned backup and reviewed rollback.",
+      "references": {
+        "hypothesisIds": ["hypothesis-change-removed-gross-revenue"],
+        "evidenceIds": ["change-removed-gross-revenue"],
+        "entityUrns": ["urn:li:dataset:(...,raw.orders,PROD)"],
+        "changeIds": ["change-removed-gross-revenue"]
+      }
+    }
+  ],
+  "missingInformation": [],
+  "nextSteps": []
+}
+```
+
+Only `schema`, `pipeline`, `ownership`, `domain`, and `tag` source changes can produce a recommendation.
+Every item has an exact stable ID, allowlisted type/priority, literal `not_executed`, safe verification,
+reversibility guidance, and references that resolve to scored hypotheses plus factual report/context
+objects. Unknown fields, duplicate IDs or semantic items, unstable order, oversize arrays, dangling
+references, executable/automatic-action state, and confirmed-cause language are rejected.
+
+Insufficient or unavailable input produces no recommendation or reference. Missing information and
+next steps are bounded at five, descriptions come from a fixed allowlist, and `continue_fixture_mode`
+is mandatory. Example:
+
+```json
+{
+  "status": "insufficient",
+  "recommendations": [],
+  "missingInformation": [
+    {
+      "code": "scored_hypotheses_insufficient",
+      "message": "Scored hypotheses are insufficient, so no evidence-linked remediation recommendation was created."
+    }
+  ],
+  "nextSteps": [
+    {
+      "id": "inspect_scored_evidence",
+      "kind": "safe_diagnostic",
+      "status": "not_executed",
+      "description": "Review the available factual evidence and scored-hypothesis gaps before proposing a change."
+    },
+    {
+      "id": "continue_fixture_mode",
+      "kind": "fixture_continuation",
+      "status": "not_executed",
+      "description": "Continue in deterministic fixture mode with the checked-in scenario; no credential is required."
+    }
+  ]
+}
+```
+
+An unavailable result additionally uses only normalized `CONTEXT_UNAVAILABLE`, `SCORING_UNAVAILABLE`,
+or `PLANNING_INVALID`; it cannot expose provider URL/token/payload, credentials, exception, or stack.
+API storage and polling preserve the existing request identity/stale-response guard.
+
 Completed response `200` (legacy report fields remain compatible; scoring values abridged):
 
 ```json
@@ -631,6 +726,24 @@ Completed response `200` (legacy report fields remain compatible; scoring values
       }
     ]
   },
+  "remediationStage": {
+    "status": "insufficient",
+    "recommendations": [],
+    "missingInformation": [
+      {
+        "code": "scored_hypotheses_insufficient",
+        "message": "Scored hypotheses are insufficient, so no evidence-linked remediation recommendation was created."
+      }
+    ],
+    "nextSteps": [
+      {
+        "id": "continue_fixture_mode",
+        "kind": "fixture_continuation",
+        "status": "not_executed",
+        "description": "Continue in deterministic fixture mode with the checked-in scenario; no credential is required."
+      }
+    ]
+  },
   "report": {
     "incidentId": "576982bc-da91-4d69-a5ad-52206b3e17e2",
     "summary": "The strongest evidence-backed inference is: ...",
@@ -662,7 +775,8 @@ shown by `hypothesisScoringStage`; shared validation rejects any divergence or u
 When scoring is insufficient or unavailable, the compatible legacy report remains separately
 schema-valid and the scoring stage contains no fabricated fallback. Evidence statements are fixture
 facts; hypotheses are ranked inferences; assumptions, missing information, and recommendations remain
-separate report fields.
+separate report fields. The additive remediation stage separately contains only reviewed-plan metadata;
+the legacy report recommendation strings remain display-compatible and are not execution records.
 
 Unknown incident response `404`:
 

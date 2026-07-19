@@ -2,6 +2,25 @@
 
 Last updated: 2026-07-19.
 
+- Slice 3.4 remediation/fallback is implemented locally from exact Slice 3.3 final commit `3a1c5c7`.
+  The pure deterministic planner consumes only validated context, exact scored hypotheses, and factual
+  report evidence; supports bounded schema/pipeline/ownership/domain/tag human-review guidance; emits
+  at most five stable/deduplicated `not_executed` recommendations; and creates no new score, provider/
+  model call, credential read, or mutation. Insufficient/unavailable input yields zero invented
+  recommendation/reference plus bounded safe diagnostics and required credential-free fixture
+  continuation. Final Level C passes format/lint, five typechecks, 13 files/72 tests, five builds, and
+  exactly one browser flow in `7255ms` on ports `61164`/`61165` with canonical `0.85`, two resolved
+  `not_executed` recommendations, clean console/accessibility/overflow, and clean teardown. The first
+  test run transparently exposed a causal-filter false positive against the required explicit negation;
+  the targeted contract fix passed the affected suite. Final audit also removed two credential-environment
+  reads from the test itself; its targeted format/lint and 4/4 tests passed. Review is clean across 17
+  intended files for diff whitespace/scope, secret/conflict/unsafe-output/generated artifacts,
+  manifest/lock/bootstrap/fixture/provider/dependency changes, exact branch/base/ancestry, and owned
+  processes. The first PR CI run `29667788737` failed because the root integration test imported React
+  outside its owning web workspace under strict Linux pnpm resolution. The test now resolves the existing
+  web-declared runtime without a dependency change; targeted format/lint and 4/4 tests pass. A new
+  final-HEAD CI run remains pending. Level D, live DataHub smoke, generic controller/model integration,
+  autonomous execution, and Phase 3 integration closure remain deferred.
 - Slice 3.3 evidence-linked scoring is implemented locally on exact Slice 3.2 commit `96476f8`.
   The scorer is pure over validated context/suspicious/report-evidence inputs, emits at most three
   exact evidence-linked plausible-contributor inferences, and owns a four-factor 10,000-basis-point
@@ -13,8 +32,8 @@ Last updated: 2026-07-19.
   browser attempt exposed and then narrowed only a false-positive assertion against the required
   `not a confirmed cause` disclaimer. Final tracked/untracked diff, secret, conflict, causal/debug/raw-
   provider/model, generated-artifact, manifest/lockfile, ancestry, and scoped patch review pass;
-  publication and CI evidence are pending. Slice 3.4, Level D, live DataHub smoke, model/controller
-  work, evidence-chain prose, remediation, and fallback remain deferred.
+  publication and CI evidence are pending. Level D, live DataHub smoke, model/controller work, and
+  evidence-chain prose remain deferred from that slice.
 - Slice 3.2 suspicious-change detection Level C passes locally from exact Slice 3.1 final commit
   `c0d765ed57b00c17d957eb62e3e84984897af48f`. The detector is pure over validated completed context,
   uses five allowlisted deterministic signals, returns at most five exact change/entity candidates,

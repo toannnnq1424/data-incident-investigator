@@ -5,6 +5,7 @@ import {
   DeterministicIncidentContextGatherer,
   DeterministicHypothesisScorer,
   DeterministicInvestigationRunner,
+  DeterministicRemediationPlanner,
   DeterministicSuspiciousChangeDetector,
   FIXTURE_INVESTIGATION_LIMITS,
   type IncidentContextGatherer,
@@ -12,6 +13,7 @@ import {
   type HypothesisScorer,
   type InvestigationLimits,
   type InvestigationRunner,
+  type RemediationPlanner,
   type SuspiciousChangeDetector,
 } from '@dii/agent-core';
 import {
@@ -43,12 +45,15 @@ import {
   MetadataRecentChangesRequestSchema,
   MetadataRecentChangesResponseSchema,
   MetadataSourceModeSchema,
+  REMEDIATION_FALLBACK_STEP_TEXT,
+  RemediationPlanningStageSchema,
   SuspiciousChangeDetectionStageSchema,
   type IncidentContextStage,
   type HypothesisScoringStage,
   type InvestigationReport,
   type MetadataHealthResponse,
   type MetadataSourceMode,
+  type RemediationPlanningStage,
   type SuspiciousChangeDetectionStage,
 } from '@dii/shared-types';
 import Fastify from 'fastify';
@@ -66,6 +71,7 @@ interface BuildServerOptions {
   contextLimits?: IncidentContextGatheringLimits;
   suspiciousChangeDetector?: SuspiciousChangeDetector;
   hypothesisScorer?: HypothesisScorer;
+  remediationPlanner?: RemediationPlanner;
   runner?: InvestigationRunner;
   limits?: InvestigationLimits;
 }
@@ -76,12 +82,14 @@ type StoredIncident =
       contextStage: IncidentContextStage;
       suspiciousChangeStage: SuspiciousChangeDetectionStage;
       hypothesisScoringStage: HypothesisScoringStage;
+      remediationStage: RemediationPlanningStage;
     }
   | {
       status: 'completed';
       contextStage: IncidentContextStage;
       suspiciousChangeStage: SuspiciousChangeDetectionStage;
       hypothesisScoringStage: HypothesisScoringStage;
+      remediationStage: RemediationPlanningStage;
       report: InvestigationReport;
     }
   | { status: 'failed' };
@@ -279,6 +287,73 @@ function unavailableHypothesisScoring(
   });
 }
 
+function invalidRemediationPlanning(): RemediationPlanningStage {
+  return RemediationPlanningStageSchema.parse({
+    status: 'unavailable',
+    recommendations: [],
+    missingInformation: [
+      {
+        code: 'report_evidence_incomplete',
+        message: 'Validated factual references are incomplete for remediation planning.',
+      },
+    ],
+    nextSteps: [
+      {
+        id: 'inspect_scored_evidence',
+        kind: 'safe_diagnostic',
+        status: 'not_executed',
+        description: REMEDIATION_FALLBACK_STEP_TEXT.inspect_scored_evidence,
+      },
+      {
+        id: 'continue_fixture_mode',
+        kind: 'fixture_continuation',
+        status: 'not_executed',
+        description: REMEDIATION_FALLBACK_STEP_TEXT.continue_fixture_mode,
+      },
+    ],
+    error: {
+      code: 'PLANNING_INVALID',
+      message: 'Remediation planning could not validate the factual recommendation references.',
+    },
+  });
+}
+
+function unavailableRemediationPlanning(
+  code: 'CONTEXT_UNAVAILABLE' | 'SCORING_UNAVAILABLE',
+): RemediationPlanningStage {
+  return RemediationPlanningStageSchema.parse({
+    status: 'unavailable',
+    recommendations: [],
+    missingInformation: [
+      {
+        code: 'scoring_unavailable',
+        message: 'Validated scored hypotheses are unavailable for safe remediation planning.',
+      },
+    ],
+    nextSteps: [
+      {
+        id: 'review_provider_availability',
+        kind: 'safe_diagnostic',
+        status: 'not_executed',
+        description: REMEDIATION_FALLBACK_STEP_TEXT.review_provider_availability,
+      },
+      {
+        id: 'continue_fixture_mode',
+        kind: 'fixture_continuation',
+        status: 'not_executed',
+        description: REMEDIATION_FALLBACK_STEP_TEXT.continue_fixture_mode,
+      },
+    ],
+    error: {
+      code,
+      message:
+        code === 'CONTEXT_UNAVAILABLE'
+          ? 'Remediation planning is unavailable because incident context did not complete.'
+          : 'Remediation planning is unavailable because scored hypotheses did not complete.',
+    },
+  });
+}
+
 export function buildServer(options: BuildServerOptions = {}) {
   const server = Fastify({ logger: options.logger ?? true });
   const environment = options.environment ?? process.env;
@@ -321,6 +396,7 @@ export function buildServer(options: BuildServerOptions = {}) {
   const suspiciousChangeDetector =
     options.suspiciousChangeDetector ?? new DeterministicSuspiciousChangeDetector();
   const hypothesisScorer = options.hypothesisScorer ?? new DeterministicHypothesisScorer();
+  const remediationPlanner = options.remediationPlanner ?? new DeterministicRemediationPlanner();
   const contextMetadata = {
     healthCheck: metadataHealth.healthCheck.bind(metadataHealth),
     searchEntities: metadataSearch.searchEntities.bind(metadataSearch),
@@ -549,6 +625,7 @@ export function buildServer(options: BuildServerOptions = {}) {
       contextStage: IncidentContextStageSchema.parse({ status: 'gathering' }),
       suspiciousChangeStage: SuspiciousChangeDetectionStageSchema.parse({ status: 'detecting' }),
       hypothesisScoringStage: HypothesisScoringStageSchema.parse({ status: 'scoring' }),
+      remediationStage: RemediationPlanningStageSchema.parse({ status: 'planning' }),
     });
     server.log.info({ incidentId: response.incidentId, mode }, 'Investigation accepted');
 
@@ -557,6 +634,7 @@ export function buildServer(options: BuildServerOptions = {}) {
         let contextStage: IncidentContextStage;
         let suspiciousChangeStage: SuspiciousChangeDetectionStage;
         let hypothesisScoringStage: HypothesisScoringStage;
+        let remediationStage: RemediationPlanningStage;
         try {
           contextStage = await contextGatherer.gather(parsedRequest.data, {
             metadata: contextMetadata,
@@ -566,15 +644,18 @@ export function buildServer(options: BuildServerOptions = {}) {
           try {
             suspiciousChangeStage = suspiciousChangeDetector.detect(contextStage);
             hypothesisScoringStage = HypothesisScoringStageSchema.parse({ status: 'scoring' });
+            remediationStage = RemediationPlanningStageSchema.parse({ status: 'planning' });
           } catch {
             suspiciousChangeStage = unavailableSuspiciousChanges('DETECTION_INVALID');
             hypothesisScoringStage = unavailableHypothesisScoring('SUSPICIOUS_CHANGES_UNAVAILABLE');
+            remediationStage = unavailableRemediationPlanning('SCORING_UNAVAILABLE');
           }
           incidents.set(response.incidentId, {
             status: 'processing',
             contextStage,
             suspiciousChangeStage,
             hypothesisScoringStage,
+            remediationStage,
           });
           server.log.info(
             {
@@ -599,11 +680,13 @@ export function buildServer(options: BuildServerOptions = {}) {
           contextStage = failedIncidentContext(error);
           suspiciousChangeStage = unavailableSuspiciousChanges('CONTEXT_UNAVAILABLE');
           hypothesisScoringStage = unavailableHypothesisScoring('CONTEXT_UNAVAILABLE');
+          remediationStage = unavailableRemediationPlanning('CONTEXT_UNAVAILABLE');
           incidents.set(response.incidentId, {
             status: 'processing',
             contextStage,
             suspiciousChangeStage,
             hypothesisScoringStage,
+            remediationStage,
           });
           server.log.warn(
             {
@@ -649,11 +732,21 @@ export function buildServer(options: BuildServerOptions = {}) {
               hypothesisScoringStage = unavailableHypothesisScoring('SCORING_INVALID');
             }
           }
+          try {
+            remediationStage = remediationPlanner.plan(
+              contextStage,
+              hypothesisScoringStage,
+              completedReport,
+            );
+          } catch {
+            remediationStage = invalidRemediationPlanning();
+          }
           incidents.set(response.incidentId, {
             status: 'completed',
             contextStage,
             suspiciousChangeStage,
             hypothesisScoringStage,
+            remediationStage,
             report: completedReport,
           });
           server.log.info(
@@ -662,6 +755,11 @@ export function buildServer(options: BuildServerOptions = {}) {
               entityCount: completedReport.entities.length,
               evidenceCount: completedReport.evidence.length,
               hypothesisScoringStatus: hypothesisScoringStage.status,
+              remediationStatus: remediationStage.status,
+              remediationRecommendationCount:
+                remediationStage.status === 'completed'
+                  ? remediationStage.recommendations.length
+                  : 0,
             },
             'Fixture investigation completed',
           );
@@ -718,6 +816,7 @@ export function buildServer(options: BuildServerOptions = {}) {
                 contextStage: incident.contextStage,
                 suspiciousChangeStage: incident.suspiciousChangeStage,
                 hypothesisScoringStage: incident.hypothesisScoringStage,
+                remediationStage: incident.remediationStage,
                 report: incident.report,
               }
             : {
@@ -726,6 +825,7 @@ export function buildServer(options: BuildServerOptions = {}) {
                 contextStage: incident.contextStage,
                 suspiciousChangeStage: incident.suspiciousChangeStage,
                 hypothesisScoringStage: incident.hypothesisScoringStage,
+                remediationStage: incident.remediationStage,
               },
         ),
       );

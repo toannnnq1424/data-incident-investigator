@@ -189,6 +189,9 @@ try {
   await page
     .getByRole('heading', { name: 'Gathering investigation context' })
     .waitFor({ timeout: 2_000 });
+  await page
+    .getByRole('heading', { name: 'Planning safe verification and remediation' })
+    .waitFor({ timeout: 2_000 });
   await page.getByText('Investigation completed').waitFor({ timeout: 5_000 });
 
   const contextStage = page.locator('.incident-context-stage');
@@ -306,6 +309,56 @@ try {
     !hypothesisScoringText.includes('not a confirmed cause or recommendation')
   ) {
     fail('Hypothesis scoring did not render the exact ranked factors and evidence link.');
+  }
+
+  const remediationStage = page.locator('.remediation-stage');
+  await remediationStage
+    .getByRole('heading', { name: 'Safe recommendations for human review' })
+    .waitFor({ timeout: 2_000 });
+  const remediationRecommendations = await remediationStage
+    .locator('.remediation-recommendation-list > li')
+    .evaluateAll((rows) =>
+      rows.map((row) => ({
+        id: row.getAttribute('data-remediation-id'),
+        text: row.textContent ?? '',
+        links: [...row.querySelectorAll('a')].map((link) => link.getAttribute('href') ?? ''),
+      })),
+    );
+  const remediationText = await remediationStage.innerText();
+  if (
+    remediationRecommendations.length !== 2 ||
+    remediationRecommendations[0]?.id !== 'verify-change-removed-gross-revenue' ||
+    remediationRecommendations[1]?.id !== 'remediate-change-removed-gross-revenue' ||
+    !remediationRecommendations[0]?.text.includes(
+      'Recommended verification: confirm the observed schema change',
+    ) ||
+    !remediationRecommendations[1]?.text.includes(
+      'Potential remediation: prepare a reversible schema compatibility change',
+    ) ||
+    remediationRecommendations.some(
+      (recommendation) =>
+        !recommendation.text.includes('Not executed') ||
+        !recommendation.text.includes('Safe verification:') ||
+        !recommendation.text.includes('Reversibility:') ||
+        !recommendation.links.includes('#scored-hypothesis-change-removed-gross-revenue') ||
+        !recommendation.links.includes('#evidence-change-removed-gross-revenue'),
+    ) ||
+    !remediationText.includes('Nothing in this stage has been executed') ||
+    remediationText.includes('confirmed root cause') ||
+    remediationText.includes('caused the incident')
+  ) {
+    fail('Remediation planning did not render exact safe, linked, not-executed recommendations.');
+  }
+
+  const remediationReferenceTargets = await remediationStage
+    .locator('a')
+    .evaluateAll((links) =>
+      links.map((link) => link.getAttribute('href') ?? '').filter((href) => href.startsWith('#')),
+    );
+  for (const target of remediationReferenceTargets) {
+    if ((await page.locator(target).count()) !== 1) {
+      fail(`Remediation reference link does not resolve exactly once: ${target}`);
+    }
   }
 
   const reportText = await page.locator('body').innerText();

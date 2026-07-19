@@ -1201,6 +1201,178 @@ button:disabled {
   font-size: 0.86rem;
 }
 
+.remediation-stage {
+  display: grid;
+  gap: 0.8rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid #294149;
+  border-radius: 0.8rem;
+  background: #0a2024;
+}
+
+.remediation-stage > p,
+.remediation-stage h3,
+.remediation-stage h4,
+.remediation-stage h5,
+.remediation-content p {
+  margin: 0;
+}
+
+.remediation-stage h3 {
+  color: #eefafa;
+  font-size: 1.15rem;
+}
+
+.remediation-stage h4,
+.remediation-stage h5 {
+  color: #9ceade;
+}
+
+.remediation-stage h4 {
+  font-size: 0.9rem;
+}
+
+.remediation-stage h5,
+.remediation-reference-groups span {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.remediation-loading,
+.remediation-success {
+  border-color: #2f6b65;
+}
+
+.remediation-missing {
+  border-color: #826c37;
+}
+
+.remediation-error {
+  border-color: #824a4a;
+  background: #351b20;
+}
+
+.remediation-error code {
+  color: #ffd4d4;
+}
+
+.remediation-content,
+.remediation-content > section,
+.remediation-recommendation-list,
+.remediation-next-step-list,
+.remediation-missing-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.remediation-content > section {
+  padding-top: 0.9rem;
+  border-top: 1px solid #243d44;
+}
+
+.remediation-recommendation-list,
+.remediation-next-step-list,
+.remediation-missing-list,
+.remediation-reference-groups ul,
+.remediation-recommendation-heading ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.remediation-recommendation-list > li,
+.remediation-next-step-list > li {
+  display: grid;
+  gap: 0.7rem;
+  min-width: 0;
+  padding: 0.85rem;
+  border: 1px solid #285159;
+  border-radius: 0.65rem;
+  background: #0b2429;
+}
+
+.remediation-recommendation-heading {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.remediation-recommendation-heading > div,
+.remediation-recommendation-heading ul,
+.remediation-next-step-list li > div {
+  display: flex;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+  align-items: center;
+  min-width: 0;
+}
+
+.remediation-recommendation-heading > div {
+  display: grid;
+}
+
+.remediation-recommendation-heading li,
+.remediation-next-step-list li > div span,
+.remediation-next-step-list li > div strong {
+  padding: 0.2rem 0.4rem;
+  border: 1px solid #38636a;
+  border-radius: 999px;
+  color: #c7efea;
+  font-size: 0.72rem;
+  text-transform: capitalize;
+}
+
+.remediation-recommendation-list code,
+.remediation-next-step-list code,
+.remediation-missing-list code,
+.remediation-reference-groups code {
+  overflow-wrap: anywhere;
+}
+
+.remediation-reference-groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(12rem, 100%), 1fr));
+  gap: 0.65rem;
+  margin-top: 0.55rem;
+}
+
+.remediation-reference-groups > div,
+.remediation-reference-groups ul {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.remediation-reference-groups > div {
+  padding: 0.55rem;
+  border-radius: 0.5rem;
+  background: #102d32;
+}
+
+.remediation-reference-groups a {
+  color: #94eddf;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18rem;
+}
+
+.remediation-missing-list li {
+  display: grid;
+  grid-template-columns: minmax(12rem, max-content) minmax(0, 1fr);
+  gap: 0.65rem;
+  padding: 0.55rem;
+  border-radius: 0.5rem;
+  background: #102d32;
+}
+
+.remediation-boundary {
+  color: #b6c8cc;
+  font-size: 0.86rem;
+}
+
 .report-summary {
   display: grid;
   gap: 0.65rem;
@@ -1425,6 +1597,7 @@ dd {
   .suspicious-change-signal-list,
   .score-factor-list,
   .hypothesis-scoring-missing-list,
+  .remediation-missing-list,
   dl {
     grid-template-columns: 1fr;
   }
@@ -1433,6 +1606,7 @@ dd {
   .submission-row,
   .inference-heading,
   .scored-hypothesis-heading,
+  .remediation-recommendation-heading,
   .metadata-source-status,
   .metadata-status-copy {
     align-items: flex-start;
