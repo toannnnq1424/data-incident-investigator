@@ -2,6 +2,24 @@ import { describe, expect, it } from 'vitest';
 import { createFixtureMetadataAdapter } from '../../packages/datahub-client/src/index.js';
 
 describe('fixture metadata adapter', () => {
+  it('keeps invalid fixture assets safely observable through health', async () => {
+    const adapter = createFixtureMetadataAdapter({
+      rawSecret: 'fixture-token-secret private-fixture.internal stack-trace',
+    });
+
+    const health = await adapter.healthCheck();
+    expect(health).toEqual({
+      status: 'invalid_response',
+      message: 'Fixture runtime assets are invalid.',
+    });
+    expect(JSON.stringify(health)).not.toMatch(
+      /fixture-token-secret|private-fixture\.internal|stack-trace/i,
+    );
+    await expect(adapter.searchEntities({ query: 'revenue', limit: 1 })).rejects.toMatchObject({
+      status: 'invalid_response',
+    });
+  });
+
   it('returns only bounded entities, lineage, and recent changes from the canonical fixture', async () => {
     const adapter = createFixtureMetadataAdapter();
     await expect(adapter.healthCheck()).resolves.toEqual({

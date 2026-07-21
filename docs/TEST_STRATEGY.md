@@ -66,6 +66,16 @@ actual counters and terminal reasons, reject completed/fabricated reports, and s
 payload, hostname, token, stack, and instruction sentinels. The unchanged fixture completion and one
 Windows browser flow remain the credential-free regression gates.
 
+Health/readiness tests parse the strict shared schemas and use Fastify injection with deterministic
+fixture or injected health providers. They prove process liveness invokes no dependency; fixture ready
+and invalid-asset states; DataHub missing configuration, authorization, unavailable, timeout, invalid,
+and ready states; invalid live investigation runtime; optional model health states; exact `200`/`503`
+bodies; no mode switch; and response/log sanitization. An injected provider that ignores AbortSignal is
+advanced with fake timers to prove the outer route deadline without sleep. `pnpm smoke` additionally
+imports the built API artifact, binds a real loopback ephemeral port, calls fixture `/health` and
+`/ready` over HTTP, verifies exact bodies, and closes the listener. Browser coverage is not required
+because Slice 6.4 changes no web-visible contract.
+
 ## Required incident evaluation cases
 
 Removed column, stale pipeline, upstream type change, wrong dashboard dataset, delayed ingestion,

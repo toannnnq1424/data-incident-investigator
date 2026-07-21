@@ -2,6 +2,149 @@ import { z } from 'zod';
 
 export const MetadataSourceModeSchema = z.enum(['fixture', 'datahub']);
 
+export const HealthResponseSchema = z
+  .object({
+    status: z.literal('ok'),
+  })
+  .strict();
+
+export const ReadinessStatusSchema = z.enum(['ready', 'not_ready']);
+export const ReadinessCheckNameSchema = z.enum([
+  'fixture_assets',
+  'datahub',
+  'investigation_runtime',
+  'model',
+]);
+export const ReadinessCheckStatusSchema = z.enum(['ready', 'not_ready', 'not_required']);
+export const ReadinessReasonCodeSchema = z.enum([
+  'FIXTURE_ASSETS_INVALID',
+  'DATAHUB_CONFIG_MISSING',
+  'DATAHUB_UNAUTHORIZED',
+  'DATAHUB_UNAVAILABLE',
+  'DATAHUB_TIMEOUT',
+  'DATAHUB_INVALID_RESPONSE',
+  'INVESTIGATION_RUNTIME_INVALID',
+  'MODEL_NOT_REQUIRED',
+  'MODEL_CONFIG_MISSING',
+  'MODEL_UNAUTHORIZED',
+  'MODEL_UNAVAILABLE',
+  'MODEL_TIMEOUT',
+  'MODEL_INVALID_RESPONSE',
+]);
+
+const readinessReasonCodesByCheck = {
+  fixture_assets: ['FIXTURE_ASSETS_INVALID'],
+  datahub: [
+    'DATAHUB_CONFIG_MISSING',
+    'DATAHUB_UNAUTHORIZED',
+    'DATAHUB_UNAVAILABLE',
+    'DATAHUB_TIMEOUT',
+    'DATAHUB_INVALID_RESPONSE',
+  ],
+  investigation_runtime: ['INVESTIGATION_RUNTIME_INVALID'],
+  model: [
+    'MODEL_NOT_REQUIRED',
+    'MODEL_CONFIG_MISSING',
+    'MODEL_UNAUTHORIZED',
+    'MODEL_UNAVAILABLE',
+    'MODEL_TIMEOUT',
+    'MODEL_INVALID_RESPONSE',
+  ],
+} as const;
+
+export const ReadinessCheckSchema = z
+  .object({
+    name: ReadinessCheckNameSchema,
+    status: ReadinessCheckStatusSchema,
+    reasonCode: ReadinessReasonCodeSchema.optional(),
+  })
+  .strict()
+  .superRefine((check, context) => {
+    if (check.status === 'ready' && check.reasonCode !== undefined) {
+      context.addIssue({
+        code: 'custom',
+        message: 'A ready check cannot include a reason code.',
+        path: ['reasonCode'],
+      });
+      return;
+    }
+
+    if (check.status !== 'ready' && check.reasonCode === undefined) {
+      context.addIssue({
+        code: 'custom',
+        message: 'A non-ready check requires a reason code.',
+        path: ['reasonCode'],
+      });
+      return;
+    }
+
+    if (
+      check.reasonCode !== undefined &&
+      !readinessReasonCodesByCheck[check.name].some((reasonCode) => reasonCode === check.reasonCode)
+    ) {
+      context.addIssue({
+        code: 'custom',
+        message: 'The readiness reason does not match the check.',
+        path: ['reasonCode'],
+      });
+    }
+
+    if (
+      check.status === 'not_required' &&
+      (check.name !== 'model' || check.reasonCode !== 'MODEL_NOT_REQUIRED')
+    ) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Only the unused model dependency may be not required.',
+        path: ['status'],
+      });
+    }
+
+    if (check.status === 'not_ready' && check.reasonCode === 'MODEL_NOT_REQUIRED') {
+      context.addIssue({
+        code: 'custom',
+        message: 'A required model dependency cannot use the not-required reason.',
+        path: ['reasonCode'],
+      });
+    }
+  });
+
+export const ReadinessResponseSchema = z
+  .object({
+    status: ReadinessStatusSchema,
+    mode: MetadataSourceModeSchema,
+    checks: z.array(ReadinessCheckSchema).min(1).max(3),
+  })
+  .strict()
+  .superRefine((response, context) => {
+    const expectedNames =
+      response.mode === 'fixture'
+        ? (['fixture_assets'] as const)
+        : (['datahub', 'investigation_runtime', 'model'] as const);
+    const actualNames = response.checks.map((check) => check.name);
+    if (
+      actualNames.length !== expectedNames.length ||
+      actualNames.some((name, index) => name !== expectedNames[index])
+    ) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Readiness checks must match the selected mode in stable order.',
+        path: ['checks'],
+      });
+    }
+
+    const expectedStatus = response.checks.some((check) => check.status === 'not_ready')
+      ? 'not_ready'
+      : 'ready';
+    if (response.status !== expectedStatus) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Overall readiness must match the required checks.',
+        path: ['status'],
+      });
+    }
+  });
+
 function replaceControlCharacters(value: string) {
   return [...value]
     .map((character) => {
@@ -3722,6 +3865,10 @@ export type MetadataRecentChangesResponse = z.infer<typeof MetadataRecentChanges
 export type MetadataSourceMode = z.infer<typeof MetadataSourceModeSchema>;
 export type MetadataHealthStatus = z.infer<typeof MetadataHealthStatusSchema>;
 export type MetadataHealthResponse = z.infer<typeof MetadataHealthResponseSchema>;
+export type HealthResponse = z.infer<typeof HealthResponseSchema>;
+export type ReadinessCheck = z.infer<typeof ReadinessCheckSchema>;
+export type ReadinessReasonCode = z.infer<typeof ReadinessReasonCodeSchema>;
+export type ReadinessResponse = z.infer<typeof ReadinessResponseSchema>;
 export type IncidentRequest = z.infer<typeof IncidentRequestSchema>;
 export type IncidentIntent = z.infer<typeof IncidentIntentSchema>;
 export type IncidentContextMissingInformationCode = z.infer<

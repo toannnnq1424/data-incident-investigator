@@ -45,6 +45,17 @@ environment variables. Logs must redact authorization headers, tokens, and full 
 - Never switch DataHub mode to fixture implicitly. DataHub failure may return an explicit
   `continue_fixture_mode` step with literal `not_executed`; the credential-free fixture runs only after
   an explicit fixture-mode request/environment choice.
+- Keep liveness dependency-free and content-minimal. Readiness may call only the selected mode's
+  allowlisted bounded health seams, returns fixed check names/status/reason codes, and never echoes a
+  configured endpoint, token, authorization header, environment value, internal hostname, provider or
+  model body/message, exception, stack, uptime, or retry history. A readiness failure must not change
+  mode, liveness, or incident state.
+- Fixture asset parsing failure must not expose parser issues or partially trusted fixture data. It
+  produces a safe unavailable adapter and `FIXTURE_ASSETS_INVALID`. The current workflow performs zero
+  model calls, so readiness records model as `not_required` without reading model credentials; it must
+  not fabricate provider availability. DataHub readiness separately requires the existing local
+  investigation runtime/assets so external provider availability alone cannot produce a false ready
+  claim.
 
 ## External systems
 
@@ -58,6 +69,9 @@ Use structured event names, route patterns, incident IDs, durations, counts, nor
 reasons, retry delay, and sanitized error classes. Never log a raw request body, incident question,
 authorization or content-length header, token, provider/model payload, environment variable, credential,
 exception message, or stack.
+
+Readiness logs contain only the selected mode and allowlisted reason codes. Liveness logs no dependency
+state. Provider-supplied readiness messages and rejected fixture/model values are never logged.
 
 ## Reporting
 

@@ -2615,3 +2615,67 @@ environment-only managed Windows PATH/esbuild junction limitations không đổi
 Format/check docs cuối, audit exact delta, tạo additive conventional commit không amend, push cùng
 branch/PR #35, theo dõi exact-new-head CI tới terminal, không merge; sau CI xanh cần independent Windows
 QA rerun trên exact head mới.
+
+## 2026-07-21 — Phase 6 Slice 6.4 health and readiness
+
+### Objective
+
+Từ exact merged Slice 6.3 `aa853d7b1dd2fdbeca45d08766643ba18ca2aa53`, tách process liveness
+khỏi readiness theo operating mode, dùng check/reason code ổn định và sanitized, không silent mode
+switch, không làm Slice 6.5+.
+
+### Completed
+
+Đã bootstrap/fetch/xác minh exact main/tree/parents, tạo branch
+`codex/phase-6-4-health-readiness`, đọc docs-first và khóa plan trước source. `/health` nay chỉ trả strict
+`{ "status": "ok" }`. `/ready` trả strict `200 ready` hoặc `503 not_ready`: fixture kiểm tra asset/runtime
+không đọc credential; DataHub reuse bounded health seam; model hiện `not_required` vì flow zero model
+call, nhưng optional injected health seam phân loại đầy đủ khi dependency thật được compose. Live mode
+cũng require local `investigation_runtime` để không claim ready chỉ vì DataHub available. Invalid fixture
+load trở thành safe unavailable adapter nên process vẫn live. Built smoke gọi hai endpoint qua HTTP thật
+trên loopback ephemeral port.
+
+### Files changed
+
+`packages/shared-types/src/index.ts`; `packages/datahub-client/src/index.ts`; `apps/api/src/index.ts`;
+`tests/integration/contracts.test.ts`; `tests/integration/fixture-adapter.test.ts`;
+`tests/integration/health-readiness.test.ts`; `tests/smoke/health.test.ts`; `scripts/smoke.mjs`;
+`docs/AGENT_DESIGN.md`; `docs/API_CONTRACTS.md`; `docs/DEPLOYMENT.md`; `docs/SECURITY.md`;
+`docs/TEST_STRATEGY.md`; `docs/IMPLEMENTATION_PLAN.md`; `docs/KNOWN_ISSUES.md`; và entry này. Không đổi
+web source, `.env.example`, fixture canonical, manifest, lockfile, dependency hay repository map.
+
+### Decisions
+
+Liveness không có mode/service/uptime/dependency data. Readiness body chỉ có overall status, mode, ordered
+check name/status/reason code; required failure là `503` nhưng không làm `/health` fail. Fixture chỉ có
+`fixture_assets`; DataHub có `datahub`, `investigation_runtime`, rồi `model`. Model mặc định
+`not_required`, không đọc `OPENAI_API_KEY` hay fabricate availability. Mỗi probe thật có outer bound hai
+giây/AbortSignal, zero retry; response/log bỏ toàn bộ provider message/value.
+
+### Validation performed
+
+- Final affected lint PASS sau đúng hai mechanical recovery; 5/5 typechecks PASS.
+- Final focused suite PASS 7/7 files, 71/71 tests trong `2.86s` (`3.89s` wall), không sleep/live
+  provider/credential.
+- 5/5 builds có passing evidence; web Vite scoped recovery transform 109 modules/build `1.13s` sau known
+  sandbox esbuild junction.
+- `pnpm smoke` PASS built API/web artifacts, exact fixture `/health` và `/ready` qua HTTP thật trong
+  `1.03s`; listener được đóng. Browser không chạy vì web contract không đổi.
+- Final audit PASS đúng 16/16 paths; zero secret/production sentinel/conflict/generated/process leak,
+  zero manifest/lock/env/fixture/web drift, `git diff --check` sạch và ancestry exact `aa853d7…`.
+
+### Validation intentionally deferred
+
+Browser, Mac, live DataHub/model credential/network, full suite/Level D, broad monitoring, auth,
+persistence, deployment platform, Slice 6.5 audit trail, Slice 6.6 confidence và Phase 7.
+
+### Known issues
+
+Plain Node artifact import vẫn gặp workspace package exports trỏ về TypeScript source; smoke dùng
+programmatic `tsx/esm/api` runtime đã là API dev dependency, không đổi manifest/lockfile/dependency.
+Managed Windows child PATH và sandbox esbuild junction vẫn là environment-only limitation.
+
+### Exact next step
+
+Tạo một conventional commit, push normal, mở đúng một Draft PR base current `main`, theo dõi exact-head
+CI tới SUCCESS và không merge.

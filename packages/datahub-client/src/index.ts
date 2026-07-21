@@ -1567,8 +1567,43 @@ export class FixtureMetadataAdapter implements MetadataAdapter {
   }
 }
 
-export function createFixtureMetadataAdapter() {
-  return new FixtureMetadataAdapter();
+class UnavailableFixtureMetadataAdapter implements MetadataAdapter {
+  async healthCheck(): Promise<MetadataHealthResult> {
+    return {
+      status: 'invalid_response',
+      message: 'Fixture runtime assets are invalid.',
+    };
+  }
+
+  async searchEntities(): Promise<MetadataEntitySearchResult[]> {
+    throw new MetadataProviderError('invalid_response');
+  }
+
+  async getLineageGraph(): Promise<MetadataLineageResponse> {
+    throw new MetadataProviderError('invalid_response');
+  }
+
+  async getRecentChangesForEntity(): Promise<MetadataRecentChangesResponse> {
+    throw new MetadataProviderError('invalid_response');
+  }
+
+  async getLineage(): Promise<LineageResult> {
+    throw new MetadataProviderError('invalid_response');
+  }
+
+  async getRecentChanges(): Promise<MetadataChange[]> {
+    throw new MetadataProviderError('invalid_response');
+  }
+}
+
+export function createFixtureMetadataAdapter(fixture?: unknown): MetadataAdapter {
+  try {
+    return fixture === undefined
+      ? new FixtureMetadataAdapter()
+      : new FixtureMetadataAdapter(fixture);
+  } catch {
+    return new UnavailableFixtureMetadataAdapter();
+  }
 }
 
 export function createDataHubHealthClient(config: DataHubHealthClientConfig) {
