@@ -18,9 +18,11 @@ import {
   HYPOTHESIS_SCORE_FACTOR_ORDER,
   HYPOTHESIS_SCORE_FACTOR_WEIGHTS,
   HYPOTHESIS_SCORING_MAX_HYPOTHESES,
+  INCIDENT_CONTEXT_ERROR_MESSAGES,
   HypothesisScoringResultSchema,
   HypothesisScoringStageSchema,
   IncidentContextCompletedStageSchema,
+  IncidentContextDegradedStageSchema,
   IncidentContextStageSchema,
   IncidentHypothesisScoringSchema,
   IncidentRemediationPlanningSchema,
@@ -52,6 +54,8 @@ import {
   RuntimeLimitConfigSchema,
   type Evidence,
   type IncidentContextCompletedStage,
+  type IncidentContextDegradedStage,
+  type IncidentContextFacts,
   type IncidentContextStage,
   type IncidentContextMissingInformation,
   type IncidentIntent,
@@ -64,6 +68,7 @@ import {
   type HypothesisScoringResult,
   type HypothesisScoringStage,
   type MetadataRecentChangeCategory,
+  type MetadataInvestigationOperation,
   type MetadataSourceMode,
   type RemediationFallbackStep,
   type RemediationMissingInformation,
@@ -91,6 +96,48 @@ export class InvestigationLimitError extends Error {
     this.name = 'InvestigationLimitError';
     this.reason = reason;
     this.execution = execution;
+  }
+}
+
+export class InvestigationModelProviderTimeoutError extends Error {
+  constructor() {
+    super('The model provider timed out.');
+    this.name = 'InvestigationModelProviderTimeoutError';
+  }
+}
+
+const contextOperationFailureCodes = {
+  unconfigured: 'METADATA_UNCONFIGURED',
+  unauthorized: 'METADATA_UNAUTHORIZED',
+  unavailable: 'METADATA_UNAVAILABLE',
+  timeout: 'METADATA_TIMEOUT',
+  invalid_response: 'METADATA_INVALID_RESPONSE',
+  not_found: 'METADATA_INVALID_RESPONSE',
+  internal: 'INTERNAL_ERROR',
+} as const;
+
+export class IncidentContextOperationError extends Error {
+  readonly contextStage: IncidentContextDegradedStage;
+
+  constructor(
+    readonly operation: MetadataInvestigationOperation,
+    intent: IncidentIntent,
+    facts: IncidentContextFacts,
+    missingInformation: IncidentContextMissingInformation[],
+    error: unknown,
+  ) {
+    super('An incident context operation failed.');
+    this.name = 'IncidentContextOperationError';
+    const status = error instanceof MetadataProviderError ? error.status : 'internal';
+    const code = contextOperationFailureCodes[status];
+    this.contextStage = IncidentContextDegradedStageSchema.parse({
+      status: 'degraded',
+      intent,
+      facts,
+      missingInformation,
+      failedOperation: operation,
+      error: { code, message: INCIDENT_CONTEXT_ERROR_MESSAGES[code] },
+    });
   }
 }
 
@@ -179,6 +226,11 @@ export class InvestigationExecutionBudget {
     this.retries += 1;
   }
 
+  canRetry() {
+    this.assertDuration();
+    return this.retries < this.limits.maxRetries;
+  }
+
   assertModelOutput(serializedOutput: string) {
     this.assertDuration();
     if (new TextEncoder().encode(serializedOutput).byteLength > this.limits.maxModelOutputBytes) {
@@ -201,6 +253,7 @@ export class InvestigationExecutionBudget {
       agentSteps: this.agentSteps,
       durationMs: this.durationMs(),
       lineageEntitiesVisited: this.visitedLineageEntities.size,
+      retries: this.retries,
       terminationReason,
     });
   }
@@ -322,6 +375,19 @@ function assertContextActive(signal: AbortSignal) {
   }
 }
 
+function contextOperationFailed(
+  operation: MetadataInvestigationOperation,
+  intent: IncidentIntent,
+  facts: IncidentContextFacts,
+  missingInformation: IncidentContextMissingInformation[],
+  error: unknown,
+): never {
+  if (error instanceof InvestigationLimitError) {
+    throw error;
+  }
+  throw new IncidentContextOperationError(operation, intent, facts, missingInformation, error);
+}
+
 export class DeterministicIncidentContextGatherer implements IncidentContextGatherer {
   async gather(
     request: IncidentRequest,
@@ -392,38 +458,59 @@ export class DeterministicIncidentContextGatherer implements IncidentContextGath
       });
     }
 
-    assertContextActive(signal);
-    context.executionBudget?.recordToolCall();
-    const healthResult = await metadata.healthCheck({ signal });
-    assertContextActive(signal);
-    const parsedHealth = MetadataHealthResponseSchema.safeParse({ mode, ...healthResult });
-    if (!parsedHealth.success) {
-      throw new MetadataProviderError('invalid_response');
-    }
-    const health = parsedHealth.data;
-    if (health.status !== 'ready') {
-      throw new MetadataProviderError(health.status);
+    try {
+      assertContextActive(signal);
+      context.executionBudget?.recordToolCall();
+      const healthResult = await metadata.healthCheck({ signal });
+      assertContextActive(signal);
+      const parsedHealth = MetadataHealthResponseSchema.safeParse({ mode, ...healthResult });
+      if (!parsedHealth.success) {
+        throw new MetadataProviderError('invalid_response');
+      }
+      const health = parsedHealth.data;
+      if (health.status !== 'ready') {
+        throw new MetadataProviderError(health.status);
+      }
+    } catch (error: unknown) {
+      contextOperationFailed(
+        'metadata_health',
+        intent,
+        { sourceMode: mode, candidateEntities: [], recentChanges: [] },
+        missingInformation,
+        error,
+      );
     }
 
     const query = intent.entityHints[0] ?? intent.question;
-    assertContextActive(signal);
-    context.executionBudget?.recordToolCall();
-    const searchResults = await metadata.searchEntities({
-      query,
-      limit: limits.candidateEntityCount,
-      fallbackToDefault: false,
-      signal,
-    });
-    assertContextActive(signal);
-    const parsedSearch = MetadataEntitySearchResponseSchema.safeParse({
-      query,
-      limit: limits.candidateEntityCount,
-      results: searchResults,
-    });
-    if (!parsedSearch.success) {
-      throw new MetadataProviderError('invalid_response');
+    let candidateEntities: IncidentContextFacts['candidateEntities'];
+    try {
+      assertContextActive(signal);
+      context.executionBudget?.recordToolCall();
+      const searchResults = await metadata.searchEntities({
+        query,
+        limit: limits.candidateEntityCount,
+        fallbackToDefault: false,
+        signal,
+      });
+      assertContextActive(signal);
+      const parsedSearch = MetadataEntitySearchResponseSchema.safeParse({
+        query,
+        limit: limits.candidateEntityCount,
+        results: searchResults,
+      });
+      if (!parsedSearch.success) {
+        throw new MetadataProviderError('invalid_response');
+      }
+      candidateEntities = parsedSearch.data.results;
+    } catch (error: unknown) {
+      contextOperationFailed(
+        'entity_search',
+        intent,
+        { sourceMode: mode, candidateEntities: [], recentChanges: [] },
+        missingInformation,
+        error,
+      );
     }
-    const candidateEntities = parsedSearch.data.results;
     const selectedEntity = candidateEntities[0];
 
     if (!selectedEntity) {
@@ -450,21 +537,32 @@ export class DeterministicIncidentContextGatherer implements IncidentContextGath
       maxNodes: limits.lineageEntityCount,
       signal,
     } as const;
-    assertContextActive(signal);
-    context.executionBudget?.recordToolCall();
-    const lineageResponse = await metadata.getLineageGraph(lineageRequest);
-    assertContextActive(signal);
-    const parsedLineage = MetadataLineageResponseSchema.safeParse(lineageResponse);
-    if (
-      !parsedLineage.success ||
-      parsedLineage.data.rootUrn !== lineageRequest.rootUrn ||
-      parsedLineage.data.direction !== lineageRequest.direction ||
-      parsedLineage.data.requestedDepth !== lineageRequest.depth ||
-      parsedLineage.data.maxNodes !== lineageRequest.maxNodes
-    ) {
-      throw new MetadataProviderError('invalid_response');
+    let lineage: NonNullable<IncidentContextFacts['lineage']>;
+    try {
+      assertContextActive(signal);
+      context.executionBudget?.recordToolCall();
+      const lineageResponse = await metadata.getLineageGraph(lineageRequest);
+      assertContextActive(signal);
+      const parsedLineage = MetadataLineageResponseSchema.safeParse(lineageResponse);
+      if (
+        !parsedLineage.success ||
+        parsedLineage.data.rootUrn !== lineageRequest.rootUrn ||
+        parsedLineage.data.direction !== lineageRequest.direction ||
+        parsedLineage.data.requestedDepth !== lineageRequest.depth ||
+        parsedLineage.data.maxNodes !== lineageRequest.maxNodes
+      ) {
+        throw new MetadataProviderError('invalid_response');
+      }
+      lineage = parsedLineage.data;
+    } catch (error: unknown) {
+      contextOperationFailed(
+        'lineage',
+        intent,
+        { sourceMode: mode, candidateEntities, selectedEntity, recentChanges: [] },
+        missingInformation,
+        error,
+      );
     }
-    const lineage = parsedLineage.data;
     context.executionBudget?.recordLineageEntities(lineage.nodes.map((entity) => entity.urn));
     if (lineage.edges.length === 0) {
       addMissingInformation(missingInformation, {
@@ -496,23 +594,39 @@ export class DeterministicIncidentContextGatherer implements IncidentContextGath
         limit: limits.recentChangeCount,
         signal,
       } as const;
-      assertContextActive(signal);
-      context.executionBudget?.recordToolCall();
-      const recentChangesResponse = await metadata.getRecentChangesForEntity(recentChangeRequest);
-      assertContextActive(signal);
-      const parsedRecentChanges =
-        MetadataRecentChangesResponseSchema.safeParse(recentChangesResponse);
-      if (
-        !parsedRecentChanges.success ||
-        parsedRecentChanges.data.entityUrn !== recentChangeRequest.entityUrn ||
-        parsedRecentChanges.data.window.hours !== recentChangeRequest.windowHours ||
-        parsedRecentChanges.data.limit !== recentChangeRequest.limit ||
-        (recentChangeRequest.endTime &&
-          parsedRecentChanges.data.window.endTime !== recentChangeRequest.endTime)
-      ) {
-        throw new MetadataProviderError('invalid_response');
+      try {
+        assertContextActive(signal);
+        context.executionBudget?.recordToolCall();
+        const recentChangesResponse = await metadata.getRecentChangesForEntity(recentChangeRequest);
+        assertContextActive(signal);
+        const parsedRecentChanges =
+          MetadataRecentChangesResponseSchema.safeParse(recentChangesResponse);
+        if (
+          !parsedRecentChanges.success ||
+          parsedRecentChanges.data.entityUrn !== recentChangeRequest.entityUrn ||
+          parsedRecentChanges.data.window.hours !== recentChangeRequest.windowHours ||
+          parsedRecentChanges.data.limit !== recentChangeRequest.limit ||
+          (recentChangeRequest.endTime &&
+            parsedRecentChanges.data.window.endTime !== recentChangeRequest.endTime)
+        ) {
+          throw new MetadataProviderError('invalid_response');
+        }
+        recentChanges.push(parsedRecentChanges.data);
+      } catch (error: unknown) {
+        contextOperationFailed(
+          'recent_changes',
+          intent,
+          {
+            sourceMode: mode,
+            candidateEntities,
+            selectedEntity,
+            lineage,
+            recentChanges,
+          },
+          missingInformation,
+          error,
+        );
       }
-      recentChanges.push(parsedRecentChanges.data);
     }
 
     if (recentChanges.every((response) => response.changes.length === 0)) {

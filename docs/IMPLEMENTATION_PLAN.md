@@ -2692,9 +2692,123 @@ Local Level C result on the Windows managed worktree, 2026-07-21:
 
 ### Slice 6.3 — Graceful degradation
 
-Plan: make bounded provider, model, timeout, and partial-evidence failures degrade to explicit safe
-inconclusive/fallback states while preserving fixture availability and factual-reference invariants.
-Do not add automatic remediation or distributed recovery.
+Status: local affected Level C passed on `codex/phase-6-3-graceful-degradation` from exact merged
+Slice 6.2 `main` `4d34fc2d42797402e96a5e7dcd12500512794523` (tree
+`d8ac5131da3b485eb628dfd8b19ac863fe846949`). Commit, publication, Draft PR, exact-head CI, and
+independent Windows QA remain pending.
+
+Objective: make the existing fixture/DataHub investigation orchestration terminate predictably when
+metadata, one observable tool, the model/structured-output boundary, or a traversal bound prevents a
+complete trustworthy result. Preserve only schema-validated evidence already collected, distinguish
+provider timeout from the total duration budget, and expose an explicit credential-free fixture
+alternative without silently switching mode or fabricating a completed investigation.
+
+Minimum files:
+
+- `packages/shared-types/src/index.ts` and focused contract tests for additive degraded/failed
+  retrieval states, allowlisted operation/error/warning/next-step values, preserved context facts,
+  factual retry metadata, termination-reason compatibility, and completed-report invariants.
+- `packages/agent-core/src/index.ts` and focused deterministic tests for safe partial context snapshots,
+  observable operation failure identity, exact configured structured-output retries, timeout
+  classification, and bounded counters.
+- `apps/api/src/index.ts` and focused incident integration tests for DataHub unavailability without
+  fixture substitution, entity-not-found guidance, lineage truncation, partial-evidence decisions,
+  model-provider timeout, invalid structured output exhaustion, and sanitized terminal storage/logging.
+- `apps/web/src/App.tsx` and directly affected presentation tests so degraded/failed results, preserved
+  facts, warnings, and explicit fixture continuation are visible without being rendered as completed.
+- `docs/AGENT_DESIGN.md`, `docs/API_CONTRACTS.md`, `docs/DATA_MODEL.md`, `docs/SECURITY.md`,
+  `docs/TEST_STRATEGY.md`, this plan, `docs/KNOWN_ISSUES.md`, and `docs/SESSION_LOG.md` for the exact
+  contracts, validation evidence, limitations, and handoff. Update `.env.example`, manifests,
+  lockfile, repository map, adapters, or fixtures only if focused implementation proves one is directly
+  required.
+
+Acceptance criteria:
+
+- DataHub-mode health/search/provider unavailability never invokes or reports fixture-backed success.
+  The terminal response keeps any already validated facts, identifies only the failed observable
+  operation, uses a stable safe error, and offers `continue_fixture_mode` as an explicit
+  `not_executed` alternative; mode never changes implicitly.
+- A model-provider timeout has its own safe termination reason/code and remains distinct from both a
+  metadata-provider timeout and `duration_limit_reached`. The same monotonic snapshot decides whether
+  the total deadline is actually exhausted, and safe collected context remains available.
+- An empty entity search returns no invented selected entity, hypothesis, or report. The stable
+  terminal contract asks for a concrete candidate or more bounded incident context.
+- Depth/entity-bounded lineage truncation remains deterministic, retains collected facts/report only
+  when their references stay truthful, emits a clear incomplete-traversal warning/reason, and never
+  presents the traversal or investigation as complete.
+- A single health/search/lineage/recent-change operation failure records only its allowlisted operation
+  identity. A safe partial result is returned only when schema-validated facts exist; otherwise the
+  investigation fails safely. No response/log includes provider payloads, secrets, hostnames,
+  configuration values, exceptions, stacks, or private reasoning.
+- Structured runner/model output is size-checked and parsed on every attempt. Only schema-invalid
+  structured output uses the existing retry seam, for at most `MAX_RETRIES` additional attempts; the
+  final invalid result is controlled degraded/failed output with safe context, never `completed` and
+  never a fabricated/persisted report. Retry counts are exposed factually and remain bounded.
+- Existing hard agent-step, tool-call, lineage-entity, retry, duration, and output budgets remain
+  authoritative. Terminal execution metadata reports only actual work, and provider/model timeout
+  reasons cannot masquerade as total-duration exhaustion.
+- Fixture mode remains deterministic and credential-free, retains the existing completed flow, makes
+  zero structured-output retries on valid output, and passes the existing browser regression.
+- Focused deterministic tests cover DataHub unavailable with zero/partial facts, model timeout inside
+  and beyond the total deadline, no entity, depth/entity truncation, each observable tool failure,
+  sufficient-versus-insufficient partial evidence, invalid output at zero/exact retry caps, counter
+  bounds, sanitization sentinels, and unchanged fixture completion. No test sleeps or calls a live
+  provider/model.
+
+Deferred: `GET /health`/readiness changes (Slice 6.4), a structured user event trail (Slice 6.5),
+confidence redesign/presentation (Slice 6.6), authentication, persistence, distributed recovery or
+rate limiting, provider/model proliferation, automatic production remediation, deployment work, live
+credential smoke, Mac validation, and Phase 6 Level D closure.
+
+Exact Level C validation commands, run once on coherent final inputs and repeat only a classified
+affected failure:
+
+- `pnpm exec prettier --write packages/shared-types/src/index.ts packages/agent-core/src/index.ts apps/api/src/index.ts apps/web/src/App.tsx tests/integration/graceful-degradation.test.ts tests/integration/contracts.test.ts tests/integration/runtime-limits.test.ts tests/integration/incidents-api.test.ts tests/integration/input-output-safety.test.ts tests/integration/web-report.test.ts docs/AGENT_DESIGN.md docs/API_CONTRACTS.md docs/DATA_MODEL.md docs/SECURITY.md docs/TEST_STRATEGY.md docs/IMPLEMENTATION_PLAN.md docs/KNOWN_ISSUES.md docs/SESSION_LOG.md`
+  then the same path list with `pnpm exec prettier --check`.
+- `pnpm exec eslint packages/shared-types/src/index.ts packages/agent-core/src/index.ts apps/api/src/index.ts apps/web/src/App.tsx tests/integration/graceful-degradation.test.ts tests/integration/contracts.test.ts tests/integration/runtime-limits.test.ts tests/integration/incidents-api.test.ts tests/integration/input-output-safety.test.ts tests/integration/web-report.test.ts`.
+- `pnpm --filter @dii/shared-types typecheck`, `pnpm --filter @dii/datahub-client typecheck`,
+  `pnpm --filter @dii/agent-core typecheck`, `pnpm --filter @dii/api typecheck`, and
+  `pnpm --filter @dii/web typecheck`.
+- `pnpm exec vitest run tests/integration/graceful-degradation.test.ts tests/integration/contracts.test.ts tests/integration/runtime-limits.test.ts tests/integration/incident-context-gatherer.test.ts tests/integration/investigation-runner.test.ts tests/integration/incidents-api.test.ts tests/integration/input-output-safety.test.ts tests/integration/web-incident-context.test.ts tests/integration/web-report.test.ts`.
+- `pnpm --filter @dii/shared-types build`, `pnpm --filter @dii/datahub-client build`,
+  `pnpm --filter @dii/agent-core build`, `pnpm --filter @dii/api build`, and
+  `pnpm --filter @dii/web build`; then `pnpm smoke` and exactly one
+  `pnpm test:e2e:report` credential-free Windows fixture regression because the public retrieval/UI
+  terminal contract changes.
+- `git diff --check`; scoped tracked/untracked diff/name/stat review; secret, credential, hostname,
+  provider/model payload, stack/private-reasoning, conflict/debug, and generated-artifact scans;
+  manifest/lockfile/dependency drift review; exact base ancestry; browser port/process cleanup; and
+  final worktree review before one conventional commit.
+
+Local affected Level C result on the Windows managed worktree, 2026-07-21:
+
+- Bootstrap passed with Node `v24.14.0`, pnpm `11.9.0`, frozen 259 packages, and supply-chain policy.
+  Fetch verified exact `origin/main` commit/tree/parents before the branch was created; the plan above
+  was recorded before source changes.
+- The first focused Vitest command reproduced the known sandbox-only Vite/esbuild junction failure and
+  was retried with scoped access. The first full affected run passed 70/78 tests; all eight failures
+  were classified as expected contract migration plus one real total-duration classification gap.
+  Direct recovery passed runtime/input 25/25, incidents 11/12 then its deterministic zero-delay case,
+  graceful-degradation 12/12 including `MAX_RETRIES=5`, and contract/runtime/web 30/30. After the final
+  schema tightening, the exact nine-file command passed 9/9 files and 79/79 tests. Diff review then
+  identified one missing direct partial-evidence assertion for DataHub becoming unavailable after
+  lineage collection; its sole affected-file recovery passed 13/13, so all 80 planned assertions have
+  final-input passing evidence. No test calls a live provider, reads a credential, or sleeps for failure
+  semantics.
+- Affected ESLint passed. Five affected typechecks passed for shared-types, datahub-client, agent-core,
+  API, and web; the first API pass exposed one `exactOptionalPropertyTypes` construction gap, whose
+  single recovery passed. The recurring Windows child-`node` PATH limitation was handled only with the
+  verified process-local bundled runtime/root bin.
+- All five affected builds passed on final source inputs; web transformed 109 modules and built in
+  `1.63s`. Artifact smoke
+  passed `apps/api/dist/index.js` and `apps/web/dist/index.html`.
+- The first browser command stopped before API readiness because child pnpm lacked Node on PATH. The
+  single classified process-local PATH recovery passed the full credential-free fixture browser flow
+  in `34526ms` on ports `50072`/`50073`; no product timeout or repository script changed.
+- Mac, live DataHub/model credentials, provider network, readiness/health work, audit trail, confidence
+  redesign, authentication, persistence, distributed recovery, automatic remediation, deployment, and
+  Level D were not used. Repository structure, manifests, lockfile, dependencies, `.env.example`, and
+  canonical fixtures remain unchanged.
 
 ### Slice 6.4 — Health and readiness
 

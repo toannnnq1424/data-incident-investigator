@@ -205,6 +205,7 @@ describe('deterministic investigation execution budget', () => {
       agentSteps: 2,
       durationMs: 1_000,
       lineageEntitiesVisited: 2,
+      retries: 1,
       terminationReason: 'completed',
     });
   });
@@ -254,6 +255,7 @@ describe('public incident execution metadata', () => {
         agentSteps: 1,
         durationMs: 10,
         lineageEntitiesVisited: 0,
+        retries: 0,
         terminationReason: 'tool_call_limit_reached',
       },
       error: {
@@ -307,12 +309,13 @@ describe('public incident execution metadata', () => {
         agentSteps: 5,
         durationMs: 0,
         lineageEntitiesVisited: 3,
+        retries: 0,
         terminationReason: 'completed',
       },
     });
   });
 
-  it('returns failed, never completed, when a tool-call budget blocks the workflow', async () => {
+  it('returns degraded, never completed, and preserves facts when a tool-call budget blocks later work', async () => {
     const server = buildServer({
       environment: {},
       executionClock: () => 0,
@@ -325,20 +328,23 @@ describe('public incident execution metadata', () => {
 
     const { incident } = await waitForTerminal(server, incidentId);
 
-    expect(incident).toEqual({
+    expect(incident).toMatchObject({
       incidentId,
-      status: 'failed',
+      status: 'degraded',
+      contextStage: { status: 'completed' },
       execution: {
         toolCalls: 4,
         agentSteps: 3,
         durationMs: 0,
         lineageEntitiesVisited: 2,
+        retries: 0,
         terminationReason: 'tool_call_limit_reached',
       },
       error: {
         code: 'INVESTIGATION_LIMIT_REACHED',
         message: INVESTIGATION_LIMIT_MESSAGES.tool_call_limit_reached,
       },
+      warnings: [expect.objectContaining({ code: 'partial_evidence' })],
     });
     expect(incident).not.toHaveProperty('report');
   });
@@ -357,7 +363,8 @@ describe('public incident execution metadata', () => {
     const { incident } = await waitForTerminal(server, incidentId);
 
     expect(incident).toMatchObject({
-      status: 'failed',
+      status: 'degraded',
+      contextStage: { status: 'completed' },
       execution: { terminationReason: 'model_output_limit_reached' },
       error: {
         code: 'INVESTIGATION_LIMIT_REACHED',
@@ -393,11 +400,11 @@ describe('public incident execution metadata', () => {
     ]);
 
     expect(firstResult.incident).toMatchObject({
-      status: 'failed',
+      status: 'degraded',
       execution: { agentSteps: 1, terminationReason: 'agent_step_limit_reached' },
     });
     expect(secondResult.incident).toMatchObject({
-      status: 'failed',
+      status: 'degraded',
       execution: { agentSteps: 1, terminationReason: 'agent_step_limit_reached' },
     });
   });

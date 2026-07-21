@@ -2492,3 +2492,76 @@ và sandbox Vite/esbuild limitation vẫn là environment-only, không phải pr
 Format/check final docs, audit full diff/secret/conflict/debug/generated/runtime/ancestry, tạo một
 conventional commit, push fast-forward, mở đúng một Draft PR base `main`, theo dõi exact-head CI tới
 terminal. Không merge; sau CI xanh, controller tạo Windows read-only exact-head QA riêng.
+
+## 2026-07-21 — Phase 6 Slice 6.3 graceful degradation
+
+### Objective
+
+Từ exact Slice 6.2 merge `4d34fc2d42797402e96a5e7dcd12500512794523`, làm investigation fail
+an toàn và dự đoán được khi DataHub/tool/model/structured output/traversal bound không cho phép kết quả
+đầy đủ; giữ facts đã schema-validate, không silent fixture switch hay fabricated completed report, và
+không làm Slice 6.4+.
+
+### Completed
+
+Đã fetch/xác minh exact main/tree/parents, bootstrap worktree, tạo branch Project riêng
+`codex/phase-6-3-graceful-degradation`, đọc project state bắt buộc và khóa plan trước source. Shared
+contract nay có terminal `degraded`, allowlisted operation/warning/next step, factual `retries`, và
+invariant report/stage chặt. Context gatherer chụp safe partial facts theo health/search/lineage/recent
+changes. API dừng DataHub/no-match trước legacy fixture runner, phân biệt metadata/model/total timeout,
+retry structured output đúng `0..MAX_RETRIES`, giữ partial report chỉ cho lineage truncation, và không
+log/return raw failure. Web hiển thị degraded reason, preserved context, warnings và explicit
+`continue_fixture_mode`; fixture success giữ nguyên.
+
+### Files changed
+
+`packages/shared-types/src/index.ts`; `packages/agent-core/src/index.ts`; `apps/api/src/index.ts`;
+`apps/web/src/App.tsx`; `tests/integration/graceful-degradation.test.ts`;
+`tests/integration/contracts.test.ts`; `tests/integration/runtime-limits.test.ts`;
+`tests/integration/incidents-api.test.ts`; `tests/integration/input-output-safety.test.ts`;
+`tests/integration/web-report.test.ts`; `docs/AGENT_DESIGN.md`; `docs/API_CONTRACTS.md`;
+`docs/DATA_MODEL.md`; `docs/SECURITY.md`; `docs/TEST_STRATEGY.md`;
+`docs/IMPLEMENTATION_PLAN.md`; `docs/KNOWN_ISSUES.md`; và entry này. Không đổi adapter transport,
+fixture, `.env.example`, manifest, lockfile, dependency, bootstrap hay repository map.
+
+### Decisions
+
+`degraded` là terminal non-success, không có active stage. Operation public chỉ gồm
+`metadata_health | entity_search | lineage | recent_changes | model_provider | structured_output`.
+Provider/tool/no-match/model-invalid không được giữ report; chỉ `lineage_truncated` được giữ report đã
+validate và phải có incomplete warning. Hard limit trước evidence giữ `failed`; hard limit sau evidence
+giữ context qua `degraded`. Invalid structured output chạy một initial attempt cộng tối đa
+`MAX_RETRIES` additional attempts; valid fixture luôn `retries: 0`. Fixture continuation là advisory
+`not_executed`, không đổi runtime mode.
+
+### Validation performed
+
+- Bootstrap/fetch/base verification PASS. Sandboxed Vitest reproducer dừng ở known Vite/esbuild
+  junction. First combined run 70/78 giúp migrate contract và phát hiện/sửa total-duration
+  classification; sau final schema tightening, exact nine-file command PASS 9/9 files, 79/79 tests.
+  Diff review bổ sung đúng một assertion còn thiếu cho DataHub unavailable sau lineage; sole affected
+  recovery PASS 13/13, đưa toàn bộ planned matrix lên 80 assertions có final-input passing evidence.
+- Affected ESLint PASS. Năm typecheck PASS; API có một classified
+  `exactOptionalPropertyTypes` recovery. Năm final-source build PASS; web transform 109 modules/build
+  `1.63s`.
+  Artifact smoke PASS API/web.
+- Browser attempt đầu dừng trước readiness do child pnpm không thấy Node; process-local bundled
+  Node/root-bin recovery PASS full fixture flow `34526ms` trên ports `50072`/`50073`.
+- Không dùng Mac, credential, live provider/model network, Level D hoặc Slice 6.4+.
+
+### Validation intentionally deferred
+
+Exact-head GitHub CI và independent Windows read-only QA; live credential smoke; Phase 6 Level D;
+readiness, audit trail, confidence, auth, persistence, distributed recovery và deployment.
+
+### Known issues
+
+Managed Windows child-pnpm PATH và sandbox Vite/esbuild junction vẫn là environment-only limitation.
+Fixture continuation cần operator chọn fixture mode rõ ràng; không có runtime auto-switch. Incident
+storage vẫn process-local và không durable.
+
+### Exact next step
+
+Format/check final changed paths, hoàn tất diff/secret/debug/generated/manifest/lock/base/process audit,
+tạo một conventional commit, push branch, mở đúng một Draft PR base current `main`, rồi theo dõi exact
+HEAD CI tới terminal. Không merge; independent Windows QA sẽ được dispatch riêng sau CI xanh.
