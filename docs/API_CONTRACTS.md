@@ -1117,6 +1117,25 @@ author scored confidence. A malformed structured result uses at most `MAX_RETRIE
 attempts, increments `execution.retries` only for attempts that actually run, and then returns the
 controlled degradation below with no report. It is never persisted or marked completed.
 
+#### Blast-radius report field
+
+Every public report adds API-owned `blastRadius`; runner/model draft output remains strict and cannot
+include it. `analysisVersion` is `blast-radius-v1`; `status` is `complete`, `partial`, `unknown`, or
+`unavailable`; and `explanation` is the exact code-owned template for that status. `impacts` contains
+only downstream-reachable datasets, pipelines, and dashboards with sanitized label, stable URN,
+bounded distance, root/path URNs, and hypothesis/evidence IDs that resolve inside the same report.
+`summary` counts impacts by type. `coverage` returns canonical `reasonCodes`, root/visited/truncation
+counters, and the applied existing lineage limits.
+
+`complete` never carries a reason code or truncated graph. `partial` preserves verified impacts and
+lists why coverage is incomplete. `unknown` and `unavailable` carry no impacts and are explicitly not
+zero-impact claims; only `unavailable` uses provider/tool failure reasons. A missing lineage graph,
+truncation, entity/depth cap, timeout, invalid provider result, or tool failure never fabricates reach or
+silently switches to fixtures. The canonical fixture yields `analytics.daily_revenue` at distance one
+and `Revenue overview` at distance two from `raw.orders`, with exact source-hypothesis/evidence
+provenance. This additional analysis step/call makes the canonical completed execution six agent steps
+and nine tool calls; the confidence formula and score remain unchanged.
+
 #### Graceful degradation
 
 `status: degraded` is HTTP `200` and is never a successful investigation. It returns terminal stage

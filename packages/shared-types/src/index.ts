@@ -2586,6 +2586,319 @@ export const DraftHypothesisSchema = z
 
 export const HypothesisSchema = z.union([ScoredHypothesisSchema, UnscoredHypothesisSchema]);
 
+export const BLAST_RADIUS_ANALYSIS_VERSION = 'blast-radius-v1' as const;
+export const BLAST_RADIUS_MAX_ROOT_ENTITIES = HYPOTHESIS_SCORING_MAX_HYPOTHESES;
+export const BLAST_RADIUS_MAX_IMPACTS = METADATA_LINEAGE_MAX_NODES;
+
+export const BLAST_RADIUS_STATUS_EXPLANATIONS = {
+  complete:
+    'Blast radius includes all supported downstream entities returned within the applied bounds.',
+  partial:
+    'Blast radius includes verified downstream impacts, but coverage is incomplete for the listed reasons.',
+  unknown:
+    'Blast radius is unknown because supported downstream lineage could not be verified completely.',
+  unavailable:
+    'Blast-radius analysis is unavailable because no usable validated lineage result was returned.',
+} as const;
+
+export const BlastRadiusStatusSchema = z.enum(['complete', 'partial', 'unknown', 'unavailable']);
+
+export const blastRadiusCoverageReasonCodes = [
+  'hypotheses_not_scored',
+  'source_evidence_missing',
+  'lineage_not_found',
+  'lineage_truncated',
+  'depth_limit_reached',
+  'entity_limit_reached',
+  'provider_unconfigured',
+  'provider_unavailable',
+  'provider_timeout',
+  'provider_invalid_response',
+  'tool_failure',
+] as const;
+
+export const BlastRadiusCoverageReasonCodeSchema = z.enum(blastRadiusCoverageReasonCodes);
+export const BlastRadiusImpactedEntityKindSchema = z.enum(['dataset', 'pipeline', 'dashboard']);
+
+const blastRadiusUnavailableReasonCodes = new Set<
+  z.infer<typeof BlastRadiusCoverageReasonCodeSchema>
+>([
+  'provider_unconfigured',
+  'provider_unavailable',
+  'provider_timeout',
+  'provider_invalid_response',
+  'tool_failure',
+]);
+
+const blastRadiusImpactedKindOrder = {
+  dataset: 0,
+  pipeline: 1,
+  dashboard: 2,
+} as const;
+
+export const BlastRadiusImpactedEntitySchema = z
+  .object({
+    urn: z.string().trim().min(1).max(1_000),
+    name: untrustedDisplayTextSchema(300),
+    kind: BlastRadiusImpactedEntityKindSchema,
+  })
+  .strict();
+
+export const BlastRadiusImpactSchema = z
+  .object({
+    entity: BlastRadiusImpactedEntitySchema,
+    relation: z.literal('downstream'),
+    distance: z.number().int().min(1).max(METADATA_LINEAGE_MAX_DEPTH),
+    rootUrn: z.string().trim().min(1).max(1_000),
+    pathUrns: z
+      .array(z.string().trim().min(1).max(1_000))
+      .min(2)
+      .max(METADATA_LINEAGE_MAX_DEPTH + 1),
+    hypothesisIds: z.array(z.string().trim().min(1).max(200)).min(1).max(3),
+    evidenceIds: z.array(z.string().trim().min(1).max(200)).min(1).max(20),
+  })
+  .strict()
+  .superRefine((impact, context) => {
+    if (
+      impact.pathUrns[0] !== impact.rootUrn ||
+      impact.pathUrns.at(-1) !== impact.entity.urn ||
+      impact.pathUrns.length !== impact.distance + 1
+    ) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Blast-radius path endpoints and distance must match the impact.',
+        path: ['pathUrns'],
+      });
+    }
+    if (new Set(impact.pathUrns).size !== impact.pathUrns.length) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Blast-radius paths cannot repeat an entity.',
+        path: ['pathUrns'],
+      });
+    }
+    [impact.hypothesisIds, impact.evidenceIds].forEach((references, referenceIndex) => {
+      if (
+        new Set(references).size !== references.length ||
+        references.some((reference, index) => index > 0 && references[index - 1]! > reference)
+      ) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Blast-radius provenance references must be unique and lexically ordered.',
+          path: [referenceIndex === 0 ? 'hypothesisIds' : 'evidenceIds'],
+        });
+      }
+    });
+  });
+
+function compareBlastRadiusImpacts(
+  left: z.infer<typeof BlastRadiusImpactSchema>,
+  right: z.infer<typeof BlastRadiusImpactSchema>,
+) {
+  if (left.distance !== right.distance) {
+    return left.distance - right.distance;
+  }
+  if (left.entity.kind !== right.entity.kind) {
+    return (
+      blastRadiusImpactedKindOrder[left.entity.kind] -
+      blastRadiusImpactedKindOrder[right.entity.kind]
+    );
+  }
+  return left.entity.urn < right.entity.urn ? -1 : left.entity.urn > right.entity.urn ? 1 : 0;
+}
+
+export const BlastRadiusAnalysisSchema = z
+  .object({
+    analysisVersion: z.literal(BLAST_RADIUS_ANALYSIS_VERSION),
+    status: BlastRadiusStatusSchema,
+    explanation: z.string().trim().min(1).max(200),
+    impacts: z.array(BlastRadiusImpactSchema).max(BLAST_RADIUS_MAX_IMPACTS),
+    summary: z
+      .object({
+        total: z.number().int().min(0).max(BLAST_RADIUS_MAX_IMPACTS),
+        datasets: z.number().int().min(0).max(BLAST_RADIUS_MAX_IMPACTS),
+        pipelines: z.number().int().min(0).max(BLAST_RADIUS_MAX_IMPACTS),
+        dashboards: z.number().int().min(0).max(BLAST_RADIUS_MAX_IMPACTS),
+      })
+      .strict(),
+    coverage: z
+      .object({
+        reasonCodes: z
+          .array(BlastRadiusCoverageReasonCodeSchema)
+          .max(blastRadiusCoverageReasonCodes.length),
+        rootsConsidered: z.number().int().min(0).max(BLAST_RADIUS_MAX_ROOT_ENTITIES),
+        rootsAnalyzed: z.number().int().min(0).max(BLAST_RADIUS_MAX_ROOT_ENTITIES),
+        visitedEntities: z.number().int().min(0).max(METADATA_LINEAGE_MAX_NODES),
+        truncatedGraphs: z.number().int().min(0).max(BLAST_RADIUS_MAX_ROOT_ENTITIES),
+        appliedLimits: z
+          .object({
+            maxDepth: z.number().int().min(1).max(METADATA_LINEAGE_MAX_DEPTH),
+            maxEntities: z.number().int().min(1).max(METADATA_LINEAGE_MAX_NODES),
+            maxRootEntities: z.number().int().min(1).max(BLAST_RADIUS_MAX_ROOT_ENTITIES),
+          })
+          .strict(),
+      })
+      .strict(),
+  })
+  .strict()
+  .superRefine((analysis, context) => {
+    if (analysis.explanation !== BLAST_RADIUS_STATUS_EXPLANATIONS[analysis.status]) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Blast-radius explanation must match the code-owned status template.',
+        path: ['explanation'],
+      });
+    }
+
+    const counts = analysis.impacts.reduce(
+      (summary, impact) => {
+        summary.total += 1;
+        if (impact.entity.kind === 'dataset') summary.datasets += 1;
+        if (impact.entity.kind === 'pipeline') summary.pipelines += 1;
+        if (impact.entity.kind === 'dashboard') summary.dashboards += 1;
+        return summary;
+      },
+      { total: 0, datasets: 0, pipelines: 0, dashboards: 0 },
+    );
+    if (JSON.stringify(counts) !== JSON.stringify(analysis.summary)) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Blast-radius summary counts must match the unique impacts.',
+        path: ['summary'],
+      });
+    }
+
+    const impactUrns = new Set<string>();
+    analysis.impacts.forEach((impact, index) => {
+      if (impactUrns.has(impact.entity.urn)) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Blast-radius impacted entity URNs must be unique.',
+          path: ['impacts', index, 'entity', 'urn'],
+        });
+      }
+      impactUrns.add(impact.entity.urn);
+      if (impact.distance > analysis.coverage.appliedLimits.maxDepth) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Blast-radius distance exceeds the applied depth limit.',
+          path: ['impacts', index, 'distance'],
+        });
+      }
+      const previous = analysis.impacts[index - 1];
+      if (previous && compareBlastRadiusImpacts(previous, impact) > 0) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Blast-radius impacts must use deterministic order.',
+          path: ['impacts', index],
+        });
+      }
+    });
+    if (analysis.impacts.length > analysis.coverage.appliedLimits.maxEntities) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Blast-radius impacts exceed the applied entity limit.',
+        path: ['impacts'],
+      });
+    }
+    if (
+      analysis.coverage.visitedEntities > analysis.coverage.appliedLimits.maxEntities ||
+      analysis.impacts.length > analysis.coverage.visitedEntities
+    ) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Blast-radius entities exceed the applied or visited entity bounds.',
+        path: ['coverage', 'visitedEntities'],
+      });
+    }
+
+    const reasonCodes = analysis.coverage.reasonCodes;
+    if (
+      new Set(reasonCodes).size !== reasonCodes.length ||
+      reasonCodes.some(
+        (reason, index) =>
+          index > 0 &&
+          blastRadiusCoverageReasonCodes.indexOf(reasonCodes[index - 1]!) >
+            blastRadiusCoverageReasonCodes.indexOf(reason),
+      )
+    ) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Blast-radius coverage reasons must be unique and canonically ordered.',
+        path: ['coverage', 'reasonCodes'],
+      });
+    }
+    if (
+      analysis.coverage.rootsAnalyzed > analysis.coverage.rootsConsidered ||
+      analysis.coverage.rootsConsidered > analysis.coverage.appliedLimits.maxRootEntities ||
+      analysis.coverage.truncatedGraphs > analysis.coverage.rootsAnalyzed
+    ) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Blast-radius coverage counters exceed the considered roots.',
+        path: ['coverage'],
+      });
+    }
+
+    if (
+      analysis.status === 'complete' &&
+      (reasonCodes.length !== 0 ||
+        analysis.coverage.rootsConsidered === 0 ||
+        analysis.coverage.rootsAnalyzed !== analysis.coverage.rootsConsidered ||
+        analysis.coverage.truncatedGraphs !== 0)
+    ) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Complete blast radius requires full root coverage without a reason code.',
+        path: ['status'],
+      });
+    }
+    if (
+      analysis.status === 'partial' &&
+      (analysis.impacts.length === 0 || reasonCodes.length === 0)
+    ) {
+      context.addIssue({
+        code: 'custom',
+        message:
+          'Partial blast radius requires verified impacts and an incomplete-coverage reason.',
+        path: ['status'],
+      });
+    }
+    if (
+      (analysis.status === 'unknown' || analysis.status === 'unavailable') &&
+      (analysis.impacts.length !== 0 || reasonCodes.length === 0)
+    ) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Unknown or unavailable blast radius requires zero impacts and a reason code.',
+        path: ['status'],
+      });
+    }
+    const hasUnavailableReason = reasonCodes.some((reason) =>
+      blastRadiusUnavailableReasonCodes.has(reason),
+    );
+    if (
+      (analysis.status === 'unknown' && hasUnavailableReason) ||
+      (analysis.status === 'unavailable' && !hasUnavailableReason)
+    ) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Blast-radius status must match its coverage-failure semantics.',
+        path: ['status'],
+      });
+    }
+    if (
+      analysis.status === 'partial' &&
+      (analysis.coverage.rootsAnalyzed === 0 || analysis.coverage.visitedEntities === 0)
+    ) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Partial blast radius requires analyzed lineage that supports its impacts.',
+        path: ['coverage'],
+      });
+    }
+  });
+
 const InvestigationReportCommonShape = {
   incidentId: z.string().trim().min(1).max(200),
   summary: untrustedDisplayTextSchema(2_000),
@@ -2662,13 +2975,62 @@ function refineInvestigationReport(
   });
 }
 
+function refinePublicInvestigationReport(
+  report: {
+    evidence: z.infer<typeof EvidenceSchema>[];
+    hypotheses: z.infer<typeof HypothesisSchema>[];
+    blastRadius: z.infer<typeof BlastRadiusAnalysisSchema>;
+  },
+  context: z.RefinementCtx,
+) {
+  refineInvestigationReport(report, context);
+  const evidenceById = new Map(report.evidence.map((evidence) => [evidence.id, evidence]));
+  const hypothesesById = new Map(
+    report.hypotheses.map((hypothesis) => [hypothesis.id, hypothesis]),
+  );
+
+  report.blastRadius.impacts.forEach((impact, impactIndex) => {
+    const citedEvidenceIds = new Set<string>();
+    impact.hypothesisIds.forEach((hypothesisId, hypothesisIndex) => {
+      const hypothesis = hypothesesById.get(hypothesisId);
+      if (!hypothesis || !('sourceChangeId' in hypothesis)) {
+        context.addIssue({
+          code: 'custom',
+          message: `Blast-radius hypothesis reference does not resolve to a scored hypothesis: ${hypothesisId}`,
+          path: ['blastRadius', 'impacts', impactIndex, 'hypothesisIds', hypothesisIndex],
+        });
+        return;
+      }
+      hypothesis.evidenceIds.forEach((evidenceId) => citedEvidenceIds.add(evidenceId));
+      const sourceEvidence = evidenceById.get(hypothesis.sourceChangeId);
+      if (sourceEvidence?.sourceEntity?.urn !== impact.rootUrn) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Blast-radius root must match the scored source-change evidence entity.',
+          path: ['blastRadius', 'impacts', impactIndex, 'rootUrn'],
+        });
+      }
+    });
+    impact.evidenceIds.forEach((evidenceId, evidenceIndex) => {
+      if (!evidenceById.has(evidenceId) || !citedEvidenceIds.has(evidenceId)) {
+        context.addIssue({
+          code: 'custom',
+          message: `Blast-radius evidence reference is not resolved through its scored hypothesis: ${evidenceId}`,
+          path: ['blastRadius', 'impacts', impactIndex, 'evidenceIds', evidenceIndex],
+        });
+      }
+    });
+  });
+}
+
 export const InvestigationReportSchema = z
   .object({
     ...InvestigationReportCommonShape,
     hypotheses: z.array(HypothesisSchema).min(1).max(3),
+    blastRadius: BlastRadiusAnalysisSchema,
   })
   .strict()
-  .superRefine(refineInvestigationReport);
+  .superRefine(refinePublicInvestigationReport);
 
 export const InvestigationDraftReportSchema = z
   .object({
@@ -4539,6 +4901,11 @@ export type RemediationRecommendation = z.infer<typeof RemediationRecommendation
 export type RemediationFallbackStep = z.infer<typeof RemediationFallbackStepSchema>;
 export type RemediationMissingInformation = z.infer<typeof RemediationMissingInformationSchema>;
 export type RemediationPlanningStage = z.infer<typeof RemediationPlanningStageSchema>;
+export type BlastRadiusStatus = z.infer<typeof BlastRadiusStatusSchema>;
+export type BlastRadiusCoverageReasonCode = z.infer<typeof BlastRadiusCoverageReasonCodeSchema>;
+export type BlastRadiusImpactedEntityKind = z.infer<typeof BlastRadiusImpactedEntityKindSchema>;
+export type BlastRadiusImpact = z.infer<typeof BlastRadiusImpactSchema>;
+export type BlastRadiusAnalysis = z.infer<typeof BlastRadiusAnalysisSchema>;
 export type IncidentStatus = z.infer<typeof IncidentStatusSchema>;
 export type IncidentAcceptedResponse = z.infer<typeof IncidentAcceptedResponseSchema>;
 export type IncidentIdParams = z.infer<typeof IncidentIdParamsSchema>;

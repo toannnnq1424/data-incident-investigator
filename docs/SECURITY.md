@@ -80,6 +80,12 @@ environment variables. Logs must redact authorization headers, tokens, and full 
   public score, band, reason codes, template explanation, and resolved references from the report, but
   activity events retain only their existing observable action summary and evidence IDs. Neither path
   accepts raw question/metadata prose, model explanation, chain-of-thought, or private reasoning.
+- Treat blast radius as validated lineage output, not generated prose or causal certainty. Derive roots
+  only from resolved scored-hypothesis source evidence; traverse only schema-valid downstream edges;
+  enforce existing depth/entity/tool/deadline bounds; and preserve explicit unknown, unavailable, or
+  partial coverage. Every impact must retain a bounded path plus resolved report evidence provenance.
+  Sanitize provider labels before API/UI output, emit only code-owned explanations/reason codes, never
+  log raw graph metadata, and never silently replace a DataHub failure with fixture reach.
 
 ## External systems
 

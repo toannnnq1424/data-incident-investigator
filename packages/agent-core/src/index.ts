@@ -8,6 +8,11 @@ import {
   type MetadataSearchProvider,
 } from '@dii/datahub-client';
 import {
+  BLAST_RADIUS_ANALYSIS_VERSION,
+  BLAST_RADIUS_MAX_ROOT_ENTITIES,
+  BLAST_RADIUS_STATUS_EXPLANATIONS,
+  BlastRadiusAnalysisSchema,
+  BlastRadiusImpactSchema,
   INCIDENT_CONTEXT_DEFAULT_WINDOW_HOURS,
   INCIDENT_CONTEXT_MAX_CANDIDATES,
   INCIDENT_CONTEXT_MAX_CHANGE_ENTITIES,
@@ -56,6 +61,10 @@ import {
   RuntimeLimitConfigSchema,
   hypothesisConfidenceExplanation,
   hypothesisConfidenceLevel,
+  blastRadiusCoverageReasonCodes,
+  type BlastRadiusAnalysis,
+  type BlastRadiusCoverageReasonCode,
+  type BlastRadiusImpact,
   type Evidence,
   type IncidentContextCompletedStage,
   type IncidentContextDegradedStage,
@@ -74,6 +83,7 @@ import {
   type HypothesisScoringResult,
   type HypothesisScoringStage,
   type MetadataRecentChangeCategory,
+  type MetadataLineageResponse,
   type MetadataInvestigationOperation,
   type MetadataSourceMode,
   type RemediationFallbackStep,
@@ -1317,6 +1327,368 @@ export class DeterministicHypothesisScorer implements HypothesisScorer {
       evidence: parsedEvidence,
       result,
     }).result;
+  }
+}
+
+export interface BlastRadiusAnalysisContext {
+  metadata: MetadataLineageProvider;
+  maxDepth: number;
+  maxEntities: number;
+  timeoutMs: number;
+  executionBudget?: InvestigationExecutionBudget;
+}
+
+export interface BlastRadiusAnalyzer {
+  analyze(
+    hypothesisScoringStage: HypothesisScoringStage,
+    evidence: readonly Evidence[],
+    context: BlastRadiusAnalysisContext,
+  ): Promise<BlastRadiusAnalysis>;
+}
+
+interface BlastRadiusRoot {
+  urn: string;
+  hypothesisIds: string[];
+  evidenceIds: string[];
+}
+
+const blastRadiusProviderReasons = new Set<BlastRadiusCoverageReasonCode>([
+  'provider_unconfigured',
+  'provider_unavailable',
+  'provider_timeout',
+  'provider_invalid_response',
+  'tool_failure',
+]);
+
+function blastRadiusProviderReason(error: unknown): BlastRadiusCoverageReasonCode {
+  if (!(error instanceof MetadataProviderError)) return 'tool_failure';
+  if (error.status === 'unconfigured') return 'provider_unconfigured';
+  if (error.status === 'timeout') return 'provider_timeout';
+  if (error.status === 'invalid_response') return 'provider_invalid_response';
+  if (error.status === 'not_found') return 'lineage_not_found';
+  return 'provider_unavailable';
+}
+
+function compareBlastRadiusImpactCandidates(left: BlastRadiusImpact, right: BlastRadiusImpact) {
+  if (left.distance !== right.distance) return left.distance - right.distance;
+  if (left.rootUrn !== right.rootUrn) return left.rootUrn < right.rootUrn ? -1 : 1;
+  const leftPath = left.pathUrns.join('\u0000');
+  const rightPath = right.pathUrns.join('\u0000');
+  return leftPath < rightPath ? -1 : leftPath > rightPath ? 1 : 0;
+}
+
+function orderedBlastRadiusReasons(reasons: ReadonlySet<BlastRadiusCoverageReasonCode>) {
+  return blastRadiusCoverageReasonCodes.filter((reason) => reasons.has(reason));
+}
+
+function blastRadiusSummary(impacts: readonly BlastRadiusImpact[]) {
+  return impacts.reduce(
+    (summary, impact) => {
+      summary.total += 1;
+      if (impact.entity.kind === 'dataset') summary.datasets += 1;
+      if (impact.entity.kind === 'pipeline') summary.pipelines += 1;
+      if (impact.entity.kind === 'dashboard') summary.dashboards += 1;
+      return summary;
+    },
+    { total: 0, datasets: 0, pipelines: 0, dashboards: 0 },
+  );
+}
+
+function sortedBlastRadiusImpacts(impacts: Iterable<BlastRadiusImpact>) {
+  const kindOrder = { dataset: 0, pipeline: 1, dashboard: 2 } as const;
+  return [...impacts].sort((left, right) => {
+    if (left.distance !== right.distance) return left.distance - right.distance;
+    if (left.entity.kind !== right.entity.kind) {
+      return kindOrder[left.entity.kind] - kindOrder[right.entity.kind];
+    }
+    return left.entity.urn < right.entity.urn ? -1 : left.entity.urn > right.entity.urn ? 1 : 0;
+  });
+}
+
+function blastRadiusPaths(graph: MetadataLineageResponse, rootUrn: string) {
+  const adjacency = new Map<string, string[]>();
+  graph.edges.forEach((edge) => {
+    const targets = adjacency.get(edge.sourceUrn) ?? [];
+    targets.push(edge.targetUrn);
+    adjacency.set(edge.sourceUrn, targets);
+  });
+  adjacency.forEach((targets) => targets.sort());
+
+  const paths = new Map<string, string[]>([[rootUrn, [rootUrn]]]);
+  const queue = [rootUrn];
+  while (queue.length > 0) {
+    const sourceUrn = queue.shift()!;
+    const sourcePath = paths.get(sourceUrn)!;
+    if (sourcePath.length - 1 >= graph.requestedDepth) continue;
+    for (const targetUrn of adjacency.get(sourceUrn) ?? []) {
+      if (sourcePath.includes(targetUrn)) continue;
+      const candidatePath = [...sourcePath, targetUrn];
+      const existingPath = paths.get(targetUrn);
+      if (
+        existingPath &&
+        (existingPath.length < candidatePath.length ||
+          (existingPath.length === candidatePath.length &&
+            existingPath.join('\u0000') <= candidatePath.join('\u0000')))
+      ) {
+        continue;
+      }
+      paths.set(targetUrn, candidatePath);
+      queue.push(targetUrn);
+    }
+  }
+  return paths;
+}
+
+export class DeterministicBlastRadiusAnalyzer implements BlastRadiusAnalyzer {
+  async analyze(
+    hypothesisScoringStage: HypothesisScoringStage,
+    evidence: readonly Evidence[],
+    context: BlastRadiusAnalysisContext,
+  ): Promise<BlastRadiusAnalysis> {
+    const scoring = HypothesisScoringStageSchema.parse(hypothesisScoringStage);
+    const parsedEvidence = EvidenceSchema.array().max(100).parse(evidence);
+    const maxDepth = Math.min(
+      METADATA_LINEAGE_MAX_DEPTH,
+      Math.max(1, Math.floor(context.maxDepth)),
+    );
+    const maxEntities = Math.min(
+      METADATA_LINEAGE_MAX_NODES,
+      Math.max(1, Math.floor(context.maxEntities)),
+    );
+    const appliedLimits = {
+      maxDepth,
+      maxEntities,
+      maxRootEntities: BLAST_RADIUS_MAX_ROOT_ENTITIES,
+    };
+
+    if (scoring.status !== 'completed') {
+      return BlastRadiusAnalysisSchema.parse({
+        analysisVersion: BLAST_RADIUS_ANALYSIS_VERSION,
+        status: 'unknown',
+        explanation: BLAST_RADIUS_STATUS_EXPLANATIONS.unknown,
+        impacts: [],
+        summary: blastRadiusSummary([]),
+        coverage: {
+          reasonCodes: ['hypotheses_not_scored'],
+          rootsConsidered: 0,
+          rootsAnalyzed: 0,
+          visitedEntities: 0,
+          truncatedGraphs: 0,
+          appliedLimits,
+        },
+      });
+    }
+
+    const evidenceById = new Map(parsedEvidence.map((item) => [item.id, item]));
+    const rootsByUrn = new Map<string, { hypothesisIds: Set<string>; evidenceIds: Set<string> }>();
+    const reasons = new Set<BlastRadiusCoverageReasonCode>();
+    scoring.hypotheses.forEach((hypothesis) => {
+      const sourceEvidence = evidenceById.get(hypothesis.sourceChangeId);
+      const everyEvidenceResolved = hypothesis.evidenceIds.every((id) => evidenceById.has(id));
+      if (!sourceEvidence?.sourceEntity || !everyEvidenceResolved) {
+        reasons.add('source_evidence_missing');
+        return;
+      }
+      const root = rootsByUrn.get(sourceEvidence.sourceEntity.urn) ?? {
+        hypothesisIds: new Set<string>(),
+        evidenceIds: new Set<string>(),
+      };
+      root.hypothesisIds.add(hypothesis.id);
+      hypothesis.evidenceIds.forEach((id) => root.evidenceIds.add(id));
+      rootsByUrn.set(sourceEvidence.sourceEntity.urn, root);
+    });
+    const roots: BlastRadiusRoot[] = [...rootsByUrn.entries()]
+      .map(([urn, provenance]) => ({
+        urn,
+        hypothesisIds: [...provenance.hypothesisIds].sort(),
+        evidenceIds: [...provenance.evidenceIds].sort(),
+      }))
+      .sort((left, right) => (left.urn < right.urn ? -1 : left.urn > right.urn ? 1 : 0))
+      .slice(0, BLAST_RADIUS_MAX_ROOT_ENTITIES);
+
+    if (roots.length === 0) {
+      reasons.add('source_evidence_missing');
+      return BlastRadiusAnalysisSchema.parse({
+        analysisVersion: BLAST_RADIUS_ANALYSIS_VERSION,
+        status: 'unknown',
+        explanation: BLAST_RADIUS_STATUS_EXPLANATIONS.unknown,
+        impacts: [],
+        summary: blastRadiusSummary([]),
+        coverage: {
+          reasonCodes: orderedBlastRadiusReasons(reasons),
+          rootsConsidered: 0,
+          rootsAnalyzed: 0,
+          visitedEntities: 0,
+          truncatedGraphs: 0,
+          appliedLimits,
+        },
+      });
+    }
+
+    const impactsByUrn = new Map<string, BlastRadiusImpact>();
+    const visitedUrns = new Set<string>();
+    let rootsAnalyzed = 0;
+    let truncatedGraphs = 0;
+
+    for (const root of roots) {
+      try {
+        context.executionBudget?.assertLineageRequest(maxDepth, maxEntities);
+        context.executionBudget?.recordToolCall();
+        const graph = await this.getLineageGraph(root.urn, maxDepth, maxEntities, context);
+        if (
+          graph.rootUrn !== root.urn ||
+          graph.direction !== 'downstream' ||
+          graph.requestedDepth !== maxDepth ||
+          graph.maxNodes !== maxEntities
+        ) {
+          throw new MetadataProviderError('invalid_response');
+        }
+        rootsAnalyzed += 1;
+
+        const allowedNodeUrns = new Set<string>();
+        let locallyTruncated = false;
+        for (const node of graph.nodes) {
+          if (visitedUrns.has(node.urn)) {
+            allowedNodeUrns.add(node.urn);
+            continue;
+          }
+          if (visitedUrns.size >= maxEntities) {
+            locallyTruncated = true;
+            continue;
+          }
+          visitedUrns.add(node.urn);
+          allowedNodeUrns.add(node.urn);
+        }
+        context.executionBudget?.recordLineageEntities([...allowedNodeUrns]);
+        if (!allowedNodeUrns.has(root.urn)) {
+          reasons.add('entity_limit_reached');
+          truncatedGraphs += 1;
+          continue;
+        }
+
+        const boundedGraph = MetadataLineageResponseSchema.parse({
+          ...graph,
+          visitedNodeCount: allowedNodeUrns.size,
+          nodes: graph.nodes.filter((node) => allowedNodeUrns.has(node.urn)),
+          edges: graph.edges.filter(
+            (edge) => allowedNodeUrns.has(edge.sourceUrn) && allowedNodeUrns.has(edge.targetUrn),
+          ),
+          truncated: graph.truncated || locallyTruncated,
+        });
+        if (boundedGraph.truncated) {
+          truncatedGraphs += 1;
+          reasons.add('lineage_truncated');
+          if (locallyTruncated || graph.nodes.length === maxEntities) {
+            reasons.add('entity_limit_reached');
+          }
+          if (graph.nodes.some((node) => node.depth === maxDepth)) {
+            reasons.add('depth_limit_reached');
+          }
+        }
+
+        const paths = blastRadiusPaths(boundedGraph, root.urn);
+        const nodesByUrn = new Map(boundedGraph.nodes.map((node) => [node.urn, node]));
+        paths.forEach((pathUrns, entityUrn) => {
+          if (entityUrn === root.urn) return;
+          const entity = nodesByUrn.get(entityUrn);
+          if (
+            !entity ||
+            (entity.kind !== 'dataset' && entity.kind !== 'pipeline' && entity.kind !== 'dashboard')
+          ) {
+            return;
+          }
+          const candidate = BlastRadiusImpactSchema.parse({
+            entity: { urn: entity.urn, name: entity.name, kind: entity.kind },
+            relation: 'downstream',
+            distance: pathUrns.length - 1,
+            rootUrn: root.urn,
+            pathUrns,
+            hypothesisIds: root.hypothesisIds,
+            evidenceIds: root.evidenceIds,
+          });
+          const existing = impactsByUrn.get(entityUrn);
+          if (!existing || compareBlastRadiusImpactCandidates(candidate, existing) < 0) {
+            impactsByUrn.set(entityUrn, candidate);
+          }
+        });
+      } catch (error: unknown) {
+        if (error instanceof InvestigationLimitError) throw error;
+        reasons.add(blastRadiusProviderReason(error));
+      }
+    }
+
+    const impacts = sortedBlastRadiusImpacts(impactsByUrn.values()).slice(0, maxEntities);
+    if (impactsByUrn.size > impacts.length) reasons.add('entity_limit_reached');
+    const reasonCodes = orderedBlastRadiusReasons(reasons);
+    const hasProviderFailure = reasonCodes.some((reason) => blastRadiusProviderReasons.has(reason));
+    const status =
+      impacts.length > 0
+        ? reasonCodes.length > 0 || rootsAnalyzed !== roots.length
+          ? 'partial'
+          : 'complete'
+        : reasonCodes.length === 0 && rootsAnalyzed === roots.length
+          ? 'complete'
+          : hasProviderFailure
+            ? 'unavailable'
+            : 'unknown';
+
+    return BlastRadiusAnalysisSchema.parse({
+      analysisVersion: BLAST_RADIUS_ANALYSIS_VERSION,
+      status,
+      explanation: BLAST_RADIUS_STATUS_EXPLANATIONS[status],
+      impacts,
+      summary: blastRadiusSummary(impacts),
+      coverage: {
+        reasonCodes,
+        rootsConsidered: roots.length,
+        rootsAnalyzed,
+        visitedEntities: visitedUrns.size,
+        truncatedGraphs,
+        appliedLimits,
+      },
+    });
+  }
+
+  private async getLineageGraph(
+    rootUrn: string,
+    maxDepth: number,
+    maxEntities: number,
+    context: BlastRadiusAnalysisContext,
+  ) {
+    const controller = new AbortController();
+    const timeoutMs = Math.min(
+      Math.max(1, Math.floor(context.timeoutMs)),
+      context.executionBudget?.remainingDurationMs() ?? context.timeoutMs,
+    );
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      timeout = setTimeout(() => {
+        controller.abort();
+        reject(
+          context.executionBudget
+            ? new InvestigationLimitError(
+                'duration_limit_reached',
+                context.executionBudget.snapshot('duration_limit_reached'),
+              )
+            : new MetadataProviderError('timeout'),
+        );
+      }, timeoutMs);
+    });
+    try {
+      const graph = await Promise.race([
+        context.metadata.getLineageGraph({
+          rootUrn,
+          direction: 'downstream',
+          depth: maxDepth,
+          maxNodes: maxEntities,
+          signal: controller.signal,
+        }),
+        timeoutPromise,
+      ]);
+      return MetadataLineageResponseSchema.parse(graph);
+    } finally {
+      if (timeout) clearTimeout(timeout);
+    }
   }
 }
 

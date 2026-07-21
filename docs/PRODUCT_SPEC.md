@@ -10,7 +10,8 @@ manual and conclusions are hard to audit.
 
 Data Incident Investigator turns an incident question into a structured, evidence-backed report. It
 finds candidate entities, expands lineage, gathers recent metadata changes, ranks possible root causes,
-and recommends the next checks or recovery actions.
+identifies evidence-supported downstream blast radius, and recommends the next checks or recovery
+actions.
 
 ## Target users
 
@@ -24,9 +25,10 @@ and recommends the next checks or recovery actions.
 2. The API validates and records an incident.
 3. The investigation runner searches entities through a metadata adapter.
 4. It expands bounded upstream/downstream lineage and gathers recent changes.
-5. It produces evidence, hypotheses with deterministic confidence signals, and recommendations.
-6. The web UI renders the root cause, confidence, evidence timeline, impacted entities, lineage, and
-   missing information.
+5. It produces evidence, hypotheses with deterministic confidence signals, and a bounded downstream
+   blast radius when validated lineage supports one.
+6. The web UI renders the root cause, confidence, evidence timeline, blast radius, lineage,
+   recommendations, and missing information as distinct sections.
 
 ## Functional requirements
 
@@ -34,6 +36,9 @@ and recommends the next checks or recovery actions.
 - DataHub mode uses the same internal `MetadataAdapter` contract.
 - Reports distinguish fact, inference, assumption, missing information, and recommendation.
 - Every hypothesis references one or more evidence IDs.
+- Every blast-radius impact is a typed dataset, pipeline, or dashboard with a stable URN, downstream
+  path, bounded distance, and resolved hypothesis/evidence provenance. Missing or truncated coverage is
+  explicit and is never presented as verified zero impact.
 - Limits bound lineage depth, entity count, tool calls, retries, duration, and output size.
 - Errors explain whether the failure is validation, provider availability, timeout, or insufficient
   evidence.

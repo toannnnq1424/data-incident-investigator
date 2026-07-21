@@ -106,6 +106,17 @@ percent, band, version, `Why`, signed factors, reason/provenance, resolved links
 non-causal copy, leakage sentinels, clean console, responsive overflow, and owned cleanup. The Slice 6.5
 activity trail remains unchanged except for its existing evidence-linked observable hypothesis event.
 
+Blast-radius tests use normalized fixture/fake lineage only and pin `blast-radius-v1` status semantics,
+typed dataset/pipeline/dashboard traversal, direct/indirect distance, downstream-only reach,
+cycle-safe shortest-path dedupe, stable ordering, exact and one-over depth/entity truncation, and
+complete/partial/unknown/unavailable output. They prove verified partial impacts survive later root or
+tool failure; missing source/lineage never becomes zero impact; every public impact resolves through a
+scored hypothesis to report evidence; provider labels are sanitized; fixture mode needs no credential;
+and impact count does not change `evidence-confidence-v1`. API/static web tests pin the same schema,
+code-owned coverage/limit metadata, evidence links, accessible headings, safe empty-state copy, and
+untrusted-label rendering. The canonical Windows browser flow checks the distinct blast-radius section,
+resolved evidence anchors, clean console/accessibility/overflow, and owned process cleanup.
+
 ## Required incident evaluation cases
 
 Removed column, stale pipeline, upstream type change, wrong dashboard dataset, delayed ingestion,

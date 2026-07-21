@@ -3317,6 +3317,137 @@ update passed focused Prettier/check/ESLint in 3.058 seconds and 4/4 remediation
 (3.237 seconds command wall). Public history is not amended/rebased; the correction will use one
 additive commit and a new exact-head CI run, without rerunning or rewriting the failed run.
 
+### Optional extension — Deterministic blast-radius analysis
+
+Status: implemented and Level C validated on `codex/phase-6-extension-blast-radius` from exact merged
+Slice 6.6 `main`
+`43e57aee320c86da0930deb4dd2fae38ca4b80e6` (tree
+`8592035e801a83c62796c6e527f3ac98e1203c36`; parents
+`57dabac17d27d6cbc1764087bf1bec17820a55d0` and
+`67755e31fbef163e4e9b442ddb4779897b7e95ae`). Exact main CI run `29859749024`, job
+`88733127030`, passed. Bootstrap, safe fetch, exact base/tree/parent verification, docs-first reading,
+and the scoped lineage/evidence/report/API/UI audit preceded every source edit. Final evidence is
+focused format/check, affected lint, 6/6 typechecks, 11/11 files and 99/99 deterministic tests, 6/6
+builds, built smoke, one automated Windows browser regression, one read-only in-app DOM spot-check,
+and clean owned-process/port cleanup; full-suite/Level D remain intentionally unrun.
+
+Objective: add one deterministic, bounded, evidence-linked `blast-radius-v1` analysis to the public
+investigation report. Starting only from exact scored-hypothesis source entities and resolved report
+evidence, traverse validated physical downstream lineage and return supported impacted datasets,
+dashboards, and pipelines with canonical paths, distance, provenance, summary counts, applied limits,
+and truthful complete/partial/unknown/unavailable coverage. Do not change confidence scoring, invent
+reach, silently substitute fixture data, or add a provider, connector, storage boundary, or report/UI
+redesign.
+
+Minimum files:
+
+- `packages/shared-types/src/index.ts` and focused contract tests for the strict versioned analysis,
+  status/reason enums, typed impacted entities, canonical downstream paths/distances, exact provenance,
+  summary counts, applied-limit metadata, deterministic order/dedup, and public-report evidence/
+  hypothesis cross-references. The runner/model draft remains unable to author blast radius.
+- `packages/agent-core/src/index.ts` and `tests/integration/blast-radius.test.ts` for one bounded analyzer
+  over scored hypotheses, report evidence, the existing `MetadataLineageProvider`, and the existing
+  execution budget. Tests cover direct/indirect dataset/dashboard/pipeline reach, lexical shortest-path
+  choice, stable dedup/order, upstream/sibling exclusion, exact/one-over depth/entity bounds, partial
+  preservation, missing lineage, provider/tool failure, and untrusted display metadata.
+- `apps/api/src/index.ts` and directly affected incident/degradation/runtime tests for composition after
+  deterministic scoring, mode-correct lineage access, safe unavailable/partial results, required public
+  report integration, bounded counters, and unchanged `evidence-confidence-v1` output.
+- `apps/web/src/App.tsx`, `apps/web/src/styles.css`, `tests/integration/web-report.test.ts`, and
+  `tests/e2e/report-display.spec.mjs` for one minimal accessible `Blast radius` section distinct from
+  hypotheses, remediation, evidence timeline, and investigation activity, including coverage/reason,
+  type/count, distance/path, provenance links, and responsive output.
+- `docs/PRODUCT_SPEC.md`, `docs/ARCHITECTURE.md`, `docs/AGENT_DESIGN.md`, `docs/API_CONTRACTS.md`,
+  `docs/DATA_MODEL.md`, `docs/SECURITY.md`, `docs/TEST_STRATEGY.md`, this plan,
+  `docs/KNOWN_ISSUES.md`, and `docs/SESSION_LOG.md` only where the new contract or durable handoff is
+  material. `docs/REPOSITORY_MAP.md` remains unchanged because no entrypoint or directory moves.
+  Evaluation source, fixtures, DataHub client, `.env.example`, config, manifests, lockfile, and
+  dependencies change only if focused validation proves a direct requirement; none is planned.
+
+Deterministic rules:
+
+- Analysis roots are unique source entities resolved from completed scored hypotheses through their
+  exact source-change evidence. Roots, hypothesis IDs, evidence IDs, graph nodes, and adjacency are
+  deduplicated and lexically ordered before traversal; unsupported or dangling references do not
+  produce an impact.
+- For each root, call only the already-composed mode-specific lineage provider with
+  `direction: downstream`, `depth = min(MAX_LINEAGE_DEPTH, shared lineage cap)`, and
+  `maxNodes = min(MAX_ENTITIES_PER_QUERY, shared lineage cap)`, under the existing tool-call,
+  entity, duration, AbortSignal, and output limits. There is no retry, alternate provider, fixture
+  fallback, or extra metadata fetch.
+- Follow only physical `sourceUrn -> targetUrn` edges reachable from the exact root. Exclude the root,
+  upstream-only nodes, siblings, charts, unsupported kinds, dangling edges, and nodes without a
+  validated path. A canonical path is the shortest downstream path; equal paths use lexical URN order.
+- Keep only impacted `dataset`, `pipeline`, and `dashboard` entities. Deduplicate by URN using shortest
+  distance, then root URN and lexical path. Final order is distance ascending, fixed kind order
+  dataset/pipeline/dashboard, then URN. Equivalent validated graphs therefore serialize identically
+  outside unrelated incident/timestamp fields.
+- Every impact carries the exact supporting hypothesis ID, a non-empty lexical set of report evidence
+  IDs, the root URN, canonical path URNs, downstream relation, and bounded distance. Display names pass
+  the existing untrusted plain-text schema. Shared report refinement rejects unresolved hypothesis/
+  evidence references or count/path/status/order drift.
+- `complete` means every considered root returned a validated non-truncated graph inside all limits;
+  only this status may truthfully represent a verified zero-impact result. `partial` preserves verified
+  impacts when any graph/root/limit coverage is incomplete. `unknown` has no supported impact because
+  roots/evidence/lineage are missing or unscored. `unavailable` has no supported impact because the
+  mode-correct lineage tool/provider failed. Truncation and exact inferred entity/depth saturation use
+  stable reason codes plus safe applied-limit metadata; no status claims broader provider coverage.
+- Explanation text is selected from four concise code-owned templates. It contains no LLM prose,
+  question/symptom, raw metadata, provider/model payload, configuration value, credential, hostname,
+  exception, stack, prompt, private reasoning, or chain-of-thought. Blast-radius cardinality never
+  changes hypothesis score, factor, rank, remediation priority, or `evidence-confidence-v1`.
+
+Acceptance criteria:
+
+- `blast-radius-v1` is required on every public `InvestigationReportSchema`, absent from the strict
+  `InvestigationDraftReportSchema`, and validated consistently in API storage/polling and React output.
+- A canonical fixture investigation reports only real downstream reach from the exact scored source:
+  `analytics.daily_revenue` at distance one and `Revenue overview` at distance two, with exact resolved
+  evidence/hypothesis provenance. No upstream/sibling/chart or fabricated pipeline appears.
+- Focused injected graphs prove direct/indirect datasets, pipelines, and dashboards; cycles; input-order
+  invariance; stable shortest-path dedup/order; exact and one-over depth/entity bounds; complete versus
+  partial/truncated versus unknown/unavailable; and preservation of verified partial impacts.
+- Missing lineage, unscored/degraded evidence, malformed/dangling graph references, DataHub
+  unconfigured/unavailable/timeout/invalid response, generic tool failure, and fixture no-credential
+  execution never become complete, zero-impact, or fixture-backed success. Provider errors remain safe
+  and do not discard already verified impacts from earlier roots.
+- Shared/report refinement rejects any impacted entity without a supported path, root, hypothesis, and
+  report evidence reference. HTML/Markdown/control/prompt-injection labels remain bounded plain text and
+  render only as React text nodes.
+- Summary totals exactly equal unique impacts by type; limits and coverage reasons are safe and bounded;
+  output order and code-owned explanation are byte-stable for equivalent validated input.
+- Existing confidence percentages, six-factor formula, hypothesis ordering, remediation references,
+  event trail, evidence timeline, evaluation metrics, and zero-model-call boundary remain unchanged.
+- One affected Level C sequence passes focused static validation, deterministic contracts/unit/API/UI
+  tests, six transitive typechecks/builds, built smoke, and exactly one final credential-free Windows
+  browser flow because the public report/UI changes. No Level D or full repository suite is run.
+
+Deferred: Markdown incident report export, Phase 6 Level D/checkpoint/closure, learning/feedback,
+operator-tunable confidence, evaluation metric expansion for blast radius, new fixtures or providers,
+live credential/DataHub smoke, model routing, Slack/Jira, auth, vector DB, telemetry/analytics,
+database/persistence, deployment, report sharing/comparison, broad architecture/UI redesign, Mac,
+issue/milestone closure, Phase 7, and Phase 8.
+
+Exact Level C validation commands, run once on coherent final inputs and repeat only a classified
+affected failure:
+
+- `pnpm exec prettier --write packages/shared-types/src/index.ts packages/agent-core/src/index.ts apps/api/src/index.ts apps/web/src/App.tsx apps/web/src/styles.css tests/integration/blast-radius.test.ts tests/integration/contracts.test.ts tests/integration/runtime-limits.test.ts tests/integration/graceful-degradation.test.ts tests/integration/incidents-api.test.ts tests/integration/confidence-transparency.test.ts tests/integration/investigation-runner.test.ts tests/integration/remediation-planner.test.ts tests/integration/structured-audit-trail.test.ts tests/integration/web-report.test.ts tests/integration/evaluation.test.ts tests/e2e/report-display.spec.mjs docs/PRODUCT_SPEC.md docs/ARCHITECTURE.md docs/AGENT_DESIGN.md docs/API_CONTRACTS.md docs/DATA_MODEL.md docs/SECURITY.md docs/TEST_STRATEGY.md docs/IMPLEMENTATION_PLAN.md docs/KNOWN_ISSUES.md docs/SESSION_LOG.md`, then the same path list with `pnpm exec prettier --check`.
+- `pnpm exec eslint packages/shared-types/src/index.ts packages/agent-core/src/index.ts apps/api/src/index.ts apps/web/src/App.tsx tests/integration/blast-radius.test.ts tests/integration/contracts.test.ts tests/integration/runtime-limits.test.ts tests/integration/graceful-degradation.test.ts tests/integration/incidents-api.test.ts tests/integration/confidence-transparency.test.ts tests/integration/investigation-runner.test.ts tests/integration/remediation-planner.test.ts tests/integration/structured-audit-trail.test.ts tests/integration/web-report.test.ts tests/integration/evaluation.test.ts tests/e2e/report-display.spec.mjs`.
+- `pnpm --filter @dii/shared-types typecheck`, `pnpm --filter @dii/datahub-client typecheck`,
+  `pnpm --filter @dii/agent-core typecheck`, `pnpm --filter @dii/api typecheck`,
+  `pnpm --filter @dii/web typecheck`, and `pnpm --filter @dii/evaluation typecheck`.
+- `pnpm exec vitest run tests/integration/blast-radius.test.ts tests/integration/contracts.test.ts tests/integration/runtime-limits.test.ts tests/integration/graceful-degradation.test.ts tests/integration/incidents-api.test.ts tests/integration/confidence-transparency.test.ts tests/integration/investigation-runner.test.ts tests/integration/remediation-planner.test.ts tests/integration/structured-audit-trail.test.ts tests/integration/web-report.test.ts tests/integration/evaluation.test.ts`.
+- `pnpm --filter @dii/shared-types build`, `pnpm --filter @dii/datahub-client build`,
+  `pnpm --filter @dii/agent-core build`, `pnpm --filter @dii/api build`,
+  `pnpm --filter @dii/web build`, and `pnpm --filter @dii/evaluation build`; then `pnpm smoke` and
+  exactly one `pnpm test:e2e:report` credential-free Windows fixture regression.
+- `git diff --check`; exact tracked/untracked diff/name/stat and full patch review; secret, credential,
+  prompt/private-reasoning, raw provider/model payload, hostname, stack, unsupported-impact,
+  conflict/debug, and generated-artifact scans; manifest/lockfile/dependency/config/fixture/provider/
+  evaluation drift review; exact base/tree/parent ancestry; browser accessibility/console/overflow,
+  temporary output, listener, and owned-process cleanup; then one conventional commit, normal push,
+  exactly one Draft PR against current `main`, and exact-head CI to terminal SUCCESS without merge.
+
 ## Phase 7 — GitHub, CI, and release
 
 Finalize branch/PR workflow, full CI, release validation, smoke tests, and merge readiness.

@@ -4,10 +4,14 @@ import { describe, expect, it } from 'vitest';
 import {
   getCompletedReportContent,
   getDegradedInvestigationPresentation,
+  BlastRadiusSection,
   FailedInvestigation,
   InvestigationActivity,
 } from '../../apps/web/src/App.js';
 import {
+  BLAST_RADIUS_ANALYSIS_VERSION,
+  BLAST_RADIUS_STATUS_EXPLANATIONS,
+  BlastRadiusAnalysisSchema,
   IncidentRetrievalResponseSchema,
   INVESTIGATION_COMPLETED_EVENT_SUMMARY,
   INVESTIGATION_EVENT_ACTION_SUMMARIES,
@@ -23,6 +27,22 @@ const { createElement } = await import(pathToFileURL(requireFromWeb.resolve('rea
 const { renderToStaticMarkup } = await import(
   pathToFileURL(requireFromWeb.resolve('react-dom/server')).href
 );
+
+const unknownBlastRadius = BlastRadiusAnalysisSchema.parse({
+  analysisVersion: BLAST_RADIUS_ANALYSIS_VERSION,
+  status: 'unknown',
+  explanation: BLAST_RADIUS_STATUS_EXPLANATIONS.unknown,
+  impacts: [],
+  summary: { total: 0, datasets: 0, pipelines: 0, dashboards: 0 },
+  coverage: {
+    reasonCodes: ['hypotheses_not_scored'],
+    rootsConsidered: 0,
+    rootsAnalyzed: 0,
+    visitedEntities: 0,
+    truncatedGraphs: 0,
+    appliedLimits: { maxDepth: 3, maxEntities: 25, maxRootEntities: 3 },
+  },
+});
 
 describe('investigation activity presentation', () => {
   it('renders an accessible ordered timeline with time, evidence links, and terminal duration', () => {
@@ -254,6 +274,7 @@ describe('completed report presentation', () => {
             evidenceIds: ['change-1', 'lineage-upstream-1'],
           },
         ],
+        blastRadius: unknownBlastRadius,
         recommendations: ['Restore or intentionally replace the source field.'],
         assumptions: ['The fixture snapshot covers the incident window.'],
         missingInformation: ['Runtime query logs are unavailable.'],
@@ -279,6 +300,7 @@ describe('completed report presentation', () => {
           kind: 'dataset',
         },
       ],
+      blastRadius: unknownBlastRadius,
       facts: [
         {
           id: 'change-1',
@@ -331,6 +353,50 @@ describe('completed report presentation', () => {
       assumptions: ['The fixture snapshot covers the incident window.'],
       missingInformation: ['Runtime query logs are unavailable.'],
     });
+  });
+
+  it('renders an accessible evidence-linked blast-radius section and escapes untrusted labels', () => {
+    const rootUrn = 'urn:li:dataset:(urn:li:dataPlatform:snowflake,raw.orders,PROD)';
+    const impactUrn = 'urn:li:dataset:(urn:li:dataPlatform:snowflake,analytics.daily_revenue,PROD)';
+    const analysis = BlastRadiusAnalysisSchema.parse({
+      analysisVersion: BLAST_RADIUS_ANALYSIS_VERSION,
+      status: 'complete',
+      explanation: BLAST_RADIUS_STATUS_EXPLANATIONS.complete,
+      impacts: [
+        {
+          entity: {
+            urn: impactUrn,
+            name: 'daily revenue <img src=x onerror=alert(1)>',
+            kind: 'dataset',
+          },
+          relation: 'downstream',
+          distance: 1,
+          rootUrn,
+          pathUrns: [rootUrn, impactUrn],
+          hypothesisIds: ['hypothesis-1'],
+          evidenceIds: ['change-1'],
+        },
+      ],
+      summary: { total: 1, datasets: 1, pipelines: 0, dashboards: 0 },
+      coverage: {
+        reasonCodes: [],
+        rootsConsidered: 1,
+        rootsAnalyzed: 1,
+        visitedEntities: 2,
+        truncatedGraphs: 0,
+        appliedLimits: { maxDepth: 3, maxEntities: 25, maxRootEntities: 3 },
+      },
+    });
+
+    const markup = renderToStaticMarkup(createElement(BlastRadiusSection, { analysis }));
+
+    expect(markup).toContain('aria-labelledby="blast-radius-heading"');
+    expect(markup).toContain('<h3 id="blast-radius-heading">Blast radius</h3>');
+    expect(markup).toContain('daily revenue');
+    expect(markup).not.toContain('<img src=x');
+    expect(markup).not.toContain('onerror');
+    expect(markup).toContain('href="#evidence-change-1"');
+    expect(markup).toContain('distance 1');
   });
 });
 

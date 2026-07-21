@@ -19,17 +19,22 @@ Last updated: 2026-07-22.
   and `bc30767b8c687b138f46001f937124b3104c4c84`). Exact main CI run `29853831610`, job
   `88713102696`, passed. The bounded observable-only activity trail, exact evidence links, safe
   warnings, one final event, and no hidden reasoning/raw provider/model content remain intact.
-- Slice 6.6 replaces runner/model-authored confidence with `evidence-confidence-v1`. Draft reports may
-  contain only fixed pending `not_scored`; API/scorer output owns integer percent, stable band, six
-  ordered evidence/penalty factors, resolved provenance, and a code-owned `Why` template. Canonical
-  removed-column confidence is `81% high`; six resolved evaluation fixtures have exact deterministic
-  expectations and `insufficient-evidence` has no hypothesis/score. Final local Level C passes focused
-  format/check, lint, 6/6 typechecks, 11/11 files and 97/97 tests (including the dedicated eight-test
-  boundary matrix), 6/6 builds, canonical evaluation, built smoke, and exactly one final browser flow.
-  Final 24-path diff audit passed and Draft PR #38 was opened from commit `275badc`. Its first exact-head
-  CI run `29857733635`, job `88726213677`, found one stale remediation expected-reference array after
-  confidence added resolved lineage provenance. The exact test-only correction passes focused
-  format/lint and 4/4 remediation tests; additive commit/push and new exact-head CI remain pending.
+- Phase 6 Slice 6.6 is merged through PR #38 at exact normal merge
+  `43e57aee320c86da0930deb4dd2fae38ca4b80e6` (tree
+  `8592035e801a83c62796c6e527f3ac98e1203c36`; parents
+  `57dabac17d27d6cbc1764087bf1bec17820a55d0` and
+  `67755e31fbef163e4e9b442ddb4779897b7e95ae`). Exact main CI run `29859749024`, job
+  `88733127030`, passed. Runner/model-authored confidence remains excluded; public
+  `evidence-confidence-v1`, exact provenance, canonical `81% high`, and the resolved remediation
+  references are authoritative on `main`.
+- The approved optional blast-radius extension is limited to deterministic, evidence-linked downstream
+  reach in the existing normalized lineage graph. It does not add a provider, connector, storage,
+  retry, model prose, confidence factor, export, telemetry, or silent fixture fallback. DataHub/tool
+  failure, missing lineage, and truncation can leave coverage `unknown`, `unavailable`, or `partial`;
+  these states are deliberate and are not zero-impact claims. Focused Level C passes format/check,
+  affected lint, 6/6 typechecks, 11/11 files and 99/99 tests, 6/6 builds, built smoke, automated Windows
+  browser regression, read-only DOM spot-check, and listener/process cleanup. Phase 6 Level D/
+  checkpoint, Markdown export, and Phases 7-8 remain deferred from this extension.
 - Fixture continuation in a degraded DataHub response is deliberately advisory and `not_executed`;
   the operator must explicitly start the app in fixture mode. The current investigation makes zero model
   calls, so readiness accurately marks model `not_required`; it does not read `OPENAI_API_KEY` or claim

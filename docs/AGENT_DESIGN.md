@@ -339,6 +339,38 @@ codes, and resolved evidence/signal provenance. A not-scored report says confide
 Slice 6.5 activity trail remains observable-only: its hypothesis event cites existing evidence IDs but
 does not copy confidence factors, raw metadata, or private reasoning.
 
+## Optional extension: deterministic blast-radius analysis
+
+`DeterministicBlastRadiusAnalyzer` runs after hypothesis scoring and before remediation. It derives at
+most three unique source roots from completed scored hypotheses whose exact source-change evidence and
+all cited evidence resolve. For each root, it requests only `downstream` lineage through the existing
+provider seam, using the current runtime depth, entity, tool-call, and deadline bounds. It never calls a
+model, changes confidence, retries, switches DataHub to fixtures, or introduces a connector/storage
+path.
+
+Traversal follows only physical `sourceUrn -> targetUrn` edges reachable from the source root. Cycles
+are ignored; upstream and sibling nodes are excluded. Supported impact types are `dataset`, `pipeline`,
+and `dashboard`; other nodes may form a validated path but are not reported as impacts. For duplicate
+reachability, the shortest path wins, then lexical root/path order. Final output is deduplicated by URN
+and ordered by distance, type (`dataset`, `pipeline`, `dashboard`), then URN, so the same validated graph
+produces byte-identical non-temporal output.
+
+The versioned `blast-radius-v1` result uses code-owned status and explanation semantics:
+
+- `complete`: every considered root returned an untruncated validated graph within applied bounds;
+- `partial`: one or more verified impacts remain, but a reason code records incomplete coverage;
+- `unknown`: no impact can be verified because hypotheses, source evidence, or lineage coverage is
+  insufficient, without a provider/tool availability failure; and
+- `unavailable`: no impact can be verified and at least one provider/tool availability or validation
+  failure occurred.
+
+Every impact carries the typed entity, stable URN and sanitized label, downstream relation, bounded
+distance, root-to-impact path URNs, and resolved hypothesis/evidence IDs. Coverage reports canonical
+reason codes, considered/analyzed roots, unique visited entities, truncated graph count, and applied
+limits. Verified impacts survive later root truncation/failure as `partial`; missing coverage is never
+called complete or zero impact. The analysis consumes scored hypotheses but neither changes them nor
+adds impacted-entity quantity to `evidence-confidence-v1`.
+
 ## Evidence classification
 
 - Fact: directly observed metadata, lineage, change, or pipeline signal.
