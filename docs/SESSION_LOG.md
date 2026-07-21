@@ -2747,3 +2747,83 @@ không durable. Publication/CI chưa thực hiện tại thời điểm entry n�
 
 Tạo một conventional commit, push normal, mở đúng một Draft PR base `main`, theo dõi exact-head CI tới
 SUCCESS, không merge và không bắt đầu Slice 6.6/Phase 7.
+
+## 2026-07-22 — Phase 6 Slice 6.6 confidence transparency
+
+### Objective
+
+Từ exact merged Slice 6.5 `57dabac17d27d6cbc1764087bf1bec17820a55d0`, thay mọi confidence có
+thể do runner/model tự chọn bằng scoring deterministic dựa trên evidence đã validate; công khai score,
+band, factor/reason/provenance và giải thích ngắn do code sở hữu, không lộ chain-of-thought/private
+reasoning, không làm Level D/checkpoint, Phase 7 hay optional extension.
+
+### Completed
+
+Đã bootstrap/fetch, xác minh exact `origin/main`/tree/parents/CI Slice 6.5, tạo branch
+`codex/phase-6-6-confidence-transparency`, đọc docs-first và khóa plan trước source edit. Shared contract
+nay tách strict `InvestigationDraftReportSchema` chỉ cho pending `not_scored` khỏi public report. Numeric,
+scored object, band/factor/explanation tùy ý hoặc evidence ref không hợp lệ từ runner/model đều bị reject
+trước scorer/storage. API chỉ finalize scored output deterministic hoặc fixed
+`insufficient_evidence | scoring_unavailable`.
+
+`DeterministicHypothesisScorer` sở hữu version `evidence-confidence-v1`: sáu factor theo thứ tự cố định
+cho temporal, lineage, schema/freshness, source diversity, contradiction và missing information; signed
+integer basis points, clamp `0..10000`, integer percent, stable bands, exact reason/contribution maps và
+code-owned `Why`. Evidence/category được dedupe; contradiction phải resolve exact counter-evidence;
+partial/truncated/unresolved input không thể tăng score. Ranking giữ percent giảm dần rồi factual time,
+change ID và hypothesis ID. Canonical report là `81% high`.
+
+Web hiển thị percent, band, formula version, `Why`, signed factor/reason/provenance và evidence links mà
+không redesign. Activity trail Slice 6.5 không đổi contract và không nhận factor/private reasoning.
+Canonical evaluation pin sáu score `70/59/62/44/59/44`; `insufficient-evidence` không có hypothesis/score.
+
+### Files changed
+
+Shared types, agent-core, API, web, evaluation; một test confidence mới và các contract/scorer/API/
+evaluation/web/browser regression trực tiếp liên quan; `AGENT_DESIGN`, `API_CONTRACTS`, `DATA_MODEL`,
+`SECURITY`, `TEST_STRATEGY`, `IMPLEMENTATION_PLAN`, `KNOWN_ISSUES` và entry này. Không đổi `.env`, config,
+fixture, manifest, lockfile, dependency hay repository structure.
+
+### Formula decisions
+
+Temporal: `+2500/+1800/+800/0` cho trong 6 giờ, 24 giờ, phần còn lại của validated incident window, hoặc
+unknown. Lineage: `+2000/+1200/+800/0` cho direct upstream, selected entity, indirect, hoặc none.
+Schema/freshness: `+1800/+1500/0`. Source diversity sau dedupe: `+700/+1800/+2700` cho 1/2/3+ category.
+Contradiction cap `-2000`; mỗi unique missing dimension `-1000`, cap `-2000`. Bands là 0–39
+indeterminate, 40–59 low, 60–79 medium, 80–100 high. Một evidence item có thể chứng minh hai thuộc tính
+độc lập như timestamp và category nhưng chỉ được đếm một lần trong mỗi component và không bao giờ thành
+hai independent sources.
+
+### Validation performed
+
+- Focused Prettier write/check PASS trong 3.175/3.049 giây; affected ESLint PASS trong 17.737 giây.
+- 6/6 typecheck PASS: shared-types 2.493s, datahub-client 2.805s, agent-core 2.629s, API 3.170s, web
+  3.225s, evaluation 1.996s.
+- Exact deterministic matrix PASS 11/11 files, 97/97 tests trong 3.64s (4.822s command wall). Dedicated
+  confidence file có 8 test cho weights/caps/bands, temporal boundaries/unknown, lineage/no-lineage,
+  schema/freshness, source 1/2/3+ dedupe, contradiction/missing, zero clamp, order/leakage và arbitrary
+  runner confidence rejection.
+- 6/6 builds PASS; web transform 109 modules và build 1.84s. Evaluator PASS trong 0.832s, emit JSON
+  64,639 bytes và Markdown 2,474 bytes với exact confidence expectations; temp output đã verify/xóa.
+- Built smoke PASS trong 2.240s cho API/web artifacts, `/health`, `/ready`. Đúng một final browser gate
+  PASS trong 6,973ms trên ports `54125`/`54126`, gồm `81% high`, `Why`, provenance/evidence links,
+  accessibility, desktop/mobile overflow, clean console, port release và owned cleanup.
+
+### Classified recoveries
+
+Managed Windows sandbox tái hiện junction Vite/esbuild và evaluator mkdir `EPERM`; scoped approved
+execution với bundled process-local runtime PASS, không phải repository defect. Final matrix lần đầu
+PASS 96/97; test mới cố tạo timestamp ngoài validated window nên shared schema đúng ra reject. Bỏ setup
+bất khả thi, format/lint lại test và rerun exact matrix đạt 97/97; không nới production contract.
+
+### Validation intentionally deferred
+
+Full repository suite/Phase 6 Level D/checkpoint/closure, Mac, live credential/DataHub/model network,
+backend telemetry/persistence, learning/feedback, multiple providers, vector DB, blast radius, report
+sharing/comparison, architecture redesign, issue/milestone closure, merge, Phase 7 và mọi optional
+extension.
+
+### Exact next step
+
+Hoàn tất final diff/scope/secret/manifest/generated/process audit, tạo đúng một conventional commit, push
+normal, mở đúng một Draft PR base current `main`, theo dõi exact-head CI tới SUCCESS và không merge.

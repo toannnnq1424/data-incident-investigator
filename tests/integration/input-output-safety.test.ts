@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
+import canonicalIncident from '../../fixtures/incidents/removed-schema-column.json';
 import promptInjectionFixture from '../../fixtures/metadata/prompt-injection.json';
 import { buildServer, readPublicIngressConfig } from '../../apps/api/src/index.js';
 import {
@@ -10,7 +11,7 @@ import {
   DEFAULT_PUBLIC_INGRESS_CONFIG,
   IncidentRetrievalResponseSchema,
   IncidentRequestSchema,
-  InvestigationReportSchema,
+  InvestigationDraftReportSchema,
   MetadataEntitySearchResultSchema,
   PUBLIC_REQUEST_BODY_MIN_BYTES,
   formatUntrustedEvidence,
@@ -285,7 +286,7 @@ describe('input normalization and untrusted output safety', () => {
     expect(JSON.stringify(report)).not.toMatch(
       /authorization|openai_api_key|datahub_token|bearer/i,
     );
-    expect(InvestigationReportSchema.safeParse(report).success).toBe(true);
+    expect(InvestigationDraftReportSchema.safeParse(report).success).toBe(true);
   });
 
   it('rejects malformed structured runner output after bounded retries', async () => {
@@ -339,6 +340,66 @@ describe('input normalization and untrusted output safety', () => {
     expect(terminal.response.body).not.toMatch(
       /raw-model-secret|ignore validation|reveal credentials|<script>/i,
     );
+  });
+
+  it('rejects an otherwise structured runner draft that supplies arbitrary model confidence', async () => {
+    let runnerCalls = 0;
+    let scorerCalls = 0;
+    const server = trackedServer({
+      runner: {
+        async investigate(_request, context) {
+          runnerCalls += 1;
+          return {
+            incidentId: context.incidentId,
+            summary: 'A factual draft attempted to provide its own confidence.',
+            entities: [],
+            evidence: [
+              {
+                id: 'metadata-seed',
+                category: 'metadata',
+                statement: 'Validated fixture metadata was available.',
+              },
+            ],
+            hypotheses: [
+              {
+                id: 'model-authored-hypothesis',
+                summary: 'A plausible contributor still requires deterministic scoring.',
+                confidence: 0.99,
+                evidenceIds: ['metadata-seed'],
+              },
+            ],
+            recommendations: [],
+            assumptions: [],
+            missingInformation: [],
+          } as never;
+        },
+      },
+      hypothesisScorer: {
+        score() {
+          scorerCalls += 1;
+          throw new Error('Arbitrary runner confidence reached the scorer.');
+        },
+      },
+    });
+    const accepted = await server.inject({
+      method: 'POST',
+      url: '/incidents',
+      payload: IncidentRequestSchema.parse(canonicalIncident.request),
+    });
+    const terminal = await waitForDegradedOutput(
+      server,
+      accepted.json<{ incidentId: string }>().incidentId,
+    );
+
+    expect(runnerCalls).toBe(3);
+    expect(scorerCalls).toBe(0);
+    expect(terminal.incident).toMatchObject({
+      status: 'degraded',
+      execution: { retries: 2, terminationReason: 'model_output_invalid' },
+      error: { code: 'MODEL_OUTPUT_INVALID' },
+    });
+    expect(terminal.incident).not.toHaveProperty('report');
+    expect(terminal.response.body).not.toMatch(/0\.99|model-authored-hypothesis/);
   });
 
   it('schema-validates the public incident identifier path', async () => {

@@ -7,9 +7,37 @@ import {
   HYPOTHESIS_SCORE_FACTOR_LABELS,
   HYPOTHESIS_SCORE_FACTOR_WEIGHTS,
   HypothesisScoringStageSchema,
+  hypothesisConfidenceExplanation,
+  type HypothesisScoreFactor,
 } from '../../packages/shared-types/src/index.js';
 
 function completedScoring() {
+  const factor = (
+    code: HypothesisScoreFactor['code'],
+    reasonCode: HypothesisScoreFactor['reasonCode'],
+    contributionBasisPoints: number,
+    evidenceIds: string[] = [],
+  ): HypothesisScoreFactor => ({
+    code,
+    label: HYPOTHESIS_SCORE_FACTOR_LABELS[code],
+    reasonCode,
+    contributionBasisPoints,
+    weightBasisPoints: HYPOTHESIS_SCORE_FACTOR_WEIGHTS[code],
+    evidenceIds,
+    signalCodes: [],
+  });
+  const factors = [
+    factor('temporal_proximity', 'temporal_near', 2_500, ['change-removed-column']),
+    factor('lineage_relationship', 'lineage_direct_upstream', 2_000, ['change-removed-column']),
+    factor('schema_or_freshness_evidence', 'schema_change_present', 1_800, [
+      'change-removed-column',
+    ]),
+    factor('independent_evidence_diversity', 'evidence_sources_one', 700, [
+      'change-removed-column',
+    ]),
+    factor('contradictory_evidence', 'contradiction_none', 0),
+    factor('missing_required_information', 'required_information_complete', 0),
+  ];
   return HypothesisScoringStageSchema.parse({
     status: 'completed',
     hypotheses: [
@@ -20,34 +48,15 @@ function completedScoring() {
         observedAt: '2026-07-18T07:45:00.000Z',
         summary:
           'Plausible contributor: the removed schema change on raw.orders may have contributed to the incident.',
-        confidence: 0.85,
+        confidence: {
+          status: 'scored',
+          formulaVersion: 'evidence-confidence-v1',
+          scorePercent: 70,
+          level: 'medium',
+          explanation: hypothesisConfidenceExplanation(factors),
+          factors,
+        },
         evidenceIds: ['change-removed-column'],
-        factors: [
-          {
-            code: 'change_recency',
-            label: HYPOTHESIS_SCORE_FACTOR_LABELS.change_recency,
-            contributionBasisPoints: 3_000,
-            weightBasisPoints: HYPOTHESIS_SCORE_FACTOR_WEIGHTS.change_recency,
-          },
-          {
-            code: 'lineage_position',
-            label: HYPOTHESIS_SCORE_FACTOR_LABELS.lineage_position,
-            contributionBasisPoints: 2_000,
-            weightBasisPoints: HYPOTHESIS_SCORE_FACTOR_WEIGHTS.lineage_position,
-          },
-          {
-            code: 'symptom_category_fit',
-            label: HYPOTHESIS_SCORE_FACTOR_LABELS.symptom_category_fit,
-            contributionBasisPoints: 1_500,
-            weightBasisPoints: HYPOTHESIS_SCORE_FACTOR_WEIGHTS.symptom_category_fit,
-          },
-          {
-            code: 'evidence_quality',
-            label: HYPOTHESIS_SCORE_FACTOR_LABELS.evidence_quality,
-            contributionBasisPoints: 2_000,
-            weightBasisPoints: HYPOTHESIS_SCORE_FACTOR_WEIGHTS.evidence_quality,
-          },
-        ],
       },
     ],
     missingInformation: [],

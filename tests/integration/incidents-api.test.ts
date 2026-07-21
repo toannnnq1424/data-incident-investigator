@@ -160,14 +160,21 @@ describe('incident API', () => {
         {
           rank: 1,
           sourceChangeId: 'change-removed-gross-revenue',
-          confidence: 0.85,
-          evidenceIds: ['change-removed-gross-revenue'],
-          factors: [
-            { code: 'change_recency', contributionBasisPoints: 3_000 },
-            { code: 'lineage_position', contributionBasisPoints: 2_000 },
-            { code: 'symptom_category_fit', contributionBasisPoints: 1_500 },
-            { code: 'evidence_quality', contributionBasisPoints: 2_000 },
-          ],
+          confidence: {
+            status: 'scored',
+            formulaVersion: 'evidence-confidence-v1',
+            scorePercent: 81,
+            level: 'high',
+            factors: [
+              { code: 'temporal_proximity', contributionBasisPoints: 2_500 },
+              { code: 'lineage_relationship', contributionBasisPoints: 2_000 },
+              { code: 'schema_or_freshness_evidence', contributionBasisPoints: 1_800 },
+              { code: 'independent_evidence_diversity', contributionBasisPoints: 1_800 },
+              { code: 'contradictory_evidence', contributionBasisPoints: 0 },
+              { code: 'missing_required_information', contributionBasisPoints: 0 },
+            ],
+          },
+          evidenceIds: expect.arrayContaining(['change-removed-gross-revenue']),
         },
       ],
     });
@@ -187,7 +194,7 @@ describe('incident API', () => {
           status: 'not_executed',
           references: {
             hypothesisIds: ['hypothesis-change-removed-gross-revenue'],
-            evidenceIds: ['change-removed-gross-revenue'],
+            evidenceIds: expect.arrayContaining(['change-removed-gross-revenue']),
             entityUrns: ['urn:li:dataset:(urn:li:dataPlatform:snowflake,raw.orders,PROD)'],
             changeIds: ['change-removed-gross-revenue'],
           },
@@ -315,7 +322,12 @@ describe('incident API', () => {
               {
                 id: 'legacy-metadata-hypothesis',
                 summary: 'Available metadata is insufficient for a scored change inference.',
-                confidence: 0.2,
+                confidence: {
+                  status: 'not_scored',
+                  reasonCode: 'deterministic_scoring_pending',
+                  explanation:
+                    'Confidence is not scored until validated evidence signals are evaluated by the code-owned formula.',
+                },
                 evidenceIds: ['metadata-seed'],
               },
             ],
@@ -350,6 +362,11 @@ describe('incident API', () => {
       missingInformation: [expect.objectContaining({ code: 'scored_hypotheses_insufficient' })],
     });
     expect(completed.report.hypotheses[0]?.id).toBe('legacy-metadata-hypothesis');
+    expect(completed.report.hypotheses[0]?.confidence).toEqual({
+      status: 'not_scored',
+      reasonCode: 'insufficient_evidence',
+      explanation: 'Confidence was not scored because validated evidence was insufficient.',
+    });
   });
 
   it('reports a provider timeout factually while the total duration budget remains', async () => {
@@ -583,7 +600,11 @@ describe('incident API', () => {
     expect(JSON.stringify(completed.remediationStage)).not.toMatch(
       /provider\.invalid|secret|model|deploy now|stack/i,
     );
-    expect(completed.report.hypotheses[0]?.confidence).toBe(0.85);
+    expect(completed.report.hypotheses[0]?.confidence).toMatchObject({
+      status: 'scored',
+      scorePercent: 81,
+      level: 'high',
+    });
   });
 
   it('normalizes malformed provider context responses without leaking raw details', async () => {

@@ -45,6 +45,22 @@ describe('canonical deterministic evaluation', () => {
     expect(CanonicalEvaluationSuiteSchema.safeParse(canonicalEvaluationCases).success).toBe(true);
     expect(Object.isFrozen(canonicalEvaluationCases)).toBe(true);
     expect(Object.isFrozen(canonicalEvaluationCases[0]?.expected)).toBe(true);
+    expect(
+      canonicalEvaluationCases.slice(0, 6).map((evaluationCase) => {
+        const confidence = evaluationCase.expected.hypotheses[0]?.confidence;
+        return confidence
+          ? [confidence.scorePercent, confidence.level, confidence.formulaVersion]
+          : undefined;
+      }),
+    ).toEqual([
+      [70, 'medium', 'evidence-confidence-v1'],
+      [59, 'low', 'evidence-confidence-v1'],
+      [62, 'medium', 'evidence-confidence-v1'],
+      [44, 'low', 'evidence-confidence-v1'],
+      [59, 'low', 'evidence-confidence-v1'],
+      [44, 'low', 'evidence-confidence-v1'],
+    ]);
+    expect(canonicalEvaluationCases[6]?.expected.hypotheses).toEqual([]);
 
     const wrongOrder = clone(canonicalEvaluationCases);
     [wrongOrder[0], wrongOrder[1]] = [wrongOrder[1]!, wrongOrder[0]!];
@@ -58,6 +74,12 @@ describe('canonical deterministic evaluation', () => {
     const danglingExpected = clone(canonicalEvaluationCases[0]!);
     danglingExpected.expected.hypotheses[0]!.evidenceIds = ['evidence-does-not-exist'];
     expect(EvaluationCaseSchema.safeParse(danglingExpected).success).toBe(false);
+
+    const danglingConfidence = clone(canonicalEvaluationCases[0]!);
+    danglingConfidence.expected.hypotheses[0]!.confidence.factors[0]!.evidenceIds = [
+      'evidence-does-not-exist',
+    ];
+    expect(EvaluationCaseSchema.safeParse(danglingConfidence).success).toBe(false);
 
     const duplicateEvidence = clone(canonicalEvaluationCases[0]!);
     duplicateEvidence.expected.evidence.push(clone(duplicateEvidence.expected.evidence[0]!));
@@ -134,6 +156,8 @@ describe('canonical deterministic evaluation', () => {
     expect(first.markdown).toBe(renderEvaluationMarkdown(first.report));
     expect(first.json).not.toMatch(/generatedAt|evaluatedAt|confirmed cause/i);
     expect(first.markdown).not.toMatch(/confirmed cause/i);
+    expect(first.markdown).toContain('70% medium (evidence-confidence-v1)');
+    expect(first.markdown).toContain('not scored (insufficient evidence)');
 
     let previousIndex = -1;
     for (const caseId of CANONICAL_EVALUATION_CASE_IDS) {

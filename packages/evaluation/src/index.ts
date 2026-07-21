@@ -8,6 +8,11 @@ import {
   EvaluationObservationSchema,
   EvaluationReportSchema,
   EvaluationTokenUsageSchema,
+  HYPOTHESIS_CONFIDENCE_FORMULA_VERSION,
+  HYPOTHESIS_SCORE_FACTOR_LABELS,
+  HYPOTHESIS_SCORE_FACTOR_WEIGHTS,
+  hypothesisConfidenceExplanation,
+  hypothesisConfidenceLevel,
   type CanonicalEvaluationCaseId,
   type EvaluationCase as SharedEvaluationCase,
   type EvaluationCaseResult,
@@ -17,6 +22,8 @@ import {
   type EvaluationObservation,
   type EvaluationReport,
   type EvaluationTokenUsage,
+  type HypothesisScoreFactor,
+  type HypothesisScoreReasonCode,
 } from '@dii/shared-types';
 
 export type EvaluationCase = SharedEvaluationCase;
@@ -41,6 +48,85 @@ function getCanonicalScenario(id: CanonicalEvaluationCaseId) {
     throw new Error('Canonical evaluation case must reference a shared incident scenario.');
   }
   return scenario;
+}
+
+function evaluationConfidenceFactor(
+  code: HypothesisScoreFactor['code'],
+  reasonCode: HypothesisScoreReasonCode,
+  contributionBasisPoints: number,
+  evidenceIds: string[] = [],
+): HypothesisScoreFactor {
+  return {
+    code,
+    label: HYPOTHESIS_SCORE_FACTOR_LABELS[code],
+    reasonCode,
+    contributionBasisPoints,
+    weightBasisPoints: HYPOTHESIS_SCORE_FACTOR_WEIGHTS[code],
+    evidenceIds,
+    signalCodes: [],
+  };
+}
+
+function createEvaluationConfidence(
+  input: ResolvedCaseInput,
+  evidenceId: string,
+  occurredAt: string | undefined,
+) {
+  const distanceMs = occurredAt
+    ? Date.parse(occurredAt) - Date.parse(input.change.observedAt)
+    : undefined;
+  const temporal =
+    distanceMs === undefined || distanceMs < 0
+      ? evaluationConfidenceFactor('temporal_proximity', 'temporal_unknown', 0)
+      : distanceMs <= 6 * 60 * 60 * 1_000
+        ? evaluationConfidenceFactor('temporal_proximity', 'temporal_near', 2_500, [evidenceId])
+        : distanceMs <= 24 * 60 * 60 * 1_000
+          ? evaluationConfidenceFactor('temporal_proximity', 'temporal_related', 1_800, [
+              evidenceId,
+            ])
+          : evaluationConfidenceFactor('temporal_proximity', 'temporal_far', 800, [evidenceId]);
+  const primaryEntity = input.entities[0];
+  const lineage =
+    primaryEntity?.urn === input.change.entityUrn
+      ? evaluationConfidenceFactor('lineage_relationship', 'lineage_selected_entity', 1_200, [
+          evidenceId,
+        ])
+      : evaluationConfidenceFactor('lineage_relationship', 'lineage_direct_upstream', 2_000, [
+          evidenceId,
+        ]);
+  const schemaOrFreshness =
+    input.change.category === 'schema'
+      ? evaluationConfidenceFactor('schema_or_freshness_evidence', 'schema_change_present', 1_800, [
+          evidenceId,
+        ])
+      : input.change.category === 'pipeline' || input.change.category === 'ingestion'
+        ? evaluationConfidenceFactor(
+            'schema_or_freshness_evidence',
+            'pipeline_freshness_present',
+            1_500,
+            [evidenceId],
+          )
+        : evaluationConfidenceFactor('schema_or_freshness_evidence', 'schema_freshness_absent', 0);
+  const factors = [
+    temporal,
+    lineage,
+    schemaOrFreshness,
+    evaluationConfidenceFactor('independent_evidence_diversity', 'evidence_sources_one', 700, [
+      evidenceId,
+    ]),
+    evaluationConfidenceFactor('contradictory_evidence', 'contradiction_none', 0),
+    evaluationConfidenceFactor('missing_required_information', 'required_information_complete', 0),
+  ];
+  const scorePercent =
+    factors.reduce((total, factor) => total + factor.contributionBasisPoints, 0) / 100;
+  return {
+    status: 'scored' as const,
+    formulaVersion: HYPOTHESIS_CONFIDENCE_FORMULA_VERSION,
+    scorePercent,
+    level: hypothesisConfidenceLevel(scorePercent),
+    explanation: hypothesisConfidenceExplanation(factors),
+    factors,
+  };
 }
 
 function createResolvedCase(input: ResolvedCaseInput): EvaluationCase {
@@ -88,6 +174,7 @@ function createResolvedCase(input: ResolvedCaseInput): EvaluationCase {
           id: hypothesisId,
           rank: 1,
           summary: input.hypothesisSummary,
+          confidence: createEvaluationConfidence(input, evidenceId, scenario.incident.occurredAt),
           evidenceIds: [evidenceId],
           entityUrns: [input.change.entityUrn],
           changeIds: [input.change.id],
@@ -634,23 +721,27 @@ export function renderEvaluationMarkdown(report: EvaluationReport) {
     '',
     '## Case metrics',
     '',
-    '| Case | Status | Retrieval recall | Top-1 | Top-3 recall | Evidence recall | Reference support | Unsupported | Latency ms | Tool calls | Tokens |',
-    '| --- | --- | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |',
+    '| Case | Status | Confidence | Retrieval recall | Top-1 | Top-3 recall | Evidence recall | Reference support | Unsupported | Latency ms | Tool calls | Tokens |',
+    '| --- | --- | --- | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |',
   ];
   for (const result of parsed.results) {
     if (result.status === 'failed') {
       lines.push(
-        `| ${escapeMarkdown(result.caseId)} | failed: ${result.error.code} | — | — | — | — | — | — | — | — | ${result.tokenUsage.totalTokens} |`,
+        `| ${escapeMarkdown(result.caseId)} | failed: ${result.error.code} | — | — | — | — | — | — | — | — | — | ${result.tokenUsage.totalTokens} |`,
       );
       continue;
     }
+    const confidence = result.observation.hypotheses[0]?.confidence;
+    const confidenceCell = confidence
+      ? `${confidence.scorePercent}% ${confidence.level} (${confidence.formulaVersion})`
+      : 'not scored (insufficient evidence)';
     lines.push(
-      `| ${escapeMarkdown(result.caseId)} | completed | ${renderRate(result.metrics.retrieval.recall)} | ${result.metrics.hypotheses.top1Match ? 'match' : 'no match'} | ${renderRate(result.metrics.hypotheses.top3Recall)} | ${renderRate(result.metrics.evidence.recall)} | ${renderRate(result.metrics.evidence.referenceSupport)} | ${result.metrics.unsupportedClaims.count}; ${renderRate(result.metrics.unsupportedClaims.rate)} | ${result.metrics.latencyMs} | ${result.metrics.toolCallCount} | ${result.metrics.tokenUsage.totalTokens} |`,
+      `| ${escapeMarkdown(result.caseId)} | completed | ${confidenceCell} | ${renderRate(result.metrics.retrieval.recall)} | ${result.metrics.hypotheses.top1Match ? 'match' : 'no match'} | ${renderRate(result.metrics.hypotheses.top3Recall)} | ${renderRate(result.metrics.evidence.recall)} | ${renderRate(result.metrics.evidence.referenceSupport)} | ${result.metrics.unsupportedClaims.count}; ${renderRate(result.metrics.unsupportedClaims.rate)} | ${result.metrics.latencyMs} | ${result.metrics.toolCallCount} | ${result.metrics.tokenUsage.totalTokens} |`,
     );
   }
   lines.push(
     '',
-    'All hypotheses are evaluated as plausible contributors, recommendations remain `not_executed`, and token use is zero because this suite has no model boundary.',
+    'All hypothesis confidence uses the code-owned `evidence-confidence-v1` formula; plausible contributors remain non-causal, recommendations remain `not_executed`, and token use is zero because this suite has no model boundary.',
     '',
   );
   return lines.join('\n');

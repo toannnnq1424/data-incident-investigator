@@ -35,9 +35,20 @@ environment variables. Logs must redact authorization headers, tokens, and full 
   React text nodes. Never use `dangerouslySetInnerHTML` or an implicit Markdown renderer.
 - Label and JSON-quote external change summaries as evidence, never instructions. Prompt-like metadata
   cannot change system/tool policy, authorization, runtime settings, scoring, or credential access.
-- Parse structured runner/model-boundary output with `InvestigationReportSchema` before any downstream
-  use. Malformed output gets at most `MAX_RETRIES` additional schema-checked attempts, then terminates
-  degraded with factual retry metadata, no report, and no raw output.
+- Parse structured runner/model-boundary output with `InvestigationDraftReportSchema` before any
+  downstream use. A draft may carry factual
+  evidence references and only fixed pending `not_scored` confidence. Any numeric/model-authored score,
+  band, factor, explanation, or unknown confidence field is malformed. The API alone creates the public
+  `InvestigationReportSchema` after deterministic scoring or a fixed final not-scored reason. Malformed
+  output gets at most `MAX_RETRIES` additional schema-checked attempts, then terminates degraded with
+  factual retry metadata, no report, and no raw output.
+- Treat confidence as a public deterministic evidence assessment, never model certainty or private
+  reasoning. Formula version, weights, caps, thresholds, factor/reason allowlists, and explanation
+  templates are code-owned. Every positive/contradictory factor reference resolves to response evidence
+  or validated suspicious signals; unsupported references reject scoring. Missing/truncated evidence
+  cannot increase a score, repeated evidence/category input cannot increase source diversity, and
+  operator/environment values cannot tune the formula. An evidence ID may be provenance for distinct
+  factual dimensions, but is counted once per component and never as multiple independent sources.
 - Preserve only schema-validated context facts after a failure. Public operation identity is restricted
   to health, entity search, lineage, recent changes, model provider, or structured output. Degraded
   errors/warnings/next steps use fixed allowlists; they never include provider/model payloads, URLs,
@@ -65,6 +76,10 @@ environment variables. Logs must redact authorization headers, tokens, and full 
   references, duplicate/missing terminal events, and events after termination. The bounded process-local
   trail is returned to the user; it is not copied into a new log, telemetry, analytics, tracing, or
   persistence backend.
+- Keep confidence breakdown out of the activity trail and operational logs. The web may render the
+  public score, band, reason codes, template explanation, and resolved references from the report, but
+  activity events retain only their existing observable action summary and evidence IDs. Neither path
+  accepts raw question/metadata prose, model explanation, chain-of-thought, or private reasoning.
 
 ## External systems
 

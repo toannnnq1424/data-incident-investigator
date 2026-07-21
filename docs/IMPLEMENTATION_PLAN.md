@@ -3151,9 +3151,162 @@ Local affected Level C result on the Windows managed worktree, 2026-07-21:
 
 ### Slice 6.6 — Confidence transparency
 
-Plan: expose and document the existing code-owned confidence factors, evidence quality, missing inputs,
-and truncation effects consistently across API and UI without adding model-authored scores, causal
-certainty, or a second ranking formula.
+Status: implemented with local Level C complete on `codex/phase-6-6-confidence-transparency` from
+exact merged Slice 6.5 `main`
+`57dabac17d27d6cbc1764087bf1bec17820a55d0` (tree
+`ef53921bf013f4c4e69b1076c211dfb166edd0c3`; parents
+`725f8966efba53e392240844df405bd3036cd60e` and
+`bc30767b8c687b138f46001f937124b3104c4c84`). Exact main CI run `29853831610`, job
+`88713102696`, passed. Bootstrap/fetch/base verification and this plan precede every source edit.
+
+Objective: replace every report confidence value that can cross the runner/model boundary without a
+validated factual derivation with one deterministic, versioned evidence-scoring contract. Preserve the
+existing plausible-contributor semantics and deterministic ranking while exposing an integer percent,
+stable band, ordered factor/reason breakdown, exact evidence/signal provenance, and a concise code-owned
+"Why" explanation. Partial, truncated, contradictory, missing, or insufficient evidence must reduce or
+withhold confidence rather than produce a fabricated high-confidence root cause.
+
+Formula decision (`evidence-confidence-v1`):
+
+- Score in signed integer basis points, clamp once to `0..10,000`, and expose only the exact integer
+  percent `0..100`. Bands are `indeterminate` 0-39, `low` 40-59, `medium` 60-79, and `high` 80-100.
+  No decimal percentage or remotely configurable weight is accepted.
+- `temporal_proximity` contributes at most `+2,500`: `+2,500` within six hours before the supplied
+  incident time, `+1,800` within 24 hours, `+800` for the remaining validated incident window, and `0`
+  when incident time/proximity is unavailable.
+- `lineage_relationship` contributes at most `+2,000`: `+2,000` for a depth-one upstream entity,
+  `+1,200` for the selected depth-zero entity, `+800` for deeper indirect upstream lineage, and `0`
+  when no validated relationship resolves.
+- `schema_or_freshness_evidence` contributes at most `+1,800`: `+1,800` for exact schema-change
+  evidence, `+1,500` for exact pipeline/freshness evidence, and `0` for another category.
+- `independent_evidence_diversity` contributes at most `+2,700`: dedupe exact evidence IDs and source
+  categories first, then use `+700` for one independent source category, `+1,800` for two, and `+2,700`
+  for three or more. The same evidence ID/source category is counted once regardless of input order.
+- `contradictory_evidence` is a capped `-2,000` penalty when an inverse added/removed fact for the same
+  entity/category/field resolves to exact report evidence; additional duplicates cannot increase the
+  penalty. `missing_required_information` is `-1,000` for each unique missing incident-time, symptom,
+  lineage, or truncation code, capped at `-2,000`. A missing dimension both supplies no positive
+  evidence and appears explicitly in this single deduplicated penalty factor; no code is counted twice.
+- Exactly six factors always appear in the shared fixed order. Every positive/contradictory factor
+  carries only resolved report evidence IDs and/or validated suspicious-signal codes. Factor evidence
+  references are a subset of the hypothesis evidence catalog. Unsupported change/evidence mappings
+  reject scoring instead of being ignored. Explanation text is generated only from factor reason codes
+  and bounded counts; it never includes the raw question, metadata prose, provider/model output, or
+  private reasoning.
+- Runner/model-boundary reports may contain only a strict code-owned `not_scored` confidence state and
+  factual evidence references. They cannot provide a numeric score, band, factor contribution, or
+  explanation. The API finalizes that state as exact scored output, `insufficient_evidence`, or
+  `scoring_unavailable`; only the deterministic scorer may create a scored confidence object.
+- Ranking remains score descending, factual observation time descending, source change ID ascending,
+  then hypothesis ID ascending. All evidence/source collections are deduplicated and sorted before
+  scoring so equivalent validated inputs produce byte-identical score, factors, explanation, and rank.
+
+Minimum files:
+
+- `packages/shared-types/src/index.ts` and focused contract tests for the versioned scored/not-scored
+  confidence union, exact weights/thresholds/bands, signed factor bounds/order/reason codes, score and
+  explanation invariants, provenance/reference resolution, draft-report rejection of arbitrary score,
+  and completed/insufficient/degraded lifecycle consistency.
+- `packages/agent-core/src/index.ts` and focused scorer/runner tests for the six-factor formula,
+  near/far/unknown time, direct/indirect/no lineage, schema/pipeline evidence, evidence/source dedupe,
+  contradictions, missing-information penalties, order invariance, stable tie-breaks, bounds, and a
+  strictly unscored report draft before API-owned scoring.
+- `apps/api/src/index.ts` and focused incident/input-safety regressions so raw runner/model output is
+  parsed as an unscored draft, arbitrary supplied confidence never reaches the scorer/report, completed
+  scoring replaces it exactly, and insufficient/unavailable/degraded paths expose no invented number.
+- `apps/web/src/App.tsx`, `apps/web/src/styles.css`, and focused render/browser regressions for accessible
+  score + band + concise `Why` text, factor effects/reasons and resolved evidence links without a report
+  redesign. Unscored reports visibly say confidence was not scored; the activity trail remains the same
+  observable event contract and receives no factor/private-reasoning dump.
+- `packages/evaluation/src/index.ts`, shared evaluation contracts, and canonical evaluation tests so all
+  six resolved fixtures carry deterministic v1 confidence expectations while `insufficient-evidence`
+  retains zero hypothesis/score. JSON and Markdown reporter ordering/hashes remain deterministic.
+- `tests/integration/confidence-transparency.test.ts` plus only directly affected
+  `contracts.test.ts`, `hypothesis-scorer.test.ts`, `investigation-runner.test.ts`,
+  `incidents-api.test.ts`, `input-output-safety.test.ts`, `evaluation.test.ts`,
+  `web-hypothesis-scoring.test.ts`, `web-report.test.ts`, and `tests/e2e/report-display.spec.mjs`.
+- `docs/AGENT_DESIGN.md`, `docs/API_CONTRACTS.md`, `docs/DATA_MODEL.md`, `docs/SECURITY.md`,
+  `docs/TEST_STRATEGY.md`, this plan, `docs/KNOWN_ISSUES.md`, and `docs/SESSION_LOG.md`. No `.env`,
+  config, fixture metadata, manifest, lockfile, dependency, repository-map, or architecture change is
+  planned.
+
+Acceptance criteria:
+
+- The only numeric public confidence is produced by `DeterministicHypothesisScorer` from validated
+  context, suspicious signals, and exact report evidence. A runner/model draft with any score, band,
+  factor, unknown field, or unsupported evidence reference is rejected before scoring/storage.
+- Shared schemas enforce formula version, exact six-factor order/weights/reasons, signed caps,
+  100-basis-point contribution precision, final clamp, integer percentage, exact band boundary, exact
+  code-owned explanation, unique provenance, and equality between lifecycle/report scored hypotheses.
+- Temporal, lineage, schema/freshness, independent-source diversity, contradiction, and missing-input
+  outcomes match the formula above at every boundary. Truncation or missing evidence never raises a
+  score, and a canonical insufficient-evidence case remains explicitly indeterminate with no fabricated
+  hypothesis or remediation.
+- Every positive and contradiction claim resolves to evidence IDs and/or signal codes already present
+  in the same validated response. Duplicated or reordered inputs cannot change source count, score,
+  breakdown, explanation, or ranking; dangling references and contradictory facts without exact report
+  evidence make scoring insufficient.
+- The canonical removed-column fixture has the same factual top hypothesis but now uses the exact v1
+  score/band/explanation and source-diversity calculation. Evaluation has exact deterministic confidence
+  expectations for the six resolved cases and no confidence for `insufficient-evidence`.
+- Web report and scoring panels show percent, stable band, and concise `Why` explanation accessibly,
+  retain evidence links and non-causal copy, render penalties/missing inputs clearly, and never render
+  raw metadata/question/private reasoning as an explanation. The existing structured activity trail
+  remains observable-only and does not duplicate the factor breakdown.
+- Focused tests cover exact weights/caps/band edges; temporal near/far/unknown; direct/indirect/no
+  lineage; schema/pipeline/no matching change signal; independent evidence ID/source dedupe;
+  contradiction and missing-information penalties; insufficient evidence; order invariance and
+  tie-break; score bounds; arbitrary draft/model confidence rejection; reference resolution; safe
+  explanation leakage sentinels; deterministic canonical evaluation; and the final browser contract.
+
+Deferred: learning/feedback, operator-tunable or remotely configured scoring, model/provider routing,
+vector storage, blast-radius analysis, shareable/comparison reports, backend telemetry/analytics,
+database/persistence, auth, automatic remediation, architecture/UI redesign, live credential/DataHub
+smoke, Mac validation, Phase 6 Level D/checkpoint/closure, issue or milestone closure, Phase 7, and all
+optional product extensions.
+
+Exact Level C validation commands, run once on coherent final inputs and repeat only a classified
+affected failure:
+
+- `pnpm exec prettier --write packages/shared-types/src/index.ts packages/agent-core/src/index.ts apps/api/src/index.ts apps/web/src/App.tsx apps/web/src/styles.css packages/evaluation/src/index.ts tests/integration/contracts.test.ts tests/integration/confidence-transparency.test.ts tests/integration/hypothesis-scorer.test.ts tests/integration/investigation-runner.test.ts tests/integration/incidents-api.test.ts tests/integration/input-output-safety.test.ts tests/integration/evaluation.test.ts tests/integration/web-hypothesis-scoring.test.ts tests/integration/web-report.test.ts tests/e2e/report-display.spec.mjs docs/AGENT_DESIGN.md docs/API_CONTRACTS.md docs/DATA_MODEL.md docs/SECURITY.md docs/TEST_STRATEGY.md docs/IMPLEMENTATION_PLAN.md docs/KNOWN_ISSUES.md docs/SESSION_LOG.md`, then the same path list with `pnpm exec prettier --check`.
+- `pnpm exec eslint packages/shared-types/src/index.ts packages/agent-core/src/index.ts apps/api/src/index.ts apps/web/src/App.tsx packages/evaluation/src/index.ts tests/integration/contracts.test.ts tests/integration/confidence-transparency.test.ts tests/integration/hypothesis-scorer.test.ts tests/integration/investigation-runner.test.ts tests/integration/incidents-api.test.ts tests/integration/input-output-safety.test.ts tests/integration/evaluation.test.ts tests/integration/web-hypothesis-scoring.test.ts tests/integration/web-report.test.ts tests/e2e/report-display.spec.mjs`.
+- `pnpm --filter @dii/shared-types typecheck`, `pnpm --filter @dii/datahub-client typecheck`,
+  `pnpm --filter @dii/agent-core typecheck`, `pnpm --filter @dii/api typecheck`,
+  `pnpm --filter @dii/web typecheck`, and `pnpm --filter @dii/evaluation typecheck`.
+- `pnpm exec vitest run tests/integration/confidence-transparency.test.ts tests/integration/hypothesis-scorer.test.ts tests/integration/contracts.test.ts tests/integration/investigation-runner.test.ts tests/integration/incidents-api.test.ts tests/integration/input-output-safety.test.ts tests/integration/evaluation.test.ts tests/integration/web-hypothesis-scoring.test.ts tests/integration/web-report.test.ts tests/integration/structured-audit-trail.test.ts tests/integration/graceful-degradation.test.ts`.
+- `pnpm --filter @dii/shared-types build`, `pnpm --filter @dii/datahub-client build`,
+  `pnpm --filter @dii/agent-core build`, `pnpm --filter @dii/api build`,
+  `pnpm --filter @dii/web build`, and `pnpm --filter @dii/evaluation build`; then
+  `pnpm --filter @dii/evaluation evaluate -- --output-dir C:\tmp\dii-confidence-transparency-evaluation`,
+  inspect and remove only that verified temporary output, run `pnpm smoke`, and run exactly one
+  `pnpm test:e2e:report` credential-free Windows fixture regression because the public report/UI changed.
+- `git diff --check`; exact tracked/untracked diff/name/stat and full patch review; secret, credential,
+  prompt/private-reasoning, arbitrary-confidence, raw provider/model payload, hostname, stack,
+  conflict/debug, and generated-artifact scans; manifest/lockfile/dependency/config/fixture drift review;
+  exact base/parent ancestry; evaluation/browser temporary output, listener, and owned-process cleanup;
+  and final worktree review before one conventional commit, normal push, exactly one Draft PR against
+  current `main`, and exact-head CI to SUCCESS without merge.
+
+Local Level C result (2026-07-22): focused Prettier write/check and affected ESLint passed; all six
+affected typechecks passed. The exact 11-file deterministic matrix passed 97/97 tests in 3.64 seconds
+(4.822 seconds command wall), including the eight-test confidence boundary file and unchanged Slice 6.5
+activity/degradation contracts. All six builds passed; web transformed 109 modules and built in 1.84
+seconds. Canonical evaluation emitted exact resolved scores `70/59/62/44/59/44`, left
+`insufficient-evidence` unscored, and its verified temporary 64,639-byte JSON plus 2,474-byte Markdown
+were removed. Built API/web smoke passed in 2.240 seconds. Exactly one final browser command passed its
+fixture-only report flow in 6,973 ms on ports `54125`/`54126`, including `81% high`, formula/version,
+`Why`, factor provenance, evidence links, accessibility, responsive overflow, clean console, port
+release, and owned cleanup.
+
+Two validation recoveries were environment/test-only. Sandboxed Vitest/Vite and the evaluation CLI
+encountered the known managed Windows esbuild/filesystem junction; the same scoped commands passed with
+the bundled process-local runtime and approved execution, and the evaluation output was removed only
+after exact-path verification. The first final matrix attempt passed 96/97 but correctly rejected a
+new test setup that placed a recent-change timestamp outside the already validated incident window;
+removing that impossible setup, formatting/linting the affected test, and rerunning the exact matrix
+produced the final 97/97 evidence. No production behavior was weakened. Level D/checkpoint, full-repo
+suite, live credentials/DataHub/model network, Mac, issue/milestone closure, merge, Phase 7, and optional
+extensions remain intentionally deferred.
 
 ## Phase 7 — GitHub, CI, and release
 

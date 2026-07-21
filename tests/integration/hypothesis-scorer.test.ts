@@ -33,7 +33,7 @@ function evidenceFor(
   suspicious: SuspiciousChangeDetectionResult,
 ): Evidence[] {
   if (suspicious.status !== 'completed') return [];
-  return suspicious.candidates.map((candidate) => {
+  const changeEvidence = suspicious.candidates.map((candidate) => {
     const entity = context.facts.lineage?.nodes.find((node) => node.urn === candidate.entityUrn);
     if (!entity) throw new Error('Expected candidate entity in factual lineage.');
     return {
@@ -51,6 +51,17 @@ function evidenceFor(
       observedAt: candidate.observedAt,
     };
   });
+  const candidateUrns = new Set(suspicious.candidates.map((candidate) => candidate.entityUrn));
+  const lineageEvidence =
+    context.facts.lineage?.nodes
+      .filter((node) => node.depth > 0 && candidateUrns.has(node.urn))
+      .map((node) => ({
+        id: `lineage-${node.depth}-${node.urn}`,
+        category: 'lineage' as const,
+        statement: `Validated lineage evidence for ${node.name}.`,
+        sourceEntity: { urn: node.urn, name: node.name, kind: node.kind },
+      })) ?? [];
+  return [...changeEvidence, ...lineageEvidence];
 }
 
 function contextWithChanges(
@@ -71,7 +82,7 @@ function contextWithChanges(
 }
 
 describe('deterministic evidence-linked hypothesis scorer', () => {
-  it('scores the canonical removed column as a stable 0.85 plausible contributor', async () => {
+  it('scores the canonical removed column as a stable 81% high plausible contributor', async () => {
     const context = await canonicalContext();
     const suspicious = new DeterministicSuspiciousChangeDetector().detect(context);
     const evidence = evidenceFor(context, suspicious);
@@ -91,17 +102,41 @@ describe('deterministic evidence-linked hypothesis scorer', () => {
           observedAt: '2026-07-18T07:45:00.000Z',
           summary:
             'Plausible contributor: the removed schema change on raw.orders may have contributed to the incident.',
-          confidence: 0.85,
-          evidenceIds: ['change-removed-gross-revenue'],
-          factors: [
-            expect.objectContaining({ code: 'change_recency', contributionBasisPoints: 3_000 }),
-            expect.objectContaining({ code: 'lineage_position', contributionBasisPoints: 2_000 }),
-            expect.objectContaining({
-              code: 'symptom_category_fit',
-              contributionBasisPoints: 1_500,
-            }),
-            expect.objectContaining({ code: 'evidence_quality', contributionBasisPoints: 2_000 }),
-          ],
+          confidence: {
+            status: 'scored',
+            formulaVersion: 'evidence-confidence-v1',
+            scorePercent: 81,
+            level: 'high',
+            explanation:
+              'Why: the change is within 6 hours of the incident; lineage is directly upstream; schema-change evidence is present; 2 independent evidence sources agree; no contradictory evidence is present; required inputs are complete.',
+            factors: [
+              expect.objectContaining({
+                code: 'temporal_proximity',
+                contributionBasisPoints: 2_500,
+              }),
+              expect.objectContaining({
+                code: 'lineage_relationship',
+                contributionBasisPoints: 2_000,
+              }),
+              expect.objectContaining({
+                code: 'schema_or_freshness_evidence',
+                contributionBasisPoints: 1_800,
+              }),
+              expect.objectContaining({
+                code: 'independent_evidence_diversity',
+                contributionBasisPoints: 1_800,
+              }),
+              expect.objectContaining({
+                code: 'contradictory_evidence',
+                contributionBasisPoints: 0,
+              }),
+              expect.objectContaining({
+                code: 'missing_required_information',
+                contributionBasisPoints: 0,
+              }),
+            ],
+          },
+          evidenceIds: expect.arrayContaining(['change-removed-gross-revenue']),
         },
       ],
       missingInformation: [],
@@ -134,9 +169,9 @@ describe('deterministic evidence-linked hypothesis scorer', () => {
     expect(result.status).toBe('completed');
     if (result.status !== 'completed') throw new Error('Expected ranked hypotheses.');
     expect(result.hypotheses.map((hypothesis) => hypothesis.sourceChangeId)).toEqual([
-      'change-d',
       'change-a',
       'change-b',
+      'change-c',
     ]);
     expect(result.hypotheses.map((hypothesis) => hypothesis.rank)).toEqual([1, 2, 3]);
     expect(result.missingInformation).toContainEqual(
@@ -164,10 +199,10 @@ describe('deterministic evidence-linked hypothesis scorer', () => {
 
     expect(result.status).toBe('completed');
     if (result.status !== 'completed') throw new Error('Expected category-scored hypothesis.');
-    expect(result.hypotheses[0]?.confidence).toBe(0.7);
-    expect(result.hypotheses[0]?.factors.map((factor) => factor.contributionBasisPoints)).toEqual([
-      0, 2_000, 3_000, 2_000,
-    ]);
+    expect(result.hypotheses[0]?.confidence.scorePercent).toBe(36);
+    expect(
+      result.hypotheses[0]?.confidence.factors.map((factor) => factor.contributionBasisPoints),
+    ).toEqual([0, 2_000, 1_800, 1_800, 0, -2_000]);
     expect(result.missingInformation.map((item) => item.code)).toEqual([
       'incident_time_not_supplied',
       'symptom_not_supplied',
@@ -219,10 +254,10 @@ describe('deterministic evidence-linked hypothesis scorer', () => {
     if (lowQualityResult.status !== 'completed') {
       throw new Error('Expected a bounded low-quality score.');
     }
-    expect(lowQualityResult.hypotheses[0]?.confidence).toBe(0.75);
-    expect(lowQualityResult.hypotheses[0]?.factors[3]).toMatchObject({
-      code: 'evidence_quality',
-      contributionBasisPoints: 1_000,
+    expect(lowQualityResult.hypotheses[0]?.confidence.scorePercent).toBe(71);
+    expect(lowQualityResult.hypotheses[0]?.confidence.factors[5]).toMatchObject({
+      code: 'missing_required_information',
+      contributionBasisPoints: -1_000,
     });
 
     expect(

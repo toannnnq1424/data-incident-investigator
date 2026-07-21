@@ -1,6 +1,6 @@
 # Known issues
 
-Last updated: 2026-07-21.
+Last updated: 2026-07-22.
 
 - Phase 6 Slice 6.3 is merged through PR #35 at exact main merge
   `aa853d7b1dd2fdbeca45d08766643ba18ca2aa53` (tree
@@ -13,22 +13,27 @@ Last updated: 2026-07-21.
   run `29849465050`, job `88698347282`, passed. Strict `/health`, mode-aware `/ready`, safe invalid-
   fixture behavior, bounded DataHub readiness, local investigation-runtime validation, and accurate
   model `not_required` semantics remain intact.
-- Slice 6.5 structured audit trail is implemented locally on that exact merged Slice 6.4. Public
-  incident retrieval now carries one bounded allowlisted `Investigation activity` trail with stable
-  sequence-derived IDs, public UTC timestamps, schema-valid operation boundaries, exact report-
-  evidence links, stable warnings, and exactly one final execution-matching terminal event. It adds no
-  hidden reasoning, arbitrary external summary, raw question/prompt/provider/model payload, credential,
-  backend logging, telemetry, persistence, tracing vendor, confidence change, or Phase 7 work. Final
-  local evidence passes formatting/lint, five typechecks/builds, 9 files/89 tests plus the final changed
-  lineage-truncation 14/14 recovery, built-artifact HTTP smoke, and the `4797ms` browser flow on ports
-  `62149`/`62150`. The exact 20-path audit also passes; commit, Draft PR, and exact-head CI remain
-  pending.
+- Phase 6 Slice 6.5 is merged through PR #37 at exact main merge
+  `57dabac17d27d6cbc1764087bf1bec17820a55d0` (tree
+  `ef53921bf013f4c4e69b1076c211dfb166edd0c3`; parents `725f8966efba53e392240844df405bd3036cd60e`
+  and `bc30767b8c687b138f46001f937124b3104c4c84`). Exact main CI run `29853831610`, job
+  `88713102696`, passed. The bounded observable-only activity trail, exact evidence links, safe
+  warnings, one final event, and no hidden reasoning/raw provider/model content remain intact.
+- Slice 6.6 replaces runner/model-authored confidence with `evidence-confidence-v1`. Draft reports may
+  contain only fixed pending `not_scored`; API/scorer output owns integer percent, stable band, six
+  ordered evidence/penalty factors, resolved provenance, and a code-owned `Why` template. Canonical
+  removed-column confidence is `81% high`; six resolved evaluation fixtures have exact deterministic
+  expectations and `insufficient-evidence` has no hypothesis/score. Final local Level C passes focused
+  format/check, lint, 6/6 typechecks, 11/11 files and 97/97 tests (including the dedicated eight-test
+  boundary matrix), 6/6 builds, canonical evaluation, built smoke, and exactly one final browser flow.
+  Final diff audit, commit, Draft PR, and exact-head CI remain pending.
 - Fixture continuation in a degraded DataHub response is deliberately advisory and `not_executed`;
   the operator must explicitly start the app in fixture mode. The current investigation makes zero model
   calls, so readiness accurately marks model `not_required`; it does not read `OPENAI_API_KEY` or claim
   model availability. There is no runtime mode switch, model provider implementation, durable incident
-  storage, automatic retry for provider timeouts, or production remediation. Confidence work (6.6),
-  authentication, deployment, distributed limiting, and Phase 6 Level D remain deferred.
+  storage, automatic retry for provider timeouts, or production remediation. Learning/feedback,
+  operator-tunable scoring, authentication, deployment, distributed limiting, and Phase 6 Level D
+  remain deferred.
 
 - Phase 5 integration checkpoint local Level D evidence passes on exact Slice 5.1 final HEAD
   `883bf9bf` and unique branch `codex/phase-5-integration-checkpoint`. The single `pnpm validate`
