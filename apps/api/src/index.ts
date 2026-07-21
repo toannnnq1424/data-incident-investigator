@@ -43,6 +43,7 @@ import {
   BlastRadiusAnalysisSchema,
   DEFAULT_PUBLIC_INGRESS_CONFIG,
   DEFAULT_RUNTIME_LIMIT_CONFIG,
+  createIncidentMarkdownExport,
   HealthResponseSchema,
   INCIDENT_CONTEXT_MAX_CANDIDATES,
   INVESTIGATION_COMPLETED_EVENT_SUMMARY,
@@ -80,6 +81,7 @@ import {
   SuspiciousChangeDetectionStageSchema,
   UNSCORED_CONFIDENCE_EXPLANATIONS,
   type IncidentContextStage,
+  type IncidentRetrievalResponse,
   type BlastRadiusAnalysis,
   type HypothesisScoringStage,
   type InvestigationDraftReport,
@@ -163,6 +165,50 @@ type StoredIncident =
     }
   | { status: 'degraded'; response: InvestigationDegradedResponse }
   | { status: 'failed' };
+
+function publicIncidentResponse(
+  incidentId: string,
+  incident: StoredIncident,
+): IncidentRetrievalResponse | undefined {
+  if (incident.status === 'failed') {
+    return undefined;
+  }
+  if (incident.status === 'degraded') {
+    return IncidentRetrievalResponseSchema.parse(incident.response);
+  }
+  if (incident.status === 'execution-failed') {
+    return IncidentRetrievalResponseSchema.parse({
+      incidentId,
+      status: 'failed',
+      execution: incident.execution,
+      eventTrail: incident.eventTrail,
+      error: incident.error,
+    });
+  }
+  return IncidentRetrievalResponseSchema.parse(
+    incident.status === 'completed'
+      ? {
+          incidentId,
+          status: 'completed',
+          contextStage: incident.contextStage,
+          suspiciousChangeStage: incident.suspiciousChangeStage,
+          hypothesisScoringStage: incident.hypothesisScoringStage,
+          remediationStage: incident.remediationStage,
+          execution: incident.execution,
+          eventTrail: incident.eventTrail,
+          report: incident.report,
+        }
+      : {
+          incidentId,
+          status: 'processing',
+          contextStage: incident.contextStage,
+          suspiciousChangeStage: incident.suspiciousChangeStage,
+          hypothesisScoringStage: incident.hypothesisScoringStage,
+          remediationStage: incident.remediationStage,
+          eventTrail: incident.eventTrail,
+        },
+  );
+}
 
 type ObservableInvestigationEventAction = Exclude<
   InvestigationEventActionType,
@@ -1958,7 +2004,8 @@ export function buildServer(options: BuildServerOptions = {}) {
         );
       }
 
-      if (incident.status === 'failed') {
+      const response = publicIncidentResponse(incidentId, incident);
+      if (!response) {
         return reply.code(500).send(
           ApiErrorSchema.parse({
             error: {
@@ -1968,48 +2015,67 @@ export function buildServer(options: BuildServerOptions = {}) {
           }),
         );
       }
+      return reply.code(200).send(response);
+    },
+  );
 
-      if (incident.status === 'degraded') {
-        return reply.code(200).send(IncidentRetrievalResponseSchema.parse(incident.response));
+  server.get<{ Params: { incidentId: string } }>(
+    '/incidents/:incidentId/report.md',
+    async (request, reply) => {
+      const parsedParams = IncidentIdParamsSchema.safeParse(request.params);
+      if (!parsedParams.success) {
+        return reply.code(400).send(
+          ApiErrorSchema.parse({
+            error: {
+              code: 'VALIDATION_ERROR',
+              message: 'The incident identifier is invalid.',
+              issues: safeValidationIssues(parsedParams.error.issues),
+            },
+          }),
+        );
       }
-
-      if (incident.status === 'execution-failed') {
-        return reply.code(200).send(
-          IncidentRetrievalResponseSchema.parse({
-            incidentId,
-            status: 'failed',
-            execution: incident.execution,
-            eventTrail: incident.eventTrail,
-            error: incident.error,
+      const { incidentId } = parsedParams.data;
+      const incident = incidents.get(incidentId);
+      if (!incident) {
+        return reply.code(404).send(
+          ApiErrorSchema.parse({
+            error: {
+              code: 'NOT_FOUND',
+              message: 'The requested incident was not found.',
+            },
+          }),
+        );
+      }
+      const response = publicIncidentResponse(incidentId, incident);
+      if (!response) {
+        return reply.code(500).send(
+          ApiErrorSchema.parse({
+            error: {
+              code: 'INTERNAL_ERROR',
+              message: 'The investigation could not be completed.',
+            },
+          }),
+        );
+      }
+      if (response.status === 'processing') {
+        return reply.code(409).send(
+          ApiErrorSchema.parse({
+            error: {
+              code: 'REPORT_NOT_READY',
+              message: 'The incident report is still processing.',
+            },
           }),
         );
       }
 
-      return reply.code(200).send(
-        IncidentRetrievalResponseSchema.parse(
-          incident.status === 'completed'
-            ? {
-                incidentId,
-                status: 'completed',
-                contextStage: incident.contextStage,
-                suspiciousChangeStage: incident.suspiciousChangeStage,
-                hypothesisScoringStage: incident.hypothesisScoringStage,
-                remediationStage: incident.remediationStage,
-                execution: incident.execution,
-                eventTrail: incident.eventTrail,
-                report: incident.report,
-              }
-            : {
-                incidentId,
-                status: 'processing',
-                contextStage: incident.contextStage,
-                suspiciousChangeStage: incident.suspiciousChangeStage,
-                hypothesisScoringStage: incident.hypothesisScoringStage,
-                remediationStage: incident.remediationStage,
-                eventTrail: incident.eventTrail,
-              },
-        ),
-      );
+      const exportArtifact = createIncidentMarkdownExport(response);
+      return reply
+        .header('Cache-Control', 'no-store')
+        .header('Content-Disposition', `attachment; filename="${exportArtifact.filename}"`)
+        .header('X-Content-Type-Options', 'nosniff')
+        .type('text/markdown; charset=utf-8')
+        .code(200)
+        .send(exportArtifact.markdown);
     },
   );
 

@@ -42,6 +42,10 @@ actions.
 - Limits bound lineage depth, entity count, tool calls, retries, duration, and output size.
 - Errors explain whether the failure is validation, provider availability, timeout, or insufficient
   evidence.
+- A terminal investigation can be downloaded as one deterministic, sanitized, self-contained Markdown
+  report with resolved evidence, confidence, blast-radius, remediation, activity, and limitation
+  references. The application code owns the format and filename; no model-authored Markdown, sharing,
+  or server-side report storage is required.
 
 ## MVP scenarios
 

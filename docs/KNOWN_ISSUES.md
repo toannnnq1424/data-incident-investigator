@@ -2,6 +2,16 @@
 
 Last updated: 2026-07-22.
 
+- The final approved Phase 6 optional extension now implements deterministic terminal Markdown export
+  locally on `codex/phase-6-extension-markdown-export` from exact main `601f361…`. The clock-free
+  `incident-markdown-v1` renderer reparses the public response, preserves non-success states, resolves
+  evidence/confidence/blast-radius/remediation/activity links, escapes/redacts untrusted content, and
+  returns one no-store fixture-capable attachment with a bounded full-UUID filename. Sharing, storage,
+  email/Slack/Jira/PDF, authentication, a checked-in generated sample, Phase 6 Level D/checkpoint, and
+  Phases 7-8 remain out of scope. Final local Level C passes focused format/check and affected lint,
+  6/6 typechecks, 5/5 files and 57/57 tests, 6/6 builds, built smoke, exactly one fixture browser
+  attachment regression, and listener cleanup. Draft PR publication and exact-head CI are pending.
+
 - Phase 6 Slice 6.3 is merged through PR #35 at exact main merge
   `aa853d7b1dd2fdbeca45d08766643ba18ca2aa53` (tree
   `d61c3637d168cb33003b845b62a876e2d19363c3`); main CI run `29844355484`, job `88680987052`, passed.

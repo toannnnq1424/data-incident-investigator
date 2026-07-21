@@ -3448,6 +3448,152 @@ affected failure:
   temporary output, listener, and owned-process cleanup; then one conventional commit, normal push,
   exactly one Draft PR against current `main`, and exact-head CI to terminal SUCCESS without merge.
 
+### Optional extension — Deterministic Markdown incident report export
+
+Status: locally implemented and Level C validated on `codex/phase-6-extension-markdown-export` from
+exact merged blast-radius `main`
+`601f3616658780d0d51f7ccc46ff4e665f61d8db` (tree
+`f53bacec505980b67ffcd36705c101be2de52e3f`; parents
+`43e57aee320c86da0930deb4dd2fae38ca4b80e6` and
+`762067d37757ccfe6c5c3cd9a6757bfcbece1ec7`). Exact main CI run `29865446602`, job
+`88752378237`, passed. Bootstrap, safe fetch, exact base/tree/parent/CI verification, docs-first
+reading, and the scoped public-report/evidence/confidence/blast-radius/fallback/audit/UI/evaluation
+export audit preceded every source edit.
+
+Objective: export one self-contained, deterministic, evidence-linked Markdown incident report from
+the already schema-validated terminal public investigation response. The serializer, section order,
+copy, references, escaping, filename, and renderer version are code-owned. Runner/model drafts cannot
+author Markdown, a filename, a link, or export metadata. Do not add sharing, persistence, email,
+Slack/Jira, PDF, authentication, provider changes, Phase 6 Level D/checkpoint, Phase 7, or Phase 8.
+
+Format and boundary decisions:
+
+- `incident-markdown-v1` is the stable renderer version. `createIncidentMarkdownExport` reparses one
+  terminal `IncidentRetrievalResponseSchema` and rejects `processing`; identical validated input
+  returns byte-identical UTF-8 text with LF newlines, one final newline, no BOM, no clock, and no
+  generated-at timestamp.
+- The fixed section order is incident identity/status/question, investigation summary/termination,
+  hypotheses and deterministic confidence, evidence catalog, blast radius, remediation, observable
+  activity, assumptions/limitations/missing information, then deterministic export metadata. Missing,
+  insufficient, degraded, partial, truncated, unavailable, and failed states use explicit non-success
+  copy and never imply verified success or zero impact.
+- Evidence and hypothesis links use renderer-owned ordinal anchors resolved only from the parsed report
+  catalog. Blast-radius and remediation references reuse those exact mappings. No external URL is
+  emitted and no unsupported reference can cross the existing public schema/composition invariants.
+- Every dynamic question, label, statement, summary, identifier, URN, path, and metadata value is
+  treated as untrusted again at serialization. The renderer removes controls and bidi controls,
+  redacts unsafe URL/credential/internal-host sentinels, neutralizes HTML and Markdown syntax, and never
+  emits raw provider/model payloads, tool arguments, prompts, stacks, credentials, or private
+  reasoning.
+- The ASCII filename is `incident-report-<safe-label>-<full-incident-uuid>.md`. The label is bounded,
+  traversal/control/punctuation/device-name safe, with `incident` fallback; the full schema-valid UUID
+  is the deterministic collision suffix. The filename is below 120 characters and needs no
+  caller/model input.
+- `GET /incidents/:incidentId/report.md` is stateless and returns only terminal exports with
+  `text/markdown; charset=utf-8`, attachment `Content-Disposition`, `Cache-Control: no-store`, and
+  `X-Content-Type-Options: nosniff`. Processing returns fixed `409 REPORT_NOT_READY`; existing invalid,
+  unknown, and internal-failure semantics remain typed and sanitized.
+- The web uses one native, keyboard-accessible download link on completed, degraded, and failed
+  terminal presentations. Fixture mode requires no credential. No client-side Markdown composition or
+  server-side file storage is added.
+- No checked-in sample Markdown is planned. Repository convention explicitly generates evaluation
+  Markdown into ignored/temporary output and removes it; the canonical fixture API/browser download is
+  the reproducible demo artifact. A generated sample must not be introduced or hand-edited silently in
+  this extension.
+
+Minimum files:
+
+- `packages/shared-types/src/index.ts` and `tests/integration/markdown-export.test.ts` for the versioned
+  terminal export contract, deterministic renderer, ordinal references, unsafe-text/URL/credential/
+  bidi escaping, safe bounded filename, canonical/degraded/failed/insufficient/partial/truncated/
+  unknown/unavailable content, LF/UTF-8 bytes, and leakage sentinels.
+- `apps/api/src/index.ts` plus the focused export/API tests for post-composition parsing, terminal-only
+  download, exact headers/body/filename, validation/not-found/not-ready errors, fixture no-credential
+  behavior, and no persistence.
+- `apps/web/src/App.tsx`, `apps/web/src/styles.css`, `tests/integration/web-report.test.ts`, and
+  `tests/e2e/report-display.spec.mjs` for the accessible native action and one real browser
+  download/filename/content verification without redesign.
+- `tests/integration/contracts.test.ts`, `tests/integration/input-output-safety.test.ts`, and
+  `tests/integration/incidents-api.test.ts` only where direct shared/API safety or canonical public
+  response compatibility needs an adjacent regression.
+- `docs/PRODUCT_SPEC.md`, `docs/ARCHITECTURE.md`, `docs/AGENT_DESIGN.md`, `docs/API_CONTRACTS.md`,
+  `docs/DATA_MODEL.md`, `docs/SECURITY.md`, `docs/TEST_STRATEGY.md`, this plan,
+  `docs/KNOWN_ISSUES.md`, and `docs/SESSION_LOG.md` only where the new public/download contract or
+  durable handoff is material. Repository map, fixtures, evaluation output/source, deployment config,
+  `.env.example`, manifests, lockfile, and dependencies remain unchanged unless focused validation
+  proves otherwise; none is planned.
+
+Acceptance criteria:
+
+- Only a terminal response that passes `IncidentRetrievalResponseSchema` can be serialized. Drafts,
+  runners, models, processing state, arbitrary Markdown, filenames, external links, and unresolved
+  evidence/impact/remediation references are rejected or absent before export.
+- Repeated serialization of the same validated response is byte-identical. Tests pin renderer version,
+  exact section order, UTF-8 bytes, LF-only newlines, one trailing newline, stable ordinal anchors,
+  stable filename, and canonical fixture content including `81% high`, both exact blast-radius impacts,
+  structured `not_executed` remediation, resolved evidence, and observable activity.
+- Focused variants truthfully render completed-but-insufficient/not-scored and unknown blast radius;
+  degraded/no-report; failed-before-evidence; and lineage-truncated partial-report states. Missing or
+  unavailable evidence/coverage is never phrased as successful completion or zero impact.
+- Adversarial fixtures cover Markdown headings/lists/tables/code fences, HTML/script/comments, links and
+  unsafe schemes, control/bidi characters, traversal, Windows reserved/device names, long labels,
+  credential/internal-host/stack/raw-payload/private-reasoning sentinels, and filename header injection.
+- API tests prove exact content headers, safe filename, invalid/unknown/processing behavior, body bytes,
+  and credential-free fixture download. Static web tests prove one accessible terminal action; the
+  single Windows browser gate downloads the attachment and verifies suggested filename plus canonical
+  content before clean process/listener teardown.
+- Existing confidence, blast-radius, remediation, audit, degradation, readiness, rate/body safety,
+  evaluation, provider, fixture, manifest, lockfile, and no-model-call contracts remain unchanged.
+
+Deferred: checked-in generated report samples, report storage/history, signed/share links, email,
+Slack/Jira, PDF, comparison, authentication/authorization, persistence/database, telemetry/analytics,
+provider/model routing, live credential/DataHub smoke, Mac validation, Phase 6 Level D/checkpoint/
+closure, Phase 7, and Phase 8.
+
+Exact Level C validation commands, run once on coherent final inputs and repeat only a classified
+affected failure:
+
+- `pnpm exec prettier --write packages/shared-types/src/index.ts apps/api/src/index.ts apps/web/src/App.tsx apps/web/src/styles.css tests/integration/markdown-export.test.ts tests/integration/contracts.test.ts tests/integration/input-output-safety.test.ts tests/integration/incidents-api.test.ts tests/integration/web-report.test.ts tests/e2e/report-display.spec.mjs docs/PRODUCT_SPEC.md docs/ARCHITECTURE.md docs/AGENT_DESIGN.md docs/API_CONTRACTS.md docs/DATA_MODEL.md docs/SECURITY.md docs/TEST_STRATEGY.md docs/IMPLEMENTATION_PLAN.md docs/KNOWN_ISSUES.md docs/SESSION_LOG.md`, then the same path list with `pnpm exec prettier --check`.
+- `pnpm exec eslint packages/shared-types/src/index.ts apps/api/src/index.ts apps/web/src/App.tsx tests/integration/markdown-export.test.ts tests/integration/contracts.test.ts tests/integration/input-output-safety.test.ts tests/integration/incidents-api.test.ts tests/integration/web-report.test.ts tests/e2e/report-display.spec.mjs`.
+- `pnpm --filter @dii/shared-types typecheck`, `pnpm --filter @dii/datahub-client typecheck`,
+  `pnpm --filter @dii/agent-core typecheck`, `pnpm --filter @dii/api typecheck`,
+  `pnpm --filter @dii/web typecheck`, and `pnpm --filter @dii/evaluation typecheck`.
+- `pnpm exec vitest run tests/integration/markdown-export.test.ts tests/integration/contracts.test.ts tests/integration/input-output-safety.test.ts tests/integration/incidents-api.test.ts tests/integration/web-report.test.ts`.
+- `pnpm --filter @dii/shared-types build`, `pnpm --filter @dii/datahub-client build`,
+  `pnpm --filter @dii/agent-core build`, `pnpm --filter @dii/api build`,
+  `pnpm --filter @dii/web build`, and `pnpm --filter @dii/evaluation build`; then `pnpm smoke` and
+  exactly one `pnpm test:e2e:report` credential-free Windows fixture regression with real attachment
+  download/content verification.
+- `git diff --check`; exact tracked/untracked diff/name/stat and full patch review; secret, credential,
+  unsafe URL/HTML/Markdown/bidi, filename traversal/device/header-injection, prompt/private-reasoning,
+  raw provider/model payload, hostname, stack, unsupported-reference, conflict/debug, and generated-
+  artifact scans; manifest/lockfile/dependency/config/fixture/evaluation drift review; exact base/tree/
+  parent ancestry; browser download/temp/listener/owned-process cleanup; then one or more coherent
+  conventional commits without history rewriting, normal push, exactly one Draft PR against current
+  `main`, and exact-head CI to terminal SUCCESS without merge.
+
+Local implementation result: `incident-markdown-v1`, the terminal-only stateless endpoint, accessible
+native download action, and focused serializer/API/UI/browser coverage meet the acceptance above. The
+canonical fixture remains `81% high` with the exact dataset and dashboard impacts, resolved ordinal
+evidence links, and `not_executed` remediation. No sample, storage, share link, provider/config,
+manifest, lockfile, dependency, fixture, or evaluation-source change was introduced.
+
+Level C result on the coherent final source/test input: focused Prettier write/check passed in
+`8738ms`/`9067ms`; corrected affected formatting/lint passed in `10177ms`; 6/6 typechecks passed
+(`6862ms`, `6873ms`, `7292ms`, `9380ms`, `10036ms`, `6526ms`); the exact five-file deterministic
+matrix passed 5/5 files and 57/57 tests in `7.10s` (`9674ms` command wall); 6/6 builds passed
+(`9494ms`, `10271ms`, `11131ms`, `13418ms`, `21972ms`, `9893ms`) with 109 web modules and a `5.46s`
+Vite build; built fixture smoke passed in `5508ms`; and exactly one final Windows browser regression
+passed in `21965ms` (`30582ms` command wall) on temporary ports `62328`/`62329`, including real
+attachment filename/content verification. Both listeners were released. Publication, exact-head CI,
+review, merge, Level D/checkpoint, and later phases remain separate; this task stops after a successful
+Draft PR CI without merge.
+
+A final security-audit increment extended bare-token and header-injection coverage. Affected format,
+lint, and shared-types typecheck passed in one `22547ms` command; after correcting an intentionally
+malicious test value that exceeded the existing public 300-character bound, the final dedicated export
+regression passed 5/5 tests in `5.55s` (`8090ms` command wall). No production contract was widened.
+
 ## Phase 7 — GitHub, CI, and release
 
 Finalize branch/PR workflow, full CI, release validation, smoke tests, and merge readiness.

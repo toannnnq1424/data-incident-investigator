@@ -371,6 +371,20 @@ limits. Verified impacts survive later root truncation/failure as `partial`; mis
 called complete or zero impact. The analysis consumes scored hypotheses but neither changes them nor
 adds impacted-entity quantity to `evidence-confidence-v1`.
 
+## Optional extension: deterministic Markdown export
+
+Markdown export is not an investigation stage and performs no adapter, provider, runner, model, retry,
+clock, or storage work. Only after the API has composed and schema-validated a terminal public
+`IncidentRetrievalResponse` may the code-owned `incident-markdown-v1` serializer run. A draft/model
+report cannot contain Markdown, a filename, export version, generated link, or export timestamp.
+
+The renderer preserves the public status and termination semantics, so completed, degraded, failed,
+insufficient, unknown, unavailable, partial, and truncated states remain distinguishable. Evidence,
+hypothesis, blast-radius, remediation, and activity references are renderer-owned ordinal links derived
+from exact parsed catalogs; a dangling reference is rejected by the existing public schema rather than
+rendered or fabricated. The renderer is clock-free and returns deterministic UTF-8/LF bytes plus a
+bounded ASCII filename derived from sanitized public context and the complete incident UUID.
+
 ## Evidence classification
 
 - Fact: directly observed metadata, lineage, change, or pipeline signal.

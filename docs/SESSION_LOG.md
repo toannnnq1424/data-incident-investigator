@@ -2925,3 +2925,84 @@ junction cùng plain Node workspace package-export là environment-only limitati
 Publish một normal conventional commit lên đúng một Draft PR base current `main`, theo dõi exact-head CI
 tới terminal SUCCESS và không merge. Sau đó chỉ human-review Draft PR; mọi extension/checkpoint tiếp
 theo cần approval riêng.
+
+## 2026-07-22 — Optional extension: deterministic Markdown incident report export
+
+### Objective
+
+Từ exact merged blast-radius `main` `601f3616658780d0d51f7ccc46ff4e665f61d8db` (tree
+`f53bacec505980b67ffcd36705c101be2de52e3f`; parents
+`43e57aee320c86da0930deb4dd2fae38ca4b80e6` và
+`762067d37757ccfe6c5c3cd9a6757bfcbece1ec7`; main CI run `29865446602`, job
+`88752378237`, SUCCESS), thêm export báo cáo sự cố Markdown deterministic, sanitized,
+evidence-linked và self-contained từ public terminal report đã schema-validate. Không làm sharing,
+storage, PDF/email/Slack/Jira, Phase 6 Level D/checkpoint, Phase 7 hoặc Phase 8.
+
+### Completed
+
+Đã bootstrap/fetch an toàn, xác minh exact `origin/main`/tree/parents/CI, tạo branch
+`codex/phase-6-extension-markdown-export`, đọc docs-first và khóa plan trước source edit.
+`incident-markdown-v1` là serializer clock-free do code sở hữu, reparse strict terminal
+`IncidentRetrievalResponseSchema`, reject processing, dùng UTF-8/LF/một newline cuối, stable ordinal
+anchors và filename ASCII bounded chứa full incident UUID. Dynamic text bị loại control/bidi,
+escape Markdown/HTML và redact unsafe URL, credential/token, internal host/private IP và stack
+sentinel. Runner/model/draft không thể cung cấp Markdown, filename, link hay export metadata.
+
+`GET /incidents/:incidentId/report.md` tái sử dụng canonical public composition, chỉ trả terminal
+attachment với `text/markdown; charset=utf-8`, `no-store`, `nosniff` và typed
+`REPORT_NOT_READY` cho processing; không lưu file server-side và fixture mode không cần credential.
+Web thêm một native keyboard-accessible download action cho completed/degraded/failed. Renderer giữ
+trung thực insufficient/unknown/degraded/failed/partial/unavailable/truncated, không biến missing
+coverage thành success hoặc zero impact. Canonical output giữ nguyên `81% high`, đúng hai impact
+dataset/dashboard, resolved evidence links, remediation `not_executed` và observable-only activity.
+
+### Files changed
+
+17 path: shared-types serializer/contract; API; web/CSS; test export mới; direct static UI và browser
+regressions; `PRODUCT_SPEC`, `ARCHITECTURE`, `AGENT_DESIGN`, `API_CONTRACTS`, `DATA_MODEL`, `SECURITY`,
+`TEST_STRATEGY`, `IMPLEMENTATION_PLAN`, `KNOWN_ISSUES` và entry này. Không đổi repository map,
+deployment/README, `.env`, config, fixture, provider/evaluation source, manifest, lockfile hay dependency.
+Không check in sample Markdown vì convention của repository dùng generated evaluation output tạm/ignored;
+canonical fixture download là demo artifact tái tạo được.
+
+### Validation performed
+
+- Focused Prettier write/check PASS trong `8738ms`/`9067ms`. Affected lint sau minimum static fixes
+  PASS trong command corrective format/lint `10177ms`.
+- 6/6 typecheck PASS: shared-types `6862ms`, datahub-client `6873ms`, agent-core `7292ms`, API
+  `9380ms`, web `10036ms`, evaluation `6526ms`.
+- Exact deterministic matrix PASS 5/5 files, 57/57 tests trong `7.10s` (`9674ms` command wall).
+  Dedicated export file có 5 test cho byte/order/UTF-8/LF, canonical content và headers, mọi terminal
+  variant, adversarial injection/leakage/filename, processing và dangling impact evidence rejection.
+  Supplemental security-audit increment PASS affected format/lint/shared-types typecheck trong
+  `22547ms`; final dedicated export rerun PASS 5/5 trong `5.55s` (`8090ms` command wall).
+- 6/6 production build PASS: shared-types `9494ms`, datahub-client `10271ms`, agent-core `11131ms`,
+  API `13418ms`, web `21972ms` (109 Vite modules, build `5.46s`), evaluation `9893ms`. Built fixture
+  smoke PASS `5508ms` cho API/web artifacts, `/health` và `/ready`.
+- Đúng một final Windows browser gate PASS trong `21965ms` (`30582ms` command wall) trên ports
+  `62328`/`62329`, gồm real UI attachment download, suggested filename, UTF-8/LF/final newline,
+  renderer version, `81%`, hai impact, `not_executed`, resolved evidence link và temp download cleanup.
+  Cả hai listener đã được giải phóng.
+
+### Classified recoveries
+
+Managed Windows sandbox tiếp tục chặn esbuild junction; Vitest/build/smoke/browser dùng bundled
+process-local runtime qua approved execution, không phải repository defect. Initial affected lint phát
+hiện đúng năm lỗi static mới (một escape thừa, một unused expression, ba `Buffer` globals); minimum
+source/test fix rồi corrected affected lint PASS. Các lần test focused trong lúc phát triển phát hiện
+bốn stale/safety assertions và một manually reconstructed truncated fixture invalid; sửa đúng test
+expectation/redactor và tái sử dụng canonical context limits, không nới schema hoặc production safety.
+Final header-injection fixture đầu tiên vượt public name bound 300 ký tự nên schema đúng ra reject; giảm
+payload xuống trong bound rồi rerun affected export test, không đổi production contract.
+
+### Validation intentionally deferred
+
+Full repository suite, Level D/checkpoint/closure, checked-in sample, Mac, live DataHub/credential/model
+network, sharing/storage/history, PDF/email/Slack/Jira, auth, new provider, telemetry/database,
+deployment/release engineering, Phase 7 và Phase 8.
+
+### Exact next step
+
+Audit final delta, tạo một normal conventional commit, push normal, mở đúng một Draft PR base current
+`main`, theo dõi exact-head CI tới terminal SUCCESS và không merge. Sau đó dừng để human review; Level
+D/checkpoint cần task/approval riêng.

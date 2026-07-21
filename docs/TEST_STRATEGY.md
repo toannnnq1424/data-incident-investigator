@@ -117,6 +117,19 @@ code-owned coverage/limit metadata, evidence links, accessible headings, safe em
 untrusted-label rendering. The canonical Windows browser flow checks the distinct blast-radius section,
 resolved evidence anchors, clean console/accessibility/overflow, and owned process cleanup.
 
+Markdown-export tests parse only terminal public retrieval responses and pin `incident-markdown-v1`,
+fixed section order, byte-identical UTF-8, LF-only/one-final-newline behavior, stable ordinal references,
+and the bounded full-UUID filename policy. The canonical fixture must retain `81% high`, both exact
+blast-radius impacts, structured `not_executed` remediation, and observable activity. Focused variants
+cover insufficient/not-scored plus unknown, degraded without a report, failed before evidence, and
+partial/truncated/unavailable coverage without success or zero-impact overclaims. Adversarial values
+cover headings/lists/tables/fences, HTML/script/comments, link schemes, controls/bidi, URL/credential/
+internal-host/stack leakage, traversal, Windows device names, length, and header injection. API
+injection proves exact attachment headers and terminal/not-ready/not-found behavior; the one Windows
+browser regression performs a real fixture download, verifies suggested filename/content, and deletes
+the temporary download before normal owned-process cleanup. Generated Markdown samples remain
+uncommitted because repository convention keeps generated evaluation reports temporary.
+
 ## Required incident evaluation cases
 
 Removed column, stale pipeline, upstream type change, wrong dashboard dataset, delayed ingestion,

@@ -266,6 +266,21 @@ assumptions, and missing information. `InvestigationDraftReportSchema` is parsed
 storage, or response use. Text and collections have explicit bounds and rendering preserves these
 categories. A malformed structure yields no report.
 
+## Markdown incident export
+
+`IncidentMarkdownExport` is a derived immutable presentation artifact, not incident state. It contains
+the literal renderer version `incident-markdown-v1`, one bounded ASCII filename, and one UTF-8/LF
+Markdown string. Its input is the parsed terminal public retrieval union, so it can truthfully represent
+completed, degraded, or failed lifecycle data while reusing all existing report/stage/event
+cross-reference invariants. Processing and malformed public responses have no export model.
+
+The Markdown shape is not accepted on `InvestigationDraftReportSchema` or
+`InvestigationReportSchema`. Evidence and hypothesis anchors are ordinal maps over the exact parsed
+arrays. Blast-radius and remediation references resolve through those maps; no URL or unsupported
+reference is introduced. The filename uses a sanitized selected-entity/question label when available,
+falls back to `incident`, appends the complete incident UUID as its collision policy, and is capped at
+120 ASCII characters including `.md`. No generation timestamp or server path is part of the model.
+
 ## Investigation execution metadata
 
 Every terminal public investigation has strict `execution` metadata. It contains non-negative integer

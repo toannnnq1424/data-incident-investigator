@@ -7,6 +7,7 @@ import {
   BlastRadiusSection,
   FailedInvestigation,
   InvestigationActivity,
+  MarkdownReportDownload,
 } from '../../apps/web/src/App.js';
 import {
   BLAST_RADIUS_ANALYSIS_VERSION,
@@ -45,6 +46,21 @@ const unknownBlastRadius = BlastRadiusAnalysisSchema.parse({
 });
 
 describe('investigation activity presentation', () => {
+  it('renders one accessible native terminal Markdown download action', () => {
+    const markup = renderToStaticMarkup(
+      createElement(MarkdownReportDownload, {
+        incidentId: 'ba4ec0e8-da23-4f34-a3c7-9f25c44da800',
+      }),
+    );
+
+    expect(markup).toContain(
+      'href="/api/incidents/ba4ec0e8-da23-4f34-a3c7-9f25c44da800/report.md"',
+    );
+    expect(markup).toContain('download=""');
+    expect(markup).toContain('>Download Markdown report</a>');
+    expect(markup).toContain('no server-side report file is stored');
+  });
+
   it('renders an accessible ordered timeline with time, evidence links, and terminal duration', () => {
     const events = InvestigationEventTrailSchema.parse([
       {
