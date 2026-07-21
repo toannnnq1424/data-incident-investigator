@@ -1,6 +1,20 @@
 # Known issues
 
-Last updated: 2026-07-19.
+Last updated: 2026-07-21.
+
+- Phase 6 Slice 6.1 runtime limits/configuration passes local Windows Level C and the fixture-backed
+  browser regression on exact integrated Phase 5 main `900fa125`. Startup now validates one shared
+  config with defaults 8 agent steps, 12 tool calls, depth 3, 30 entities/query, 2 retries, 90 seconds,
+  and 65,536 output bytes; legacy entity/timeout names work only as exclusive fallbacks. Terminal
+  success exposes factual execution metadata, while every configured budget has a stable safe reason
+  and returns `failed` with no report. Final evidence is changed-file format/lint, five typechecks,
+  6 files/47 tests, five builds plus affected agent/API rebuild, artifact smoke, and final-input Windows
+  browser PASS `7131ms` on ports `60963`/`60964`. An earlier browser pass on `52448`/`52449` preceded
+  the review correction that made every native stage timer consume only the remaining total duration.
+  The first sandboxed test command reproduced the existing Vite/esbuild junction restriction; its
+  scoped retry was required. Publication, Draft PR, and exact-head CI are pending.
+  Body/rate limits, sanitization/prompt-injection safety, graceful degradation, readiness, structured
+  audit trail, and confidence transparency remain explicitly deferred to Slices 6.2-6.6.
 
 - Phase 5 integration checkpoint local Level D evidence passes on exact Slice 5.1 final HEAD
   `883bf9bf` and unique branch `codex/phase-5-integration-checkpoint`. The single `pnpm validate`

@@ -1901,6 +1901,11 @@ export function App() {
         return;
       }
 
+      if (parsedIncident.data.status === 'failed') {
+        setState({ kind: 'api-error', message: parsedIncident.data.error.message });
+        return;
+      }
+
       setState({ kind: 'processing', incident: parsedIncident.data });
       await delay(retrievalDelayMs);
     }

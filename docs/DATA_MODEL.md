@@ -203,6 +203,22 @@ mixture; completed scoring requires the report list to equal the lifecycle outpu
 A report contains incident ID, summary, related entities, evidence, ranked hypotheses,
 recommendations, assumptions, and missing information. Rendering must preserve these categories.
 
+## Investigation execution metadata
+
+Every terminal public investigation has strict `execution` metadata. It contains non-negative integer
+`toolCalls`, `agentSteps`, `durationMs`, and `lineageEntitiesVisited`, plus one allowlisted
+`terminationReason`. Counts represent only work that ran: provider calls are recorded immediately
+before invocation, agent steps at stage entry, lineage entities by unique schema-validated URN, and
+duration from a monotonic clock. Retry and model-call counts are not invented; the current workflow
+performs neither.
+
+A completed incident requires `terminationReason: completed` and retains the existing report and stage
+cross-reference invariants. A runtime budget block instead returns `status: failed`, the factual
+execution metadata, and `INVESTIGATION_LIMIT_REACHED` with the exact safe message mapped to its limit
+reason. It contains no report or stage payload and therefore cannot mislabel truncated execution as a
+completed investigation. The stable non-completed reasons cover agent steps, tool calls, lineage depth,
+entity count, retries, total duration, and serialized runner/model-output bytes.
+
 ## Planned incident lifecycle
 
 `queued -> investigating -> completed | failed | inconclusive`

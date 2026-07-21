@@ -13,7 +13,12 @@ environment variables. Logs must redact authorization headers, tokens, and full 
 
 - Validate all request and model output schemas.
 - Limit request body and text lengths.
-- Bound lineage depth/entity count, tool calls, retries, investigation duration, and output size.
+- Validate runtime limits before server startup. Defaults are eight agent steps, twelve tool calls,
+  lineage depth three, thirty entities per query, two retries, a ninety-second agent/request deadline,
+  and 65,536 serialized output bytes; operation-specific shared schemas may impose lower caps.
+- Count only executed stages/provider calls and unique validated lineage URNs. A configured limit
+  terminates with a stable safe reason and no completed report; current workflows perform zero retries
+  and zero model calls.
 - Apply basic public rate limiting before deployment.
 - Do not render provider HTML or model-generated HTML.
 

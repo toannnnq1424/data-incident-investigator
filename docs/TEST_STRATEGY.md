@@ -36,6 +36,12 @@ before merge, release, or submission.
   browser flow.
 - Build/startup: `tests/smoke` plus `scripts/smoke.mjs`.
 
+Runtime-limit tests parse canonical and legacy environment forms through the real startup boundary,
+exercise every exact and one-over budget using an injected monotonic clock, and use Fastify injection
+with a zero processing-delay seam for terminal API behavior. They do not sleep, widen product timeouts,
+or derive assertions from wall-clock duration. Two independently constructed servers prove counters are
+request/instance-local.
+
 ## Required incident evaluation cases
 
 Removed column, stale pipeline, upstream type change, wrong dashboard dataset, delayed ingestion,

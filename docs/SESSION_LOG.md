@@ -2277,3 +2277,89 @@ Không còn Windows product/test blocker; commit/push, final-head CI và Mac bro
 
 Format/check final evidence docs, audit test/docs-only scope và runtime cleanup, commit/push cùng branch,
 theo dõi exact PR #31 CI tới terminal. Dừng trước merge và giao Mac browser-only rerun exact new head.
+
+## 2026-07-21 — Phase 6 Slice 6.1 runtime limits and configuration
+
+### Objective
+
+Từ exact integrated Phase 5 `main` `900fa125b9687b5f7aa357b249f77dec091d339a`, hợp nhất các limit
+runtime đang rời rạc thành một config schema-validated có safe defaults/startup validation; enforce
+agent step, tool call, lineage depth, entity, retry, tổng duration và structured output size; đồng thời
+trả execution metadata factual và không bao giờ báo completed khi budget chặn investigation. Không làm
+body/rate limit hoặc các Slice 6.2-6.6.
+
+### Completed
+
+Đã fetch/xác minh `HEAD == origin/main == 900fa125…` và Phase 5 ancestry, chạy tracked Windows
+bootstrap thành công, đổi branch scope cũ thành `codex/phase-6-1-runtime-limits`, đọc đầy đủ contract/
+project state bắt buộc, rồi cập nhật `IMPLEMENTATION_PLAN.md` với đúng sáu Slice Phase 6 trước source.
+Shared-types hiện sở hữu runtime config/default/hard bounds, stable termination reasons/messages,
+execution metadata và completed/failed retrieval invariants. Agent-core có request-owned budget với
+monotonic clock seam, exact-boundary/one-over enforcement, actual call/stage/unique-lineage counting,
+remaining-duration propagation, retry seam không bật retry, và serialized runner/model-output bound.
+API validate env trước Fastify/provider construction, hỗ trợ hai legacy fallback độc quyền, áp cùng
+budget qua context/runner/stages, xuất completed execution hoặc typed failed/no-report, và web chuyển
+failed lifecycle thành safe API error. `.env.example` cùng agent/API/data/security/test docs đã được
+cập nhật; repository structure không đổi.
+
+### Files changed
+
+`.env.example`; `packages/shared-types/src/index.ts`; `packages/agent-core/src/index.ts`;
+`apps/api/src/index.ts`; `apps/web/src/App.tsx`; `tests/integration/runtime-limits.test.ts`;
+`tests/integration/contracts.test.ts`; `tests/integration/incidents-api.test.ts`;
+`tests/integration/web-report.test.ts`; `docs/AGENT_DESIGN.md`; `docs/API_CONTRACTS.md`;
+`docs/DATA_MODEL.md`; `docs/SECURITY.md`; `docs/TEST_STRATEGY.md`;
+`docs/IMPLEMENTATION_PLAN.md`; `docs/KNOWN_ISSUES.md`; và entry này. Không đổi manifest, lockfile,
+dependency, fixture, provider contract, scoring formula, evaluation package hay repository map.
+
+### Decisions
+
+Canonical env/default là `MAX_AGENT_STEPS=8`, `MAX_TOOL_CALLS=12`, `MAX_LINEAGE_DEPTH=3`,
+`MAX_ENTITIES_PER_QUERY=30`, `MAX_RETRIES=2`, `AGENT_TIMEOUT_SECONDS=90`, và
+`MAX_MODEL_OUTPUT_BYTES=65536`. `MAX_LINEAGE_ENTITIES` và `INVESTIGATION_TIMEOUT_MS` chỉ được dùng khi
+canonical tương ứng không tồn tại; set cả hai dạng sẽ fail startup bằng message chỉ có variable name.
+Operation-specific caps 5 candidates/20 search/25 lineage vẫn chặt hơn global default. Duration dùng
+monotonic clock và native timeout chỉ dùng phần budget còn lại. Current runtime có zero retry/zero model
+call; output seam áp lên serialized deterministic report để future model output không thể bypass, nhưng
+không tạo metric giả. Limit failure dùng HTTP 200 terminal `status: failed`,
+`INVESTIGATION_LIMIT_REACHED`, execution metadata và fixed message; không có report/stage payload.
+
+### Validation performed
+
+- Bootstrap PASS: Node `v24.14.0`, pnpm `11.9.0`, frozen 259 packages, supply-chain policy, Prettier
+  `3.9.5`, static format.
+- Final changed-file Prettier write/check PASS; affected ESLint PASS; 5/5 typecheck PASS cho
+  shared-types, datahub-client, agent-core, API và web.
+- Sandboxed Vitest đầu tiên dừng trước collection do known Vite/esbuild managed-worktree junction.
+  Scoped execution sau đó giúp phân loại contract/test migration; coherent final targeted suite PASS
+  6/6 files, 47/47 tests trong `3.99s`, gồm 11 runtime-limit tests không thêm sleep/wall-clock
+  dependency và focused context-gatherer regression.
+- 5/5 affected builds PASS; web transform 109 modules/build `3.07s`. Sau review correction cho total
+  remaining-duration propagation, agent-core/API rebuild PASS. Artifact smoke PASS API/web trên final
+  inputs.
+- Browser pass đầu `19080ms` trên ports `52448`/`52449`. Vì final review sửa native stage timer chỉ
+  dùng phần total duration còn lại, một classified final-input recovery PASS `7131ms` (`13.5s` command
+  wall) trên ports `60963`/`60964`, giữ full selector-to-report, references, accessibility, clean
+  console, responsive overflow, under-three-minute và cleanup assertions.
+- Final pre-commit audit PASS đúng 17 intended paths (16 tracked modifications + một focused test mới):
+  `git diff --check`, full tracked/untracked scope, high-risk secret, conflict/debug, generated artifact,
+  manifest/lockfile/dependency, exact branch/base/Phase 5 ancestry và đúng sáu Phase 6 slice đều sạch.
+  Repository structure không đổi nên `docs/REPOSITORY_MAP.md` giữ nguyên.
+
+### Validation intentionally deferred
+
+Level D/phase closure; live DataHub credential smoke; Mac; body/rate limit; sanitization và
+prompt-injection; graceful degradation; readiness; structured audit trail; confidence transparency;
+auth/persistence/deployment; provider/model refactor; mọi Slice 6.2-6.6.
+
+### Known issues
+
+Managed Windows `pnpm exec` root-binary resolution và sandbox Vite/esbuild junction vẫn cần verified
+project-local/bundled runtime hoặc scoped access như các phase trước; đây không phải product/CI blocker.
+Không còn local source/test/build/smoke/browser blocker cho Slice 6.1.
+
+### Exact next step
+
+Format/check final docs, chạy final diff/secret/conflict/generated/ancestry/worktree audit, commit
+conventional, push branch, mở Draft PR base `main`, theo dõi exact-head CI tới terminal. Không merge,
+không dùng Mac và không bắt đầu Slice 6.2.

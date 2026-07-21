@@ -1,7 +1,33 @@
 # API contracts
 
-All JSON endpoints return UTF-8 JSON. Request bodies are size-limited and validated. Provider-specific
-errors are mapped to stable application errors before reaching clients.
+All JSON endpoints return UTF-8 JSON. Request fields and structured outputs are schema-bounded and
+validated. Transport-level request-body size and rate limiting are deferred to Slice 6.2. Provider-
+specific errors are mapped to stable application errors before reaching clients.
+
+## Runtime limit configuration
+
+The API validates runtime limits before constructing the server. Canonical environment names, units,
+defaults, and supported ranges are:
+
+| Variable                 | Unit    | Default | Supported range |
+| ------------------------ | ------- | ------: | --------------: |
+| `MAX_AGENT_STEPS`        | count   |       8 |            1-64 |
+| `MAX_TOOL_CALLS`         | count   |      12 |            1-64 |
+| `MAX_LINEAGE_DEPTH`      | hops    |       3 |             1-5 |
+| `MAX_ENTITIES_PER_QUERY` | count   |      30 |           1-100 |
+| `MAX_RETRIES`            | retries |       2 |             0-5 |
+| `AGENT_TIMEOUT_SECONDS`  | seconds |      90 |           1-300 |
+| `MAX_MODEL_OUTPUT_BYTES` | bytes   |  65,536 | 1,024-1,048,576 |
+
+Operation-specific contracts remain stricter where declared below: entity search accepts at most 20
+results, one lineage graph at most 25 nodes, and context candidate selection at most five. The global
+configuration is still the authoritative ceiling and may lower those operation-specific requests.
+
+For compatibility, `MAX_LINEAGE_ENTITIES` is accepted as the legacy fallback for
+`MAX_ENTITIES_PER_QUERY`, and `INVESTIGATION_TIMEOUT_MS` is accepted as the legacy millisecond fallback
+for `AGENT_TIMEOUT_SECONDS`. A canonical name and its legacy fallback cannot both be set. Empty values
+use defaults; malformed, non-integer, conflicting, or out-of-range values stop startup with a safe
+variable-name-only error.
 
 ## Implemented
 
@@ -680,6 +706,11 @@ An unavailable result additionally uses only normalized `CONTEXT_UNAVAILABLE`, `
 or `PLANNING_INVALID`; it cannot expose provider URL/token/payload, credentials, exception, or stack.
 API storage and polling preserve the existing request identity/stale-response guard.
 
+Every terminal success adds schema-validated execution metadata. Counts reflect only work that actually
+ran; `durationMs` uses a monotonic clock, and lineage entities are unique validated URNs. The canonical
+fixture currently uses five agent stages and eight adapter calls, but callers must rely on the fields,
+not those example counts.
+
 Completed response `200` (legacy report fields remain compatible; scoring values abridged):
 
 ```json
@@ -744,6 +775,13 @@ Completed response `200` (legacy report fields remain compatible; scoring values
       }
     ]
   },
+  "execution": {
+    "toolCalls": 8,
+    "agentSteps": 5,
+    "durationMs": 263,
+    "lineageEntitiesVisited": 3,
+    "terminationReason": "completed"
+  },
   "report": {
     "incidentId": "576982bc-da91-4d69-a5ad-52206b3e17e2",
     "summary": "The strongest evidence-backed inference is: ...",
@@ -770,6 +808,39 @@ Completed response `200` (legacy report fields remain compatible; scoring values
 }
 ```
 
+The duration above is illustrative measured runtime, not a fixture constant. Current workflows perform
+zero retries and zero model calls. `MAX_RETRIES` bounds the explicit retry seam without enabling retry
+behavior. `MAX_MODEL_OUTPUT_BYTES` bounds serialized deterministic runner output today and any future
+model-backed structured output before it crosses this contract; no model telemetry is fabricated.
+
+When a runtime budget blocks work, retrieval returns HTTP `200` with a terminal non-completed lifecycle,
+validated factual counters, no report/stage payload, and one stable safe message:
+
+```json
+{
+  "incidentId": "576982bc-da91-4d69-a5ad-52206b3e17e2",
+  "status": "failed",
+  "execution": {
+    "toolCalls": 12,
+    "agentSteps": 4,
+    "durationMs": 418,
+    "lineageEntitiesVisited": 3,
+    "terminationReason": "tool_call_limit_reached"
+  },
+  "error": {
+    "code": "INVESTIGATION_LIMIT_REACHED",
+    "message": "The investigation stopped after reaching its tool-call limit."
+  }
+}
+```
+
+Non-completed reasons are `agent_step_limit_reached`, `tool_call_limit_reached`,
+`lineage_depth_limit_reached`, `entity_limit_reached`, `retry_limit_reached`,
+`duration_limit_reached`, and `model_output_limit_reached`. Exact boundaries may complete; only an
+attempt beyond a count/depth/size budget or duration beyond the deadline terminates. The error message
+is fixed by the reason and never includes configuration values, request text, provider payloads,
+credentials, exceptions, or stack traces.
+
 When scoring completes, the actual fixture report uses the exact scored hypotheses and cited evidence
 shown by `hypothesisScoringStage`; shared validation rejects any divergence or unresolved evidence ID.
 When scoring is insufficient or unavailable, the compatible legacy report remains separately
@@ -789,9 +860,11 @@ Unknown incident response `404`:
 }
 ```
 
-If background investigation fails, retrieval returns HTTP `500` with the sanitized
-`INTERNAL_ERROR` envelope. Logs include only the generated incident ID, fixture mode, bounded result
-counts, and an error class; incident text and credentials are not logged.
+If background investigation fails for a reason other than an enforced runtime limit, retrieval returns
+HTTP `500` with the sanitized `INTERNAL_ERROR` envelope. Limit terminations use the typed HTTP `200`
+`failed` lifecycle above. Logs include only the generated incident ID, fixture mode, bounded result/
+execution counts, normalized termination reason or error class; incident text and credentials are not
+logged.
 
 `IncidentRetrievalResponseSchema`, `InvestigationReportSchema`, and `ApiErrorSchema` in
 `packages/shared-types` are the source of truth. In-memory fixture state is intentionally not durable

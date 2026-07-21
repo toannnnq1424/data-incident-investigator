@@ -74,6 +74,13 @@ describe('completed report presentation', () => {
           },
         ],
       },
+      execution: {
+        toolCalls: 8,
+        agentSteps: 5,
+        durationMs: 250,
+        lineageEntitiesVisited: 3,
+        terminationReason: 'completed',
+      },
       report: {
         incidentId: 'ba4ec0e8-da23-4f34-a3c7-9f25c44da800',
         summary: 'The removed source column is the strongest evidence-backed inference.',

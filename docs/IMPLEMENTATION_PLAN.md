@@ -2460,8 +2460,149 @@ rerun.
 
 ## Phase 6 — Minimum production readiness
 
-Input/request limits, sanitized logs, timeouts, limited retries, secret checks, rate limiting, and public
-deployment hardening.
+### Slice 6.1 — Runtime limits and configuration
+
+Status: local Level C and the fixture-backed Windows demo pass on
+`codex/phase-6-1-runtime-limits` from exact integrated Phase 5 `main`
+`900fa125b9687b5f7aa357b249f77dec091d339a`. Publication and final-head CI are pending.
+
+Objective: replace the currently disconnected hard-coded context/fixture limits and unwired environment
+examples with one schema-validated runtime configuration that safely bounds the complete public
+investigation. Preserve the fixture, DataHub adapter, reasoning, evaluation, and web contracts while
+adding factual execution metadata and a typed non-completed terminal result whenever a configured
+budget blocks the investigation.
+
+Minimum files:
+
+- `packages/shared-types/src/index.ts` and focused contract tests for runtime-limit defaults/hard bounds,
+  stable termination reasons, execution metadata, and completed-versus-limit-terminated incident
+  retrieval invariants.
+- `packages/agent-core/src/index.ts` and focused deterministic budget/runner tests for actual agent-step,
+  tool-call, lineage-entity, retry, duration, and serialized-output accounting with an injected clock.
+- `apps/api/src/index.ts` and focused API integration tests for startup environment parsing, legacy
+  name/unit compatibility, full-request budget ownership, safe terminal errors, and server-instance
+  isolation.
+- `.env.example`, `docs/AGENT_DESIGN.md`, `docs/API_CONTRACTS.md`, `docs/DATA_MODEL.md`,
+  `docs/SECURITY.md`, `docs/TEST_STRATEGY.md`, this plan, `docs/KNOWN_ISSUES.md`, and
+  `docs/SESSION_LOG.md` for the exact public/configuration contract, limitations, validation, and
+  handoff. `docs/REPOSITORY_MAP.md` changes only if structure moves.
+
+Acceptance criteria:
+
+- Startup parses one strict shared runtime configuration with safe defaults
+  `MAX_AGENT_STEPS=8`, `MAX_TOOL_CALLS=12`, `MAX_LINEAGE_DEPTH=3`,
+  `MAX_ENTITIES_PER_QUERY=30`, `AGENT_TIMEOUT_SECONDS=90`, `MAX_RETRIES=2`, and a clearly documented
+  bounded `MAX_MODEL_OUTPUT_BYTES` default. Non-integer, unsafe, conflicting new/legacy, overflow, or
+  unsupported values fail before the server starts without echoing the supplied value.
+- Existing `MAX_LINEAGE_ENTITIES` and `INVESTIGATION_TIMEOUT_MS` names/units are accepted only as
+  documented legacy fallbacks when the canonical replacement is absent. Canonical and legacy values
+  are never silently combined; `.env.example` contains no ambiguous active duplicate.
+- The API passes effective limits into the existing provider-neutral context/fixture paths. One
+  investigation-owned budget records actual tool calls and agent stages, unique lineage entity URNs,
+  retries, monotonic elapsed duration, and serialized runner/model-boundary bytes. Fixture/DataHub
+  providers, detector, scorer, planner, and evaluation contracts keep their current responsibilities.
+- Every terminal success exposes schema-validated execution metadata with exactly `toolCalls`,
+  `agentSteps`, `durationMs`, `lineageEntitiesVisited`, and `terminationReason: completed`. Counts come
+  only from executed checkpoints/provider calls; duration comes from the injected monotonic clock.
+- Stable user-safe termination reasons exist for agent-step, tool-call, lineage-depth, entity-count,
+  retry, duration, and model-output-size limits. A blocked investigation returns a typed `failed`
+  lifecycle with its validated execution metadata and safe message; it never stores or reports a
+  completed result, raw exception, provider payload, credential, request text, or fabricated metric.
+- The current implementation continues to perform zero retries and zero model calls. The configured
+  retry/output budgets are enforced at their explicit runtime seams without adding retry behavior,
+  a model/provider abstraction, or synthetic telemetry.
+- Focused tests cover every default, lower/upper boundary, invalid startup value, canonical-versus-
+  legacy precedence rule, every termination reason, exact-boundary success, one-over-limit failure,
+  deterministic duration via a fake clock, completed execution metadata, non-completed blocked output,
+  and isolated counters for two server instances. No enforcement test sleeps or depends on wall-clock
+  timing.
+
+Deferred: request-body limits, rate limiting, log/payload/header sanitization hardening, prompt-injection
+defense, broader input/output safety, graceful degradation, readiness semantics, structured audit trails,
+confidence transparency, authentication, persistence, distributed coordination, deployment-platform
+work, provider/model refactors, automatic execution, and Phase 6 Level D closure.
+
+Exact Level C validation, run once on coherent final inputs and repeat only a classified affected
+failure:
+
+- changed-file Prettier write/check for shared-types, agent-core, API, focused tests, environment example,
+  and affected documentation;
+- affected ESLint for shared-types, agent-core, API, and focused integration/smoke tests;
+- type-check `@dii/shared-types`, `@dii/datahub-client`, `@dii/agent-core`, `@dii/api`, and `@dii/web`;
+- focused Vitest for shared contracts, runtime configuration/budget enforcement, investigation runner,
+  incidents API, and directly affected report/web compatibility;
+- build the same five affected workspaces, then run the primary API/web artifact smoke and one
+  fixture-backed Windows demo regression if final public retrieval inputs changed;
+- `git diff --check`, tracked/untracked secret/conflict/debug/raw-provider/model/generated-artifact
+  scans, full scoped diff/name/stat review, manifest/lockfile/dependency review, exact base ancestry,
+  and final worktree review before one conventional commit.
+
+Local validation result on the Windows managed worktree, 2026-07-21:
+
+- Before source edits, fetch verified `HEAD == origin/main == 900fa125b9687b5f7aa357b249f77dec091d339a`
+  and the required Phase 5 ancestry. The tracked bootstrap passed with Node `v24.14.0`, pnpm `11.9.0`,
+  frozen 259-package installation, supply-chain policy, Prettier `3.9.5`, and the static format check.
+  The branch was renamed from the superseded ingress scope to `codex/phase-6-1-runtime-limits`, and
+  this exact six-slice Phase 6 plan was formatted before any source change.
+- Final-input changed-file Prettier write/check and affected ESLint passed. All five affected
+  typechecks passed for shared-types, datahub-client, agent-core, API, and web.
+- The first sandboxed Vitest attempt stopped before collection at the known managed-worktree
+  Vite/esbuild junction restriction. Its scoped run then exposed only expected contract/test migration
+  gaps: two completed fixtures lacked new execution metadata, the old timeout test still expected a
+  completed report, and fake timers blocked Fastify injection. The fixes added factual metadata,
+  required non-completed timeout behavior, and a zero-delay/event-loop test seam without changing a
+  product timeout. Final review then made native context/runner timers consume only the remaining total
+  duration budget. The coherent final targeted suite passed 6/6 files and 47/47 tests in `3.99s`, with
+  eleven focused runtime-limit cases and no new wall-clock sleep.
+- All five affected production builds passed; web transformed 109 modules and built in `3.07s`.
+  Artifact smoke passed both `apps/api/dist/index.js` and `apps/web/dist/index.html`.
+- The first fixture-backed Windows browser regression passed in `19080ms` on ports `52448`/`52449`.
+  Because final review then strengthened remaining-duration propagation on that execution path, one
+  classified final-input recovery ran on ports `60963`/`60964` and passed in `7131ms` (`13.5s` command
+  wall). Existing assertions retained the full scenario-selector-to-report flow, reference resolution,
+  accessibility, clean console, responsive overflow, three-minute duration, dynamic-port release, and
+  owned-process cleanup.
+- No Mac task or validation was used. No request-body/rate-limit/sanitization/prompt-injection,
+  graceful-degradation, readiness, audit-trail, confidence-transparency, auth, persistence,
+  provider/model refactor, dependency, manifest, or lockfile change is part of Slice 6.1.
+- Final pre-commit audit passed for exactly 17 intended paths (16 tracked modifications plus one new
+  focused test). `git diff --check`, full tracked/untracked scope, high-risk secret, conflict/debug,
+  generated-artifact, manifest/lockfile/dependency, exact branch/base/Phase 5 ancestry, and six-slice
+  plan reviews were clean. Repository structure is unchanged, so `docs/REPOSITORY_MAP.md` remains
+  untouched.
+
+Exact next action: complete final documentation formatting and scoped diff/secret/generated-artifact/
+ancestry/worktree review, create one conventional commit, push normally, open a Draft PR based on
+`main`, and follow the exact final-head CI run to terminal. Do not merge or begin Slice 6.2.
+
+### Slice 6.2 — Input validation and output safety
+
+Plan: harden public request-body/input/output bounds, payload/header/error sanitization, and
+prompt-injection-resistant handling through the existing strict contracts. Body-size rejection and
+public rate limiting begin here, not in Slice 6.1. Defer provider/model redesign and authentication.
+
+### Slice 6.3 — Graceful degradation
+
+Plan: make bounded provider, model, timeout, and partial-evidence failures degrade to explicit safe
+inconclusive/fallback states while preserving fixture availability and factual-reference invariants.
+Do not add automatic remediation or distributed recovery.
+
+### Slice 6.4 — Health and readiness
+
+Plan: separate liveness from dependency/configuration readiness, document deployment probe semantics,
+and prove health remains cheap and available while readiness reports only normalized safe state.
+
+### Slice 6.5 — Structured audit trail
+
+Plan: add a bounded, sanitized, structured investigation event trail with stable event identities and
+stage/termination references. Never record raw request bodies, authorization material, provider/model
+payloads, credentials, or an unbounded in-memory history.
+
+### Slice 6.6 — Confidence transparency
+
+Plan: expose and document the existing code-owned confidence factors, evidence quality, missing inputs,
+and truncation effects consistently across API and UI without adding model-authored scores, causal
+certainty, or a second ranking formula.
 
 ## Phase 7 — GitHub, CI, and release
 
