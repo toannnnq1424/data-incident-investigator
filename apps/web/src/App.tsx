@@ -18,6 +18,7 @@ import {
   IncidentRetrievalResponseSchema,
   type IncidentAcceptedResponse,
   type IncidentRetrievalResponse,
+  type InvestigationEventTrail,
   MetadataEntitySearchRequestSchema,
   MetadataEntitySearchResponseSchema,
   type MetadataEntitySearchResponse,
@@ -37,6 +38,7 @@ import {
 type CompletedIncident = Extract<IncidentRetrievalResponse, { status: 'completed' }>;
 type DegradedIncident = Extract<IncidentRetrievalResponse, { status: 'degraded' }>;
 type ProcessingIncident = Extract<IncidentRetrievalResponse, { status: 'processing' }>;
+type FailedIncident = Extract<IncidentRetrievalResponse, { status: 'failed' }>;
 type ReportInference = CompletedIncident['report']['hypotheses'][number] & {
   confidenceLabel: string;
 };
@@ -47,6 +49,7 @@ type SubmissionState =
   | { kind: 'processing'; incident: ProcessingIncident }
   | { kind: 'completed'; incident: CompletedIncident }
   | { kind: 'degraded'; incident: DegradedIncident }
+  | { kind: 'failed'; incident: FailedIncident }
   | { kind: 'validation-error'; message: string }
   | { kind: 'api-error'; message: string };
 
@@ -1454,11 +1457,65 @@ function TextList({ items, emptyMessage }: { items: string[]; emptyMessage: stri
   );
 }
 
+export function InvestigationActivity({
+  events,
+  linkEvidence = false,
+}: {
+  events: InvestigationEventTrail;
+  linkEvidence?: boolean;
+}) {
+  return (
+    <section className="investigation-activity" aria-labelledby="investigation-activity-heading">
+      <p className="report-label">Observable operations only</p>
+      <h3 id="investigation-activity-heading">Investigation activity</h3>
+      <ol className="investigation-event-list">
+        {events.map((event) => (
+          <li
+            key={event.id}
+            className={
+              event.actionType === 'warning_raised'
+                ? 'investigation-event-warning'
+                : event.actionType === 'investigation_terminated'
+                  ? 'investigation-event-terminal'
+                  : undefined
+            }
+          >
+            <div className="investigation-event-meta">
+              <code>{event.actionType}</code>
+              <time dateTime={event.timestamp}>{formatObservedAt(event.timestamp)}</time>
+            </div>
+            <p>{event.summary}</p>
+            {event.evidenceIds && (
+              <ul className="evidence-reference-list" aria-label="Related evidence IDs">
+                {event.evidenceIds.map((evidenceId) => (
+                  <li key={evidenceId}>
+                    {linkEvidence ? (
+                      <a href={`#${evidenceDomId(evidenceId)}`}>
+                        <code>{evidenceId}</code>
+                      </a>
+                    ) : (
+                      <code>{evidenceId}</code>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+            {event.actionType === 'investigation_terminated' && (
+              <p className="investigation-event-duration">Duration: {event.durationMs} ms</p>
+            )}
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}
+
 function ProcessingStatus({ incident }: { incident: ProcessingIncident }) {
   return (
     <div className="status-progress processing-status" role="status">
       <p>Investigation processing</p>
       <span>{incident.incidentId}</span>
+      <InvestigationActivity events={incident.eventTrail} />
       <IncidentContextStage stage={incident.contextStage} />
       <SuspiciousChangeStage stage={incident.suspiciousChangeStage} />
       <HypothesisScoringStage stage={incident.hypothesisScoringStage} />
@@ -1507,6 +1564,7 @@ export function DegradedInvestigation({ incident }: { incident: DegradedIncident
           </div>
         )}
       </dl>
+      <InvestigationActivity events={incident.eventTrail} linkEvidence={Boolean(incident.report)} />
       <IncidentContextStage stage={incident.contextStage} />
       <SuspiciousChangeStage stage={incident.suspiciousChangeStage} />
       <HypothesisScoringStage stage={incident.hypothesisScoringStage} />
@@ -1545,6 +1603,29 @@ export function DegradedInvestigation({ incident }: { incident: DegradedIncident
   );
 }
 
+export function FailedInvestigation({ incident }: { incident: FailedIncident }) {
+  return (
+    <div className="status-error failed-investigation" role="alert">
+      <p>Investigation stopped</p>
+      <h3>The investigation did not complete</h3>
+      <p>{incident.error.message}</p>
+      <dl>
+        <div>
+          <dt>Incident ID</dt>
+          <dd>{incident.incidentId}</dd>
+        </div>
+        <div>
+          <dt>Termination</dt>
+          <dd>
+            <code>{incident.execution.terminationReason}</code>
+          </dd>
+        </div>
+      </dl>
+      <InvestigationActivity events={incident.eventTrail} />
+    </div>
+  );
+}
+
 export function CompletedReport({ incident }: { incident: CompletedIncident }) {
   const content = getCompletedReportContent(incident);
 
@@ -1561,6 +1642,7 @@ export function CompletedReport({ incident }: { incident: CompletedIncident }) {
           <dd>{content.status}</dd>
         </div>
       </dl>
+      <InvestigationActivity events={incident.eventTrail} linkEvidence />
       <IncidentContextStage stage={incident.contextStage} />
       <SuspiciousChangeStage stage={incident.suspiciousChangeStage} />
       <HypothesisScoringStage stage={incident.hypothesisScoringStage} />
@@ -1986,7 +2068,7 @@ export function App() {
       }
 
       if (parsedIncident.data.status === 'failed') {
-        setState({ kind: 'api-error', message: parsedIncident.data.error.message });
+        setState({ kind: 'failed', incident: parsedIncident.data });
         return;
       }
 
@@ -2071,16 +2153,6 @@ export function App() {
         return;
       }
 
-      setState({
-        kind: 'processing',
-        incident: {
-          ...parsedResponse.data,
-          contextStage: { status: 'gathering' },
-          suspiciousChangeStage: { status: 'detecting' },
-          hypothesisScoringStage: { status: 'scoring' },
-          remediationStage: { status: 'planning' },
-        },
-      });
       await retrieveIncident(parsedResponse.data, requestId, controller);
     } catch {
       if (!controller.signal.aborted && incidentRequestGuard.current.isCurrent(requestId)) {
@@ -2357,6 +2429,7 @@ export function App() {
           {state.kind === 'processing' && <ProcessingStatus incident={state.incident} />}
           {state.kind === 'completed' && <CompletedReport incident={state.incident} />}
           {state.kind === 'degraded' && <DegradedInvestigation incident={state.incident} />}
+          {state.kind === 'failed' && <FailedInvestigation incident={state.incident} />}
           {(state.kind === 'validation-error' || state.kind === 'api-error') && (
             <p className="status-error" role="alert">
               <strong>

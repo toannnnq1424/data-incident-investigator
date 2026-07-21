@@ -7,19 +7,28 @@ Last updated: 2026-07-21.
   `d61c3637d168cb33003b845b62a876e2d19363c3`); main CI run `29844355484`, job `88680987052`, passed.
   The late provider-timeout QA correction, Slice 6.1 factual timeout semantics, and Slice 6.2
   input/output safety remain intact.
-- Slice 6.4 health/readiness is implemented locally on exact merged Slice 6.3. `/health` is now strict
-  process-only liveness; `/ready` uses stable mode-specific checks/reasons, HTTP `200`/`503`, fixture
-  asset validation, the existing bounded DataHub health seam, required local investigation-runtime
-  validation, and sanitized optional model-health composition. Focused validation passes 7 files/71
-  tests, five typechecks/builds, real built-artifact HTTP smoke, and the exact 16-path pre-commit audit.
-  Commit, Draft PR, exact-head CI, and review remain pending.
+- Phase 6 Slice 6.4 is merged through PR #36 at exact main merge
+  `725f8966efba53e392240844df405bd3036cd60e` (tree
+  `194532246703c28df80cca6f88da24c0d94ab912`; parents `aa853d7bâ€¦` and `f1e4a000â€¦`). Exact main CI
+  run `29849465050`, job `88698347282`, passed. Strict `/health`, mode-aware `/ready`, safe invalid-
+  fixture behavior, bounded DataHub readiness, local investigation-runtime validation, and accurate
+  model `not_required` semantics remain intact.
+- Slice 6.5 structured audit trail is implemented locally on that exact merged Slice 6.4. Public
+  incident retrieval now carries one bounded allowlisted `Investigation activity` trail with stable
+  sequence-derived IDs, public UTC timestamps, schema-valid operation boundaries, exact report-
+  evidence links, stable warnings, and exactly one final execution-matching terminal event. It adds no
+  hidden reasoning, arbitrary external summary, raw question/prompt/provider/model payload, credential,
+  backend logging, telemetry, persistence, tracing vendor, confidence change, or Phase 7 work. Final
+  local evidence passes formatting/lint, five typechecks/builds, 9 files/89 tests plus the final changed
+  lineage-truncation 14/14 recovery, built-artifact HTTP smoke, and the `4797ms` browser flow on ports
+  `62149`/`62150`. The exact 20-path audit also passes; commit, Draft PR, and exact-head CI remain
+  pending.
 - Fixture continuation in a degraded DataHub response is deliberately advisory and `not_executed`;
   the operator must explicitly start the app in fixture mode. The current investigation makes zero model
   calls, so readiness accurately marks model `not_required`; it does not read `OPENAI_API_KEY` or claim
   model availability. There is no runtime mode switch, model provider implementation, durable incident
-  storage, automatic retry for provider timeouts, or production remediation. Structured audit trail
-  (6.5), confidence work (6.6), authentication, deployment, distributed limiting, and Phase 6 Level D
-  remain deferred.
+  storage, automatic retry for provider timeouts, or production remediation. Confidence work (6.6),
+  authentication, deployment, distributed limiting, and Phase 6 Level D remain deferred.
 
 - Phase 5 integration checkpoint local Level D evidence passes on exact Slice 5.1 final HEAD
   `883bf9bf` and unique branch `codex/phase-5-integration-checkpoint`. The single `pnpm validate`

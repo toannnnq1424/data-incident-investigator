@@ -105,6 +105,13 @@ describe('incident API', () => {
       suspiciousChangeStage: { status: 'detecting' },
       hypothesisScoringStage: { status: 'scoring' },
       remediationStage: { status: 'planning' },
+      eventTrail: [
+        {
+          id: 'event-0001',
+          sequence: 1,
+          actionType: 'question_normalized',
+        },
+      ],
     });
   });
 

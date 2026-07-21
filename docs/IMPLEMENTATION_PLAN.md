@@ -2998,9 +2998,156 @@ Local affected Level C result on the Windows managed worktree, 2026-07-21:
 
 ### Slice 6.5 — Structured audit trail
 
-Plan: add a bounded, sanitized, structured investigation event trail with stable event identities and
-stage/termination references. Never record raw request bodies, authorization material, provider/model
-payloads, credentials, or an unbounded in-memory history.
+Status: local Level C, artifact smoke, and final-input Windows browser recovery passed on
+`codex/phase-6-5-structured-audit-trail` from exact merged Slice 6.4 `main`
+`725f8966efba53e392240844df405bd3036cd60e` (tree
+`194532246703c28df80cca6f88da24c0d94ab912`; parents
+`aa853d7b1dd2fdbeca45d08766643ba18ca2aa53` and
+`f1e4a0008f63c0d8b2b95b44781cd61d37d93515`). Main CI run `29849465050`, job
+`88698347282`, passed. This plan was recorded before any source edit.
+
+Objective: add one bounded, deterministic, user-safe investigation activity trail that records only
+observable workflow operations and the flow from validated metadata to evidence, hypotheses,
+recommendations, report, warnings, and terminal state. Reuse the existing evidence list as the
+evidence timeline and render this new trail as a distinct activity history, without exposing hidden
+chain-of-thought, private model reasoning, prompts/policies, credentials, raw provider/model payloads,
+secret-like tool arguments, stacks, or untrusted intake/metadata text.
+
+Minimum files:
+
+- `packages/shared-types/src/index.ts` and focused contract tests for a strict bounded event schema,
+  stable sequence-derived IDs, canonical timestamps, allowlisted action/summary/warning/termination
+  combinations, optional bounded non-negative duration, unique resolved evidence references, exact
+  ordering, one terminal event, and no event after termination.
+- `packages/agent-core/src/index.ts` and direct gatherer regressions for callbacks emitted only after
+  real metadata health/search/lineage/recent-change results pass their existing schemas. Runner/API
+  regressions separately pin report and evidence flow. The callback carries only an allowlisted
+  operation identity and never provider arguments or payloads.
+- `apps/api/src/index.ts` and one focused audit-trail integration file for incident-owned event
+  assembly, injected deterministic public timestamp tests, processing snapshots, exact evidence links,
+  success/degraded/failed terminalization, warning preservation, stale-state safety, and no duplicate
+  terminal event.
+- `apps/web/src/App.tsx`, `apps/web/src/styles.css`, and focused presentation/browser regressions for a
+  compact accessible ordered activity history on processing, degraded, failed, and completed results.
+  Existing factual evidence rendering remains the only evidence timeline; no competing evidence list
+  or broad report redesign is added.
+- `tests/integration/contracts.test.ts`, `tests/integration/incident-context-gatherer.test.ts`,
+  `tests/integration/investigation-runner.test.ts`, `tests/integration/graceful-degradation.test.ts`,
+  `tests/integration/incidents-api.test.ts`, `tests/integration/input-output-safety.test.ts`,
+  `tests/integration/web-report.test.ts`, and `tests/e2e/report-display.spec.mjs` only for directly
+  affected shared/API/UI regressions and the one final credential-free Windows browser flow.
+- `docs/AGENT_DESIGN.md`, `docs/API_CONTRACTS.md`, `docs/SECURITY.md`, `docs/TEST_STRATEGY.md`, this
+  plan, `docs/KNOWN_ISSUES.md`, and `docs/SESSION_LOG.md` for exact naming, ordering, sanitization,
+  failure semantics, validation evidence, and handoff. `.env.example`, manifests, lockfile,
+  dependencies, fixtures, and repository map remain unchanged unless implementation proves a direct
+  requirement; no new configuration is planned.
+
+Acceptance criteria:
+
+- `InvestigationEventTrailSchema` owns a strict maximum-sized ordered list. Every event contains a
+  stable `event-NNNN` ID derived from a contiguous one-based `sequence`, a canonical public timestamp,
+  one allowlisted action type, and one fixed user-safe summary. Optional `evidenceIds` are unique and
+  bounded. Optional `durationMs` is an integer from zero through the shared maximum duration and is
+  present only on terminal events where the factual execution duration is useful.
+- Allowed actions describe only observable operations: normalized intake acceptance; completed
+  metadata readiness, entity search, lineage, and recent-change retrieval; suspicious-change
+  classification; validated evidence collection; hypothesis, recommendation, and report production;
+  stable warnings; and termination. Callbacks fire only after the corresponding real provider result
+  passes its current shared schema. Failed/degraded operations never receive a success event.
+- Event summaries are code-owned allowlist text. Warning and termination summaries must exactly match
+  their stable code/reason. No event field accepts a raw question, entity description, tag/comment,
+  URN/tool argument, provider/model body, prompt/instruction text, token count, credential, exception,
+  stack, hostname, or arbitrary caller-authored summary.
+- Every event evidence reference resolves to evidence in the same terminal report. Evidence collection
+  links the exact validated report evidence IDs; hypothesis production links only exact cited evidence
+  IDs. Processing and report-less failed/degraded results contain no evidence reference. No event or
+  evidence is inferred from counters or invented after a failure.
+- Processing responses expose the safe prefix available at poll time. Successful, DataHub-degraded,
+  model/provider-timeout, tool-failure, runtime-limit, lineage-truncated, invalid-structured-output, and
+  failed paths preserve their safe prefix, append stable warning events when applicable, and finish
+  with exactly one matching terminal event. No active event follows termination, and repeated storage/
+  polling cannot duplicate the terminal event.
+- The completed fixture trail has deterministic sequence/action/summary/evidence content. Injected
+  clocks make timestamps deterministic in tests; production timestamps are canonical UTC and sequence
+  remains authoritative. The terminal event uses the exact existing execution duration and reason.
+- The web labels the new list `Investigation activity` and renders it as an ordered semantic timeline
+  with `<time>`, action summary, optional evidence links to the existing evidence rows, warnings, and
+  terminal state. Processing, degraded, failed, and completed presentations remain accessible and
+  responsive; existing `Evidence timeline`/factual evidence sections are not duplicated or renamed.
+- Focused deterministic tests reject unknown actions, unknown/oversize/mismatched summaries, invalid
+  IDs/order/timestamps, unresolved/duplicate evidence references, negative/oversize/misplaced duration,
+  duplicate/missing/non-final terminal events, and any event after termination. The failure matrix
+  proves exact warning/termination correctness and scans for chain-of-thought/private reasoning,
+  prompt-injection, token/credential, provider payload, hostname, exception, and stack sentinels.
+
+Deferred: confidence transparency or presentation changes (Slice 6.6), confidence formula/ranking
+changes, hidden-reasoning capture, backend telemetry/logging changes, tracing/analytics vendors,
+database or durable persistence, authentication/authorization, distributed coordination, new provider
+or model clients, automatic remediation, deployment-platform work, live credential smoke, Mac
+validation, Phase 6 Level D closure, Phase 7, and all broad architecture/UI redesign.
+
+Exact Level C validation commands, run once on coherent final inputs and repeat only a classified
+affected failure:
+
+- `pnpm exec prettier --write packages/shared-types/src/index.ts packages/agent-core/src/index.ts apps/api/src/index.ts apps/web/src/App.tsx apps/web/src/styles.css tests/integration/contracts.test.ts tests/integration/structured-audit-trail.test.ts tests/integration/incident-context-gatherer.test.ts tests/integration/investigation-runner.test.ts tests/integration/graceful-degradation.test.ts tests/integration/incidents-api.test.ts tests/integration/input-output-safety.test.ts tests/integration/web-report.test.ts tests/e2e/report-display.spec.mjs docs/AGENT_DESIGN.md docs/API_CONTRACTS.md docs/SECURITY.md docs/TEST_STRATEGY.md docs/IMPLEMENTATION_PLAN.md docs/KNOWN_ISSUES.md docs/SESSION_LOG.md`, then the same path list with `pnpm exec prettier --check`.
+- `pnpm exec eslint packages/shared-types/src/index.ts packages/agent-core/src/index.ts apps/api/src/index.ts apps/web/src/App.tsx tests/integration/contracts.test.ts tests/integration/structured-audit-trail.test.ts tests/integration/incident-context-gatherer.test.ts tests/integration/investigation-runner.test.ts tests/integration/graceful-degradation.test.ts tests/integration/incidents-api.test.ts tests/integration/input-output-safety.test.ts tests/integration/web-report.test.ts tests/e2e/report-display.spec.mjs`.
+- `pnpm --filter @dii/shared-types typecheck`, `pnpm --filter @dii/datahub-client typecheck`,
+  `pnpm --filter @dii/agent-core typecheck`, `pnpm --filter @dii/api typecheck`, and
+  `pnpm --filter @dii/web typecheck`.
+- `pnpm exec vitest run tests/integration/structured-audit-trail.test.ts tests/integration/contracts.test.ts tests/integration/incident-context-gatherer.test.ts tests/integration/investigation-runner.test.ts tests/integration/graceful-degradation.test.ts tests/integration/runtime-limits.test.ts tests/integration/incidents-api.test.ts tests/integration/input-output-safety.test.ts tests/integration/web-report.test.ts`.
+- `pnpm --filter @dii/shared-types build`, `pnpm --filter @dii/datahub-client build`,
+  `pnpm --filter @dii/agent-core build`, `pnpm --filter @dii/api build`, and
+  `pnpm --filter @dii/web build`; then `pnpm smoke` and exactly one
+  `pnpm test:e2e:report` credential-free Windows fixture regression because the public retrieval/UI
+  contract changes.
+- `git diff --check`; exact tracked/untracked diff/name/stat and full patch review; secret, credential,
+  prompt/private-reasoning, raw provider/model payload, hostname, stack, conflict/debug, and generated-
+  artifact scans; manifest/lockfile/dependency/config drift review; exact base/parent ancestry; browser
+  accessibility/console/port/process cleanup; and final worktree review before one conventional
+  commit, normal push, one Draft PR against current `main`, and exact-head CI to SUCCESS.
+
+Local affected Level C result on the Windows managed worktree, 2026-07-21:
+
+- Bootstrap passed first with Node `v24.14.0`, pnpm `11.9.0`, frozen lockfile/supply-chain policy, and
+  no dependency or lockfile change. Fetch proved exact `origin/main` commit/tree/parents before branch
+  creation. The objective, minimum files, acceptance, deferred work, and exact commands above were
+  recorded and formatted before any source edit.
+- Final-input changed-file Prettier write/check and affected ESLint passed. The planned `pnpm exec`
+  formatter first reproduced the documented managed-Windows workspace-binary lookup failure; the
+  bootstrap-verified Node plus project-local Prettier performed the identical scoped operation. All
+  five affected typechecks passed: shared-types `3.74s`, datahub-client `3.86s`, agent-core `4.01s`,
+  API `4.61s`, and web `4.88s`.
+- The first sandboxed Vitest launch stopped before collection at the known Vite/esbuild dependency
+  junction. Scoped execution passed the new audit file 8/8, then the first affected matrix passed
+  74/78 and exposed exactly four expected test-fixture migration gaps. After adding truthful event
+  fixtures and real-boundary assertions, the coherent nine-file command passed 9/9 files and 89/89
+  tests in `3.40s`. Final review added one direct lineage-truncated report-reference assertion; only
+  its changed graceful-degradation file was rerun and passed 14/14 in `1.43s`.
+- The focused matrix rejects unknown/unsafe/oversize summaries and actions, unstable sequence/ID/time,
+  duplicate/unresolved evidence, invalid duration, duplicate/missing/non-final termination, and events
+  after termination. It proves canonical order/content, exact real metadata callbacks, processing safe
+  prefix, DataHub unavailable, metadata tool failure, model/provider timeout, degraded agent limit,
+  failed pre-evidence tool limit, invalid structured output, lineage-truncated report references, no
+  false success event, one exact terminal event, and no prompt/private-reasoning/secret/raw-payload/
+  stack sentinel.
+- Shared-types, datahub-client, agent-core, and API builds passed directly. Web typecheck passed before
+  Vite met the same sandbox-only esbuild junction; its scoped build transformed 109 modules and built
+  in `2.30s`. `pnpm smoke` met the same junction on its sandboxed first attempt, then scoped recovery
+  passed built API/web artifacts plus real fixture `/health` and `/ready` with clean server close.
+- The first browser gate reached terminal UI but the pre-existing broad text selector matched both the
+  status and new allowlisted terminal summary. The exact test-only selector was narrowed to the status
+  text; its format/lint passed. The one final-input recovery passed in `4797ms` on API/web ports
+  `62149`/`62150`, asserting 11 exact ordered actions/times, two resolved evidence links, one terminal,
+  zero success warnings, semantic accessibility, clean console, desktop/mobile overflow protection,
+  dynamic-port release, and owned-process cleanup.
+- Final exact 20-path audit passed: clean diff/format, exact base ancestry, zero credential pattern,
+  conflict marker, production debug sentinel, generated junk, manifest/lock/env/config/fixture drift,
+  test-port listener, or owned Node process. Full patch review removed one redundant Vitest import;
+  its formatter/lint passed and the exact changed render test recovered 4/4 in `1.04s`.
+- No hidden reasoning capture, backend logging/telemetry/tracing/persistence, new configuration,
+  `.env.example`, provider/model client, credential, confidence formula/presentation, auth, database,
+  manifest, lockfile, dependency, fixture, repository structure, Mac, live DataHub/model network,
+  Phase 6 Level D, Slice 6.6, or Phase 7 work was used.
 
 ### Slice 6.6 — Confidence transparency
 

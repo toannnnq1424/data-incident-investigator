@@ -11,6 +11,7 @@ import {
   MetadataProviderError,
 } from '../../packages/datahub-client/src/index.js';
 import { IncidentRequestSchema } from '../../packages/shared-types/src/index.js';
+import type { MetadataInvestigationOperation } from '../../packages/shared-types/src/index.js';
 
 function countedFixtureMetadata() {
   const adapter = createFixtureMetadataAdapter();
@@ -45,16 +46,20 @@ describe('deterministic incident context gatherer', () => {
     const first = countedFixtureMetadata();
     const second = countedFixtureMetadata();
     const gatherer = new DeterministicIncidentContextGatherer();
+    const firstOperations: MetadataInvestigationOperation[] = [];
+    const secondOperations: MetadataInvestigationOperation[] = [];
 
     const firstContext = await gatherer.gather(request, {
       metadata: first.metadata,
       mode: 'fixture',
       limits: DEFAULT_INCIDENT_CONTEXT_LIMITS,
+      recordCompletedOperation: (operation) => firstOperations.push(operation),
     });
     const secondContext = await gatherer.gather(request, {
       metadata: second.metadata,
       mode: 'fixture',
       limits: DEFAULT_INCIDENT_CONTEXT_LIMITS,
+      recordCompletedOperation: (operation) => secondOperations.push(operation),
     });
 
     expect(firstContext).toEqual(secondContext);
@@ -77,6 +82,13 @@ describe('deterministic incident context gatherer', () => {
     ).toContain('change-removed-gross-revenue');
     expect(firstContext).not.toHaveProperty('hypotheses');
     expect(first.calls).toEqual({ health: 1, search: 1, lineage: 1, recentChanges: 1 });
+    expect(firstOperations).toEqual([
+      'metadata_health',
+      'entity_search',
+      'lineage',
+      'recent_changes',
+    ]);
+    expect(secondOperations).toEqual(firstOperations);
   });
 
   it('uses the entity hint or question deterministically and never invents a no-match entity', async () => {
@@ -133,6 +145,7 @@ describe('deterministic incident context gatherer', () => {
     const gatherer = new DeterministicIncidentContextGatherer();
     const request = IncidentRequestSchema.parse({ question: 'Why is revenue missing?' });
     let calls = 0;
+    const completedOperations: MetadataInvestigationOperation[] = [];
     const metadata: IncidentContextMetadata = {
       async healthCheck() {
         calls += 1;
@@ -163,6 +176,7 @@ describe('deterministic incident context gatherer', () => {
         metadata,
         mode: 'fixture',
         limits: { ...DEFAULT_INCIDENT_CONTEXT_LIMITS, timeoutMs: 5 },
+        recordCompletedOperation: (operation) => completedOperations.push(operation),
       });
       throw new Error('Expected incident context gathering to time out.');
     } catch (error) {
@@ -170,6 +184,7 @@ describe('deterministic incident context gatherer', () => {
       expect((error as MetadataProviderError).status).toBe('timeout');
     }
     expect(calls).toBe(1);
+    expect(completedOperations).toEqual([]);
   });
 
   it('does not fan out after a provider ignores the aborted signal', async () => {

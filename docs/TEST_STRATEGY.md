@@ -76,6 +76,20 @@ imports the built API artifact, binds a real loopback ephemeral port, calls fixt
 `/ready` over HTTP, verifies exact bodies, and closes the listener. Browser coverage is not required
 because Slice 6.4 changes no web-visible contract.
 
+Structured audit-trail tests use an injected public timestamp clock and the existing injected monotonic
+execution clock; they never sleep to prove ordering or duration. Shared schema cases reject unknown
+actions, arbitrary/oversize summaries, unstable IDs/sequences/timestamps, duplicate or unresolved
+evidence references, negative/oversize or misplaced duration, duplicate/missing/non-final termination,
+and events after termination. Agent-core tests record only callbacks following schema-valid real
+metadata boundaries and prove failed operations emit no success callback. Fastify-injected success,
+DataHub unavailability, provider/model timeout, tool failure, runtime limit before/after evidence,
+lineage truncation, and invalid structured-output cases assert the exact safe prefix, warnings, one
+matching final terminal event, preserved report references only when a report exists, and no raw
+question/prompt-injection/credential/provider/model/stack/private-reasoning sentinel. Web static markup
+proves an ordered semantic list, canonical `<time>`, evidence links, failed-state visibility, and
+terminal duration; the one Windows fixture browser regression covers the user-visible canonical trail,
+accessibility, resolved links, clean console, overflow, and owned cleanup.
+
 ## Required incident evaluation cases
 
 Removed column, stale pipeline, upstream type change, wrong dashboard dataset, delayed ingestion,
