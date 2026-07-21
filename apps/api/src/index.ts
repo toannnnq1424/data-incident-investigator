@@ -33,11 +33,13 @@ import {
 } from '@dii/datahub-client';
 import {
   ApiErrorSchema,
+  DEFAULT_PUBLIC_INGRESS_CONFIG,
   DEFAULT_RUNTIME_LIMIT_CONFIG,
   INCIDENT_CONTEXT_MAX_CANDIDATES,
   INVESTIGATION_TERMINATION_MESSAGES,
   IncidentAcceptedResponseSchema,
   IncidentContextStageSchema,
+  IncidentIdParamsSchema,
   HypothesisScoringStageSchema,
   IncidentRequestSchema,
   IncidentRetrievalResponseSchema,
@@ -54,6 +56,7 @@ import {
   MetadataSourceModeSchema,
   REMEDIATION_FALLBACK_STEP_TEXT,
   RemediationPlanningStageSchema,
+  PublicIngressConfigSchema,
   RuntimeLimitConfigSchema,
   SuspiciousChangeDetectionStageSchema,
   type IncidentContextStage,
@@ -62,6 +65,7 @@ import {
   type InvestigationExecutionMetadata,
   type MetadataHealthResponse,
   type MetadataSourceMode,
+  type PublicIngressConfig,
   type RemediationPlanningStage,
   type RuntimeLimitConfig,
   type SuspiciousChangeDetectionStage,
@@ -87,6 +91,8 @@ interface BuildServerOptions {
   runner?: InvestigationRunner;
   limits?: InvestigationLimits;
   runtimeLimits?: RuntimeLimitConfig;
+  publicIngress?: PublicIngressConfig;
+  requestClock?: () => number;
 }
 
 type StoredIncident =
@@ -216,6 +222,40 @@ export function readRuntimeLimitConfig(environment: NodeJS.ProcessEnv): RuntimeL
     throw new RuntimeConfigurationError(environmentNames[internalName] ?? 'runtime limits');
   }
   return parsedConfig.data;
+}
+
+export function readPublicIngressConfig(environment: NodeJS.ProcessEnv): PublicIngressConfig {
+  const rateLimitWindowSeconds = configuredInteger(environment, 'RATE_LIMIT_WINDOW_SECONDS');
+  const requestedConfig = {
+    maxBodyBytes:
+      configuredInteger(environment, 'MAX_REQUEST_BODY_BYTES') ??
+      DEFAULT_PUBLIC_INGRESS_CONFIG.maxBodyBytes,
+    rateLimitWindowMs:
+      rateLimitWindowSeconds === undefined
+        ? DEFAULT_PUBLIC_INGRESS_CONFIG.rateLimitWindowMs
+        : rateLimitWindowSeconds * 1_000,
+    rateLimitMaxRequests:
+      configuredInteger(environment, 'RATE_LIMIT_MAX_REQUESTS') ??
+      DEFAULT_PUBLIC_INGRESS_CONFIG.rateLimitMaxRequests,
+  };
+  const parsedConfig = PublicIngressConfigSchema.safeParse(requestedConfig);
+  if (!parsedConfig.success) {
+    const internalName = String(parsedConfig.error.issues[0]?.path[0] ?? 'public ingress');
+    const environmentNames: Record<string, string> = {
+      maxBodyBytes: 'MAX_REQUEST_BODY_BYTES',
+      rateLimitWindowMs: 'RATE_LIMIT_WINDOW_SECONDS',
+      rateLimitMaxRequests: 'RATE_LIMIT_MAX_REQUESTS',
+    };
+    throw new RuntimeConfigurationError(environmentNames[internalName] ?? 'public ingress');
+  }
+  return parsedConfig.data;
+}
+
+function safeValidationIssues(issues: ReadonlyArray<{ path: PropertyKey[] }>) {
+  return issues.slice(0, 20).map((issue) => ({
+    path: issue.path.map(String).join('.') || 'request',
+    message: 'Invalid value.',
+  }));
 }
 
 function metadataMode(value: string | undefined): MetadataSourceMode {
@@ -481,9 +521,135 @@ export function buildServer(options: BuildServerOptions = {}) {
   const runtimeLimits = RuntimeLimitConfigSchema.parse(
     options.runtimeLimits ?? readRuntimeLimitConfig(environment),
   );
+  const publicIngress = PublicIngressConfigSchema.parse(
+    options.publicIngress ?? readPublicIngressConfig(environment),
+  );
   const server = Fastify({
+    bodyLimit: publicIngress.maxBodyBytes,
     logger: options.logger ?? true,
     requestTimeout: runtimeLimits.agentTimeoutMs,
+  });
+  const requestClock = options.requestClock ?? (() => Date.now());
+  const protectedPostRoutes = new Set([
+    '/metadata/search',
+    '/metadata/lineage',
+    '/metadata/recent-changes',
+    '/incidents',
+  ]);
+  let rateLimitWindowStartedAt: number | undefined;
+  let rateLimitRequestCount = 0;
+
+  server.addHook('onRequest', async (request, reply) => {
+    if (
+      request.method !== 'POST' ||
+      !protectedPostRoutes.has(request.routeOptions.url ?? request.url)
+    ) {
+      return;
+    }
+
+    const now = requestClock();
+    if (!Number.isFinite(now)) {
+      throw new Error('The request clock returned an invalid value.');
+    }
+    const currentTime = Math.max(0, Math.floor(now));
+    if (
+      rateLimitWindowStartedAt === undefined ||
+      currentTime < rateLimitWindowStartedAt ||
+      currentTime - rateLimitWindowStartedAt >= publicIngress.rateLimitWindowMs
+    ) {
+      rateLimitWindowStartedAt = currentTime;
+      rateLimitRequestCount = 0;
+    }
+
+    if (rateLimitRequestCount >= publicIngress.rateLimitMaxRequests) {
+      const retryAfterSeconds = Math.max(
+        1,
+        Math.ceil(
+          (rateLimitWindowStartedAt + publicIngress.rateLimitWindowMs - currentTime) / 1_000,
+        ),
+      );
+      server.log.warn(
+        {
+          method: request.method,
+          route: request.routeOptions.url,
+          retryAfterSeconds,
+        },
+        'Public POST rate limit exceeded',
+      );
+      return reply
+        .header('Retry-After', String(retryAfterSeconds))
+        .code(429)
+        .send(
+          ApiErrorSchema.parse({
+            error: {
+              code: 'RATE_LIMIT_EXCEEDED',
+              message: 'Too many requests. Retry after the indicated delay.',
+            },
+          }),
+        );
+    }
+
+    rateLimitRequestCount += 1;
+  });
+
+  server.setErrorHandler((error, request, reply) => {
+    const errorCode =
+      typeof error === 'object' &&
+      error !== null &&
+      'code' in error &&
+      typeof error.code === 'string'
+        ? error.code
+        : undefined;
+    if (errorCode === 'FST_ERR_CTP_BODY_TOO_LARGE') {
+      server.log.warn(
+        { method: request.method, route: request.routeOptions.url },
+        'Request body limit exceeded',
+      );
+      return reply.code(413).send(
+        ApiErrorSchema.parse({
+          error: {
+            code: 'PAYLOAD_TOO_LARGE',
+            message: 'The request body exceeds the allowed size.',
+          },
+        }),
+      );
+    }
+
+    if (
+      errorCode === 'FST_ERR_CTP_INVALID_JSON_BODY' ||
+      errorCode === 'FST_ERR_CTP_INVALID_CONTENT_LENGTH'
+    ) {
+      server.log.warn(
+        { method: request.method, route: request.routeOptions.url },
+        'Invalid JSON request body',
+      );
+      return reply.code(400).send(
+        ApiErrorSchema.parse({
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: 'The JSON request body is invalid.',
+          },
+        }),
+      );
+    }
+
+    server.log.error(
+      {
+        method: request.method,
+        route: request.routeOptions.url ?? 'unmatched',
+        errorType: error instanceof Error ? error.name : 'UnknownError',
+        errorCode: errorCode ?? 'UNEXPECTED_ERROR',
+      },
+      'API request failed',
+    );
+    return reply.code(500).send(
+      ApiErrorSchema.parse({
+        error: {
+          code: 'INTERNAL_ERROR',
+          message: 'The request could not be completed.',
+        },
+      }),
+    );
   });
   const mode = options.mode ?? metadataMode(environment.APP_MODE);
   const metadata = options.metadata ?? createFixtureMetadataAdapter();
@@ -590,10 +756,7 @@ export function buildServer(options: BuildServerOptions = {}) {
           error: {
             code: 'VALIDATION_ERROR',
             message: 'The metadata search request is invalid.',
-            issues: parsedRequest.error.issues.map((issue) => ({
-              path: issue.path.map(String).join('.') || 'request',
-              message: issue.message,
-            })),
+            issues: safeValidationIssues(parsedRequest.error.issues),
           },
         }),
       );
@@ -641,10 +804,7 @@ export function buildServer(options: BuildServerOptions = {}) {
           error: {
             code: 'VALIDATION_ERROR',
             message: 'The metadata lineage request is invalid.',
-            issues: parsedRequest.error.issues.map((issue) => ({
-              path: issue.path.map(String).join('.') || 'request',
-              message: issue.message,
-            })),
+            issues: safeValidationIssues(parsedRequest.error.issues),
           },
         }),
       );
@@ -696,10 +856,7 @@ export function buildServer(options: BuildServerOptions = {}) {
           error: {
             code: 'VALIDATION_ERROR',
             message: 'The metadata recent-changes request is invalid.',
-            issues: parsedRequest.error.issues.map((issue) => ({
-              path: issue.path.map(String).join('.') || 'request',
-              message: issue.message,
-            })),
+            issues: safeValidationIssues(parsedRequest.error.issues),
           },
         }),
       );
@@ -754,10 +911,7 @@ export function buildServer(options: BuildServerOptions = {}) {
         error: {
           code: 'VALIDATION_ERROR',
           message: 'The incident request is invalid.',
-          issues: parsedRequest.error.issues.map((issue) => ({
-            path: issue.path.map(String).join('.') || 'request',
-            message: issue.message,
-          })),
+          issues: safeValidationIssues(parsedRequest.error.issues),
         },
       });
 
@@ -883,12 +1037,14 @@ export function buildServer(options: BuildServerOptions = {}) {
           }
 
           executionBudget.beginAgentStep();
-          const report = await runner.investigate(parsedRequest.data, {
-            incidentId: response.incidentId,
-            metadata,
-            limits,
-            executionBudget,
-          });
+          const report = InvestigationReportSchema.parse(
+            await runner.investigate(parsedRequest.data, {
+              incidentId: response.incidentId,
+              metadata,
+              limits,
+              executionBudget,
+            }),
+          );
           let completedReport = report;
           if (
             contextStage.status === 'completed' &&
@@ -1015,7 +1171,19 @@ export function buildServer(options: BuildServerOptions = {}) {
   server.get<{ Params: { incidentId: string } }>(
     '/incidents/:incidentId',
     async (request, reply) => {
-      const { incidentId } = request.params;
+      const parsedParams = IncidentIdParamsSchema.safeParse(request.params);
+      if (!parsedParams.success) {
+        return reply.code(400).send(
+          ApiErrorSchema.parse({
+            error: {
+              code: 'VALIDATION_ERROR',
+              message: 'The incident identifier is invalid.',
+              issues: safeValidationIssues(parsedParams.error.issues),
+            },
+          }),
+        );
+      }
+      const { incidentId } = parsedParams.data;
       const incident = incidents.get(incidentId);
 
       if (!incident) {

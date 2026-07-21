@@ -69,7 +69,7 @@ describe('incident API', () => {
         issues: [
           {
             path: 'question',
-            message: 'Too small: expected string to have >=3 characters',
+            message: 'Invalid value.',
           },
         ],
       },
