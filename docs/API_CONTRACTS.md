@@ -984,6 +984,13 @@ A model-provider timeout is distinct from metadata `provider_timeout`. Both are 
 `duration_limit_reached`: only a monotonic snapshot strictly beyond the full agent deadline uses the
 duration-limit reason, even when the immediate error was a provider timeout.
 
+`provider_timeout` may occur while context is still being gathered or after context has completed. A
+context-operation timeout returns a `degraded` context snapshot with its matching allowlisted
+`failedOperation`. A runner or later-stage metadata timeout instead retains the already completed
+context, omits a context-operation claim, terminates all downstream stages, and returns no report. Both
+forms use the same fixed `METADATA_TIMEOUT` message and must reach a terminal response; neither may
+remain `processing` or expose the provider exception/stack.
+
 Unknown incident response `404`:
 
 ```json

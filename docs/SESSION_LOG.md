@@ -2565,3 +2565,53 @@ storage vẫn process-local và không durable.
 Format/check final changed paths, hoàn tất diff/secret/debug/generated/manifest/lock/base/process audit,
 tạo một conventional commit, push branch, mở đúng một Draft PR base current `main`, rồi theo dõi exact
 HEAD CI tới terminal. Không merge; independent Windows QA sẽ được dispatch riêng sau CI xanh.
+
+## 2026-07-21 — Slice 6.3 late provider-timeout QA correction
+
+### Objective
+
+Sửa duy nhất product blocker do independent Windows QA task
+`019f8401-5db4-7bd3-b4df-f8ff379d07dc` phát hiện trên exact head `d8371bd`: timeout metadata từ runner
+sau completed context bị shared schema từ chối và có thể để incident mắc `processing`.
+
+### Completed
+
+Đã thêm regression deterministic cho fixture context hoàn tất rồi runner ném
+`MetadataProviderError('timeout')`. Test đỏ tái hiện đúng Zod rejection tại `storeDegradedIncident`.
+Shared invariant nay chỉ bắt `metadata_unavailable` và `tool_failure` phải có degraded-context snapshot;
+`provider_timeout` muộn được giữ completed factual context. API source không cần đổi vì outer catch đã
+đóng active scoring/remediation, không giữ report và dùng stable timeout contract.
+
+### Files changed
+
+`packages/shared-types/src/index.ts`; `tests/integration/graceful-degradation.test.ts`;
+`docs/API_CONTRACTS.md`; `docs/IMPLEMENTATION_PLAN.md`; `docs/KNOWN_ISSUES.md`; và entry này. Không đổi
+API implementation, web, provider adapter, fixture, manifest, lockfile hay dependency.
+
+### Decisions
+
+Giữ termination reason `provider_timeout` và code `METADATA_TIMEOUT`, không remap hay che timeout.
+Timeout trong context vẫn có degraded snapshot cùng allowlisted failed operation; timeout ở runner/late
+stage giữ completed context và không giả claim một context operation.
+
+### Validation performed
+
+- Red reproducer: 13/14 PASS, case mới mắc `processing`, đúng một unhandled schema rejection.
+- Green targeted file: 14/14 PASS; giữ facts, không report/raw hostname/exception/stack.
+- Affected ESLint PASS. Direct shared-types và API typecheck PASS. Không chạy full suite/build/browser.
+
+### Validation intentionally deferred
+
+Unchanged builds/browser/full suite; exact-new-head CI; independent Windows QA rerun; Mac, live
+credential/provider, Level D và mọi Slice 6.4+.
+
+### Known issues
+
+QA blocker đã sửa và có local targeted evidence nhưng chưa có additive commit/exact-new-head CI. Các
+environment-only managed Windows PATH/esbuild junction limitations không đổi.
+
+### Exact next step
+
+Format/check docs cuối, audit exact delta, tạo additive conventional commit không amend, push cùng
+branch/PR #35, theo dõi exact-new-head CI tới terminal, không merge; sau CI xanh cần independent Windows
+QA rerun trên exact head mới.

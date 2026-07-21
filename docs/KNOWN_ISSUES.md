@@ -6,14 +6,12 @@ Last updated: 2026-07-21.
   `4d34fc2d42797402e96a5e7dcd12500512794523` (tree
   `d8ac5131da3b485eb628dfd8b19ac863fe846949`); main CI run `29830766984`, job `88634693352`, passed.
   Slice 6.1's factual provider-timeout semantics and Slice 6.2's input/output safety remain intact.
-- Slice 6.3 graceful degradation passes local affected Level C on
-  `codex/phase-6-3-graceful-degradation` from that exact main. DataHub unavailability and entity
-  no-match no longer fall through to a fixture-seeded completed report; safe partial context is
-  retained by allowlisted operation, invalid structured output uses zero through five configured
-  retries, model/provider/total-duration reasons remain distinct, and deterministic lineage truncation
-  is explicitly incomplete. Five typechecks/builds, affected lint, all focused failure-matrix and
-  adjacent tests, artifact smoke, and the credential-free Windows browser flow pass. Commit,
-  publication, Draft PR, exact-head CI, and independent Windows QA remain pending.
+- Slice 6.3 is on Draft PR #35. Independent Windows QA failed exact head `d8371bd` because a late
+  runner metadata timeout preserved completed context in the API but the public schema required every
+  `provider_timeout` context to be `degraded`, leaving polling in `processing`. The targeted correction
+  now permits completed factual context only for a late provider timeout while retaining degraded
+  context plus an allowlisted operation for context-stage failures. Its deterministic reproducer is
+  green locally; additive commit, exact-new-head CI, and independent Windows QA rerun remain pending.
 - Fixture continuation in a degraded DataHub response is deliberately advisory and `not_executed`;
   the operator must explicitly start the app in fixture mode. There is no runtime mode switch, model
   provider implementation, durable incident storage, automatic retry for provider timeouts, or

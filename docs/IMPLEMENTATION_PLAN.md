@@ -2810,6 +2810,63 @@ Local affected Level C result on the Windows managed worktree, 2026-07-21:
   Level D were not used. Repository structure, manifests, lockfile, dependencies, `.env.example`, and
   canonical fixtures remain unchanged.
 
+#### Slice 6.3 independent-QA correction — late provider timeout
+
+Status: targeted local correction passed on the existing Draft PR #35 branch after independent Windows
+QA failed exact HEAD `d8371bd7886b41ada316d4d64499ada3d8281498`. Additive commit, push,
+exact-new-head CI, and independent Windows QA rerun remain pending.
+
+Objective: make a late `MetadataProviderError('timeout')` terminate as the existing user-safe
+`provider_timeout` degradation while retaining already completed factual context, stopping active
+downstream stages, returning no report/raw error/stack, and never leaving incident polling in
+`processing`.
+
+Minimum files: `packages/shared-types/src/index.ts` to distinguish context-operation failure invariants
+from a late provider timeout; `tests/integration/graceful-degradation.test.ts` for the exact deterministic
+runner-timeout regression; this plan, `docs/API_CONTRACTS.md`, `docs/KNOWN_ISSUES.md`, and
+`docs/SESSION_LOG.md` for the corrected contract and QA evidence. `apps/api/src/index.ts` changes only if
+the new regression proves its existing terminal-stage normalization is insufficient.
+
+Acceptance criteria:
+
+- A fixture investigation completes context collection, then an injected runner throws
+  `MetadataProviderError('timeout')`; polling reaches terminal `degraded` rather than remaining
+  `processing`.
+- The response retains schema-validated completed context/evidence, uses factual `provider_timeout` and
+  `METADATA_TIMEOUT`, has no active downstream stage, report, failed-operation claim, provider payload,
+  exception name, or stack.
+- Metadata health/search/lineage/recent-change timeouts during context gathering still require a
+  `degraded` context snapshot and matching allowlisted operation. No other Slice 6.3 contract changes.
+
+Deferred: all Slice 6.4+ work, browser/build/full-suite reruns, Mac, live providers/credentials, Level D,
+and any redesign of provider or runner abstractions.
+
+Exact targeted validation on final correction inputs:
+
+- Prettier write/check and ESLint only for changed TypeScript/test/documentation paths.
+- Direct affected typechecks for `@dii/shared-types` and `@dii/api` because API consumes the changed
+  runtime schema.
+- Run only `tests/integration/graceful-degradation.test.ts`, which contains both the new late-timeout
+  reproducer and the adjacent context-timeout matrix; do not rerun browser, builds, or unrelated green
+  suites.
+- `git diff --check`, exact delta/name/stat review, secret/conflict/debug/generated/manifest/lock audit,
+  then one additive conventional commit, normal push to the existing branch, and exact-new-head CI on
+  Draft PR #35. Do not amend, rebase, force-push, merge, or create another PR/task.
+
+Targeted correction result, 2026-07-21:
+
+- The new runner-timeout reproducer failed exactly as QA reported: the 14-test file had 13 passing, the
+  incident never left `processing`, and the background path raised the schema's completed-context
+  rejection at `storeDegradedIncident`.
+- Removing `provider_timeout` from the context-operation-only invariant made the same file pass 14/14.
+  The response retains completed fixture context, uses `provider_timeout`/`METADATA_TIMEOUT`, closes
+  scoring/remediation, contains no report/failed operation/raw hostname/exception/stack, and the
+  existing four context-operation cases remain green.
+- Affected ESLint passed for shared-types and the focused test. Direct `shared-types` and API
+  typechecks passed. Prettier write/check, final docs formatting, delta audit, additive commit,
+  publication, and exact-new-head CI follow; builds, browser, full suite, Mac, and unchanged green gates
+  are intentionally not rerun.
+
 ### Slice 6.4 — Health and readiness
 
 Plan: separate liveness from dependency/configuration readiness, document deployment probe semantics,

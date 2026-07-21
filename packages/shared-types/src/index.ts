@@ -2559,6 +2559,17 @@ export const InvestigationDegradedResponseSchema = z
         path: ['failedOperation'],
       });
     }
+    if (
+      reason === 'provider_timeout' &&
+      response.contextStage.status === 'completed' &&
+      response.failedOperation !== undefined
+    ) {
+      context.addIssue({
+        code: 'custom',
+        message: 'A late provider timeout cannot claim a context operation failure.',
+        path: ['failedOperation'],
+      });
+    }
     if (reason === 'lineage_truncated' && !response.report) {
       context.addIssue({
         code: 'custom',
@@ -2573,15 +2584,11 @@ export const InvestigationDegradedResponseSchema = z
         path: ['report'],
       });
     }
-    const contextFailureReason = [
-      'provider_timeout',
-      'metadata_unavailable',
-      'tool_failure',
-    ].includes(reason);
-    if (contextFailureReason && response.contextStage.status !== 'degraded') {
+    const degradedContextRequired = ['metadata_unavailable', 'tool_failure'].includes(reason);
+    if (degradedContextRequired && response.contextStage.status !== 'degraded') {
       context.addIssue({
         code: 'custom',
-        message: 'A metadata operation failure requires a degraded context snapshot.',
+        message: 'A context operation failure requires a degraded context snapshot.',
         path: ['contextStage'],
       });
     }

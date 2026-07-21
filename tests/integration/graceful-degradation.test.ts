@@ -279,6 +279,56 @@ describe('graceful investigation degradation', () => {
     expect(beyondBudget.failedOperation).toBeUndefined();
   });
 
+  it('terminates safely when the runner metadata provider times out after context completion', async () => {
+    const rawStack = 'MetadataProviderError: private-provider.invalid raw-provider-stack';
+    const terminal = expectDegraded(
+      await submitAndWait({
+        runner: {
+          investigate: async () => {
+            const timeout = new MetadataProviderError('timeout');
+            timeout.stack = rawStack;
+            throw timeout;
+          },
+        },
+      }),
+    );
+
+    expect(terminal).toMatchObject({
+      execution: { terminationReason: 'provider_timeout', retries: 0 },
+      error: {
+        code: 'METADATA_TIMEOUT',
+        message: INVESTIGATION_TERMINATION_MESSAGES.provider_timeout,
+      },
+      contextStage: {
+        status: 'completed',
+        facts: {
+          selectedEntity: { urn: expect.any(String) },
+          lineage: { nodes: expect.any(Array) },
+          recentChanges: expect.any(Array),
+        },
+      },
+      suspiciousChangeStage: { status: 'completed' },
+      hypothesisScoringStage: { status: 'unavailable' },
+      remediationStage: { status: 'unavailable' },
+    });
+    expect(terminal.contextStage.facts.recentChanges.length).toBeGreaterThan(0);
+    expect(terminal.failedOperation).toBeUndefined();
+    expect(terminal.warnings.map((warning) => warning.code)).toEqual([
+      'partial_evidence',
+      'external_dependency_failed',
+    ]);
+    expect(terminal).not.toHaveProperty('report');
+    expect(
+      IncidentRetrievalResponseSchema.safeParse({
+        ...terminal,
+        failedOperation: 'entity_search',
+      }).success,
+    ).toBe(false);
+    expect(JSON.stringify(terminal)).not.toMatch(
+      /private-provider\.invalid|raw-provider-stack|MetadataProviderError/i,
+    );
+  });
+
   it.each([
     { maxRetries: 0, expectedCalls: 1 },
     { maxRetries: 2, expectedCalls: 3 },
