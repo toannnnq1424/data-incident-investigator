@@ -9,6 +9,7 @@ import {
 } from '../../packages/agent-core/src/index.js';
 import { createFixtureMetadataAdapter } from '../../packages/datahub-client/src/index.js';
 import {
+  formatUntrustedEvidence,
   IncidentContextCompletedStageSchema,
   IncidentRequestSchema,
   type Evidence,
@@ -45,7 +46,7 @@ function evidenceFor(
             : candidate.category === 'ownership'
               ? 'ownership'
               : 'metadata',
-      statement: candidate.summary,
+      statement: formatUntrustedEvidence(candidate.summary),
       sourceEntity: { urn: entity.urn, name: entity.name, kind: entity.kind },
       observedAt: candidate.observedAt,
     };

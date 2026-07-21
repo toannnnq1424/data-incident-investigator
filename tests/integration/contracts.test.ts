@@ -5,6 +5,7 @@ import {
   CANONICAL_INCIDENT_SCENARIO_IDS,
   CanonicalIncidentScenarioCatalogSchema,
   CanonicalIncidentScenarioSchema,
+  formatUntrustedEvidence,
   HYPOTHESIS_SCORE_FACTOR_LABELS,
   HYPOTHESIS_SCORE_FACTOR_WEIGHTS,
   HypothesisScoringResultSchema,
@@ -324,7 +325,7 @@ describe('shared investigation contracts', () => {
       {
         id: candidate.changeId,
         category: 'schema-change' as const,
-        statement: candidate.summary,
+        statement: formatUntrustedEvidence(candidate.summary),
         sourceEntity: upstream,
         observedAt: candidate.observedAt,
       },

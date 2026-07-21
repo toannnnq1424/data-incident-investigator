@@ -12,6 +12,7 @@ import {
   INCIDENT_CONTEXT_MAX_CANDIDATES,
   INCIDENT_CONTEXT_MAX_CHANGE_ENTITIES,
   EvidenceSchema,
+  formatUntrustedEvidence,
   HYPOTHESIS_SCORE_BASIS_POINTS,
   HYPOTHESIS_SCORE_FACTOR_LABELS,
   HYPOTHESIS_SCORE_FACTOR_ORDER,
@@ -828,7 +829,7 @@ function exactCandidateEvidence(
     entity !== undefined &&
     evidence.id === candidate.changeId &&
     evidence.category === scoringEvidenceCategory(candidate.category) &&
-    evidence.statement === candidate.summary &&
+    evidence.statement === formatUntrustedEvidence(candidate.summary) &&
     evidence.observedAt === candidate.observedAt &&
     evidence.sourceEntity?.urn === candidate.entityUrn &&
     evidence.sourceEntity.name === candidate.entityName &&
@@ -1475,7 +1476,7 @@ export class DeterministicInvestigationRunner implements InvestigationRunner {
       ...changes.map((change) => ({
         id: change.id,
         category: changeEvidenceCategory(change),
-        statement: change.summary,
+        statement: formatUntrustedEvidence(change.summary),
         sourceEntity: change.entity,
         observedAt: change.observedAt,
       })),

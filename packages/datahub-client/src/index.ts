@@ -12,6 +12,7 @@ import {
   MetadataRecentChangeSchema,
   MetadataRecentChangesRequestSchema,
   MetadataRecentChangesResponseSchema,
+  sanitizeUntrustedDisplayText,
   type EntityKind,
   type EntityRef,
   type MetadataEntitySearchRequest,
@@ -120,9 +121,20 @@ const FixtureMetadataSchema = z
           category: MetadataRecentChangeCategorySchema,
           operation: MetadataRecentChangeOperationSchema,
           observedAt: z.iso.datetime(),
-          summary: z.string().min(1),
-          actor: z.string().min(1).max(100).optional(),
-          field: z.string().min(1).max(300).optional(),
+          summary: z
+            .string()
+            .transform(sanitizeUntrustedDisplayText)
+            .pipe(z.string().min(1).max(500)),
+          actor: z
+            .string()
+            .transform(sanitizeUntrustedDisplayText)
+            .pipe(z.string().min(1).max(100))
+            .optional(),
+          field: z
+            .string()
+            .transform(sanitizeUntrustedDisplayText)
+            .pipe(z.string().min(1).max(300))
+            .optional(),
         }),
       )
       .max(20),
@@ -410,7 +422,10 @@ const dataHubEntityKind = {
 
 function safeProviderText(values: Array<string | null | undefined>, maximumLength: number) {
   const value = values.find((candidate) => candidate?.trim());
-  return value?.trim().slice(0, maximumLength);
+  if (!value) {
+    return undefined;
+  }
+  return sanitizeUntrustedDisplayText(value).slice(0, maximumLength) || undefined;
 }
 
 function compareEntitySearchResults(
