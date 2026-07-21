@@ -3308,6 +3308,15 @@ produced the final 97/97 evidence. No production behavior was weakened. Level D/
 suite, live credentials/DataHub/model network, Mac, issue/milestone closure, merge, Phase 7, and optional
 extensions remain intentionally deferred.
 
+Publication recovery (2026-07-22): Draft PR #38 was created from initial commit
+`275badc525ce3123231ea1fc17d28945bd03aa60`. Exact-head CI run `29857733635`, job `88726213677`, failed
+only because `tests/integration/remediation-planner.test.ts` still expected the pre-Slice 6.6 single
+change evidence reference. The product correctly propagated the newly resolved `lineage-upstream-1`
+confidence provenance through the hypothesis and existing planner. The minimum test-only expectation
+update passed focused Prettier/check/ESLint in 3.058 seconds and 4/4 remediation tests in 1.41 seconds
+(3.237 seconds command wall). Public history is not amended/rebased; the correction will use one
+additive commit and a new exact-head CI run, without rerunning or rewriting the failed run.
+
 ## Phase 7 — GitHub, CI, and release
 
 Finalize branch/PR workflow, full CI, release validation, smoke tests, and merge readiness.

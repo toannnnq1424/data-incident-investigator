@@ -2781,8 +2781,10 @@ Canonical evaluation pin sáu score `70/59/62/44/59/44`; `insufficient-evidence`
 
 Shared types, agent-core, API, web, evaluation; một test confidence mới và các contract/scorer/API/
 evaluation/web/browser regression trực tiếp liên quan; `AGENT_DESIGN`, `API_CONTRACTS`, `DATA_MODEL`,
-`SECURITY`, `TEST_STRATEGY`, `IMPLEMENTATION_PLAN`, `KNOWN_ISSUES` và entry này. Không đổi `.env`, config,
-fixture, manifest, lockfile, dependency hay repository structure.
+evaluation/web/browser regression trực tiếp liên quan; regression remediation reference được CI phát
+hiện; `AGENT_DESIGN`, `API_CONTRACTS`, `DATA_MODEL`, `SECURITY`, `TEST_STRATEGY`, `IMPLEMENTATION_PLAN`,
+`KNOWN_ISSUES` và entry này. Không đổi `.env`, config, fixture, manifest, lockfile, dependency hay
+repository structure.
 
 ### Formula decisions
 
@@ -2816,6 +2818,13 @@ execution với bundled process-local runtime PASS, không phải repository def
 PASS 96/97; test mới cố tạo timestamp ngoài validated window nên shared schema đúng ra reject. Bỏ setup
 bất khả thi, format/lint lại test và rerun exact matrix đạt 97/97; không nới production contract.
 
+Draft PR #38 được tạo từ initial public commit `275badc`. Exact-head CI run `29857733635`, job
+`88726213677`, FAIL duy nhất vì `remediation-planner.test.ts` còn pin evidence refs cũ chỉ có source
+change, trong khi confidence mới đúng ra thêm resolved `lineage-upstream-1` vào hypothesis và planner
+references. Minimum test-only expected-array correction PASS focused format/check/ESLint trong 3.058s
+và 4/4 remediation tests trong 1.41s (3.237s command wall). Không amend/rebase/rewrite public history;
+correction dùng additive commit và new exact-head CI, không rerun run cũ.
+
 ### Validation intentionally deferred
 
 Full repository suite/Phase 6 Level D/checkpoint/closure, Mac, live credential/DataHub/model network,
@@ -2825,5 +2834,5 @@ extension.
 
 ### Exact next step
 
-Hoàn tất final diff/scope/secret/manifest/generated/process audit, tạo đúng một conventional commit, push
-normal, mở đúng một Draft PR base current `main`, theo dõi exact-head CI tới SUCCESS và không merge.
+Audit correction delta, tạo additive conventional commit (do public history cấm amend), push normal,
+theo dõi new exact-head CI của Draft PR #38 tới SUCCESS và không merge.

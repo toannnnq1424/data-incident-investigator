@@ -26,7 +26,10 @@ Last updated: 2026-07-22.
   expectations and `insufficient-evidence` has no hypothesis/score. Final local Level C passes focused
   format/check, lint, 6/6 typechecks, 11/11 files and 97/97 tests (including the dedicated eight-test
   boundary matrix), 6/6 builds, canonical evaluation, built smoke, and exactly one final browser flow.
-  Final diff audit, commit, Draft PR, and exact-head CI remain pending.
+  Final 24-path diff audit passed and Draft PR #38 was opened from commit `275badc`. Its first exact-head
+  CI run `29857733635`, job `88726213677`, found one stale remediation expected-reference array after
+  confidence added resolved lineage provenance. The exact test-only correction passes focused
+  format/lint and 4/4 remediation tests; additive commit/push and new exact-head CI remain pending.
 - Fixture continuation in a degraded DataHub response is deliberately advisory and `not_executed`;
   the operator must explicitly start the app in fixture mode. The current investigation makes zero model
   calls, so readiness accurately marks model `not_required`; it does not read `OPENAI_API_KEY` or claim
