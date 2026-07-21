@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   ApiErrorSchema,
+  BLAST_RADIUS_ANALYSIS_VERSION,
+  BLAST_RADIUS_STATUS_EXPLANATIONS,
+  BlastRadiusAnalysisSchema,
   CANONICAL_INCIDENT_SCENARIOS,
   CANONICAL_INCIDENT_SCENARIO_IDS,
   CanonicalIncidentScenarioCatalogSchema,
@@ -41,6 +44,24 @@ import {
   type HypothesisScoreFactor,
 } from '../../packages/shared-types/src/index.js';
 
+function testBlastRadius(status: 'complete' | 'unknown') {
+  return {
+    analysisVersion: BLAST_RADIUS_ANALYSIS_VERSION,
+    status,
+    explanation: BLAST_RADIUS_STATUS_EXPLANATIONS[status],
+    impacts: [],
+    summary: { total: 0, datasets: 0, pipelines: 0, dashboards: 0 },
+    coverage: {
+      reasonCodes: status === 'complete' ? [] : (['hypotheses_not_scored'] as const),
+      rootsConsidered: status === 'complete' ? 1 : 0,
+      rootsAnalyzed: status === 'complete' ? 1 : 0,
+      visitedEntities: status === 'complete' ? 1 : 0,
+      truncatedGraphs: 0,
+      appliedLimits: { maxDepth: 3, maxEntities: 25, maxRootEntities: 3 },
+    },
+  };
+}
+
 function testScoredConfidence(evidenceId: string) {
   const factor = (
     code: HypothesisScoreFactor['code'],
@@ -76,6 +97,33 @@ function testScoredConfidence(evidenceId: string) {
 }
 
 describe('shared investigation contracts', () => {
+  it('enforces blast-radius status, reason, count, and bound semantics', () => {
+    const unknown = testBlastRadius('unknown');
+    expect(BlastRadiusAnalysisSchema.safeParse(unknown).success).toBe(true);
+    expect(
+      BlastRadiusAnalysisSchema.safeParse({
+        ...unknown,
+        status: 'unavailable',
+        explanation: BLAST_RADIUS_STATUS_EXPLANATIONS.unavailable,
+      }).success,
+    ).toBe(false);
+    expect(
+      BlastRadiusAnalysisSchema.safeParse({
+        ...unknown,
+        summary: { ...unknown.summary, total: 1 },
+      }).success,
+    ).toBe(false);
+    expect(
+      BlastRadiusAnalysisSchema.safeParse({
+        ...unknown,
+        coverage: {
+          ...unknown.coverage,
+          visitedEntities: 26,
+        },
+      }).success,
+    ).toBe(false);
+  });
+
   it('accepts the minimum incident request', () => {
     const result = IncidentRequestSchema.safeParse({
       question: 'Why did revenue drop today?',
@@ -554,10 +602,47 @@ describe('shared investigation contracts', () => {
         },
       ],
       hypotheses: [hypothesis],
+      blastRadius: {
+        analysisVersion: BLAST_RADIUS_ANALYSIS_VERSION,
+        status: 'complete',
+        explanation: BLAST_RADIUS_STATUS_EXPLANATIONS.complete,
+        impacts: [
+          {
+            entity: selected,
+            relation: 'downstream',
+            distance: 1,
+            rootUrn: upstream.urn,
+            pathUrns: [upstream.urn, selected.urn],
+            hypothesisIds: [hypothesis.id],
+            evidenceIds: ['change-removed-column'],
+          },
+        ],
+        summary: { total: 1, datasets: 1, pipelines: 0, dashboards: 0 },
+        coverage: {
+          reasonCodes: [],
+          rootsConsidered: 1,
+          rootsAnalyzed: 1,
+          visitedEntities: 2,
+          truncatedGraphs: 0,
+          appliedLimits: { maxDepth: 3, maxEntities: 25, maxRootEntities: 3 },
+        },
+      },
       recommendations: [],
       assumptions: [],
       missingInformation: [],
     });
+    expect(
+      InvestigationReportSchema.safeParse({
+        ...report,
+        blastRadius: {
+          ...report.blastRadius,
+          impacts: report.blastRadius.impacts.map((impact) => ({
+            ...impact,
+            evidenceIds: ['unsupported-evidence'],
+          })),
+        },
+      }).success,
+    ).toBe(false);
     const references = {
       hypothesisIds: [hypothesis.id],
       evidenceIds: ['change-removed-column'],
@@ -1230,8 +1315,8 @@ describe('shared investigation contracts', () => {
         ],
       },
       execution: {
-        toolCalls: 8,
-        agentSteps: 5,
+        toolCalls: 9,
+        agentSteps: 6,
         durationMs: 250,
         lineageEntitiesVisited: 3,
         retries: 0,
@@ -1286,6 +1371,7 @@ describe('shared investigation contracts', () => {
             evidenceIds: ['change-1'],
           },
         ],
+        blastRadius: testBlastRadius('unknown'),
         recommendations: ['Restore or intentionally replace the column.'],
         assumptions: ['The fixture snapshot covers the incident window.'],
         missingInformation: ['Runtime query logs are unavailable.'],

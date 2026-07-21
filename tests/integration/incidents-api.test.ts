@@ -184,6 +184,57 @@ describe('incident API', () => {
       throw new Error('Expected completed hypothesis scoring.');
     }
     expect(completed.report.hypotheses).toEqual(completed.hypothesisScoringStage.hypotheses);
+    expect(completed.report.blastRadius).toMatchObject({
+      analysisVersion: 'blast-radius-v1',
+      status: 'complete',
+      summary: { total: 2, datasets: 1, pipelines: 0, dashboards: 1 },
+      coverage: {
+        reasonCodes: [],
+        rootsConsidered: 1,
+        rootsAnalyzed: 1,
+        visitedEntities: 3,
+        truncatedGraphs: 0,
+        appliedLimits: { maxDepth: 3, maxEntities: 25, maxRootEntities: 3 },
+      },
+    });
+    expect(
+      completed.report.blastRadius.impacts.map((impact) => ({
+        kind: impact.entity.kind,
+        name: impact.entity.name,
+        distance: impact.distance,
+        rootUrn: impact.rootUrn,
+        pathUrns: impact.pathUrns,
+      })),
+    ).toEqual([
+      {
+        kind: 'dataset',
+        name: 'analytics.daily_revenue',
+        distance: 1,
+        rootUrn: 'urn:li:dataset:(urn:li:dataPlatform:snowflake,raw.orders,PROD)',
+        pathUrns: [
+          'urn:li:dataset:(urn:li:dataPlatform:snowflake,raw.orders,PROD)',
+          'urn:li:dataset:(urn:li:dataPlatform:snowflake,analytics.daily_revenue,PROD)',
+        ],
+      },
+      {
+        kind: 'dashboard',
+        name: 'Revenue overview',
+        distance: 2,
+        rootUrn: 'urn:li:dataset:(urn:li:dataPlatform:snowflake,raw.orders,PROD)',
+        pathUrns: [
+          'urn:li:dataset:(urn:li:dataPlatform:snowflake,raw.orders,PROD)',
+          'urn:li:dataset:(urn:li:dataPlatform:snowflake,analytics.daily_revenue,PROD)',
+          'urn:li:dashboard:(looker,revenue-overview)',
+        ],
+      },
+    ]);
+    expect(
+      completed.report.blastRadius.impacts.every(
+        (impact) =>
+          impact.hypothesisIds[0] === 'hypothesis-change-removed-gross-revenue' &&
+          impact.evidenceIds.includes('change-removed-gross-revenue'),
+      ),
+    ).toBe(true);
     expect(completed.remediationStage).toMatchObject({
       status: 'completed',
       recommendations: [

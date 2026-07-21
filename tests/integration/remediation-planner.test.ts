@@ -12,6 +12,8 @@ import {
 } from '../../packages/agent-core/src/index.js';
 import { createFixtureMetadataAdapter } from '../../packages/datahub-client/src/index.js';
 import {
+  BLAST_RADIUS_ANALYSIS_VERSION,
+  BLAST_RADIUS_STATUS_EXPLANATIONS,
   formatUntrustedEvidence,
   IncidentContextCompletedStageSchema,
   IncidentRequestSchema,
@@ -23,6 +25,22 @@ import {
 } from '../../packages/shared-types/src/index.js';
 
 const incidentId = 'remediation-fixture-incident';
+
+const completeEmptyBlastRadius = {
+  analysisVersion: BLAST_RADIUS_ANALYSIS_VERSION,
+  status: 'complete' as const,
+  explanation: BLAST_RADIUS_STATUS_EXPLANATIONS.complete,
+  impacts: [],
+  summary: { total: 0, datasets: 0, pipelines: 0, dashboards: 0 },
+  coverage: {
+    reasonCodes: [],
+    rootsConsidered: 1,
+    rootsAnalyzed: 1,
+    visitedEntities: 1,
+    truncatedGraphs: 0,
+    appliedLimits: { maxDepth: 3, maxEntities: 25, maxRootEntities: 3 },
+  },
+};
 
 function evidenceFor(
   context: IncidentContextCompletedStage,
@@ -69,6 +87,7 @@ async function canonicalInputs(metadata?: IncidentContextMetadata) {
     ...report,
     summary: `The strongest evidence-backed inference is: ${scoring.hypotheses[0]?.summary ?? ''}`,
     hypotheses: scoring.hypotheses,
+    blastRadius: completeEmptyBlastRadius,
   });
   return { context, suspicious, scoring, report: scoredReport };
 }

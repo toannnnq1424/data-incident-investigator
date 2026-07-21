@@ -499,6 +499,12 @@ describe('confidence transparency v1', () => {
     expect(
       InvestigationDraftReportSchema.safeParse({
         ...draft,
+        blastRadius: { status: 'complete' },
+      }).success,
+    ).toBe(false);
+    expect(
+      InvestigationDraftReportSchema.safeParse({
+        ...draft,
         hypotheses: [{ ...draft.hypotheses[0], confidence: 0.99 }],
       }).success,
     ).toBe(false);

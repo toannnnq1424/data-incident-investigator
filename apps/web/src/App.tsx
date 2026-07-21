@@ -719,6 +719,7 @@ export function getCompletedReportContent(incident: CompletedIncident) {
     summary: incident.report.summary,
     topHypothesis: topInference.summary,
     relatedEntities: incident.report.entities,
+    blastRadius: incident.report.blastRadius,
     facts: incident.report.evidence,
     lineageEvidence: incident.report.evidence.filter((evidence) => evidence.category === 'lineage'),
     inferences: incident.report.hypotheses.map((hypothesis) => ({
@@ -1405,6 +1406,96 @@ function EntityList({ entities }: { entities: EntityRef[] }) {
   );
 }
 
+export function BlastRadiusSection({
+  analysis,
+}: {
+  analysis: CompletedIncident['report']['blastRadius'];
+}) {
+  return (
+    <section className="report-section blast-radius" aria-labelledby="blast-radius-heading">
+      <p className="report-label">Downstream impact analysis</p>
+      <h3 id="blast-radius-heading">Blast radius</h3>
+      <div className="blast-radius-status">
+        <strong>{analysis.status}</strong>
+        <code>{analysis.analysisVersion}</code>
+      </div>
+      <p>{analysis.explanation}</p>
+      <dl className="blast-radius-summary">
+        <div>
+          <dt>Total</dt>
+          <dd>{analysis.summary.total}</dd>
+        </div>
+        <div>
+          <dt>Datasets</dt>
+          <dd>{analysis.summary.datasets}</dd>
+        </div>
+        <div>
+          <dt>Pipelines</dt>
+          <dd>{analysis.summary.pipelines}</dd>
+        </div>
+        <div>
+          <dt>Dashboards</dt>
+          <dd>{analysis.summary.dashboards}</dd>
+        </div>
+      </dl>
+      {analysis.coverage.reasonCodes.length > 0 && (
+        <div>
+          <h4>Coverage limitations</h4>
+          <ul className="coverage-reason-list">
+            {analysis.coverage.reasonCodes.map((reasonCode) => (
+              <li key={reasonCode}>
+                <code>{reasonCode}</code>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      <p className="blast-radius-limits">
+        Applied limits: depth {analysis.coverage.appliedLimits.maxDepth}, entities{' '}
+        {analysis.coverage.appliedLimits.maxEntities}, roots{' '}
+        {analysis.coverage.appliedLimits.maxRootEntities}. Analyzed{' '}
+        {analysis.coverage.rootsAnalyzed}/{analysis.coverage.rootsConsidered} roots and{' '}
+        {analysis.coverage.visitedEntities} entities.
+      </p>
+      {analysis.impacts.length === 0 ? (
+        <EmptyState
+          message={
+            analysis.status === 'complete'
+              ? 'No supported downstream dataset, pipeline, or dashboard was reachable within the applied bounds.'
+              : 'No downstream impact was verified; this is not a zero-impact claim.'
+          }
+        />
+      ) : (
+        <ol className="blast-radius-impact-list">
+          {analysis.impacts.map((impact) => (
+            <li key={impact.entity.urn}>
+              <div className="blast-radius-impact-heading">
+                <span className="entity-kind">{impact.entity.kind}</span>
+                <strong>{impact.entity.name}</strong>
+                <span>distance {impact.distance}</span>
+              </div>
+              <code>{impact.entity.urn}</code>
+              <p>
+                Downstream path: <code>{impact.pathUrns.join(' → ')}</code>
+              </p>
+              <p className="evidence-reference-label">Evidence provenance</p>
+              <ul className="evidence-reference-list">
+                {impact.evidenceIds.map((evidenceId) => (
+                  <li key={evidenceId}>
+                    <a href={`#${evidenceDomId(evidenceId)}`}>
+                      <code>{evidenceId}</code>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </li>
+          ))}
+        </ol>
+      )}
+    </section>
+  );
+}
+
 function EvidenceList({
   evidence,
   emptyMessage,
@@ -1619,17 +1710,20 @@ export function DegradedInvestigation({ incident }: { incident: DegradedIncident
         </ul>
       </section>
       {incident.report && (
-        <section aria-labelledby="partial-report-heading">
-          <p className="report-label">Validated partial report · not a complete traversal</p>
-          <h4 id="partial-report-heading">Preserved report evidence</h4>
-          <p>{incident.report.summary}</p>
-          <EntityList entities={incident.report.entities} />
-          <EvidenceList
-            evidence={incident.report.evidence}
-            emptyMessage="No factual report evidence was preserved."
-            linkTargets
-          />
-        </section>
+        <>
+          <section aria-labelledby="partial-report-heading">
+            <p className="report-label">Validated partial report · not a complete traversal</p>
+            <h4 id="partial-report-heading">Preserved report evidence</h4>
+            <p>{incident.report.summary}</p>
+            <EntityList entities={incident.report.entities} />
+            <EvidenceList
+              evidence={incident.report.evidence}
+              emptyMessage="No factual report evidence was preserved."
+              linkTargets
+            />
+          </section>
+          <BlastRadiusSection analysis={incident.report.blastRadius} />
+        </>
       )}
     </div>
   );
@@ -1690,6 +1784,8 @@ export function CompletedReport({ incident }: { incident: CompletedIncident }) {
         <ReportSection id="related-entities-heading" label="Entity impact" title="Related entities">
           <EntityList entities={content.relatedEntities} />
         </ReportSection>
+
+        <BlastRadiusSection analysis={content.blastRadius} />
 
         <ReportSection id="facts-heading" label="Facts" title="Evidence">
           <EvidenceList

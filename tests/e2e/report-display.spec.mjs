@@ -433,7 +433,38 @@ try {
     }
   }
 
+  const blastRadius = page.locator('section.blast-radius');
+  await blastRadius.getByRole('heading', { name: 'Blast radius' }).waitFor({ timeout: 2_000 });
+  const blastRadiusView = await blastRadius.evaluate((section) => ({
+    text: section.textContent ?? '',
+    impacts: [...section.querySelectorAll('.blast-radius-impact-list > li')].map((impact) => ({
+      kind: impact.querySelector('.entity-kind')?.textContent ?? '',
+      name: impact.querySelector('strong')?.textContent ?? '',
+      evidenceLinks: [...impact.querySelectorAll('.evidence-reference-list a')].map(
+        (link) => link.getAttribute('href') ?? '',
+      ),
+    })),
+  }));
+  if (
+    !blastRadiusView.text.includes('complete') ||
+    !blastRadiusView.text.includes('blast-radius-v1') ||
+    !blastRadiusView.text.includes('Analyzed 1/1 roots and 3 entities') ||
+    blastRadiusView.impacts.length !== 2 ||
+    blastRadiusView.impacts[0]?.kind !== 'dataset' ||
+    blastRadiusView.impacts[0]?.name !== 'analytics.daily_revenue' ||
+    blastRadiusView.impacts[1]?.kind !== 'dashboard' ||
+    blastRadiusView.impacts[1]?.name !== 'Revenue overview' ||
+    blastRadiusView.impacts.some(
+      (impact) =>
+        !impact.evidenceLinks.includes('#evidence-change-removed-gross-revenue') ||
+        impact.evidenceLinks.some((link) => !link.startsWith('#evidence-')),
+    )
+  ) {
+    fail('Blast radius did not render exact bounded downstream impacts and evidence provenance.');
+  }
+
   const reportText = await page.locator('body').innerText();
+  assertText(reportText, /Blast radius/i, 'blast-radius section');
   assertText(reportText, /Related entities/i, 'related entities section');
   assertText(reportText, /analytics\.daily_revenue/i, 'seed entity');
   assertText(reportText, /raw\.orders/i, 'upstream entity');

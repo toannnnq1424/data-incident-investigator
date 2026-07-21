@@ -235,9 +235,32 @@ fixed explanation. A scored hypothesis adds rank, source change/time, and the ex
 described above. A report cannot mix scored and not-scored hypotheses; completed scoring requires the
 report list to equal lifecycle output exactly.
 
+## Blast radius
+
+Every public report contains strict versioned `blastRadius` data with `analysisVersion:
+blast-radius-v1`. Its status is `complete | partial | unknown | unavailable`, paired with an exact
+code-owned explanation. `complete` has full considered-root coverage and no reason code; `partial` has
+at least one verified impact plus an incomplete-coverage reason; `unknown` and `unavailable` contain no
+impact and cannot be interpreted as zero impact. `unavailable` requires a provider/tool failure reason,
+while `unknown` excludes those availability reasons.
+
+An impact contains one sanitized `dataset | pipeline | dashboard` entity (`urn`, `name`, `kind`), the
+literal relation `downstream`, positive bounded `distance`, source `rootUrn`, a cycle-free root-to-impact
+`pathUrns` whose length equals distance plus one, and unique lexically ordered `hypothesisIds` and
+`evidenceIds`. Public report validation resolves the hypothesis IDs to scored hypotheses, the root to
+their exact source-change evidence entity, and every impact evidence ID through those hypotheses.
+Duplicate impact URNs, dangling references, mismatched paths/counts, unstable order, or excess bounds
+are invalid.
+
+`summary` contains exact counts for total, datasets, pipelines, and dashboards. `coverage` contains
+canonical unique reason codes, root counters, unique visited-entity count, truncated-graph count, and
+the applied depth/entity/root limits. Impact order is distance, then dataset/pipeline/dashboard, then
+URN. The field is API/code-owned and is absent from `InvestigationDraftReportSchema`, so runner/model
+output cannot author reach, status, explanations, or provenance.
+
 ## Investigation report
 
-A report contains incident ID, summary, related entities, evidence, hypotheses, recommendations,
+A report contains incident ID, summary, related entities, evidence, hypotheses, blast radius, recommendations,
 assumptions, and missing information. `InvestigationDraftReportSchema` is parsed before the scorer;
 `InvestigationReportSchema` is parsed after API-owned confidence finalization and before planner,
 storage, or response use. Text and collections have explicit bounds and rendering preserves these
@@ -275,6 +298,8 @@ completed. Fixture mode may keep state in memory for the MVP; persistent storage
 
 - Entity URNs and evidence IDs are unique within a report.
 - Hypothesis evidence IDs resolve to report evidence.
+- Blast-radius impacts are downstream-only, uniquely and deterministically ordered, stay within applied
+  lineage bounds, and resolve to scored hypotheses plus their report evidence.
 - Provider-specific payloads never appear in API responses.
 - Lineage roots/nodes and source-target edge pairs are unique, and lineage edges never dangle.
 - Recent-change IDs are unique; rows match the requested entity/window and use deterministic

@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 import {
   DEFAULT_INCIDENT_CONTEXT_LIMITS,
+  DeterministicBlastRadiusAnalyzer,
   DeterministicIncidentContextGatherer,
   DeterministicHypothesisScorer,
   DeterministicInvestigationRunner,
@@ -14,6 +15,7 @@ import {
   InvestigationModelProviderTimeoutError,
   type IncidentContextGatherer,
   type IncidentContextGatheringLimits,
+  type BlastRadiusAnalyzer,
   type HypothesisScorer,
   type InvestigationLimits,
   type InvestigationRunner,
@@ -35,6 +37,10 @@ import {
 } from '@dii/datahub-client';
 import {
   ApiErrorSchema,
+  BLAST_RADIUS_ANALYSIS_VERSION,
+  BLAST_RADIUS_MAX_ROOT_ENTITIES,
+  BLAST_RADIUS_STATUS_EXPLANATIONS,
+  BlastRadiusAnalysisSchema,
   DEFAULT_PUBLIC_INGRESS_CONFIG,
   DEFAULT_RUNTIME_LIMIT_CONFIG,
   HealthResponseSchema,
@@ -74,6 +80,7 @@ import {
   SuspiciousChangeDetectionStageSchema,
   UNSCORED_CONFIDENCE_EXPLANATIONS,
   type IncidentContextStage,
+  type BlastRadiusAnalysis,
   type HypothesisScoringStage,
   type InvestigationDraftReport,
   type InvestigationReport,
@@ -114,6 +121,7 @@ interface BuildServerOptions {
   processingDelayMs?: number;
   contextGatherer?: IncidentContextGatherer;
   contextLimits?: IncidentContextGatheringLimits;
+  blastRadiusAnalyzer?: BlastRadiusAnalyzer;
   suspiciousChangeDetector?: SuspiciousChangeDetector;
   hypothesisScorer?: HypothesisScorer;
   remediationPlanner?: RemediationPlanner;
@@ -724,6 +732,7 @@ function invalidRemediationPlanning(): RemediationPlanningStage {
 function finalizeUnscoredReport(
   report: InvestigationDraftReport,
   reasonCode: 'insufficient_evidence' | 'scoring_unavailable',
+  blastRadius: BlastRadiusAnalysis,
 ): InvestigationReport {
   return InvestigationReportSchema.parse({
     ...report,
@@ -735,6 +744,29 @@ function finalizeUnscoredReport(
         explanation: UNSCORED_CONFIDENCE_EXPLANATIONS[reasonCode],
       },
     })),
+    blastRadius,
+  });
+}
+
+function unavailableBlastRadius(runtimeLimits: RuntimeLimitConfig): BlastRadiusAnalysis {
+  return BlastRadiusAnalysisSchema.parse({
+    analysisVersion: BLAST_RADIUS_ANALYSIS_VERSION,
+    status: 'unavailable',
+    explanation: BLAST_RADIUS_STATUS_EXPLANATIONS.unavailable,
+    impacts: [],
+    summary: { total: 0, datasets: 0, pipelines: 0, dashboards: 0 },
+    coverage: {
+      reasonCodes: ['tool_failure'],
+      rootsConsidered: 0,
+      rootsAnalyzed: 0,
+      visitedEntities: 0,
+      truncatedGraphs: 0,
+      appliedLimits: {
+        maxDepth: runtimeLimits.maxLineageDepth,
+        maxEntities: Math.min(runtimeLimits.maxEntitiesPerQuery, METADATA_LINEAGE_MAX_NODES),
+        maxRootEntities: BLAST_RADIUS_MAX_ROOT_ENTITIES,
+      },
+    },
   });
 }
 
@@ -992,6 +1024,7 @@ export function buildServer(options: BuildServerOptions = {}) {
   const suspiciousChangeDetector =
     options.suspiciousChangeDetector ?? new DeterministicSuspiciousChangeDetector();
   const hypothesisScorer = options.hypothesisScorer ?? new DeterministicHypothesisScorer();
+  const blastRadiusAnalyzer = options.blastRadiusAnalyzer ?? new DeterministicBlastRadiusAnalyzer();
   const remediationPlanner = options.remediationPlanner ?? new DeterministicRemediationPlanner();
   const contextMetadata = {
     healthCheck: metadataHealth.healthCheck.bind(metadataHealth),
@@ -1648,7 +1681,6 @@ export function buildServer(options: BuildServerOptions = {}) {
           if (!report) {
             throw new Error('Structured report retry loop ended without a validated result.');
           }
-          let completedReport = finalizeUnscoredReport(report, 'scoring_unavailable');
           if (
             contextStage.status === 'completed' &&
             (suspiciousChangeStage.status === 'completed' ||
@@ -1666,13 +1698,6 @@ export function buildServer(options: BuildServerOptions = {}) {
                 if (!topHypothesis) {
                   throw new Error('Completed hypothesis scoring returned no top inference.');
                 }
-                completedReport = InvestigationReportSchema.parse({
-                  ...report,
-                  summary: `The strongest evidence-backed inference is: ${topHypothesis.summary}`,
-                  hypotheses: hypothesisScoringStage.hypotheses,
-                });
-              } else {
-                completedReport = finalizeUnscoredReport(report, 'insufficient_evidence');
               }
             } catch (error: unknown) {
               const terminationError = terminationErrorFrom(error);
@@ -1681,6 +1706,53 @@ export function buildServer(options: BuildServerOptions = {}) {
               }
               hypothesisScoringStage = unavailableHypothesisScoring('SCORING_INVALID');
             }
+          }
+
+          let blastRadius: BlastRadiusAnalysis;
+          try {
+            executionBudget.beginAgentStep();
+            blastRadius = await blastRadiusAnalyzer.analyze(
+              hypothesisScoringStage,
+              report.evidence,
+              {
+                metadata: metadataLineage,
+                maxDepth: runtimeLimits.maxLineageDepth,
+                maxEntities: Math.min(
+                  runtimeLimits.maxEntitiesPerQuery,
+                  METADATA_LINEAGE_MAX_NODES,
+                ),
+                timeoutMs: runtimeLimits.agentTimeoutMs,
+                executionBudget,
+              },
+            );
+          } catch (error: unknown) {
+            const terminationError = terminationErrorFrom(error);
+            if (terminationError) {
+              throw terminationError;
+            }
+            blastRadius = unavailableBlastRadius(runtimeLimits);
+          }
+
+          let completedReport: InvestigationReport;
+          if (hypothesisScoringStage.status === 'completed') {
+            const topHypothesis = hypothesisScoringStage.hypotheses[0];
+            if (!topHypothesis) {
+              throw new Error('Completed hypothesis scoring returned no top inference.');
+            }
+            completedReport = InvestigationReportSchema.parse({
+              ...report,
+              summary: `The strongest evidence-backed inference is: ${topHypothesis.summary}`,
+              hypotheses: hypothesisScoringStage.hypotheses,
+              blastRadius,
+            });
+          } else {
+            completedReport = finalizeUnscoredReport(
+              report,
+              hypothesisScoringStage.status === 'insufficient'
+                ? 'insufficient_evidence'
+                : 'scoring_unavailable',
+              blastRadius,
+            );
           }
           try {
             executionBudget.beginAgentStep();

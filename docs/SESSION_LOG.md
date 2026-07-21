@@ -2836,3 +2836,92 @@ extension.
 
 Audit correction delta, tạo additive conventional commit (do public history cấm amend), push normal,
 theo dõi new exact-head CI của Draft PR #38 tới SUCCESS và không merge.
+
+## 2026-07-22 — Optional extension: deterministic blast-radius analysis
+
+### Objective
+
+Từ exact merged Slice 6.6 `43e57aee320c86da0930deb4dd2fae38ca4b80e6` (tree
+`8592035e801a83c62796c6e527f3ac98e1203c36`; parents
+`57dabac17d27d6cbc1764087bf1bec17820a55d0` và
+`67755e31fbef163e4e9b442ddb4779897b7e95ae`; main CI run `29859749024`, job
+`88733127030`, SUCCESS), thêm blast-radius analysis deterministic, bounded và evidence-linked cho
+incident. Không làm Markdown export, Phase 6 Level D/checkpoint, Phase 7 hoặc Phase 8.
+
+### Completed
+
+Đã bootstrap/fetch an toàn, xác minh `origin/main` exact, tạo branch
+`codex/phase-6-extension-blast-radius`, đọc docs-first và khóa plan trước source edit.
+`blast-radius-v1` nay là trường bắt buộc của public report nhưng bị cấm tại runner/model draft. Shared
+schema có strict status `complete | partial | unknown | unavailable`, typed dataset/pipeline/dashboard,
+downstream path/distance, summary, coverage/reason và applied limits; mọi impact phải resolve scored
+hypothesis, source root và report evidence.
+
+Agent-core chỉ dùng existing normalized `MetadataLineageProvider`, roots từ exact scored source-change
+evidence, physical downstream edges và runtime depth/entity/tool/deadline bounds. Traversal cycle-safe,
+shortest-path, order-independent, stable dedupe/order; không retry, connector, provider, storage, model
+prose hay silent fixture fallback. Verified reach được giữ khi graph/root sau bị truncate/fail; coverage
+không đủ không bao giờ thành complete/zero-impact. Cardinality không thay đổi
+`evidence-confidence-v1`.
+
+API compose analyzer sau scoring và trước remediation; canonical execution tăng đúng từ 5/8 lên 6
+agent steps/9 tool calls. Web có region `Blast radius` tối thiểu, accessible và tách khỏi hypotheses,
+remediation, evidence timeline và activity trail. Canonical fixture chỉ trả
+`analytics.daily_revenue` distance 1 và `Revenue overview` distance 2 từ `raw.orders`, với resolved
+hypothesis/evidence provenance.
+
+### Files changed
+
+23 path: shared types, agent-core, API, web/CSS; test blast-radius mới; direct contract, runtime,
+incident API, confidence, remediation và static/browser report regressions; `PRODUCT_SPEC`,
+`ARCHITECTURE`, `AGENT_DESIGN`, `API_CONTRACTS`, `DATA_MODEL`, `SECURITY`, `TEST_STRATEGY`,
+`IMPLEMENTATION_PLAN`, `KNOWN_ISSUES` và entry này. Không đổi repository map, `.env`, config, fixture,
+DataHub client, evaluation source, manifest, lockfile hay dependency.
+
+### Validation performed
+
+- Focused Prettier write/check PASS trong `2701ms`/`2429ms`; affected ESLint PASS trong `19604ms`.
+- 6/6 typecheck PASS: shared-types `7818ms`, datahub-client `8102ms`, agent-core `8675ms`, API
+  `9369ms`, web `9800ms`, evaluation `8169ms`.
+- Exact deterministic matrix PASS 11/11 files, 99/99 tests trong `3.78s` (`4592ms` command wall).
+  Dedicated blast-radius file có 9 test cho typed downstream traversal, direct/indirect depth,
+  shortest-path/order/dedupe, upstream/sibling exclusion, exact/one-over truncation, missing lineage,
+  unknown/unavailable, partial preservation, tool failure, sanitizer và credential-free fixture.
+- 6/6 build PASS: shared-types `3239ms`, datahub-client `4912ms`, agent-core `4854ms`, API `6334ms`,
+  web `9193ms` (109 Vite modules, build `1.54s`), evaluation `4370ms`. Built smoke PASS
+  `2330ms` cho API/web artifacts, `/health` và `/ready`.
+- Đúng một automated Windows browser regression PASS trong `11150ms` (`17917ms` command wall), gồm
+  exact blast status/version/counts/impacts/evidence anchors, accessibility, clean console, responsive
+  overflow và owned cleanup. Supplemental in-app read-only DOM spot-check xác nhận đúng một labeled
+  region, hai distance, zero unresolved evidence links, zero warning/error, zero overflow và zero unsafe
+  HTML node; 12 owned QA process và toàn bộ ports đã được giải phóng.
+- Final pre-publication scope audit: `git diff --check` sạch; chỉ 23 intended source/test/doc paths;
+  ignored build artifacts không được track; không có manifest/lock/env/config/fixture/provider/
+  evaluation drift, credential/raw payload/private reasoning/conflict/debug sentinel hoặc listener leak.
+
+### Classified recoveries
+
+Regression audit đầu tiên phát hiện đúng 8 stale expectations: sáu public-report fixture thiếu
+`blastRadius` và hai runtime counters còn 5/8; minimum fixture/assertion update đạt 66/66 liên kết trước
+final matrix. Managed Windows sandbox vẫn gặp known esbuild junction nên Vitest/browser/build dùng
+bundled bootstrap runtime qua approved execution. Supplemental spot-check thử artifact API start trước,
+gặp known workspace package-export limitation; cây process đã dọn rồi dùng đúng dev-runtime launcher đã
+được automated regression chứng minh. Không nới production contract.
+
+### Validation intentionally deferred
+
+Full repository suite, Level D/checkpoint/closure, Mac, live DataHub/credential/model network, Markdown
+incident export, auth, Slack/Jira, new provider/storage, vector DB, telemetry, database, deployment,
+Phase 7 và Phase 8.
+
+### Known issues
+
+Incident state vẫn process-local. Missing/truncated lineage hoặc provider/tool failure chủ ý trả
+partial/unknown/unavailable và không phải zero-impact claim. Managed Windows workspace-binary/esbuild
+junction cùng plain Node workspace package-export là environment-only limitations đã có recovery hẹp.
+
+### Exact next step
+
+Publish một normal conventional commit lên đúng một Draft PR base current `main`, theo dõi exact-head CI
+tới terminal SUCCESS và không merge. Sau đó chỉ human-review Draft PR; mọi extension/checkpoint tiếp
+theo cần approval riêng.

@@ -332,8 +332,8 @@ describe('public incident execution metadata', () => {
     expect(incident).toMatchObject({
       status: 'completed',
       execution: {
-        toolCalls: 8,
-        agentSteps: 5,
+        toolCalls: 9,
+        agentSteps: 6,
         durationMs: 0,
         lineageEntitiesVisited: 3,
         retries: 0,
