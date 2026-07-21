@@ -26,6 +26,8 @@ import {
   IncidentSuspiciousChangeDetectionSchema,
   IncidentIntentSchema,
   IncidentRequestSchema,
+  INVESTIGATION_LIMIT_MESSAGES,
+  InvestigationExecutionMetadataSchema,
   InvestigationReportSchema,
   METADATA_LINEAGE_MAX_DEPTH,
   METADATA_LINEAGE_MAX_NODES,
@@ -39,10 +41,14 @@ import {
   REMEDIATION_MAX_RECOMMENDATIONS,
   REMEDIATION_SUPPORTED_CHANGE_CATEGORIES,
   RemediationPlanningStageSchema,
+  RUNTIME_LIMIT_HARD_MAX_ENTITIES_PER_QUERY,
+  RUNTIME_LIMIT_HARD_MAX_TIMEOUT_MS,
+  RUNTIME_LIMIT_HARD_MAX_TOOL_CALLS,
   SUSPICIOUS_CHANGE_MAX_CANDIDATES,
   SUSPICIOUS_CHANGE_SIGNAL_LABELS,
   SUSPICIOUS_CHANGE_SIGNAL_ORDER,
   SUSPICIOUS_CHANGE_SIGNAL_WEIGHTS,
+  RuntimeLimitConfigSchema,
   type Evidence,
   type IncidentContextCompletedStage,
   type IncidentContextStage,
@@ -50,6 +56,8 @@ import {
   type IncidentIntent,
   type IncidentRequest,
   type InvestigationReport,
+  type InvestigationExecutionMetadata,
+  type InvestigationTerminationReason,
   type HypothesisScoreFactor,
   type HypothesisScoringMissingInformation,
   type HypothesisScoringResult,
@@ -60,12 +68,142 @@ import {
   type RemediationMissingInformation,
   type RemediationPlanningStage,
   type RemediationRecommendation,
+  type RuntimeLimitConfig,
   type SuspiciousChangeCandidate,
   type SuspiciousChangeDetectionResult,
   type SuspiciousChangeMissingInformation,
   type SuspiciousChangeSignal,
   type SuspiciousChangeSignalCode,
 } from '@dii/shared-types';
+
+type InvestigationLimitTerminationReason = keyof typeof INVESTIGATION_LIMIT_MESSAGES;
+
+export class InvestigationLimitError extends Error {
+  readonly execution: InvestigationExecutionMetadata;
+  readonly reason: InvestigationLimitTerminationReason;
+
+  constructor(
+    reason: InvestigationLimitTerminationReason,
+    execution: InvestigationExecutionMetadata,
+  ) {
+    super(INVESTIGATION_LIMIT_MESSAGES[reason]);
+    this.name = 'InvestigationLimitError';
+    this.reason = reason;
+    this.execution = execution;
+  }
+}
+
+export class InvestigationExecutionBudget {
+  readonly limits: Readonly<RuntimeLimitConfig>;
+
+  private readonly startedAt: number;
+  private readonly visitedLineageEntities = new Set<string>();
+  private agentSteps = 0;
+  private retries = 0;
+  private toolCalls = 0;
+
+  constructor(
+    limits: RuntimeLimitConfig,
+    private readonly now: () => number = () => performance.now(),
+  ) {
+    this.limits = Object.freeze(RuntimeLimitConfigSchema.parse(limits));
+    this.startedAt = this.now();
+  }
+
+  private durationMs() {
+    return Math.max(0, Math.floor(this.now() - this.startedAt));
+  }
+
+  private fail(reason: InvestigationLimitTerminationReason): never {
+    throw new InvestigationLimitError(reason, this.snapshot(reason));
+  }
+
+  assertDuration() {
+    if (this.durationMs() > this.limits.agentTimeoutMs) {
+      this.fail('duration_limit_reached');
+    }
+  }
+
+  remainingDurationMs() {
+    this.assertDuration();
+    return Math.max(0, this.limits.agentTimeoutMs - this.durationMs());
+  }
+
+  beginAgentStep() {
+    this.assertDuration();
+    if (this.agentSteps >= this.limits.maxAgentSteps) {
+      this.fail('agent_step_limit_reached');
+    }
+    this.agentSteps += 1;
+  }
+
+  recordToolCall() {
+    this.assertDuration();
+    if (this.toolCalls >= this.limits.maxToolCalls) {
+      this.fail('tool_call_limit_reached');
+    }
+    this.toolCalls += 1;
+  }
+
+  assertLineageRequest(depth: number, entityCount: number) {
+    this.assertDuration();
+    if (depth > this.limits.maxLineageDepth) {
+      this.fail('lineage_depth_limit_reached');
+    }
+    this.assertEntityQuery(entityCount);
+  }
+
+  assertEntityQuery(entityCount: number) {
+    this.assertDuration();
+    if (entityCount > this.limits.maxEntitiesPerQuery) {
+      this.fail('entity_limit_reached');
+    }
+  }
+
+  recordLineageEntities(entityUrns: readonly string[]) {
+    this.assertDuration();
+    const nextEntities = new Set(this.visitedLineageEntities);
+    entityUrns.forEach((urn) => nextEntities.add(urn));
+    if (nextEntities.size > this.limits.maxEntitiesPerQuery) {
+      this.fail('entity_limit_reached');
+    }
+    entityUrns.forEach((urn) => this.visitedLineageEntities.add(urn));
+  }
+
+  recordRetry() {
+    this.assertDuration();
+    if (this.retries >= this.limits.maxRetries) {
+      this.fail('retry_limit_reached');
+    }
+    this.retries += 1;
+  }
+
+  assertModelOutput(serializedOutput: string) {
+    this.assertDuration();
+    if (new TextEncoder().encode(serializedOutput).byteLength > this.limits.maxModelOutputBytes) {
+      this.fail('model_output_limit_reached');
+    }
+  }
+
+  terminate(reason: InvestigationLimitTerminationReason): never {
+    return this.fail(reason);
+  }
+
+  snapshot(
+    terminationReason: InvestigationTerminationReason = 'completed',
+  ): InvestigationExecutionMetadata {
+    if (terminationReason === 'completed') {
+      this.assertDuration();
+    }
+    return InvestigationExecutionMetadataSchema.parse({
+      toolCalls: this.toolCalls,
+      agentSteps: this.agentSteps,
+      durationMs: this.durationMs(),
+      lineageEntitiesVisited: this.visitedLineageEntities.size,
+      terminationReason,
+    });
+  }
+}
 
 export interface IncidentContextGatheringLimits {
   candidateEntityCount: number;
@@ -89,6 +227,7 @@ export interface IncidentContextGatheringContext {
   metadata: IncidentContextMetadata;
   mode: MetadataSourceMode;
   limits: IncidentContextGatheringLimits;
+  executionBudget?: InvestigationExecutionBudget;
 }
 
 export interface IncidentContextGatherer {
@@ -158,10 +297,10 @@ function validateContextLimits(limits: IncidentContextGatheringLimits) {
     limits.recentChangeWindowHours > METADATA_RECENT_CHANGES_MAX_WINDOW_HOURS ||
     !Number.isInteger(limits.toolCalls) ||
     limits.toolCalls < requiredToolCalls ||
-    limits.toolCalls > 10 ||
+    limits.toolCalls > RUNTIME_LIMIT_HARD_MAX_TOOL_CALLS ||
     !Number.isInteger(limits.timeoutMs) ||
     limits.timeoutMs < 1 ||
-    limits.timeoutMs > 10_000
+    limits.timeoutMs > RUNTIME_LIMIT_HARD_MAX_TIMEOUT_MS
   ) {
     throw new Error('Incident context limits exceed the supported deterministic bounds.');
   }
@@ -188,14 +327,30 @@ export class DeterministicIncidentContextGatherer implements IncidentContextGath
     context: IncidentContextGatheringContext,
   ): Promise<IncidentContextCompletedStage> {
     validateContextLimits(context.limits);
+    context.executionBudget?.assertEntityQuery(context.limits.candidateEntityCount);
+    context.executionBudget?.assertLineageRequest(
+      context.limits.lineageDepth,
+      context.limits.lineageEntityCount,
+    );
     const intent = parseIncidentIntent(request, context.limits.recentChangeWindowHours);
     const controller = new AbortController();
+    const timeoutMs = Math.min(
+      context.limits.timeoutMs,
+      context.executionBudget?.remainingDurationMs() ?? context.limits.timeoutMs,
+    );
     let timeout: ReturnType<typeof setTimeout> | undefined;
     const timeoutPromise = new Promise<never>((_, reject) => {
       timeout = setTimeout(() => {
         controller.abort();
-        reject(new MetadataProviderError('timeout'));
-      }, context.limits.timeoutMs);
+        reject(
+          context.executionBudget
+            ? new InvestigationLimitError(
+                'duration_limit_reached',
+                context.executionBudget.snapshot('duration_limit_reached'),
+              )
+            : new MetadataProviderError('timeout'),
+        );
+      }, timeoutMs);
     });
 
     try {
@@ -237,6 +392,7 @@ export class DeterministicIncidentContextGatherer implements IncidentContextGath
     }
 
     assertContextActive(signal);
+    context.executionBudget?.recordToolCall();
     const healthResult = await metadata.healthCheck({ signal });
     assertContextActive(signal);
     const parsedHealth = MetadataHealthResponseSchema.safeParse({ mode, ...healthResult });
@@ -250,6 +406,7 @@ export class DeterministicIncidentContextGatherer implements IncidentContextGath
 
     const query = intent.entityHints[0] ?? intent.question;
     assertContextActive(signal);
+    context.executionBudget?.recordToolCall();
     const searchResults = await metadata.searchEntities({
       query,
       limit: limits.candidateEntityCount,
@@ -293,6 +450,7 @@ export class DeterministicIncidentContextGatherer implements IncidentContextGath
       signal,
     } as const;
     assertContextActive(signal);
+    context.executionBudget?.recordToolCall();
     const lineageResponse = await metadata.getLineageGraph(lineageRequest);
     assertContextActive(signal);
     const parsedLineage = MetadataLineageResponseSchema.safeParse(lineageResponse);
@@ -306,6 +464,7 @@ export class DeterministicIncidentContextGatherer implements IncidentContextGath
       throw new MetadataProviderError('invalid_response');
     }
     const lineage = parsedLineage.data;
+    context.executionBudget?.recordLineageEntities(lineage.nodes.map((entity) => entity.urn));
     if (lineage.edges.length === 0) {
       addMissingInformation(missingInformation, {
         code: 'lineage_not_found',
@@ -337,6 +496,7 @@ export class DeterministicIncidentContextGatherer implements IncidentContextGath
         signal,
       } as const;
       assertContextActive(signal);
+      context.executionBudget?.recordToolCall();
       const recentChangesResponse = await metadata.getRecentChangesForEntity(recentChangeRequest);
       assertContextActive(signal);
       const parsedRecentChanges =
@@ -1147,6 +1307,7 @@ export interface InvestigationContext {
   incidentId: string;
   metadata: MetadataAdapter;
   limits: InvestigationLimits;
+  executionBudget?: InvestigationExecutionBudget;
 }
 
 export interface InvestigationRunner {
@@ -1191,11 +1352,21 @@ function changeEvidenceCategory(change: MetadataChange): Evidence['category'] {
 
 function validateLimits(limits: InvestigationLimits) {
   if (
+    !Number.isInteger(limits.lineageDepth) ||
     limits.lineageDepth < 0 ||
+    limits.lineageDepth > METADATA_LINEAGE_MAX_DEPTH ||
+    !Number.isInteger(limits.entityCount) ||
     limits.entityCount < 1 ||
+    limits.entityCount > RUNTIME_LIMIT_HARD_MAX_ENTITIES_PER_QUERY ||
+    !Number.isInteger(limits.recentChangeCount) ||
     limits.recentChangeCount < 0 ||
+    limits.recentChangeCount > METADATA_RECENT_CHANGES_MAX_LIMIT ||
+    !Number.isInteger(limits.toolCalls) ||
     limits.toolCalls < requiredToolCalls ||
-    limits.timeoutMs < 1
+    limits.toolCalls > RUNTIME_LIMIT_HARD_MAX_TOOL_CALLS ||
+    !Number.isInteger(limits.timeoutMs) ||
+    limits.timeoutMs < 1 ||
+    limits.timeoutMs > RUNTIME_LIMIT_HARD_MAX_TIMEOUT_MS
   ) {
     throw new Error('Investigation limits do not permit the required bounded fixture workflow.');
   }
@@ -1207,12 +1378,29 @@ export class DeterministicInvestigationRunner implements InvestigationRunner {
     context: InvestigationContext,
   ): Promise<InvestigationReport> {
     validateLimits(context.limits);
+    context.executionBudget?.assertEntityQuery(context.limits.entityCount);
+    context.executionBudget?.assertLineageRequest(
+      context.limits.lineageDepth,
+      context.limits.entityCount,
+    );
 
+    const timeoutMs = Math.min(
+      context.limits.timeoutMs,
+      context.executionBudget?.remainingDurationMs() ?? context.limits.timeoutMs,
+    );
     let timeout: ReturnType<typeof setTimeout> | undefined;
     const timeoutPromise = new Promise<never>((_, reject) => {
       timeout = setTimeout(
-        () => reject(new Error('The fixture investigation exceeded its duration limit.')),
-        context.limits.timeoutMs,
+        () =>
+          reject(
+            context.executionBudget
+              ? new InvestigationLimitError(
+                  'duration_limit_reached',
+                  context.executionBudget.snapshot('duration_limit_reached'),
+                )
+              : new Error('The fixture investigation exceeded its duration limit.'),
+          ),
+        timeoutMs,
       );
     });
 
@@ -1230,8 +1418,10 @@ export class DeterministicInvestigationRunner implements InvestigationRunner {
     context: InvestigationContext,
   ): Promise<InvestigationReport> {
     const { metadata, limits } = context;
+    context.executionBudget?.recordToolCall();
     await metadata.healthCheck();
 
+    context.executionBudget?.recordToolCall();
     const candidates = await metadata.searchEntities({
       query: request.entityHint ?? request.question,
       limit: limits.entityCount,
@@ -1242,6 +1432,7 @@ export class DeterministicInvestigationRunner implements InvestigationRunner {
       throw new Error('The fixture did not return an investigation seed.');
     }
 
+    context.executionBudget?.recordToolCall();
     const lineage = await metadata.getLineage(
       seed,
       limits.lineageDepth,
@@ -1254,6 +1445,8 @@ export class DeterministicInvestigationRunner implements InvestigationRunner {
         ),
       ).values(),
     ];
+    context.executionBudget?.recordLineageEntities(entities.map((entity) => entity.urn));
+    context.executionBudget?.recordToolCall();
     const changes = await metadata.getRecentChanges(
       entities,
       recentChangeBoundary(request.occurredAt),

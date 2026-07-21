@@ -1,6 +1,18 @@
 # Known issues
 
-Last updated: 2026-07-19.
+Last updated: 2026-07-21.
+
+- Phase 6 Slice 6.1 Draft PR #33 initially passed CI at `be3a23db`, but independent Windows QA correctly
+  blocked merge because the API mislabeled DataHub's provider-owned two-second timeout as exhaustion of
+  the ninety-second total duration budget. The targeted correction now distinguishes factual
+  `provider_timeout`/`METADATA_TIMEOUT` from `duration_limit_reached` using one injected monotonic budget
+  snapshot, remains terminal `failed` with no report, and adds no retry or graceful-degradation behavior.
+  Deterministic red-to-green coverage proves provider timeout at 2,000 ms and deadline exhaustion at
+  90,001 ms; directly adjacent runtime/incidents tests, contract tests, affected lint/typechecks/builds,
+  and scoped audit pass locally. Publication, exact-new-head CI, and independent Windows QA rerun remain
+  pending. The existing fixture/browser success path is unchanged, so no browser rerun is required for
+  this correction. Body/rate limits, sanitization/prompt-injection safety, graceful degradation,
+  readiness, structured audit trail, and confidence transparency remain deferred to Slices 6.2-6.6.
 
 - Phase 5 integration checkpoint local Level D evidence passes on exact Slice 5.1 final HEAD
   `883bf9bf` and unique branch `codex/phase-5-integration-checkpoint`. The single `pnpm validate`

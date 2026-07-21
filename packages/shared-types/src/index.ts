@@ -18,6 +18,7 @@ export const MetadataHealthResponseSchema = z.object({
 });
 
 export const EntityKindSchema = z.enum(['dataset', 'dashboard', 'pipeline', 'chart']);
+export const METADATA_ENTITY_SEARCH_MAX_LIMIT = 20;
 
 export const EntityRefSchema = z.object({
   urn: z.string().min(1),
@@ -29,7 +30,7 @@ export const MetadataEntitySearchRequestSchema = z
   .object({
     query: z.string().trim().min(2).max(200),
     entityType: EntityKindSchema.optional(),
-    limit: z.number().int().min(1).max(20).default(10),
+    limit: z.number().int().min(1).max(METADATA_ENTITY_SEARCH_MAX_LIMIT).default(10),
   })
   .strict();
 
@@ -59,8 +60,8 @@ export const MetadataEntitySearchResponseSchema = z
   .object({
     query: z.string().trim().min(2).max(200),
     entityType: EntityKindSchema.optional(),
-    limit: z.number().int().min(1).max(20),
-    results: z.array(MetadataEntitySearchResultSchema).max(20),
+    limit: z.number().int().min(1).max(METADATA_ENTITY_SEARCH_MAX_LIMIT),
+    results: z.array(MetadataEntitySearchResultSchema).max(METADATA_ENTITY_SEARCH_MAX_LIMIT),
   })
   .strict()
   .superRefine((response, context) => {
@@ -99,6 +100,85 @@ export const METADATA_LINEAGE_MAX_DEPTH = 5;
 export const METADATA_LINEAGE_DEFAULT_MAX_NODES = 8;
 export const METADATA_LINEAGE_MAX_NODES = 25;
 export const METADATA_LINEAGE_MAX_EDGES = 100;
+
+export const RUNTIME_LIMIT_HARD_MAX_AGENT_STEPS = 64;
+export const RUNTIME_LIMIT_HARD_MAX_TOOL_CALLS = 64;
+export const RUNTIME_LIMIT_HARD_MAX_LINEAGE_DEPTH = METADATA_LINEAGE_MAX_DEPTH;
+export const RUNTIME_LIMIT_HARD_MAX_ENTITIES_PER_QUERY = 100;
+export const RUNTIME_LIMIT_HARD_MAX_RETRIES = 5;
+export const RUNTIME_LIMIT_HARD_MAX_TIMEOUT_MS = 300_000;
+export const RUNTIME_LIMIT_MIN_MODEL_OUTPUT_BYTES = 1_024;
+export const RUNTIME_LIMIT_HARD_MAX_MODEL_OUTPUT_BYTES = 1_048_576;
+
+export const RuntimeLimitConfigSchema = z
+  .object({
+    maxAgentSteps: z.number().int().min(1).max(RUNTIME_LIMIT_HARD_MAX_AGENT_STEPS),
+    maxToolCalls: z.number().int().min(1).max(RUNTIME_LIMIT_HARD_MAX_TOOL_CALLS),
+    maxLineageDepth: z.number().int().min(1).max(RUNTIME_LIMIT_HARD_MAX_LINEAGE_DEPTH),
+    maxEntitiesPerQuery: z.number().int().min(1).max(RUNTIME_LIMIT_HARD_MAX_ENTITIES_PER_QUERY),
+    maxRetries: z.number().int().min(0).max(RUNTIME_LIMIT_HARD_MAX_RETRIES),
+    agentTimeoutMs: z.number().int().min(1_000).max(RUNTIME_LIMIT_HARD_MAX_TIMEOUT_MS),
+    maxModelOutputBytes: z
+      .number()
+      .int()
+      .min(RUNTIME_LIMIT_MIN_MODEL_OUTPUT_BYTES)
+      .max(RUNTIME_LIMIT_HARD_MAX_MODEL_OUTPUT_BYTES),
+  })
+  .strict();
+
+export const DEFAULT_RUNTIME_LIMIT_CONFIG = Object.freeze(
+  RuntimeLimitConfigSchema.parse({
+    maxAgentSteps: 8,
+    maxToolCalls: 12,
+    maxLineageDepth: 3,
+    maxEntitiesPerQuery: 30,
+    maxRetries: 2,
+    agentTimeoutMs: 90_000,
+    maxModelOutputBytes: 65_536,
+  }),
+);
+
+const investigationTerminationReasons = [
+  'completed',
+  'agent_step_limit_reached',
+  'tool_call_limit_reached',
+  'lineage_depth_limit_reached',
+  'entity_limit_reached',
+  'retry_limit_reached',
+  'duration_limit_reached',
+  'model_output_limit_reached',
+  'provider_timeout',
+] as const;
+
+export const InvestigationTerminationReasonSchema = z.enum(investigationTerminationReasons);
+
+export const INVESTIGATION_LIMIT_MESSAGES = Object.freeze({
+  agent_step_limit_reached: 'The investigation stopped after reaching its agent-step limit.',
+  tool_call_limit_reached: 'The investigation stopped after reaching its tool-call limit.',
+  lineage_depth_limit_reached:
+    'The investigation stopped because the requested lineage depth exceeds its configured limit.',
+  entity_limit_reached:
+    'The investigation stopped because an entity query exceeds its configured limit.',
+  retry_limit_reached: 'The investigation stopped after reaching its retry limit.',
+  duration_limit_reached: 'The investigation stopped after reaching its duration limit.',
+  model_output_limit_reached:
+    'The investigation stopped because its structured output exceeds the configured size limit.',
+});
+
+export const INVESTIGATION_TERMINATION_MESSAGES = Object.freeze({
+  ...INVESTIGATION_LIMIT_MESSAGES,
+  provider_timeout: 'The investigation stopped because the metadata provider timed out.',
+} satisfies Record<Exclude<(typeof investigationTerminationReasons)[number], 'completed'>, string>);
+
+export const InvestigationExecutionMetadataSchema = z
+  .object({
+    toolCalls: z.number().int().min(0).max(RUNTIME_LIMIT_HARD_MAX_TOOL_CALLS),
+    agentSteps: z.number().int().min(0).max(RUNTIME_LIMIT_HARD_MAX_AGENT_STEPS),
+    durationMs: z.number().int().min(0).max(Number.MAX_SAFE_INTEGER),
+    lineageEntitiesVisited: z.number().int().min(0).max(RUNTIME_LIMIT_HARD_MAX_ENTITIES_PER_QUERY),
+    terminationReason: InvestigationTerminationReasonSchema,
+  })
+  .strict();
 
 export const MetadataLineageDirectionSchema = z.enum(['upstream', 'downstream']);
 
@@ -1081,7 +1161,7 @@ export const SuspiciousChangeDetectionStageSchema = z.union([
     .strict(),
 ]);
 
-export const IncidentStatusSchema = z.enum(['processing', 'completed']);
+export const IncidentStatusSchema = z.enum(['processing', 'completed', 'failed']);
 
 export const IncidentAcceptedResponseSchema = z.object({
   incidentId: z.uuid(),
@@ -1092,6 +1172,7 @@ export const ApiErrorCodeSchema = z.enum([
   'VALIDATION_ERROR',
   'NOT_FOUND',
   'INTERNAL_ERROR',
+  'INVESTIGATION_LIMIT_REACHED',
   'METADATA_UNCONFIGURED',
   'METADATA_UNAUTHORIZED',
   'METADATA_UNAVAILABLE',
@@ -2079,11 +2160,62 @@ export const IncidentRetrievalResponseSchema = z
         suspiciousChangeStage: SuspiciousChangeDetectionStageSchema,
         hypothesisScoringStage: HypothesisScoringStageSchema,
         remediationStage: RemediationPlanningStageSchema,
+        execution: InvestigationExecutionMetadataSchema,
         report: InvestigationReportSchema,
+      })
+      .strict(),
+    z
+      .object({
+        incidentId: z.uuid(),
+        status: z.literal('failed'),
+        execution: InvestigationExecutionMetadataSchema,
+        error: z
+          .object({
+            code: z.enum(['INVESTIGATION_LIMIT_REACHED', 'METADATA_TIMEOUT']),
+            message: z.string().min(1).max(300),
+          })
+          .strict(),
       })
       .strict(),
   ])
   .superRefine((response, context) => {
+    if (response.status === 'failed') {
+      if (response.execution.terminationReason === 'completed') {
+        context.addIssue({
+          code: 'custom',
+          message: 'A failed investigation requires a limit termination reason.',
+          path: ['execution', 'terminationReason'],
+        });
+        return;
+      }
+      const providerTimedOut = response.execution.terminationReason === 'provider_timeout';
+      const expectedCode = providerTimedOut ? 'METADATA_TIMEOUT' : 'INVESTIGATION_LIMIT_REACHED';
+      if (response.error.code !== expectedCode) {
+        context.addIssue({
+          code: 'custom',
+          message: 'The investigation error code must match its stable termination reason.',
+          path: ['error', 'code'],
+        });
+      }
+      if (
+        response.error.message !==
+        INVESTIGATION_TERMINATION_MESSAGES[response.execution.terminationReason]
+      ) {
+        context.addIssue({
+          code: 'custom',
+          message: 'The investigation error message must match its stable termination reason.',
+          path: ['error', 'message'],
+        });
+      }
+      return;
+    }
+    if (response.status === 'completed' && response.execution.terminationReason !== 'completed') {
+      context.addIssue({
+        code: 'custom',
+        message: 'A completed investigation requires completed execution metadata.',
+        path: ['execution', 'terminationReason'],
+      });
+    }
     const detection = response.suspiciousChangeStage;
     const scoring = response.hypothesisScoringStage;
     const remediation = response.remediationStage;
@@ -3033,6 +3165,9 @@ export type RemediationPlanningStage = z.infer<typeof RemediationPlanningStageSc
 export type IncidentStatus = z.infer<typeof IncidentStatusSchema>;
 export type IncidentAcceptedResponse = z.infer<typeof IncidentAcceptedResponseSchema>;
 export type IncidentRetrievalResponse = z.infer<typeof IncidentRetrievalResponseSchema>;
+export type RuntimeLimitConfig = z.infer<typeof RuntimeLimitConfigSchema>;
+export type InvestigationTerminationReason = z.infer<typeof InvestigationTerminationReasonSchema>;
+export type InvestigationExecutionMetadata = z.infer<typeof InvestigationExecutionMetadataSchema>;
 export type ApiError = z.infer<typeof ApiErrorSchema>;
 export type Evidence = z.infer<typeof EvidenceSchema>;
 export type InvestigationReport = z.infer<typeof InvestigationReportSchema>;

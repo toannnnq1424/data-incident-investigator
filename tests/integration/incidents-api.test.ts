@@ -5,6 +5,8 @@ import { MetadataProviderError } from '../../packages/datahub-client/src/index.j
 import {
   IncidentRequestSchema,
   IncidentRetrievalResponseSchema,
+  INVESTIGATION_LIMIT_MESSAGES,
+  INVESTIGATION_TERMINATION_MESSAGES,
   type IncidentRetrievalResponse,
 } from '../../packages/shared-types/src/index.js';
 
@@ -31,6 +33,21 @@ async function waitForCompleted(
   }
 
   throw new Error('Fixture investigation did not complete in the test window.');
+}
+
+async function waitForTerminal(
+  server: ReturnType<typeof buildServer>,
+  incidentId: string,
+): Promise<Exclude<IncidentRetrievalResponse, { status: 'processing' }>> {
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    const response = await server.inject({ method: 'GET', url: `/incidents/${incidentId}` });
+    const incident = IncidentRetrievalResponseSchema.parse(response.json());
+    if (incident.status !== 'processing') {
+      return incident;
+    }
+    await new Promise<void>((resolve) => setImmediate(resolve));
+  }
+  throw new Error('Fixture investigation did not reach a terminal state.');
 }
 
 describe('incident API', () => {
@@ -328,12 +345,16 @@ describe('incident API', () => {
     expect(completed.report.hypotheses[0]?.id).toBe('legacy-metadata-hypothesis');
   });
 
-  it('returns a safe context-stage timeout without exposing provider errors or breaking the report', async () => {
+  it('reports a provider timeout factually while the total duration budget remains', async () => {
     let detectorCalls = 0;
+    let now = 0;
     const server = buildServer({
+      executionClock: () => now,
       logger: false,
+      processingDelayMs: 0,
       metadataSearch: {
         async searchEntities() {
+          now = 2_000;
           throw new MetadataProviderError('timeout');
         },
       },
@@ -351,42 +372,74 @@ describe('incident API', () => {
       payload: IncidentRequestSchema.parse(canonicalIncident.request),
     });
 
-    const completed = await waitForCompleted(
+    const terminal = await waitForTerminal(
       server,
       accepted.json<{ incidentId: string }>().incidentId,
     );
 
-    expect(completed.contextStage).toEqual({
+    expect(terminal).toMatchObject({
       status: 'failed',
+      execution: {
+        durationMs: 2_000,
+        terminationReason: 'provider_timeout',
+      },
       error: {
         code: 'METADATA_TIMEOUT',
-        message: 'Incident context gathering timed out.',
+        message: INVESTIGATION_TERMINATION_MESSAGES.provider_timeout,
       },
     });
-    expect(JSON.stringify(completed.contextStage)).not.toContain('MetadataProviderError');
-    expect(completed.suspiciousChangeStage).toEqual({
-      status: 'unavailable',
-      error: {
-        code: 'CONTEXT_UNAVAILABLE',
-        message:
-          'Suspicious-change detection is unavailable because incident context did not complete.',
-      },
-    });
+    expect(JSON.stringify(terminal)).not.toContain('MetadataProviderError');
+    expect(terminal).not.toHaveProperty('report');
+    expect(terminal).not.toHaveProperty('contextStage');
     expect(detectorCalls).toBe(0);
-    expect(completed.hypothesisScoringStage).toEqual({
-      status: 'unavailable',
-      error: {
-        code: 'CONTEXT_UNAVAILABLE',
-        message: 'Hypothesis scoring is unavailable because incident context did not complete.',
+  });
+
+  it('reports the duration limit only when the total investigation deadline is exhausted', async () => {
+    let detectorCalls = 0;
+    let now = 0;
+    const server = buildServer({
+      executionClock: () => now,
+      logger: false,
+      processingDelayMs: 0,
+      metadataSearch: {
+        async searchEntities() {
+          now = 90_001;
+          throw new MetadataProviderError('timeout');
+        },
+      },
+      suspiciousChangeDetector: {
+        detect() {
+          detectorCalls += 1;
+          throw new Error('Detector must not run after context failure.');
+        },
       },
     });
-    expect(completed.remediationStage).toMatchObject({
-      status: 'unavailable',
-      recommendations: [],
-      error: { code: 'CONTEXT_UNAVAILABLE' },
-      nextSteps: expect.arrayContaining([expect.objectContaining({ id: 'continue_fixture_mode' })]),
+    servers.push(server);
+    const accepted = await server.inject({
+      method: 'POST',
+      url: '/incidents',
+      payload: IncidentRequestSchema.parse(canonicalIncident.request),
     });
-    expect(completed.report.hypotheses).toHaveLength(1);
+
+    const terminal = await waitForTerminal(
+      server,
+      accepted.json<{ incidentId: string }>().incidentId,
+    );
+
+    expect(terminal).toMatchObject({
+      status: 'failed',
+      execution: {
+        durationMs: 90_001,
+        terminationReason: 'duration_limit_reached',
+      },
+      error: {
+        code: 'INVESTIGATION_LIMIT_REACHED',
+        message: INVESTIGATION_LIMIT_MESSAGES.duration_limit_reached,
+      },
+    });
+    expect(terminal).not.toHaveProperty('report');
+    expect(terminal).not.toHaveProperty('contextStage');
+    expect(detectorCalls).toBe(0);
   });
 
   it('normalizes detector validation failure without leaking details or breaking the report', async () => {

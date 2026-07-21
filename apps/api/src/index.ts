@@ -8,6 +8,8 @@ import {
   DeterministicRemediationPlanner,
   DeterministicSuspiciousChangeDetector,
   FIXTURE_INVESTIGATION_LIMITS,
+  InvestigationExecutionBudget,
+  InvestigationLimitError,
   type IncidentContextGatherer,
   type IncidentContextGatheringLimits,
   type HypothesisScorer,
@@ -31,12 +33,17 @@ import {
 } from '@dii/datahub-client';
 import {
   ApiErrorSchema,
+  DEFAULT_RUNTIME_LIMIT_CONFIG,
+  INCIDENT_CONTEXT_MAX_CANDIDATES,
+  INVESTIGATION_TERMINATION_MESSAGES,
   IncidentAcceptedResponseSchema,
   IncidentContextStageSchema,
   HypothesisScoringStageSchema,
   IncidentRequestSchema,
   IncidentRetrievalResponseSchema,
   InvestigationReportSchema,
+  METADATA_ENTITY_SEARCH_MAX_LIMIT,
+  METADATA_LINEAGE_MAX_NODES,
   MetadataEntitySearchRequestSchema,
   MetadataEntitySearchResponseSchema,
   MetadataHealthResponseSchema,
@@ -47,19 +54,23 @@ import {
   MetadataSourceModeSchema,
   REMEDIATION_FALLBACK_STEP_TEXT,
   RemediationPlanningStageSchema,
+  RuntimeLimitConfigSchema,
   SuspiciousChangeDetectionStageSchema,
   type IncidentContextStage,
   type HypothesisScoringStage,
   type InvestigationReport,
+  type InvestigationExecutionMetadata,
   type MetadataHealthResponse,
   type MetadataSourceMode,
   type RemediationPlanningStage,
+  type RuntimeLimitConfig,
   type SuspiciousChangeDetectionStage,
 } from '@dii/shared-types';
 import Fastify from 'fastify';
 
 interface BuildServerOptions {
   environment?: NodeJS.ProcessEnv;
+  executionClock?: () => number;
   logger?: boolean;
   metadata?: MetadataAdapter;
   metadataHealth?: MetadataHealthProvider;
@@ -67,6 +78,7 @@ interface BuildServerOptions {
   metadataRecentChanges?: MetadataRecentChangesProvider;
   metadataSearch?: MetadataSearchProvider;
   mode?: MetadataSourceMode;
+  processingDelayMs?: number;
   contextGatherer?: IncidentContextGatherer;
   contextLimits?: IncidentContextGatheringLimits;
   suspiciousChangeDetector?: SuspiciousChangeDetector;
@@ -74,6 +86,7 @@ interface BuildServerOptions {
   remediationPlanner?: RemediationPlanner;
   runner?: InvestigationRunner;
   limits?: InvestigationLimits;
+  runtimeLimits?: RuntimeLimitConfig;
 }
 
 type StoredIncident =
@@ -91,10 +104,119 @@ type StoredIncident =
       hypothesisScoringStage: HypothesisScoringStage;
       remediationStage: RemediationPlanningStage;
       report: InvestigationReport;
+      execution: InvestigationExecutionMetadata;
+    }
+  | {
+      status: 'execution-failed';
+      execution: InvestigationExecutionMetadata;
+      error: {
+        code: 'INVESTIGATION_LIMIT_REACHED' | 'METADATA_TIMEOUT';
+        message: string;
+      };
     }
   | { status: 'failed' };
 
+class InvestigationProviderTimeoutError extends Error {
+  readonly reason = 'provider_timeout' as const;
+
+  constructor(readonly execution: InvestigationExecutionMetadata) {
+    super(INVESTIGATION_TERMINATION_MESSAGES.provider_timeout);
+    this.name = 'InvestigationProviderTimeoutError';
+  }
+}
+
 const fixtureProcessingDelayMs = 250;
+
+export class RuntimeConfigurationError extends Error {
+  constructor(variableName: string, detail = 'must use a supported integer value') {
+    super(`Invalid runtime configuration: ${variableName} ${detail}.`);
+    this.name = 'RuntimeConfigurationError';
+  }
+}
+
+function configuredInteger(environment: NodeJS.ProcessEnv, variableName: string) {
+  const rawValue = environment[variableName]?.trim();
+  if (!rawValue) {
+    return undefined;
+  }
+  if (!/^\d+$/.test(rawValue)) {
+    throw new RuntimeConfigurationError(variableName);
+  }
+  const value = Number(rawValue);
+  if (!Number.isSafeInteger(value)) {
+    throw new RuntimeConfigurationError(variableName);
+  }
+  return value;
+}
+
+function legacyCompatibleInteger(
+  environment: NodeJS.ProcessEnv,
+  canonicalName: string,
+  legacyName: string,
+  fallback: number,
+) {
+  const canonicalValue = configuredInteger(environment, canonicalName);
+  const legacyValue = configuredInteger(environment, legacyName);
+  if (canonicalValue !== undefined && legacyValue !== undefined) {
+    throw new RuntimeConfigurationError(
+      canonicalName,
+      `cannot be combined with legacy ${legacyName}`,
+    );
+  }
+  return canonicalValue ?? legacyValue ?? fallback;
+}
+
+export function readRuntimeLimitConfig(environment: NodeJS.ProcessEnv): RuntimeLimitConfig {
+  const timeoutSeconds = configuredInteger(environment, 'AGENT_TIMEOUT_SECONDS');
+  const timeoutMilliseconds = configuredInteger(environment, 'INVESTIGATION_TIMEOUT_MS');
+  if (timeoutSeconds !== undefined && timeoutMilliseconds !== undefined) {
+    throw new RuntimeConfigurationError(
+      'AGENT_TIMEOUT_SECONDS',
+      'cannot be combined with legacy INVESTIGATION_TIMEOUT_MS',
+    );
+  }
+  const requestedConfig = {
+    maxAgentSteps:
+      configuredInteger(environment, 'MAX_AGENT_STEPS') ??
+      DEFAULT_RUNTIME_LIMIT_CONFIG.maxAgentSteps,
+    maxToolCalls:
+      configuredInteger(environment, 'MAX_TOOL_CALLS') ?? DEFAULT_RUNTIME_LIMIT_CONFIG.maxToolCalls,
+    maxLineageDepth:
+      configuredInteger(environment, 'MAX_LINEAGE_DEPTH') ??
+      DEFAULT_RUNTIME_LIMIT_CONFIG.maxLineageDepth,
+    maxEntitiesPerQuery: legacyCompatibleInteger(
+      environment,
+      'MAX_ENTITIES_PER_QUERY',
+      'MAX_LINEAGE_ENTITIES',
+      DEFAULT_RUNTIME_LIMIT_CONFIG.maxEntitiesPerQuery,
+    ),
+    maxRetries:
+      configuredInteger(environment, 'MAX_RETRIES') ?? DEFAULT_RUNTIME_LIMIT_CONFIG.maxRetries,
+    agentTimeoutMs:
+      timeoutSeconds !== undefined
+        ? timeoutSeconds * 1_000
+        : (timeoutMilliseconds ?? DEFAULT_RUNTIME_LIMIT_CONFIG.agentTimeoutMs),
+    maxModelOutputBytes:
+      configuredInteger(environment, 'MAX_MODEL_OUTPUT_BYTES') ??
+      DEFAULT_RUNTIME_LIMIT_CONFIG.maxModelOutputBytes,
+  };
+  const parsedConfig = RuntimeLimitConfigSchema.safeParse(requestedConfig);
+  if (!parsedConfig.success) {
+    const internalName = String(parsedConfig.error.issues[0]?.path[0] ?? 'runtime limits');
+    const environmentNames: Record<string, string> = {
+      maxAgentSteps: 'MAX_AGENT_STEPS',
+      maxToolCalls: 'MAX_TOOL_CALLS',
+      maxLineageDepth: 'MAX_LINEAGE_DEPTH',
+      maxEntitiesPerQuery: 'MAX_ENTITIES_PER_QUERY',
+      maxRetries: 'MAX_RETRIES',
+      agentTimeoutMs:
+        timeoutMilliseconds === undefined ? 'AGENT_TIMEOUT_SECONDS' : 'INVESTIGATION_TIMEOUT_MS',
+      maxModelOutputBytes: 'MAX_MODEL_OUTPUT_BYTES',
+    };
+    throw new RuntimeConfigurationError(environmentNames[internalName] ?? 'runtime limits');
+  }
+  return parsedConfig.data;
+}
 
 function metadataMode(value: string | undefined): MetadataSourceMode {
   const parsedMode = MetadataSourceModeSchema.safeParse(value);
@@ -355,8 +477,14 @@ function unavailableRemediationPlanning(
 }
 
 export function buildServer(options: BuildServerOptions = {}) {
-  const server = Fastify({ logger: options.logger ?? true });
   const environment = options.environment ?? process.env;
+  const runtimeLimits = RuntimeLimitConfigSchema.parse(
+    options.runtimeLimits ?? readRuntimeLimitConfig(environment),
+  );
+  const server = Fastify({
+    logger: options.logger ?? true,
+    requestTimeout: runtimeLimits.agentTimeoutMs,
+  });
   const mode = options.mode ?? metadataMode(environment.APP_MODE);
   const metadata = options.metadata ?? createFixtureMetadataAdapter();
   const metadataHealth =
@@ -392,7 +520,19 @@ export function buildServer(options: BuildServerOptions = {}) {
           token: environment.DATAHUB_TOKEN,
         }));
   const contextGatherer = options.contextGatherer ?? new DeterministicIncidentContextGatherer();
-  const contextLimits = options.contextLimits ?? DEFAULT_INCIDENT_CONTEXT_LIMITS;
+  const contextLimits =
+    options.contextLimits ??
+    Object.freeze({
+      ...DEFAULT_INCIDENT_CONTEXT_LIMITS,
+      candidateEntityCount: Math.min(
+        runtimeLimits.maxEntitiesPerQuery,
+        INCIDENT_CONTEXT_MAX_CANDIDATES,
+      ),
+      lineageDepth: runtimeLimits.maxLineageDepth,
+      lineageEntityCount: Math.min(runtimeLimits.maxEntitiesPerQuery, METADATA_LINEAGE_MAX_NODES),
+      toolCalls: Math.max(4, runtimeLimits.maxToolCalls),
+      timeoutMs: runtimeLimits.agentTimeoutMs,
+    });
   const suspiciousChangeDetector =
     options.suspiciousChangeDetector ?? new DeterministicSuspiciousChangeDetector();
   const hypothesisScorer = options.hypothesisScorer ?? new DeterministicHypothesisScorer();
@@ -405,7 +545,15 @@ export function buildServer(options: BuildServerOptions = {}) {
       metadataRecentChanges.getRecentChangesForEntity.bind(metadataRecentChanges),
   };
   const runner = options.runner ?? new DeterministicInvestigationRunner();
-  const limits = options.limits ?? FIXTURE_INVESTIGATION_LIMITS;
+  const limits =
+    options.limits ??
+    Object.freeze({
+      ...FIXTURE_INVESTIGATION_LIMITS,
+      lineageDepth: runtimeLimits.maxLineageDepth,
+      entityCount: Math.min(runtimeLimits.maxEntitiesPerQuery, METADATA_ENTITY_SEARCH_MAX_LIMIT),
+      toolCalls: Math.max(4, runtimeLimits.maxToolCalls),
+      timeoutMs: runtimeLimits.agentTimeoutMs,
+    });
   const incidents = new Map<string, StoredIncident>();
 
   server.get('/health', async () => ({
@@ -628,82 +776,118 @@ export function buildServer(options: BuildServerOptions = {}) {
       remediationStage: RemediationPlanningStageSchema.parse({ status: 'planning' }),
     });
     server.log.info({ incidentId: response.incidentId, mode }, 'Investigation accepted');
+    const executionBudget = new InvestigationExecutionBudget(runtimeLimits, options.executionClock);
 
-    setTimeout(() => {
-      void (async () => {
-        let contextStage: IncidentContextStage;
-        let suspiciousChangeStage: SuspiciousChangeDetectionStage;
-        let hypothesisScoringStage: HypothesisScoringStage;
-        let remediationStage: RemediationPlanningStage;
-        try {
-          contextStage = await contextGatherer.gather(parsedRequest.data, {
-            metadata: contextMetadata,
-            mode,
-            limits: contextLimits,
+    const terminationErrorFrom = (error: unknown) => {
+      if (
+        error instanceof InvestigationLimitError ||
+        error instanceof InvestigationProviderTimeoutError
+      ) {
+        return error;
+      }
+      if (error instanceof MetadataProviderError && error.status === 'timeout') {
+        const execution = executionBudget.snapshot('provider_timeout');
+        if (execution.durationMs > executionBudget.limits.agentTimeoutMs) {
+          return new InvestigationLimitError('duration_limit_reached', {
+            ...execution,
+            terminationReason: 'duration_limit_reached',
           });
-          try {
-            suspiciousChangeStage = suspiciousChangeDetector.detect(contextStage);
-            hypothesisScoringStage = HypothesisScoringStageSchema.parse({ status: 'scoring' });
-            remediationStage = RemediationPlanningStageSchema.parse({ status: 'planning' });
-          } catch {
-            suspiciousChangeStage = unavailableSuspiciousChanges('DETECTION_INVALID');
-            hypothesisScoringStage = unavailableHypothesisScoring('SUSPICIOUS_CHANGES_UNAVAILABLE');
-            remediationStage = unavailableRemediationPlanning('SCORING_UNAVAILABLE');
-          }
-          incidents.set(response.incidentId, {
-            status: 'processing',
-            contextStage,
-            suspiciousChangeStage,
-            hypothesisScoringStage,
-            remediationStage,
-          });
-          server.log.info(
-            {
-              incidentId: response.incidentId,
-              mode,
-              candidateCount: contextStage.facts.candidateEntities.length,
-              lineageNodeCount: contextStage.facts.lineage?.nodes.length ?? 0,
-              recentChangeCount: contextStage.facts.recentChanges.reduce(
-                (count, recentChanges) => count + recentChanges.returnedCount,
-                0,
-              ),
-              missingInformationCount: contextStage.missingInformation.length,
-              suspiciousChangeStatus: suspiciousChangeStage.status,
-              suspiciousChangeCandidateCount:
-                suspiciousChangeStage.status === 'completed'
-                  ? suspiciousChangeStage.candidates.length
-                  : 0,
-            },
-            'Incident context gathered and suspicious changes classified',
-          );
-        } catch (error: unknown) {
-          contextStage = failedIncidentContext(error);
-          suspiciousChangeStage = unavailableSuspiciousChanges('CONTEXT_UNAVAILABLE');
-          hypothesisScoringStage = unavailableHypothesisScoring('CONTEXT_UNAVAILABLE');
-          remediationStage = unavailableRemediationPlanning('CONTEXT_UNAVAILABLE');
-          incidents.set(response.incidentId, {
-            status: 'processing',
-            contextStage,
-            suspiciousChangeStage,
-            hypothesisScoringStage,
-            remediationStage,
-          });
-          server.log.warn(
-            {
-              incidentId: response.incidentId,
-              mode,
-              contextErrorCode:
-                contextStage.status === 'failed' ? contextStage.error.code : 'INTERNAL_ERROR',
-            },
-            'Incident context gathering failed',
-          );
         }
+        return new InvestigationProviderTimeoutError(execution);
+      }
+      return undefined;
+    };
 
+    const runBackgroundInvestigation = () => {
+      void (async () => {
         try {
+          let contextStage: IncidentContextStage;
+          let suspiciousChangeStage: SuspiciousChangeDetectionStage;
+          let hypothesisScoringStage: HypothesisScoringStage;
+          let remediationStage: RemediationPlanningStage;
+          try {
+            executionBudget.beginAgentStep();
+            contextStage = await contextGatherer.gather(parsedRequest.data, {
+              metadata: contextMetadata,
+              mode,
+              limits: contextLimits,
+              executionBudget,
+            });
+            try {
+              executionBudget.beginAgentStep();
+              suspiciousChangeStage = suspiciousChangeDetector.detect(contextStage);
+              hypothesisScoringStage = HypothesisScoringStageSchema.parse({ status: 'scoring' });
+              remediationStage = RemediationPlanningStageSchema.parse({ status: 'planning' });
+            } catch (error: unknown) {
+              const terminationError = terminationErrorFrom(error);
+              if (terminationError) {
+                throw terminationError;
+              }
+              suspiciousChangeStage = unavailableSuspiciousChanges('DETECTION_INVALID');
+              hypothesisScoringStage = unavailableHypothesisScoring(
+                'SUSPICIOUS_CHANGES_UNAVAILABLE',
+              );
+              remediationStage = unavailableRemediationPlanning('SCORING_UNAVAILABLE');
+            }
+            incidents.set(response.incidentId, {
+              status: 'processing',
+              contextStage,
+              suspiciousChangeStage,
+              hypothesisScoringStage,
+              remediationStage,
+            });
+            server.log.info(
+              {
+                incidentId: response.incidentId,
+                mode,
+                candidateCount: contextStage.facts.candidateEntities.length,
+                lineageNodeCount: contextStage.facts.lineage?.nodes.length ?? 0,
+                recentChangeCount: contextStage.facts.recentChanges.reduce(
+                  (count, recentChanges) => count + recentChanges.returnedCount,
+                  0,
+                ),
+                missingInformationCount: contextStage.missingInformation.length,
+                suspiciousChangeStatus: suspiciousChangeStage.status,
+                suspiciousChangeCandidateCount:
+                  suspiciousChangeStage.status === 'completed'
+                    ? suspiciousChangeStage.candidates.length
+                    : 0,
+              },
+              'Incident context gathered and suspicious changes classified',
+            );
+          } catch (error: unknown) {
+            const terminationError = terminationErrorFrom(error);
+            if (terminationError) {
+              throw terminationError;
+            }
+            contextStage = failedIncidentContext(error);
+            suspiciousChangeStage = unavailableSuspiciousChanges('CONTEXT_UNAVAILABLE');
+            hypothesisScoringStage = unavailableHypothesisScoring('CONTEXT_UNAVAILABLE');
+            remediationStage = unavailableRemediationPlanning('CONTEXT_UNAVAILABLE');
+            incidents.set(response.incidentId, {
+              status: 'processing',
+              contextStage,
+              suspiciousChangeStage,
+              hypothesisScoringStage,
+              remediationStage,
+            });
+            server.log.warn(
+              {
+                incidentId: response.incidentId,
+                mode,
+                contextErrorCode:
+                  contextStage.status === 'failed' ? contextStage.error.code : 'INTERNAL_ERROR',
+              },
+              'Incident context gathering failed',
+            );
+          }
+
+          executionBudget.beginAgentStep();
           const report = await runner.investigate(parsedRequest.data, {
             incidentId: response.incidentId,
             metadata,
             limits,
+            executionBudget,
           });
           let completedReport = report;
           if (
@@ -712,6 +896,7 @@ export function buildServer(options: BuildServerOptions = {}) {
               suspiciousChangeStage.status === 'insufficient')
           ) {
             try {
+              executionBudget.beginAgentStep();
               hypothesisScoringStage = hypothesisScorer.score(
                 contextStage,
                 suspiciousChangeStage,
@@ -728,19 +913,30 @@ export function buildServer(options: BuildServerOptions = {}) {
                   hypotheses: hypothesisScoringStage.hypotheses,
                 });
               }
-            } catch {
+            } catch (error: unknown) {
+              const terminationError = terminationErrorFrom(error);
+              if (terminationError) {
+                throw terminationError;
+              }
               hypothesisScoringStage = unavailableHypothesisScoring('SCORING_INVALID');
             }
           }
           try {
+            executionBudget.beginAgentStep();
             remediationStage = remediationPlanner.plan(
               contextStage,
               hypothesisScoringStage,
               completedReport,
             );
-          } catch {
+          } catch (error: unknown) {
+            const terminationError = terminationErrorFrom(error);
+            if (terminationError) {
+              throw terminationError;
+            }
             remediationStage = invalidRemediationPlanning();
           }
+          executionBudget.assertModelOutput(JSON.stringify(completedReport));
+          const execution = executionBudget.snapshot();
           incidents.set(response.incidentId, {
             status: 'completed',
             contextStage,
@@ -748,6 +944,7 @@ export function buildServer(options: BuildServerOptions = {}) {
             hypothesisScoringStage,
             remediationStage,
             report: completedReport,
+            execution,
           });
           server.log.info(
             {
@@ -760,10 +957,40 @@ export function buildServer(options: BuildServerOptions = {}) {
                 remediationStage.status === 'completed'
                   ? remediationStage.recommendations.length
                   : 0,
+              toolCalls: execution.toolCalls,
+              agentSteps: execution.agentSteps,
+              durationMs: execution.durationMs,
+              lineageEntitiesVisited: execution.lineageEntitiesVisited,
+              terminationReason: execution.terminationReason,
             },
             'Fixture investigation completed',
           );
         } catch (error: unknown) {
+          const terminationError = terminationErrorFrom(error);
+          if (terminationError) {
+            const providerTimedOut = terminationError instanceof InvestigationProviderTimeoutError;
+            incidents.set(response.incidentId, {
+              status: 'execution-failed',
+              execution: terminationError.execution,
+              error: {
+                code: providerTimedOut ? 'METADATA_TIMEOUT' : 'INVESTIGATION_LIMIT_REACHED',
+                message: terminationError.message,
+              },
+            });
+            server.log.warn(
+              {
+                incidentId: response.incidentId,
+                mode,
+                toolCalls: terminationError.execution.toolCalls,
+                agentSteps: terminationError.execution.agentSteps,
+                durationMs: terminationError.execution.durationMs,
+                lineageEntitiesVisited: terminationError.execution.lineageEntitiesVisited,
+                terminationReason: terminationError.reason,
+              },
+              'Investigation stopped before completion',
+            );
+            return;
+          }
           incidents.set(response.incidentId, { status: 'failed' });
           server.log.error(
             {
@@ -774,7 +1001,13 @@ export function buildServer(options: BuildServerOptions = {}) {
           );
         }
       })();
-    }, fixtureProcessingDelayMs);
+    };
+    const processingDelayMs = options.processingDelayMs ?? fixtureProcessingDelayMs;
+    if (processingDelayMs === 0) {
+      queueMicrotask(runBackgroundInvestigation);
+    } else {
+      setTimeout(runBackgroundInvestigation, processingDelayMs);
+    }
 
     return reply.code(202).send(response);
   });
@@ -807,6 +1040,17 @@ export function buildServer(options: BuildServerOptions = {}) {
         );
       }
 
+      if (incident.status === 'execution-failed') {
+        return reply.code(200).send(
+          IncidentRetrievalResponseSchema.parse({
+            incidentId,
+            status: 'failed',
+            execution: incident.execution,
+            error: incident.error,
+          }),
+        );
+      }
+
       return reply.code(200).send(
         IncidentRetrievalResponseSchema.parse(
           incident.status === 'completed'
@@ -817,6 +1061,7 @@ export function buildServer(options: BuildServerOptions = {}) {
                 suspiciousChangeStage: incident.suspiciousChangeStage,
                 hypothesisScoringStage: incident.hypothesisScoringStage,
                 remediationStage: incident.remediationStage,
+                execution: incident.execution,
                 report: incident.report,
               }
             : {

@@ -146,6 +146,40 @@ existing stale-request guard and sanitized errors.
 - Stop when tool-call, lineage, entity, retry, timeout, or output limits are reached.
 - Provider failure produces a bounded fallback or inconclusive report, not fabricated evidence.
 
+## Slice 6.1 runtime-limit boundary
+
+The API reads one `RuntimeLimitConfigSchema` before constructing Fastify or a provider client. Safe
+defaults are eight agent stages, twelve provider/tool calls, lineage depth three, thirty entities per
+query, two retries, ninety seconds for the full agent/request duration, and 65,536 bytes at the
+structured runner/model-output boundary. Startup rejects malformed or unsupported integers and rejects
+simultaneous canonical/legacy settings without echoing their values. `MAX_LINEAGE_ENTITIES` remains a
+fallback name for `MAX_ENTITIES_PER_QUERY`; `INVESTIGATION_TIMEOUT_MS` remains a millisecond fallback
+for `AGENT_TIMEOUT_SECONDS`. Operation-specific shared contracts remain stricter where applicable: the
+current context candidate cap is five, public/internal search cap is twenty, and lineage graph cap is
+twenty-five.
+
+Each accepted incident owns a fresh `InvestigationExecutionBudget`. The API records an agent step only
+when it enters context gathering, suspicious-change detection, report assembly, hypothesis scoring, or
+remediation planning. Context and report runners record a tool call immediately before each actual
+adapter/provider invocation and record unique returned lineage URNs after schema validation. Elapsed
+duration comes from a monotonic clock; tests inject a deterministic clock. The canonical fixture
+currently executes five agent stages, eight tool calls, zero retries, and no model call.
+
+The retry cap is an enforcement seam, not permission to add retries: current workflows still perform
+zero. The output-size seam validates serialized deterministic runner output today and therefore also
+bounds any future model-backed structured output before it may cross the API contract. No synthetic
+model token, retry, call, step, lineage, or duration metric is created.
+
+Terminal execution metadata contains only `toolCalls`, `agentSteps`, `durationMs`,
+`lineageEntitiesVisited`, and an allowlisted `terminationReason`. Exact-boundary work may complete; the
+first attempted step/call/retry/entity/depth/output beyond its configured budget, or duration beyond the
+deadline, produces a typed `failed` incident with no report. Stable reasons are
+`agent_step_limit_reached`, `tool_call_limit_reached`, `lineage_depth_limit_reached`,
+`entity_limit_reached`, `retry_limit_reached`, `duration_limit_reached`, and
+`model_output_limit_reached`. A provider-owned timeout while duration budget remains is separately
+terminal with `provider_timeout` and `METADATA_TIMEOUT`; only a monotonic snapshot beyond the total
+deadline becomes `duration_limit_reached`. Successful execution uses only `completed`.
+
 ## Evidence classification
 
 - Fact: directly observed metadata, lineage, change, or pipeline signal.
@@ -161,6 +195,7 @@ summarization must not change entity selection or evidence identity in determini
 
 ## Failure behavior
 
-Validation failures stop before tool calls. Adapter timeouts are not retried indefinitely. Cyclic lineage
-uses a visited set. Truncation is reported. Insufficient evidence produces `inconclusive` reasoning with
-explicit missing information.
+Validation failures stop before tool calls. Adapter timeouts are not retried or reported as success, and
+their termination reason remains distinct from total-deadline exhaustion. Cyclic lineage uses a visited
+set. Truncation is reported. Insufficient evidence produces `inconclusive` reasoning with explicit
+missing information.
