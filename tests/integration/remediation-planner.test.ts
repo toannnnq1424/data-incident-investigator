@@ -99,7 +99,7 @@ describe('deterministic remediation and safe fallback planner', () => {
           reversibilityNote: 'Read-only verification makes no change, so no rollback is required.',
           references: {
             hypothesisIds: ['hypothesis-change-removed-gross-revenue'],
-            evidenceIds: ['change-removed-gross-revenue'],
+            evidenceIds: ['change-removed-gross-revenue', 'lineage-upstream-1'],
             entityUrns: ['urn:li:dataset:(urn:li:dataPlatform:snowflake,raw.orders,PROD)'],
             changeIds: ['change-removed-gross-revenue'],
           },
@@ -119,7 +119,7 @@ describe('deterministic remediation and safe fallback planner', () => {
             'Do not apply automatically; require a versioned backup and a reviewed rollback to the prior schema contract.',
           references: {
             hypothesisIds: ['hypothesis-change-removed-gross-revenue'],
-            evidenceIds: ['change-removed-gross-revenue'],
+            evidenceIds: ['change-removed-gross-revenue', 'lineage-upstream-1'],
             entityUrns: ['urn:li:dataset:(urn:li:dataPlatform:snowflake,raw.orders,PROD)'],
             changeIds: ['change-removed-gross-revenue'],
           },

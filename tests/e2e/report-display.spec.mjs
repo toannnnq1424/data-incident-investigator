@@ -348,9 +348,9 @@ try {
         rank: row.getAttribute('data-hypothesis-rank'),
         text: row.textContent ?? '',
         timestamp: row.querySelector('time')?.getAttribute('datetime') ?? '',
-        factorCodes: [...row.querySelectorAll('.score-factor-list code')].map(
-          (factor) => factor.textContent ?? '',
-        ),
+        factorCodes: [
+          ...row.querySelectorAll('.score-factor-list > li > div > code:first-child'),
+        ].map((factor) => factor.textContent ?? ''),
         evidenceLinks: [...row.querySelectorAll('.scored-evidence-list a')].map((link) => ({
           href: link.getAttribute('href'),
           text: link.textContent ?? '',
@@ -366,12 +366,14 @@ try {
     !scoredHypotheses[0]?.text.includes(
       'Plausible contributor: the removed schema change on raw.orders may have contributed to the incident.',
     ) ||
-    !scoredHypotheses[0]?.text.includes('85% confidence') ||
-    !scoredHypotheses[0]?.text.includes('3000 / 3000 bp') ||
-    !scoredHypotheses[0]?.text.includes('2000 / 2000 bp') ||
-    !scoredHypotheses[0]?.text.includes('1500 / 3000 bp') ||
+    !scoredHypotheses[0]?.text.includes('81% confidence · high') ||
+    !scoredHypotheses[0]?.text.includes('+2500 / 2500 bp') ||
+    !scoredHypotheses[0]?.text.includes('+2000 / 2000 bp') ||
+    !scoredHypotheses[0]?.text.includes('+1800 / 1800 bp') ||
+    !scoredHypotheses[0]?.text.includes('evidence-confidence-v1') ||
+    !scoredHypotheses[0]?.text.includes('Why') ||
     scoredHypotheses[0]?.factorCodes.join('|') !==
-      'change_recency|lineage_position|symptom_category_fit|evidence_quality' ||
+      'temporal_proximity|lineage_relationship|schema_or_freshness_evidence|independent_evidence_diversity|contradictory_evidence|missing_required_information' ||
     scoredHypotheses[0]?.evidenceLinks[0]?.text.trim() !== 'change-removed-gross-revenue' ||
     scoredHypotheses[0]?.evidenceLinks[0]?.href !== '#evidence-change-removed-gross-revenue' ||
     scoredHypotheses[0]?.text.includes('confirmed cause') ||
@@ -441,7 +443,9 @@ try {
   assertText(reportText, /Relevant lineage/i, 'lineage section');
   assertText(reportText, /lineage-upstream-1/i, 'lineage evidence ID');
   assertText(reportText, /Hypotheses/i, 'inference section');
-  assertText(reportText, /85% confidence/i, 'confidence label');
+  assertText(reportText, /81% confidence/i, 'confidence label');
+  assertText(reportText, /81% · high/i, 'confidence band label');
+  assertText(reportText, /Why/i, 'confidence explanation');
   assertText(reportText, /Assumptions/i, 'assumption section');
   assertText(reportText, /Missing information/i, 'missing information section');
   assertText(reportText, /Recommended actions/i, 'recommendations section');

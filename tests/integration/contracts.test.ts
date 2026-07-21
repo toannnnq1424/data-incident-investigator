@@ -7,6 +7,7 @@ import {
   CanonicalIncidentScenarioSchema,
   formatUntrustedEvidence,
   HealthResponseSchema,
+  HYPOTHESIS_CONFIDENCE_FORMULA_VERSION,
   HYPOTHESIS_SCORE_FACTOR_LABELS,
   HYPOTHESIS_SCORE_FACTOR_WEIGHTS,
   HypothesisScoringResultSchema,
@@ -35,7 +36,44 @@ import {
   RemediationPlanningStageSchema,
   SUSPICIOUS_CHANGE_SIGNAL_LABELS,
   SuspiciousChangeDetectionResultSchema,
+  hypothesisConfidenceExplanation,
+  hypothesisConfidenceLevel,
+  type HypothesisScoreFactor,
 } from '../../packages/shared-types/src/index.js';
+
+function testScoredConfidence(evidenceId: string) {
+  const factor = (
+    code: HypothesisScoreFactor['code'],
+    reasonCode: HypothesisScoreFactor['reasonCode'],
+    contributionBasisPoints: number,
+    evidenceIds: string[] = [],
+  ): HypothesisScoreFactor => ({
+    code,
+    label: HYPOTHESIS_SCORE_FACTOR_LABELS[code],
+    reasonCode,
+    contributionBasisPoints,
+    weightBasisPoints: HYPOTHESIS_SCORE_FACTOR_WEIGHTS[code],
+    evidenceIds,
+    signalCodes: [],
+  });
+  const factors = [
+    factor('temporal_proximity', 'temporal_near', 2_500, [evidenceId]),
+    factor('lineage_relationship', 'lineage_direct_upstream', 2_000, [evidenceId]),
+    factor('schema_or_freshness_evidence', 'schema_change_present', 1_800, [evidenceId]),
+    factor('independent_evidence_diversity', 'evidence_sources_one', 700, [evidenceId]),
+    factor('contradictory_evidence', 'contradiction_none', 0),
+    factor('missing_required_information', 'required_information_complete', 0),
+  ];
+  const scorePercent = 70;
+  return {
+    status: 'scored' as const,
+    formulaVersion: HYPOTHESIS_CONFIDENCE_FORMULA_VERSION,
+    scorePercent,
+    level: hypothesisConfidenceLevel(scorePercent),
+    explanation: hypothesisConfidenceExplanation(factors),
+    factors,
+  };
+}
 
 describe('shared investigation contracts', () => {
   it('accepts the minimum incident request', () => {
@@ -283,32 +321,7 @@ describe('shared investigation contracts', () => {
       }).success,
     ).toBe(false);
 
-    const factors = [
-      {
-        code: 'change_recency' as const,
-        label: HYPOTHESIS_SCORE_FACTOR_LABELS.change_recency,
-        contributionBasisPoints: 3_000,
-        weightBasisPoints: HYPOTHESIS_SCORE_FACTOR_WEIGHTS.change_recency,
-      },
-      {
-        code: 'lineage_position' as const,
-        label: HYPOTHESIS_SCORE_FACTOR_LABELS.lineage_position,
-        contributionBasisPoints: 2_000,
-        weightBasisPoints: HYPOTHESIS_SCORE_FACTOR_WEIGHTS.lineage_position,
-      },
-      {
-        code: 'symptom_category_fit' as const,
-        label: HYPOTHESIS_SCORE_FACTOR_LABELS.symptom_category_fit,
-        contributionBasisPoints: 3_000,
-        weightBasisPoints: HYPOTHESIS_SCORE_FACTOR_WEIGHTS.symptom_category_fit,
-      },
-      {
-        code: 'evidence_quality' as const,
-        label: HYPOTHESIS_SCORE_FACTOR_LABELS.evidence_quality,
-        contributionBasisPoints: 2_000,
-        weightBasisPoints: HYPOTHESIS_SCORE_FACTOR_WEIGHTS.evidence_quality,
-      },
-    ];
+    const confidence = testScoredConfidence(candidate.changeId);
     const hypothesis = {
       id: 'hypothesis-change-removed-column',
       rank: 1,
@@ -316,9 +329,8 @@ describe('shared investigation contracts', () => {
       observedAt: candidate.observedAt,
       summary:
         'Plausible contributor: the removed schema change on raw.orders may have contributed to the incident.',
-      confidence: 1,
+      confidence,
       evidenceIds: [candidate.changeId],
-      factors,
     };
     const scoringResult = {
       status: 'completed' as const,
@@ -346,7 +358,12 @@ describe('shared investigation contracts', () => {
     expect(
       HypothesisScoringResultSchema.safeParse({
         ...scoringResult,
-        hypotheses: [{ ...hypothesis, confidence: 0.99 }],
+        hypotheses: [
+          {
+            ...hypothesis,
+            confidence: { ...confidence, scorePercent: 99 },
+          },
+        ],
       }).success,
     ).toBe(false);
     expect(
@@ -378,7 +395,12 @@ describe('shared investigation contracts', () => {
     expect(
       HypothesisScoringResultSchema.safeParse({
         ...scoringResult,
-        hypotheses: [{ ...hypothesis, factors: [...factors].reverse() }],
+        hypotheses: [
+          {
+            ...hypothesis,
+            confidence: { ...confidence, factors: [...confidence.factors].reverse() },
+          },
+        ],
       }).success,
     ).toBe(false);
     expect(
@@ -510,34 +532,8 @@ describe('shared investigation contracts', () => {
       observedAt: '2026-07-18T07:45:00.000Z',
       summary:
         'Plausible contributor: the removed schema change on raw.orders may have contributed to the incident.',
-      confidence: 0.85,
+      confidence: testScoredConfidence('change-removed-column'),
       evidenceIds: ['change-removed-column'],
-      factors: [
-        {
-          code: 'change_recency' as const,
-          label: HYPOTHESIS_SCORE_FACTOR_LABELS.change_recency,
-          contributionBasisPoints: 3_000,
-          weightBasisPoints: HYPOTHESIS_SCORE_FACTOR_WEIGHTS.change_recency,
-        },
-        {
-          code: 'lineage_position' as const,
-          label: HYPOTHESIS_SCORE_FACTOR_LABELS.lineage_position,
-          contributionBasisPoints: 2_000,
-          weightBasisPoints: HYPOTHESIS_SCORE_FACTOR_WEIGHTS.lineage_position,
-        },
-        {
-          code: 'symptom_category_fit' as const,
-          label: HYPOTHESIS_SCORE_FACTOR_LABELS.symptom_category_fit,
-          contributionBasisPoints: 1_500,
-          weightBasisPoints: HYPOTHESIS_SCORE_FACTOR_WEIGHTS.symptom_category_fit,
-        },
-        {
-          code: 'evidence_quality' as const,
-          label: HYPOTHESIS_SCORE_FACTOR_LABELS.evidence_quality,
-          contributionBasisPoints: 2_000,
-          weightBasisPoints: HYPOTHESIS_SCORE_FACTOR_WEIGHTS.evidence_quality,
-        },
-      ],
     };
     const scoringResult = {
       status: 'completed' as const,
@@ -1143,7 +1139,11 @@ describe('shared investigation contracts', () => {
         {
           id: 'hypothesis-1',
           summary: 'A source column was removed.',
-          confidence: 0.8,
+          confidence: {
+            status: 'not_scored',
+            reasonCode: 'insufficient_evidence',
+            explanation: 'Confidence was not scored because validated evidence was insufficient.',
+          },
           evidenceIds: ['missing-evidence'],
         },
       ],
@@ -1278,7 +1278,11 @@ describe('shared investigation contracts', () => {
           {
             id: 'hypothesis-1',
             summary: 'The removed column is a plausible contributor.',
-            confidence: 0.9,
+            confidence: {
+              status: 'not_scored',
+              reasonCode: 'insufficient_evidence',
+              explanation: 'Confidence was not scored because validated evidence was insufficient.',
+            },
             evidenceIds: ['change-1'],
           },
         ],
@@ -1289,5 +1293,23 @@ describe('shared investigation contracts', () => {
     });
 
     expect(result.success).toBe(true);
+    if (!result.success) throw new Error('Expected the insufficient incident response to parse.');
+    expect(
+      IncidentRetrievalResponseSchema.safeParse({
+        ...result.data,
+        report: {
+          ...result.data.report,
+          hypotheses: result.data.report.hypotheses.map((hypothesis) => ({
+            ...hypothesis,
+            confidence: {
+              status: 'not_scored',
+              reasonCode: 'scoring_unavailable',
+              explanation:
+                'Confidence was not scored because deterministic scoring was unavailable.',
+            },
+          })),
+        },
+      }).success,
+    ).toBe(false);
   });
 });

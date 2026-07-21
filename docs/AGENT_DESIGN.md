@@ -81,36 +81,57 @@ The scorer first verifies that every suspicious candidate resolves to the exact 
 report evidence with the same ID, category, statement, entity, and observation time. A missing mapping
 returns `insufficient`; it never substitutes a synthetic evidence ID.
 
-Each qualifying change produces one inference prefixed `Plausible contributor:` and cites the exact
-change evidence ID. Confidence is the clamped sum of four ordered integer basis-point factors, divided
-by 10,000 and serialized with at most two decimal places:
+Slice 6.6 replaces the original four-factor numeric field with `evidence-confidence-v1`. A runner/model
+draft is allowed to return only a fixed `not_scored/deterministic_scoring_pending` state plus factual
+evidence references. It cannot provide a score, band, factors, explanation, or unknown confidence
+field. After draft validation, only `DeterministicHypothesisScorer` may produce scored confidence; the
+API otherwise finalizes the report as `insufficient_evidence` or `scoring_unavailable` with no number.
 
-- `change_recency` (maximum 3,000): 3,000 only for the validated `incident_window` signal, otherwise
-  zero;
-- `lineage_position` (maximum 2,000): 2,000 for depth-one upstream, 1,200 for deeper upstream, 1,000
-  for the selected depth-zero entity, otherwise zero;
-- `symptom_category_fit` (maximum 3,000): 3,000 for the validated `category_intent_match` signal,
-  otherwise 1,500 for one bounded normalized token shared by incident question/symptom and the factual
-  change summary/field/category, otherwise zero; and
-- `evidence_quality` (maximum 2,000): 2,000 for exact evidence with complete lineage context or 1,000
-  when the returned lineage graph is truncated.
+Each qualifying change produces one inference prefixed `Plausible contributor:`. Confidence is one
+signed integer-basis-point calculation clamped once to `0..10,000` and exposed as an integer percent.
+Stable bands are `indeterminate` 0-39, `low` 40-59, `medium` 60-79, and `high` 80-100. The fixed factor
+order and caps are:
 
-Every returned factor includes its allowlisted code/label, contribution, and fixed maximum weight, so
-the confidence is exactly reproducible. Recent-change truncation or a detector candidate cap makes the
-whole scoring result `insufficient` because the global rank would be incomplete. Missing incident time
-or symptom remains explicit and contributes zero where the input is unavailable.
+- `temporal_proximity` (`+2,500` maximum): `+2,500` within six hours before the supplied incident time,
+  `+1,800` within 24 hours, `+800` for the remaining validated incident window, and `0` when unknown;
+- `lineage_relationship` (`+2,000` maximum): `+2,000` for depth-one upstream, `+1,200` for the selected
+  depth-zero entity, `+800` for deeper upstream lineage, and `0` when no relationship resolves;
+- `schema_or_freshness_evidence` (`+1,800` maximum): `+1,800` for exact schema-change evidence,
+  `+1,500` for exact pipeline/freshness evidence, otherwise `0`;
+- `independent_evidence_diversity` (`+2,700` maximum): evidence IDs and source categories are
+  deduplicated first; one source category contributes `+700`, two contribute `+1,800`, and three or
+  more contribute `+2,700`;
+- `contradictory_evidence` (`-2,000` cap): one or more exactly resolved inverse added/removed facts for
+  the same entity/category/field apply one capped penalty; and
+- `missing_required_information` (`-2,000` cap): each unique missing incident-time, symptom, lineage,
+  or truncation code applies `-1,000`, with each code counted once.
 
-Hypotheses sort by confidence descending, factual observation time descending, change ID ascending,
+Every factor carries an allowlisted reason code, signed contribution/cap, lexically ordered resolved
+evidence IDs, and deterministically ordered suspicious-signal codes. Positive and contradiction
+provenance must already exist in the same validated response and factor references must be a subset of
+the hypothesis evidence catalog. Source diversity keeps only one evidence ID per category, so duplicate
+or reordered input cannot inflate the score or alter output bytes. A factual evidence item may be cited
+as provenance for separate orthogonal dimensions (for example timestamp and schema category), but it is
+counted only once inside each component and never becomes two independent sources. A contradiction without exact
+report evidence makes scoring insufficient rather than silently dropping the counter-signal.
+
+The `Why` sentence is generated from reason-code templates only. It can state proximity band, lineage
+relationship, schema/freshness presence, bounded source count, contradiction state, and missing-input
+state; it never contains the raw question, symptom, metadata prose, provider/model output, prompt,
+credential, or private reasoning. Recent-change truncation or a detector candidate cap still makes the
+whole scoring result `insufficient` because the global rank would be incomplete.
+
+Hypotheses sort by integer percent descending, factual observation time descending, change ID ascending,
 then hypothesis ID ascending; ranks are contiguous from one and output is capped at three. The
-canonical removed-column fixture contributes 3,000 recency + 2,000 depth-one lineage + 1,500 bounded
-revenue-token fit + 2,000 evidence quality = 8,500 basis points, or `0.85`.
+canonical removed-column fixture contributes 2,500 near-time + 2,000 depth-one lineage + 1,800 schema
+evidence + 1,800 two-source diversity, with no penalty: 8,100 basis points, or `81% high`.
 
 Incident retrieval exposes `hypothesisScoringStage: scoring | completed | insufficient | unavailable`.
 A context or suspicious-stage failure becomes a safe unavailable state without invoking the scorer.
 Completed scoring replaces the canonical report hypotheses with the exact scored list; legacy reports
-remain schema-compatible for upstream-unavailable/insufficient paths, but no new fallback hypothesis is
-fabricated. Slice 3.3 does not build stage 8 evidence-chain prose, recommendations, remediation, or
-fallback reasoning.
+are not accepted at the runner/model boundary. Upstream-unavailable/insufficient paths instead use the
+fixed final `not_scored` contract, and no new fallback hypothesis is fabricated. Slice 3.3 does not
+build stage 8 evidence-chain prose, recommendations, remediation, or fallback reasoning.
 
 ## Slice 3.4 remediation and safe-fallback boundary
 
@@ -298,6 +319,25 @@ prompt, tool policy, raw question, external metadata description/tag/comment, mo
 credential, tool argument, provider/model payload, hostname, exception, or stack. The web labels it
 `Investigation activity`. The existing report evidence list remains the sole evidence timeline and is
 linked from activity events rather than duplicated.
+
+## Slice 6.6 confidence-transparency boundary
+
+Confidence is a public evidence assessment, not model self-reported certainty. The structured
+runner/model boundary uses `InvestigationDraftReportSchema`, whose hypotheses must contain only the
+fixed pending `not_scored` state. Any draft numeric score, band, factor, explanation, or extra field is
+schema-invalid and follows the existing bounded structured-output retry/degradation path without
+reaching the scorer.
+
+The public report uses `InvestigationReportSchema`. A completed scoring lifecycle requires the report
+hypotheses to equal the exact scored list byte for byte. Insufficient/unavailable scoring retains only
+a code-owned final `not_scored` reason and explanation. Degraded lineage may preserve a scored report
+only after the lineage gap has applied the missing-information penalty; other partial/report-less paths
+expose no confidence number.
+
+The UI shows integer percent, stable band, formula version, concise `Why`, signed factor effects, reason
+codes, and resolved evidence/signal provenance. A not-scored report says confidence was not scored. The
+Slice 6.5 activity trail remains observable-only: its hypothesis event cites existing evidence IDs but
+does not copy confidence factors, raw metadata, or private reasoning.
 
 ## Evidence classification
 

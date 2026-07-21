@@ -7,7 +7,7 @@ import {
 import { createFixtureMetadataAdapter } from '../../packages/datahub-client/src/index.js';
 import {
   IncidentRequestSchema,
-  InvestigationReportSchema,
+  InvestigationDraftReportSchema,
 } from '../../packages/shared-types/src/index.js';
 
 describe('deterministic fixture investigation runner', () => {
@@ -27,7 +27,7 @@ describe('deterministic fixture investigation runner', () => {
       limits: FIXTURE_INVESTIGATION_LIMITS,
     });
 
-    expect(InvestigationReportSchema.safeParse(firstReport).success).toBe(true);
+    expect(InvestigationDraftReportSchema.safeParse(firstReport).success).toBe(true);
     expect(secondReport).toEqual(firstReport);
     expect(firstReport.entities.map((entity) => entity.name)).toEqual([
       'analytics.daily_revenue',
@@ -36,7 +36,15 @@ describe('deterministic fixture investigation runner', () => {
     ]);
     expect(firstReport.hypotheses[0]?.summary).toContain('schema change on raw.orders');
     expect(firstReport.hypotheses[0]?.summary).toContain('Plausible contributor:');
-    expect(firstReport.hypotheses[0]?.confidence).toBe(0.85);
+    expect(firstReport.hypotheses[0]?.confidence).toEqual({
+      status: 'not_scored',
+      reasonCode: 'deterministic_scoring_pending',
+      explanation:
+        'Confidence is not scored until validated evidence signals are evaluated by the code-owned formula.',
+    });
+    expect(JSON.stringify(firstReport.hypotheses[0]?.confidence)).not.toMatch(
+      /scorePercent|formulaVersion|factors/,
+    );
     expect(firstReport.hypotheses[0]?.summary).not.toMatch(/confirmed cause|caused the incident/i);
 
     const evidenceIds = new Set(firstReport.evidence.map((evidence) => evidence.id));

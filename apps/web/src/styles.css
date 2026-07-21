@@ -1206,13 +1206,24 @@ button:disabled {
 .score-factor-list li,
 .hypothesis-scoring-missing-list li {
   display: grid;
-  grid-template-columns: minmax(10rem, max-content) minmax(0, 1fr) max-content;
+  grid-template-columns: minmax(0, 1fr) max-content;
   gap: 0.65rem;
   align-items: start;
   min-width: 0;
   padding: 0.55rem;
   border-radius: 0.5rem;
   background: #102d32;
+}
+
+.score-factor-list li > div {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.score-factor-list small {
+  color: #a9bdc2;
+  overflow-wrap: anywhere;
 }
 
 .hypothesis-scoring-missing-list li {
@@ -1229,6 +1240,23 @@ button:disabled {
   color: #94eddf;
   font-size: 0.82rem;
   white-space: nowrap;
+}
+
+.confidence-why {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0.65rem 0.75rem;
+  border-left: 3px solid #4f9e93;
+  color: #c8d8dc;
+  background: #102d32;
+}
+
+.confidence-why strong {
+  color: #94eddf;
+  font-size: 0.78rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .scored-evidence-list {

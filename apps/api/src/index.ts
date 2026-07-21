@@ -53,6 +53,7 @@ import {
   IncidentRequestSchema,
   IncidentRetrievalResponseSchema,
   InvestigationDegradedResponseSchema,
+  InvestigationDraftReportSchema,
   InvestigationReportSchema,
   METADATA_ENTITY_SEARCH_MAX_LIMIT,
   METADATA_LINEAGE_MAX_NODES,
@@ -71,8 +72,10 @@ import {
   ReadinessResponseSchema,
   RuntimeLimitConfigSchema,
   SuspiciousChangeDetectionStageSchema,
+  UNSCORED_CONFIDENCE_EXPLANATIONS,
   type IncidentContextStage,
   type HypothesisScoringStage,
+  type InvestigationDraftReport,
   type InvestigationReport,
   type InvestigationExecutionMetadata,
   type InvestigationDegradedResponse,
@@ -715,6 +718,23 @@ function invalidRemediationPlanning(): RemediationPlanningStage {
       code: 'PLANNING_INVALID',
       message: 'Remediation planning could not validate the factual recommendation references.',
     },
+  });
+}
+
+function finalizeUnscoredReport(
+  report: InvestigationDraftReport,
+  reasonCode: 'insufficient_evidence' | 'scoring_unavailable',
+): InvestigationReport {
+  return InvestigationReportSchema.parse({
+    ...report,
+    hypotheses: report.hypotheses.map((hypothesis) => ({
+      ...hypothesis,
+      confidence: {
+        status: 'not_scored',
+        reasonCode,
+        explanation: UNSCORED_CONFIDENCE_EXPLANATIONS[reasonCode],
+      },
+    })),
   });
 }
 
@@ -1541,7 +1561,7 @@ export function buildServer(options: BuildServerOptions = {}) {
             return;
           }
 
-          let report: InvestigationReport | undefined;
+          let report: InvestigationDraftReport | undefined;
           while (!report) {
             executionBudget.beginAgentStep();
             let rawReport: unknown;
@@ -1591,7 +1611,7 @@ export function buildServer(options: BuildServerOptions = {}) {
 
             const serializedReport = JSON.stringify(rawReport);
             executionBudget.assertModelOutput(serializedReport);
-            const parsedReport = InvestigationReportSchema.safeParse(rawReport);
+            const parsedReport = InvestigationDraftReportSchema.safeParse(rawReport);
             if (parsedReport.success) {
               report = parsedReport.data;
               break;
@@ -1628,7 +1648,7 @@ export function buildServer(options: BuildServerOptions = {}) {
           if (!report) {
             throw new Error('Structured report retry loop ended without a validated result.');
           }
-          let completedReport = report;
+          let completedReport = finalizeUnscoredReport(report, 'scoring_unavailable');
           if (
             contextStage.status === 'completed' &&
             (suspiciousChangeStage.status === 'completed' ||
@@ -1651,6 +1671,8 @@ export function buildServer(options: BuildServerOptions = {}) {
                   summary: `The strongest evidence-backed inference is: ${topHypothesis.summary}`,
                   hypotheses: hypothesisScoringStage.hypotheses,
                 });
+              } else {
+                completedReport = finalizeUnscoredReport(report, 'insufficient_evidence');
               }
             } catch (error: unknown) {
               const terminationError = terminationErrorFrom(error);

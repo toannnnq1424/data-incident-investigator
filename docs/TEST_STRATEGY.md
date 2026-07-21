@@ -90,6 +90,22 @@ proves an ordered semantic list, canonical `<time>`, evidence links, failed-stat
 terminal duration; the one Windows fixture browser regression covers the user-visible canonical trail,
 accessibility, resolved links, clean console, overflow, and owned cleanup.
 
+Confidence-transparency tests use only validated fixture/context/evidence values and deterministic
+clocks/timestamps; they never ask a model for confidence. Shared schema tests pin
+`evidence-confidence-v1`, exact six-factor order/weights/signed caps/reason codes, integer percent,
+0/39/40/59/60/79/80/100 band boundaries, template explanation equality, unique ordered provenance,
+and report/draft lifecycle separation. Agent tests cover temporal near/related/far/unknown;
+direct/selected/indirect lineage; schema/pipeline/other change evidence; evidence-ID/source-category
+dedupe; inverse-change contradiction cap; unique missing-input/truncation cap; unresolved counter-
+evidence; no-lineage insufficient output; score bounds; ordering invariance; and deterministic
+tie-break/cap behavior. API tests prove a
+numeric or scored runner/model draft is rejected before scorer/storage and degrades after bounded
+structured-output retries with no report. Evaluation pins all six resolved canonical percentages/bands
+and leaves the insufficient case without a hypothesis/score. Web static/browser coverage proves
+percent, band, version, `Why`, signed factors, reason/provenance, resolved links, not-scored fallback,
+non-causal copy, leakage sentinels, clean console, responsive overflow, and owned cleanup. The Slice 6.5
+activity trail remains unchanged except for its existing evidence-linked observable hypothesis event.
+
 ## Required incident evaluation cases
 
 Removed column, stale pipeline, upstream type change, wrong dashboard dataset, delayed ingestion,

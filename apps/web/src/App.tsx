@@ -254,8 +254,8 @@ function delay(milliseconds: number) {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
-function formatConfidence(confidence: number) {
-  return `${Math.round(confidence * 100)}%`;
+function formatConfidence(scorePercent: number) {
+  return `${scorePercent}%`;
 }
 
 function formatObservedAt(timestamp: string) {
@@ -723,7 +723,10 @@ export function getCompletedReportContent(incident: CompletedIncident) {
     lineageEvidence: incident.report.evidence.filter((evidence) => evidence.category === 'lineage'),
     inferences: incident.report.hypotheses.map((hypothesis) => ({
       ...hypothesis,
-      confidenceLabel: formatConfidence(hypothesis.confidence),
+      confidenceLabel:
+        hypothesis.confidence.status === 'scored'
+          ? `${formatConfidence(hypothesis.confidence.scorePercent)} · ${hypothesis.confidence.level}`
+          : 'Confidence not scored',
     })),
     recommendations: incident.report.recommendations,
     assumptions: incident.report.assumptions,
@@ -1095,7 +1098,10 @@ function HypothesisScoringStage({ stage }: { stage: HypothesisScoringStage }) {
                       <span>Inference #{hypothesis.rank}</span>
                       <strong>{hypothesis.summary}</strong>
                     </div>
-                    <b>{formatConfidence(hypothesis.confidence)} confidence</b>
+                    <b>
+                      {formatConfidence(hypothesis.confidence.scorePercent)} confidence ·{' '}
+                      {hypothesis.confidence.level}
+                    </b>
                   </div>
                   <p>
                     Source change <code>{hypothesis.sourceChangeId}</code> ·{' '}
@@ -1103,13 +1109,34 @@ function HypothesisScoringStage({ stage }: { stage: HypothesisScoringStage }) {
                       {formatObservedAt(hypothesis.observedAt)}
                     </time>
                   </p>
-                  <p className="score-factor-label">Ordered score factors</p>
+                  <p className="confidence-why">
+                    <strong>Why</strong>
+                    <span>{hypothesis.confidence.explanation.replace(/^Why:\s*/, '')}</span>
+                  </p>
+                  <p className="score-factor-label">
+                    Ordered score factors · {hypothesis.confidence.formulaVersion}
+                  </p>
                   <ol className="score-factor-list">
-                    {hypothesis.factors.map((factor) => (
+                    {hypothesis.confidence.factors.map((factor) => (
                       <li key={factor.code}>
-                        <code>{factor.code}</code>
-                        <span>{factor.label}</span>
+                        <div>
+                          <code>{factor.code}</code>
+                          <span>{factor.label}</span>
+                          <small>
+                            Reason: <code>{factor.reasonCode}</code>
+                          </small>
+                          {(factor.evidenceIds.length > 0 || factor.signalCodes.length > 0) && (
+                            <small>
+                              Provenance:{' '}
+                              {[
+                                ...factor.evidenceIds.map((id) => `evidence:${id}`),
+                                ...factor.signalCodes.map((code) => `signal:${code}`),
+                              ].join(' · ')}
+                            </small>
+                          )}
+                        </div>
                         <strong>
+                          {factor.contributionBasisPoints > 0 ? '+' : ''}
                           {factor.contributionBasisPoints} / {factor.weightBasisPoints} bp
                         </strong>
                       </li>
@@ -1147,8 +1174,9 @@ function HypothesisScoringStage({ stage }: { stage: HypothesisScoringStage }) {
           )}
 
           <p className="hypothesis-scoring-boundary">
-            Confidence is the exact sum of bounded code-owned factors. Each item is an inference and
-            plausible contributor, not a confirmed cause or recommendation.
+            Confidence is the exact clamped sum of bounded code-owned evidence factors and
+            penalties. Each item is an inference and plausible contributor, not a confirmed cause or
+            recommendation.
           </p>
         </div>
       )}
@@ -1427,8 +1455,12 @@ function InferenceList({ inferences }: { inferences: ReportInference[] }) {
               <code>{hypothesis.id}</code>
               <h4>{hypothesis.summary}</h4>
             </div>
-            <strong>{hypothesis.confidenceLabel} confidence</strong>
+            <strong>{hypothesis.confidenceLabel}</strong>
           </div>
+          <p className="confidence-why">
+            <strong>Why</strong>
+            <span>{hypothesis.confidence.explanation.replace(/^Why:\s*/, '')}</span>
+          </p>
           <p className="evidence-reference-label">Evidence IDs</p>
           <ul className="evidence-reference-list">
             {hypothesis.evidenceIds.map((evidenceId) => (

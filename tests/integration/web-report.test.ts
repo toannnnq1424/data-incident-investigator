@@ -246,7 +246,11 @@ describe('completed report presentation', () => {
           {
             id: 'hypothesis-1',
             summary: 'A schema change is a plausible contributor.',
-            confidence: 0.8,
+            confidence: {
+              status: 'not_scored',
+              reasonCode: 'insufficient_evidence',
+              explanation: 'Confidence was not scored because validated evidence was insufficient.',
+            },
             evidenceIds: ['change-1', 'lineage-upstream-1'],
           },
         ],
@@ -314,8 +318,12 @@ describe('completed report presentation', () => {
         {
           id: 'hypothesis-1',
           summary: 'A schema change is a plausible contributor.',
-          confidence: 0.8,
-          confidenceLabel: '80%',
+          confidence: {
+            status: 'not_scored',
+            reasonCode: 'insufficient_evidence',
+            explanation: 'Confidence was not scored because validated evidence was insufficient.',
+          },
+          confidenceLabel: 'Confidence not scored',
           evidenceIds: ['change-1', 'lineage-upstream-1'],
         },
       ],

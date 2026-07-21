@@ -13,6 +13,7 @@ import {
   INCIDENT_CONTEXT_MAX_CHANGE_ENTITIES,
   EvidenceSchema,
   formatUntrustedEvidence,
+  HYPOTHESIS_CONFIDENCE_FORMULA_VERSION,
   HYPOTHESIS_SCORE_BASIS_POINTS,
   HYPOTHESIS_SCORE_FACTOR_LABELS,
   HYPOTHESIS_SCORE_FACTOR_ORDER,
@@ -31,6 +32,7 @@ import {
   IncidentRequestSchema,
   INVESTIGATION_LIMIT_MESSAGES,
   InvestigationExecutionMetadataSchema,
+  InvestigationDraftReportSchema,
   InvestigationReportSchema,
   METADATA_LINEAGE_MAX_DEPTH,
   METADATA_LINEAGE_MAX_NODES,
@@ -52,6 +54,8 @@ import {
   SUSPICIOUS_CHANGE_SIGNAL_ORDER,
   SUSPICIOUS_CHANGE_SIGNAL_WEIGHTS,
   RuntimeLimitConfigSchema,
+  hypothesisConfidenceExplanation,
+  hypothesisConfidenceLevel,
   type Evidence,
   type IncidentContextCompletedStage,
   type IncidentContextDegradedStage,
@@ -60,10 +64,12 @@ import {
   type IncidentContextMissingInformation,
   type IncidentIntent,
   type IncidentRequest,
+  type InvestigationDraftReport,
   type InvestigationReport,
   type InvestigationExecutionMetadata,
   type InvestigationTerminationReason,
   type HypothesisScoreFactor,
+  type HypothesisScoreReasonCode,
   type HypothesisScoringMissingInformation,
   type HypothesisScoringResult,
   type HypothesisScoringStage,
@@ -867,39 +873,6 @@ export interface HypothesisScorer {
   ): HypothesisScoringResult;
 }
 
-const scoringTokenLimit = 128;
-const scoringStopWords = new Set([
-  'after',
-  'before',
-  'change',
-  'changed',
-  'from',
-  'have',
-  'incident',
-  'metadata',
-  'reported',
-  'the',
-  'this',
-  'today',
-  'what',
-  'when',
-  'where',
-  'which',
-  'with',
-]);
-
-function boundedScoringTokens(values: readonly string[]) {
-  const tokens = values
-    .join(' ')
-    .toLowerCase()
-    .match(/[a-z0-9]+/g);
-  return new Set(
-    (tokens ?? [])
-      .filter((token) => token.length >= 3 && !scoringStopWords.has(token))
-      .slice(0, scoringTokenLimit),
-  );
-}
-
 function scoringEvidenceCategory(category: MetadataRecentChangeCategory): Evidence['category'] {
   if (category === 'schema') return 'schema-change';
   if (category === 'pipeline') return 'pipeline';
@@ -909,13 +882,23 @@ function scoringEvidenceCategory(category: MetadataRecentChangeCategory): Eviden
 
 function hypothesisScoreFactor(
   code: HypothesisScoreFactor['code'],
+  reasonCode: HypothesisScoreReasonCode,
   contributionBasisPoints: number,
+  evidenceIds: string[] = [],
+  signalCodes: SuspiciousChangeSignalCode[] = [],
 ): HypothesisScoreFactor {
   return {
     code,
     label: HYPOTHESIS_SCORE_FACTOR_LABELS[code],
+    reasonCode,
     contributionBasisPoints,
     weightBasisPoints: HYPOTHESIS_SCORE_FACTOR_WEIGHTS[code],
+    evidenceIds: [...new Set(evidenceIds)].sort(),
+    signalCodes: [...new Set(signalCodes)].sort(
+      (left, right) =>
+        SUSPICIOUS_CHANGE_SIGNAL_ORDER.indexOf(left) -
+        SUSPICIOUS_CHANGE_SIGNAL_ORDER.indexOf(right),
+    ),
   };
 }
 
@@ -938,58 +921,233 @@ function insufficientHypothesisScoring(
   });
 }
 
-function exactCandidateEvidence(
-  candidate: SuspiciousChangeCandidate,
+function exactChangeEvidence(
+  change: {
+    id: string;
+    entityUrn: string;
+    category: MetadataRecentChangeCategory;
+    timestamp: string;
+    summary: string;
+  },
   evidence: Evidence,
   contextStage: IncidentContextCompletedStage,
 ) {
-  const entity = contextStage.facts.lineage?.nodes.find((node) => node.urn === candidate.entityUrn);
+  const entity = [
+    ...contextStage.facts.candidateEntities,
+    ...(contextStage.facts.lineage?.nodes ?? []),
+  ].find((candidateEntity) => candidateEntity.urn === change.entityUrn);
   return (
     entity !== undefined &&
-    evidence.id === candidate.changeId &&
-    evidence.category === scoringEvidenceCategory(candidate.category) &&
-    evidence.statement === formatUntrustedEvidence(candidate.summary) &&
-    evidence.observedAt === candidate.observedAt &&
-    evidence.sourceEntity?.urn === candidate.entityUrn &&
-    evidence.sourceEntity.name === candidate.entityName &&
+    evidence.id === change.id &&
+    evidence.category === scoringEvidenceCategory(change.category) &&
+    evidence.statement === formatUntrustedEvidence(change.summary) &&
+    evidence.observedAt === change.timestamp &&
+    evidence.sourceEntity?.urn === change.entityUrn &&
+    evidence.sourceEntity.name === entity.name &&
     evidence.sourceEntity.kind === entity.kind
   );
+}
+
+function inverseChangeOperations(left: string, right: string) {
+  return (left === 'added' && right === 'removed') || (left === 'removed' && right === 'added');
+}
+
+function contradictoryChanges(
+  candidate: SuspiciousChangeCandidate,
+  contextStage: IncidentContextCompletedStage,
+) {
+  if (!candidate.field) return [];
+  return contextStage.facts.recentChanges
+    .flatMap((response) => response.changes)
+    .filter(
+      (change) =>
+        change.id !== candidate.changeId &&
+        change.entityUrn === candidate.entityUrn &&
+        change.category === candidate.category &&
+        change.field === candidate.field &&
+        inverseChangeOperations(candidate.operation, change.operation),
+    )
+    .sort((left, right) => left.id.localeCompare(right.id));
 }
 
 function candidateScoreFactors(
   candidate: SuspiciousChangeCandidate,
   contextStage: IncidentContextCompletedStage,
+  evidence: Evidence[],
+  contradictionEvidenceIds: string[],
 ) {
   const signalCodes = new Set(candidate.signals.map((signal) => signal.code));
   const lineageDepth = contextStage.facts.lineage?.nodes.find(
     (node) => node.urn === candidate.entityUrn,
   )?.depth;
-  const incidentTokens = boundedScoringTokens([
-    contextStage.intent.question,
-    ...contextStage.intent.symptoms,
-  ]);
-  const candidateTokens = boundedScoringTokens([
-    candidate.summary,
-    candidate.field ?? '',
-    candidate.category,
-  ]);
-  const hasBoundedTokenFit = [...candidateTokens].some((token) => incidentTokens.has(token));
+  const candidateEvidenceId = candidate.changeId;
+  const temporalSignalCodes = signalCodes.has('incident_window')
+    ? (['incident_window'] as SuspiciousChangeSignalCode[])
+    : [];
+  const firstRelatedEvidenceId = (category: Evidence['category']) =>
+    evidence
+      .filter(
+        (item) => item.category === category && item.sourceEntity?.urn === candidate.entityUrn,
+      )
+      .map((item) => item.id)
+      .slice(0, 1);
+  const incidentEndTime = contextStage.intent.timeWindow.endTime;
+  const temporalDistanceMs = incidentEndTime
+    ? Date.parse(incidentEndTime) - Date.parse(candidate.observedAt)
+    : undefined;
+  const temporal =
+    temporalDistanceMs === undefined || temporalDistanceMs < 0
+      ? hypothesisScoreFactor('temporal_proximity', 'temporal_unknown', 0, [], temporalSignalCodes)
+      : temporalDistanceMs <= 6 * 60 * 60 * 1_000
+        ? hypothesisScoreFactor(
+            'temporal_proximity',
+            'temporal_near',
+            2_500,
+            [candidateEvidenceId],
+            temporalSignalCodes,
+          )
+        : temporalDistanceMs <= 24 * 60 * 60 * 1_000
+          ? hypothesisScoreFactor(
+              'temporal_proximity',
+              'temporal_related',
+              1_800,
+              [candidateEvidenceId],
+              temporalSignalCodes,
+            )
+          : signalCodes.has('incident_window')
+            ? hypothesisScoreFactor(
+                'temporal_proximity',
+                'temporal_far',
+                800,
+                [candidateEvidenceId],
+                temporalSignalCodes,
+              )
+            : hypothesisScoreFactor('temporal_proximity', 'temporal_unknown', 0);
 
-  const factors = [
-    hypothesisScoreFactor('change_recency', signalCodes.has('incident_window') ? 3_000 : 0),
-    hypothesisScoreFactor(
-      'lineage_position',
-      lineageDepth === 1 ? 2_000 : lineageDepth === 0 ? 1_000 : lineageDepth ? 1_200 : 0,
-    ),
-    hypothesisScoreFactor(
-      'symptom_category_fit',
-      signalCodes.has('category_intent_match') ? 3_000 : hasBoundedTokenFit ? 1_500 : 0,
-    ),
-    hypothesisScoreFactor(
-      'evidence_quality',
-      contextStage.facts.lineage?.truncated ? 1_000 : 2_000,
-    ),
-  ];
+  const lineage =
+    lineageDepth === 1
+      ? hypothesisScoreFactor(
+          'lineage_relationship',
+          'lineage_direct_upstream',
+          2_000,
+          firstRelatedEvidenceId('lineage'),
+          signalCodes.has('upstream_lineage') ? ['upstream_lineage'] : [],
+        )
+      : lineageDepth === 0
+        ? hypothesisScoreFactor(
+            'lineage_relationship',
+            'lineage_selected_entity',
+            1_200,
+            firstRelatedEvidenceId('metadata'),
+            signalCodes.has('selected_entity') ? ['selected_entity'] : [],
+          )
+        : lineageDepth && lineageDepth > 1
+          ? hypothesisScoreFactor(
+              'lineage_relationship',
+              'lineage_indirect_upstream',
+              800,
+              firstRelatedEvidenceId('lineage'),
+              signalCodes.has('upstream_lineage') ? ['upstream_lineage'] : [],
+            )
+          : hypothesisScoreFactor('lineage_relationship', 'lineage_none', 0);
+
+  const schemaOrFreshness =
+    candidate.category === 'schema'
+      ? hypothesisScoreFactor('schema_or_freshness_evidence', 'schema_change_present', 1_800, [
+          candidateEvidenceId,
+        ])
+      : candidate.category === 'pipeline'
+        ? hypothesisScoreFactor(
+            'schema_or_freshness_evidence',
+            'pipeline_freshness_present',
+            1_500,
+            [candidateEvidenceId],
+          )
+        : hypothesisScoreFactor('schema_or_freshness_evidence', 'schema_freshness_absent', 0);
+
+  const evidenceByCategory = new Map<Evidence['category'], string>();
+  evidence
+    .filter(
+      (item) =>
+        item.id === candidateEvidenceId ||
+        (item.sourceEntity?.urn === candidate.entityUrn &&
+          ['lineage', 'metadata'].includes(item.category)),
+    )
+    .sort((left, right) => left.id.localeCompare(right.id))
+    .forEach((item) => {
+      if (!evidenceByCategory.has(item.category)) evidenceByCategory.set(item.category, item.id);
+    });
+  const independentEvidenceIds = [...evidenceByCategory.values()].sort();
+  const diversity =
+    independentEvidenceIds.length >= 3
+      ? hypothesisScoreFactor(
+          'independent_evidence_diversity',
+          'evidence_sources_three_plus',
+          2_700,
+          independentEvidenceIds,
+        )
+      : independentEvidenceIds.length === 2
+        ? hypothesisScoreFactor(
+            'independent_evidence_diversity',
+            'evidence_sources_two',
+            1_800,
+            independentEvidenceIds,
+          )
+        : independentEvidenceIds.length === 1
+          ? hypothesisScoreFactor(
+              'independent_evidence_diversity',
+              'evidence_sources_one',
+              700,
+              independentEvidenceIds,
+            )
+          : hypothesisScoreFactor('independent_evidence_diversity', 'evidence_sources_none', 0);
+
+  const contradiction =
+    contradictionEvidenceIds.length > 0
+      ? hypothesisScoreFactor(
+          'contradictory_evidence',
+          'contradiction_present',
+          -2_000,
+          contradictionEvidenceIds,
+        )
+      : hypothesisScoreFactor('contradictory_evidence', 'contradiction_none', 0);
+
+  const missingCodes = new Set(
+    contextStage.missingInformation
+      .map((item) => item.code)
+      .filter((code) =>
+        [
+          'incident_time_not_supplied',
+          'symptom_not_supplied',
+          'lineage_not_found',
+          'lineage_truncated',
+          'recent_changes_truncated',
+        ].includes(code),
+      ),
+  );
+  if (contextStage.intent.timeWindow.basis !== 'incident_time') {
+    missingCodes.add('incident_time_not_supplied');
+  }
+  if (contextStage.intent.symptoms.length === 0) {
+    missingCodes.add('symptom_not_supplied');
+  }
+  const missingContribution = -Math.min(2_000, missingCodes.size * 1_000);
+  const missing =
+    missingCodes.size >= 2
+      ? hypothesisScoreFactor(
+          'missing_required_information',
+          'required_information_multiple_missing',
+          missingContribution,
+        )
+      : missingCodes.size === 1
+        ? hypothesisScoreFactor(
+            'missing_required_information',
+            'required_information_one_missing',
+            missingContribution,
+          )
+        : hypothesisScoreFactor('missing_required_information', 'required_information_complete', 0);
+
+  const factors = [temporal, lineage, schemaOrFreshness, diversity, contradiction, missing];
 
   return factors.sort(
     (left, right) =>
@@ -1005,7 +1163,10 @@ export class DeterministicHypothesisScorer implements HypothesisScorer {
     evidence: Evidence[],
   ): HypothesisScoringResult {
     const parsedContext = IncidentContextCompletedStageSchema.parse(contextStage);
-    const parsedEvidence = EvidenceSchema.array().max(100).parse(evidence);
+    const parsedEvidence = EvidenceSchema.array()
+      .max(100)
+      .parse(evidence)
+      .sort((left, right) => left.id.localeCompare(right.id));
     const missingInformation: HypothesisScoringMissingInformation[] = [];
 
     if (parsedContext.intent.timeWindow.basis !== 'incident_time') {
@@ -1017,7 +1178,7 @@ export class DeterministicHypothesisScorer implements HypothesisScorer {
     if (parsedContext.intent.symptoms.length === 0) {
       addHypothesisScoringMissingInformation(missingInformation, {
         code: 'symptom_not_supplied',
-        message: 'No symptom was supplied; bounded fit uses only the incident question.',
+        message: 'No symptom was supplied, so the required-information penalty is applied.',
       });
     }
 
@@ -1052,8 +1213,23 @@ export class DeterministicHypothesisScorer implements HypothesisScorer {
       evidenceIds.size !== parsedEvidence.length ||
       validatedDetection.candidates.some((candidate) => {
         const candidateEvidence = parsedEvidence.find((item) => item.id === candidate.changeId);
+        const candidateChange = parsedContext.facts.recentChanges
+          .flatMap((response) => response.changes)
+          .find((change) => change.id === candidate.changeId);
+        const contradictionEvidenceResolved = contradictoryChanges(candidate, parsedContext).every(
+          (change) => {
+            const contradictionEvidence = parsedEvidence.find((item) => item.id === change.id);
+            return (
+              contradictionEvidence !== undefined &&
+              exactChangeEvidence(change, contradictionEvidence, parsedContext)
+            );
+          },
+        );
         return (
-          !candidateEvidence || !exactCandidateEvidence(candidate, candidateEvidence, parsedContext)
+          !candidateChange ||
+          !candidateEvidence ||
+          !exactChangeEvidence(candidateChange, candidateEvidence, parsedContext) ||
+          !contradictionEvidenceResolved
         );
       });
     if (unresolvedEvidence) {
@@ -1065,7 +1241,15 @@ export class DeterministicHypothesisScorer implements HypothesisScorer {
     }
 
     const generated = validatedDetection.candidates.map((candidate) => {
-      const factors = candidateScoreFactors(candidate, parsedContext);
+      const contradictionEvidenceIds = contradictoryChanges(candidate, parsedContext).map(
+        (change) => change.id,
+      );
+      const factors = candidateScoreFactors(
+        candidate,
+        parsedContext,
+        parsedEvidence,
+        contradictionEvidenceIds,
+      );
       const totalBasisPoints = Math.min(
         HYPOTHESIS_SCORE_BASIS_POINTS,
         Math.max(
@@ -1073,19 +1257,36 @@ export class DeterministicHypothesisScorer implements HypothesisScorer {
           factors.reduce((total, factor) => total + factor.contributionBasisPoints, 0),
         ),
       );
+      const scorePercent = totalBasisPoints / 100;
+      const confidence = {
+        status: 'scored' as const,
+        formulaVersion: HYPOTHESIS_CONFIDENCE_FORMULA_VERSION,
+        scorePercent,
+        level: hypothesisConfidenceLevel(scorePercent),
+        explanation: hypothesisConfidenceExplanation(factors),
+        factors,
+      };
+      const factorEvidenceIds = factors.flatMap((factor) => factor.evidenceIds);
+      const evidenceIds = [
+        candidate.changeId,
+        ...[...new Set(factorEvidenceIds)]
+          .filter((evidenceId) => evidenceId !== candidate.changeId)
+          .sort(),
+      ];
       return {
         id: `hypothesis-${candidate.changeId}`,
         sourceChangeId: candidate.changeId,
         observedAt: candidate.observedAt,
         summary: `Plausible contributor: the ${candidate.operation} ${candidate.category} change on ${candidate.entityName} may have contributed to the incident.`,
-        confidence: totalBasisPoints / HYPOTHESIS_SCORE_BASIS_POINTS,
-        evidenceIds: [candidate.changeId],
-        factors,
+        confidence,
+        evidenceIds,
       };
     });
 
     generated.sort((left, right) => {
-      if (left.confidence !== right.confidence) return right.confidence - left.confidence;
+      if (left.confidence.scorePercent !== right.confidence.scorePercent) {
+        return right.confidence.scorePercent - left.confidence.scorePercent;
+      }
       if (left.observedAt !== right.observedAt) return left.observedAt > right.observedAt ? -1 : 1;
       if (left.sourceChangeId !== right.sourceChangeId) {
         return left.sourceChangeId < right.sourceChangeId ? -1 : 1;
@@ -1434,7 +1635,7 @@ export interface InvestigationRunner {
   investigate(
     request: IncidentRequest,
     context: InvestigationContext,
-  ): Promise<InvestigationReport>;
+  ): Promise<InvestigationDraftReport>;
 }
 
 export const FIXTURE_INVESTIGATION_LIMITS: InvestigationLimits = Object.freeze({
@@ -1496,7 +1697,7 @@ export class DeterministicInvestigationRunner implements InvestigationRunner {
   async investigate(
     request: IncidentRequest,
     context: InvestigationContext,
-  ): Promise<InvestigationReport> {
+  ): Promise<InvestigationDraftReport> {
     validateLimits(context.limits);
     context.executionBudget?.assertEntityQuery(context.limits.entityCount);
     context.executionBudget?.assertLineageRequest(
@@ -1536,7 +1737,7 @@ export class DeterministicInvestigationRunner implements InvestigationRunner {
   private async runInvestigation(
     request: IncidentRequest,
     context: InvestigationContext,
-  ): Promise<InvestigationReport> {
+  ): Promise<InvestigationDraftReport> {
     const { metadata, limits } = context;
     context.executionBudget?.recordToolCall();
     await metadata.healthCheck();
@@ -1609,29 +1810,8 @@ export class DeterministicInvestigationRunner implements InvestigationRunner {
     const hypothesisSummary = leadingChange
       ? `Plausible contributor: the recent ${leadingChange.category} change on ${leadingChange.entity.name} may have contributed to the reported incident.`
       : `Available fixture metadata is insufficient to identify a plausible recent-change contributor for ${lineage.seed.name}.`;
-    const legacyIncidentTokens = boundedScoringTokens([request.question, request.symptom ?? '']);
-    const legacyChangeTokens = boundedScoringTokens([leadingChange?.summary ?? '']);
-    const legacyFitContribution = [...legacyChangeTokens].some((token) =>
-      legacyIncidentTokens.has(token),
-    )
-      ? 1_500
-      : 0;
-    const legacyLineageContribution = leadingChange
-      ? lineage.upstream.some((entity) => entity.urn === leadingChange.entity.urn)
-        ? 2_000
-        : leadingChange.entity.urn === lineage.seed.urn
-          ? 1_000
-          : 0
-      : 0;
-    const legacyConfidenceBasisPoints = Math.min(
-      HYPOTHESIS_SCORE_BASIS_POINTS,
-      (leadingChange ? 3_000 : 0) +
-        legacyLineageContribution +
-        legacyFitContribution +
-        (leadingChange ? 2_000 : 1_000),
-    );
 
-    return InvestigationReportSchema.parse({
+    return InvestigationDraftReportSchema.parse({
       incidentId: context.incidentId,
       summary: `The strongest evidence-backed inference is: ${hypothesisSummary}`,
       entities,
@@ -1640,7 +1820,12 @@ export class DeterministicInvestigationRunner implements InvestigationRunner {
         {
           id: 'hypothesis-recent-change',
           summary: hypothesisSummary,
-          confidence: legacyConfidenceBasisPoints / HYPOTHESIS_SCORE_BASIS_POINTS,
+          confidence: {
+            status: 'not_scored',
+            reasonCode: 'deterministic_scoring_pending',
+            explanation:
+              'Confidence is not scored until validated evidence signals are evaluated by the code-owned formula.',
+          },
           evidenceIds: hypothesisEvidenceIds,
         },
       ],
