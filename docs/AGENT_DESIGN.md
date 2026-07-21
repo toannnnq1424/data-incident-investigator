@@ -165,15 +165,17 @@ adapter/provider invocation and record unique returned lineage URNs after schema
 duration comes from a monotonic clock; tests inject a deterministic clock. The canonical fixture
 currently executes five agent stages, eight tool calls, zero retries, and no model call.
 
-The retry cap is an enforcement seam, not permission to add retries: current workflows still perform
-zero. The output-size seam validates serialized deterministic runner output today and therefore also
-bounds any future model-backed structured output before it may cross the API contract. No synthetic
-model token, retry, call, step, lineage, or duration metric is created.
+The retry cap permits only additional structured-output attempts after schema rejection; valid fixture
+output still performs zero retries. The output-size seam validates every serialized runner attempt
+before it may cross the API contract. No synthetic model token, retry, call, step, lineage, or duration
+metric is created.
 
 Terminal execution metadata contains only `toolCalls`, `agentSteps`, `durationMs`,
-`lineageEntitiesVisited`, and an allowlisted `terminationReason`. Exact-boundary work may complete; the
-first attempted step/call/retry/entity/depth/output beyond its configured budget, or duration beyond the
-deadline, produces a typed `failed` incident with no report. Stable reasons are
+`lineageEntitiesVisited`, factual `retries`, and an allowlisted `terminationReason`. Exact-boundary work
+may complete; the first attempted step/call/retry/entity/depth/output beyond its configured budget, or
+duration beyond the deadline, stops the workflow. It produces `failed` before trustworthy evidence or
+`degraded` with a strict context snapshot after facts were collected; neither path fabricates a report.
+Stable limit reasons are
 `agent_step_limit_reached`, `tool_call_limit_reached`, `lineage_depth_limit_reached`,
 `entity_limit_reached`, `retry_limit_reached`, `duration_limit_reached`, and
 `model_output_limit_reached`. A provider-owned timeout while duration budget remains is separately
@@ -205,8 +207,37 @@ not alter calls, scores, recommendations, environment access, or output policy. 
 call in this workflow.
 
 The API explicitly parses runner output through `InvestigationReportSchema` before scoring, planning,
-storage, or completion. Invalid structured output terminates with the existing sanitized internal
-failure and no report; it does not trigger a fallback, repair prompt, retry, or Slice 6.3 degradation.
+storage, or completion. Slice 6.3 owns the bounded retry/degradation behavior for invalid structured
+output; no invalid report may cross this boundary.
+
+## Slice 6.3 graceful-degradation boundary
+
+`status: degraded` is a terminal non-success state. It contains schema-validated context facts already
+collected, terminal downstream stages, factual execution metadata, one stable error, bounded allowlisted
+warnings/next steps, and an optional report only for deterministic lineage truncation when all report
+references remain valid. It never contains an active stage, invented entity, raw provider/model value,
+exception, stack, hostname, credential, configuration value, or private reasoning.
+
+The context gatherer assigns each external call one public operation identity:
+`metadata_health`, `entity_search`, `lineage`, or `recent_changes`. A failed operation carries a strict
+partial context snapshot assembled only from responses already parsed by shared schemas. Health/search
+failure therefore has no evidence; lineage failure may retain selected candidates; recent-change
+failure may retain candidates and lineage. Downstream reasoning stops. DataHub unavailability never
+invokes the fixture report runner and exposes `continue_fixture_mode` only as an explicit
+`not_executed` alternative.
+
+No entity match terminates as `entity_not_found`, returns no selected entity/report, and asks for a
+candidate or more incident context. A lineage response with `truncated: true` terminates as
+`lineage_truncated`; the validated partial report is retained with an incomplete-lineage warning and is
+not presented as complete traversal. A later hard runtime limit may likewise return degraded context
+when facts already exist; the same limit before evidence retains the Slice 6.1 failed lifecycle.
+
+The report/model boundary performs one initial attempt plus at most `MAX_RETRIES` additional attempts,
+and only schema-invalid structured output is retried. Each actual retry calls `recordRetry`; valid
+fixture output uses zero. Exhaustion returns `model_output_invalid`/`MODEL_OUTPUT_INVALID`, collected
+context, no report, and no scorer/planner call. `InvestigationModelProviderTimeoutError` maps to
+`model_provider_timeout`/`MODEL_TIMEOUT` while the monotonic total budget remains; the identical timeout
+becomes `duration_limit_reached` only when the same snapshot proves the overall deadline was exceeded.
 
 ## Evidence classification
 

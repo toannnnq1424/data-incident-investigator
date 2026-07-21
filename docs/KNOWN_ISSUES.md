@@ -2,19 +2,21 @@
 
 Last updated: 2026-07-21.
 
-- Phase 6 Slice 6.1 is QA-approved and merged through PR #33 at exact main merge
-  `13d10a879ed1955ac06430998e30e781b0d02483`; main CI run `29822615399`, job `88608512226`, passed.
-  The factual provider-timeout correction remains intact.
-- Slice 6.2 is implemented locally from that exact main on
-  `codex/phase-6-2-input-output-safety-project`. Public body/rate settings are process-local safe
-  defaults with startup validation; the limiter intentionally has no IP/proxy identity, persistence,
-  shared store, or cross-instance coordination. External metadata is plain-text sanitized and quoted
-  when used as report evidence; malformed structured runner output fails closed. Focused red-to-green
-  and the final affected 15-file evidence passes 145/145 tests; all five builds, artifact smoke, and
-  the one Windows fixture browser regression and final scoped audit also pass. Commit/publication,
-  exact-head CI, and independent Windows QA remain pending. Graceful
-  degradation, readiness, audit trail, confidence transparency, authentication, deployment, and
-  distributed limiting remain deferred.
+- Phase 6 Slice 6.2 is merged through PR #34 at exact main merge
+  `4d34fc2d42797402e96a5e7dcd12500512794523` (tree
+  `d8ac5131da3b485eb628dfd8b19ac863fe846949`); main CI run `29830766984`, job `88634693352`, passed.
+  Slice 6.1's factual provider-timeout semantics and Slice 6.2's input/output safety remain intact.
+- Slice 6.3 is on Draft PR #35. Independent Windows QA failed exact head `d8371bd` because a late
+  runner metadata timeout preserved completed context in the API but the public schema required every
+  `provider_timeout` context to be `degraded`, leaving polling in `processing`. The targeted correction
+  now permits completed factual context only for a late provider timeout while retaining degraded
+  context plus an allowlisted operation for context-stage failures. Its deterministic reproducer is
+  green locally; additive commit, exact-new-head CI, and independent Windows QA rerun remain pending.
+- Fixture continuation in a degraded DataHub response is deliberately advisory and `not_executed`;
+  the operator must explicitly start the app in fixture mode. There is no runtime mode switch, model
+  provider implementation, durable incident storage, automatic retry for provider timeouts, or
+  production remediation. Readiness (Slice 6.4), structured audit trail (6.5), confidence work (6.6),
+  authentication, deployment, distributed limiting, and Phase 6 Level D remain deferred.
 
 - Phase 5 integration checkpoint local Level D evidence passes on exact Slice 5.1 final HEAD
   `883bf9bf` and unique branch `codex/phase-5-integration-checkpoint`. The single `pnpm validate`

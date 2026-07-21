@@ -378,7 +378,11 @@ describe('incident API', () => {
     );
 
     expect(terminal).toMatchObject({
-      status: 'failed',
+      status: 'degraded',
+      contextStage: {
+        status: 'degraded',
+        failedOperation: 'entity_search',
+      },
       execution: {
         durationMs: 2_000,
         terminationReason: 'provider_timeout',
@@ -390,7 +394,6 @@ describe('incident API', () => {
     });
     expect(JSON.stringify(terminal)).not.toContain('MetadataProviderError');
     expect(terminal).not.toHaveProperty('report');
-    expect(terminal).not.toHaveProperty('contextStage');
     expect(detectorCalls).toBe(0);
   });
 
@@ -427,7 +430,11 @@ describe('incident API', () => {
     );
 
     expect(terminal).toMatchObject({
-      status: 'failed',
+      status: 'degraded',
+      contextStage: {
+        status: 'degraded',
+        failedOperation: 'entity_search',
+      },
       execution: {
         durationMs: 90_001,
         terminationReason: 'duration_limit_reached',
@@ -438,7 +445,7 @@ describe('incident API', () => {
       },
     });
     expect(terminal).not.toHaveProperty('report');
-    expect(terminal).not.toHaveProperty('contextStage');
+    expect(terminal).not.toHaveProperty('failedOperation');
     expect(detectorCalls).toBe(0);
   });
 
@@ -575,6 +582,7 @@ describe('incident API', () => {
   it('normalizes malformed provider context responses without leaking raw details', async () => {
     const server = buildServer({
       logger: false,
+      processingDelayMs: 0,
       metadataSearch: {
         async searchEntities() {
           return [{ urn: 'urn:provider:invalid', name: 'Invalid', kind: 'unknown' }] as never;
@@ -588,24 +596,31 @@ describe('incident API', () => {
       payload: IncidentRequestSchema.parse(canonicalIncident.request),
     });
 
-    const completed = await waitForCompleted(
+    const terminal = await waitForTerminal(
       server,
       accepted.json<{ incidentId: string }>().incidentId,
     );
 
-    expect(completed.contextStage).toEqual({
-      status: 'failed',
-      error: {
-        code: 'METADATA_INVALID_RESPONSE',
-        message: 'Incident context metadata returned an unexpected response.',
+    expect(terminal).toMatchObject({
+      status: 'degraded',
+      execution: { terminationReason: 'tool_failure' },
+      failedOperation: 'entity_search',
+      contextStage: {
+        status: 'degraded',
+        failedOperation: 'entity_search',
+        error: {
+          code: 'METADATA_INVALID_RESPONSE',
+          message: 'Incident context metadata returned an unexpected response.',
+        },
       },
     });
-    expect(JSON.stringify(completed.contextStage)).not.toContain('urn:provider:invalid');
-    expect(completed.hypothesisScoringStage).toMatchObject({
+    expect(JSON.stringify(terminal)).not.toContain('urn:provider:invalid');
+    if (terminal.status !== 'degraded') throw new Error('Expected safe degraded context.');
+    expect(terminal.hypothesisScoringStage).toMatchObject({
       status: 'unavailable',
       error: { code: 'CONTEXT_UNAVAILABLE' },
     });
-    expect(completed.remediationStage).toMatchObject({
+    expect(terminal.remediationStage).toMatchObject({
       status: 'unavailable',
       recommendations: [],
       error: { code: 'CONTEXT_UNAVAILABLE' },

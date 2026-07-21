@@ -36,8 +36,15 @@ environment variables. Logs must redact authorization headers, tokens, and full 
 - Label and JSON-quote external change summaries as evidence, never instructions. Prompt-like metadata
   cannot change system/tool policy, authorization, runtime settings, scoring, or credential access.
 - Parse structured runner/model-boundary output with `InvestigationReportSchema` before any downstream
-  use. Malformed output fails closed with a sanitized internal error and no report; repair/degradation
-  orchestration is deferred to Slice 6.3.
+  use. Malformed output gets at most `MAX_RETRIES` additional schema-checked attempts, then terminates
+  degraded with factual retry metadata, no report, and no raw output.
+- Preserve only schema-validated context facts after a failure. Public operation identity is restricted
+  to health, entity search, lineage, recent changes, model provider, or structured output. Degraded
+  errors/warnings/next steps use fixed allowlists; they never include provider/model payloads, URLs,
+  sensitive hostnames, configuration values, credentials, exceptions, stacks, or private reasoning.
+- Never switch DataHub mode to fixture implicitly. DataHub failure may return an explicit
+  `continue_fixture_mode` step with literal `not_executed`; the credential-free fixture runs only after
+  an explicit fixture-mode request/environment choice.
 
 ## External systems
 

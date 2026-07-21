@@ -57,6 +57,15 @@ model, provider-network, or extra tool call. Existing React presentation regress
 text remains in text nodes; a browser rerun is required when the final displayed response contract
 changes.
 
+Graceful-degradation tests use injected deterministic providers, runners, and monotonic clocks; they do
+not call live DataHub/model services or sleep. The focused matrix covers every observable metadata
+operation, zero-versus-partial evidence, explicit DataHub-to-fixture continuation without switching,
+no entity, lineage depth/entity truncation, model timeout inside/beyond the total deadline, and invalid
+structured output at zero/default/hard-maximum retries. Assertions parse the public schema, verify exact
+actual counters and terminal reasons, reject completed/fabricated reports, and scan responses for raw
+payload, hostname, token, stack, and instruction sentinels. The unchanged fixture completion and one
+Windows browser flow remain the credential-free regression gates.
+
 ## Required incident evaluation cases
 
 Removed column, stale pipeline, upstream type change, wrong dashboard dataset, delayed ingestion,

@@ -227,26 +227,30 @@ planner, storage, or completed response consumes it. A malformed structure yield
 ## Investigation execution metadata
 
 Every terminal public investigation has strict `execution` metadata. It contains non-negative integer
-`toolCalls`, `agentSteps`, `durationMs`, and `lineageEntitiesVisited`, plus one allowlisted
+`toolCalls`, `agentSteps`, `durationMs`, `lineageEntitiesVisited`, and `retries`, plus one allowlisted
 `terminationReason`. Counts represent only work that ran: provider calls are recorded immediately
-before invocation, agent steps at stage entry, lineage entities by unique schema-validated URN, and
-duration from a monotonic clock. Retry and model-call counts are not invented; the current workflow
-performs neither.
+before invocation, agent steps at stage entry, lineage entities by unique schema-validated URN,
+structured-output retries immediately before the additional attempt, and duration from a monotonic
+clock. Valid fixture output performs zero retries; no model-call count is invented.
 
-A completed incident requires `terminationReason: completed` and retains the existing report and stage
-cross-reference invariants. A runtime budget block instead returns `status: failed`, the factual
-execution metadata, and `INVESTIGATION_LIMIT_REACHED` with the exact safe message mapped to its limit
-reason. A provider-owned timeout while the total budget remains also returns `failed` with no report or
-stage payload, but uses factual `provider_timeout`, `METADATA_TIMEOUT`, and its fixed safe message. Only
-a monotonic snapshot beyond the total deadline uses `duration_limit_reached`. These terminal contracts
-cannot mislabel truncated execution as completed or invent that the full duration budget was exhausted.
+A completed incident requires `terminationReason: completed`, a selected entity, and the existing
+report/stage cross-reference invariants. `degraded` is terminal non-success and preserves a strict
+context snapshot plus warnings/next steps. It has no report except for `lineage_truncated`, where the
+report is still schema-valid and explicitly incomplete. No-match, provider/tool failure,
+model-provider timeout, and exhausted invalid structured output cannot persist a report.
+
+A runtime budget block before evidence retains `failed`; a later block becomes `degraded` with factual
+context and `INVESTIGATION_LIMIT_REACHED`. Metadata `provider_timeout`, model
+`model_provider_timeout`, and `duration_limit_reached` are distinct. Only a monotonic snapshot beyond
+the total deadline uses the duration reason. These contracts cannot mislabel partial execution as
+completed, invent an entity/retry, or claim the full duration budget was exhausted without evidence.
 
 ## Planned incident lifecycle
 
-`queued -> investigating -> completed | failed | inconclusive`
+`processing -> completed | degraded | failed`
 
-The API will expose stable state values in Slice 1.1. Fixture mode may keep state in memory for the MVP;
-persistent storage is deferred.
+`degraded` is the explicit inconclusive/partial-evidence terminal state; it is never equivalent to
+completed. Fixture mode may keep state in memory for the MVP; persistent storage is deferred.
 
 ## Invariants
 

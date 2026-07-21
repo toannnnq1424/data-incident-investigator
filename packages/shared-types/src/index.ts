@@ -228,6 +228,12 @@ const investigationTerminationReasons = [
   'duration_limit_reached',
   'model_output_limit_reached',
   'provider_timeout',
+  'metadata_unavailable',
+  'model_provider_timeout',
+  'entity_not_found',
+  'lineage_truncated',
+  'tool_failure',
+  'model_output_invalid',
 ] as const;
 
 export const InvestigationTerminationReasonSchema = z.enum(investigationTerminationReasons);
@@ -248,6 +254,17 @@ export const INVESTIGATION_LIMIT_MESSAGES = Object.freeze({
 export const INVESTIGATION_TERMINATION_MESSAGES = Object.freeze({
   ...INVESTIGATION_LIMIT_MESSAGES,
   provider_timeout: 'The investigation stopped because the metadata provider timed out.',
+  metadata_unavailable:
+    'The live investigation stopped because the metadata provider is unavailable.',
+  model_provider_timeout:
+    'The investigation stopped because the model provider timed out before returning valid output.',
+  entity_not_found:
+    'The investigation needs an entity candidate or more incident context before it can continue.',
+  lineage_truncated:
+    'The investigation returned partial evidence because lineage traversal was truncated.',
+  tool_failure: 'The investigation stopped after a metadata operation failed.',
+  model_output_invalid:
+    'The investigation stopped because structured model output remained invalid after bounded retries.',
 } satisfies Record<Exclude<(typeof investigationTerminationReasons)[number], 'completed'>, string>);
 
 export const InvestigationExecutionMetadataSchema = z
@@ -256,6 +273,7 @@ export const InvestigationExecutionMetadataSchema = z
     agentSteps: z.number().int().min(0).max(RUNTIME_LIMIT_HARD_MAX_AGENT_STEPS),
     durationMs: z.number().int().min(0).max(Number.MAX_SAFE_INTEGER),
     lineageEntitiesVisited: z.number().int().min(0).max(RUNTIME_LIMIT_HARD_MAX_ENTITIES_PER_QUERY),
+    retries: z.number().int().min(0).max(RUNTIME_LIMIT_HARD_MAX_RETRIES),
     terminationReason: InvestigationTerminationReasonSchema,
   })
   .strict();
@@ -901,6 +919,31 @@ export const IncidentContextErrorCodeSchema = z.enum([
   'INTERNAL_ERROR',
 ]);
 
+export const INCIDENT_CONTEXT_ERROR_MESSAGES = Object.freeze({
+  METADATA_UNCONFIGURED: 'Incident context metadata is not configured.',
+  METADATA_UNAUTHORIZED: 'Incident context metadata authorization failed.',
+  METADATA_UNAVAILABLE: 'Incident context metadata is unavailable.',
+  METADATA_TIMEOUT: 'Incident context gathering timed out.',
+  METADATA_INVALID_RESPONSE: 'Incident context metadata returned an unexpected response.',
+  INTERNAL_ERROR: 'Incident context could not be gathered.',
+} as const);
+
+export const InvestigationOperationSchema = z.enum([
+  'metadata_health',
+  'entity_search',
+  'lineage',
+  'recent_changes',
+  'model_provider',
+  'structured_output',
+]);
+
+export const MetadataInvestigationOperationSchema = InvestigationOperationSchema.extract([
+  'metadata_health',
+  'entity_search',
+  'lineage',
+  'recent_changes',
+]);
+
 export const IncidentContextFailedStageSchema = z
   .object({
     status: z.literal('failed'),
@@ -913,9 +956,37 @@ export const IncidentContextFailedStageSchema = z
   })
   .strict();
 
+export const IncidentContextDegradedStageSchema = z
+  .object({
+    status: z.literal('degraded'),
+    intent: IncidentIntentSchema,
+    facts: IncidentContextFactsSchema,
+    missingInformation: z
+      .array(IncidentContextMissingInformationSchema)
+      .max(INCIDENT_CONTEXT_MAX_MISSING_INFORMATION),
+    failedOperation: MetadataInvestigationOperationSchema,
+    error: z
+      .object({
+        code: IncidentContextErrorCodeSchema,
+        message: z.string().trim().min(1).max(300),
+      })
+      .strict(),
+  })
+  .strict()
+  .superRefine((stage, context) => {
+    if (stage.error.message !== INCIDENT_CONTEXT_ERROR_MESSAGES[stage.error.code]) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Degraded context error text must match the safety allowlist.',
+        path: ['error', 'message'],
+      });
+    }
+  });
+
 export const IncidentContextStageSchema = z.discriminatedUnion('status', [
   z.object({ status: z.literal('gathering') }).strict(),
   IncidentContextCompletedStageSchema,
+  IncidentContextDegradedStageSchema,
   IncidentContextFailedStageSchema,
 ]);
 
@@ -1241,7 +1312,7 @@ export const SuspiciousChangeDetectionStageSchema = z.union([
     .strict(),
 ]);
 
-export const IncidentStatusSchema = z.enum(['processing', 'completed', 'failed']);
+export const IncidentStatusSchema = z.enum(['processing', 'completed', 'degraded', 'failed']);
 
 export const IncidentAcceptedResponseSchema = z.object({
   incidentId: z.uuid(),
@@ -2231,6 +2302,393 @@ export const IncidentRemediationPlanningSchema = z
     });
   });
 
+export const INVESTIGATION_WARNING_MESSAGES = Object.freeze({
+  partial_evidence:
+    'Only schema-validated evidence collected before termination is available; no complete investigation is claimed.',
+  incomplete_lineage:
+    'The lineage graph is incomplete because configured depth or entity bounds omitted reachable entities.',
+  no_entity_match:
+    'No metadata entity matched the supplied intake, so no entity or root cause was invented.',
+  external_dependency_failed:
+    'An external dependency did not complete the allowlisted operation; later reasoning was not treated as complete.',
+  structured_output_rejected:
+    'Invalid structured output was rejected after the bounded retry policy; no report was persisted.',
+} as const);
+
+export const InvestigationWarningCodeSchema = z.enum([
+  'partial_evidence',
+  'incomplete_lineage',
+  'no_entity_match',
+  'external_dependency_failed',
+  'structured_output_rejected',
+]);
+
+export const InvestigationWarningSchema = z
+  .object({
+    code: InvestigationWarningCodeSchema,
+    message: z.string().trim().min(1).max(300),
+  })
+  .strict()
+  .superRefine((warning, context) => {
+    if (warning.message !== INVESTIGATION_WARNING_MESSAGES[warning.code]) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Investigation warning text must match the safety allowlist.',
+        path: ['message'],
+      });
+    }
+  });
+
+export const INVESTIGATION_NEXT_STEP_TEXT = Object.freeze({
+  provide_entity_candidate:
+    'Provide a concrete metadata entity name or URN candidate and retry the investigation.',
+  add_incident_context:
+    'Add a bounded symptom, occurrence time, or entity hint so candidate search can be narrowed.',
+  review_partial_evidence:
+    'Review the preserved factual metadata and its stated gaps before drawing a conclusion.',
+  review_provider_availability:
+    'Review provider availability and retry only after the affected dependency is healthy.',
+  continue_fixture_mode:
+    'Start the deterministic fixture demo explicitly; no DataHub or model credential is required.',
+} as const);
+
+export const InvestigationNextStepCodeSchema = z.enum([
+  'provide_entity_candidate',
+  'add_incident_context',
+  'review_partial_evidence',
+  'review_provider_availability',
+  'continue_fixture_mode',
+]);
+
+export const InvestigationNextStepSchema = z
+  .object({
+    id: InvestigationNextStepCodeSchema,
+    kind: z.enum(['user_input', 'safe_diagnostic', 'fixture_continuation']),
+    status: z.literal('not_executed'),
+    description: z.string().trim().min(1).max(300),
+  })
+  .strict()
+  .superRefine((step, context) => {
+    if (step.description !== INVESTIGATION_NEXT_STEP_TEXT[step.id]) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Investigation next-step text must match the safety allowlist.',
+        path: ['description'],
+      });
+    }
+    const expectedKind =
+      step.id === 'continue_fixture_mode'
+        ? 'fixture_continuation'
+        : step.id === 'provide_entity_candidate' || step.id === 'add_incident_context'
+          ? 'user_input'
+          : 'safe_diagnostic';
+    if (step.kind !== expectedKind) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Investigation next-step kind must match its allowlisted behavior.',
+        path: ['kind'],
+      });
+    }
+  });
+
+export const InvestigationDegradationErrorCodeSchema = z.enum([
+  'METADATA_UNCONFIGURED',
+  'METADATA_UNAUTHORIZED',
+  'METADATA_UNAVAILABLE',
+  'METADATA_TIMEOUT',
+  'METADATA_INVALID_RESPONSE',
+  'MODEL_TIMEOUT',
+  'ENTITY_NOT_FOUND',
+  'LINEAGE_TRUNCATED',
+  'MODEL_OUTPUT_INVALID',
+  'INTERNAL_ERROR',
+]);
+
+const degradedTerminationReasons = [
+  'agent_step_limit_reached',
+  'tool_call_limit_reached',
+  'lineage_depth_limit_reached',
+  'entity_limit_reached',
+  'retry_limit_reached',
+  'duration_limit_reached',
+  'model_output_limit_reached',
+  'provider_timeout',
+  'metadata_unavailable',
+  'model_provider_timeout',
+  'entity_not_found',
+  'lineage_truncated',
+  'tool_failure',
+  'model_output_invalid',
+] as const;
+
+export const InvestigationDegradedResponseSchema = z
+  .object({
+    incidentId: z.uuid(),
+    status: z.literal('degraded'),
+    contextStage: z.union([
+      IncidentContextCompletedStageSchema,
+      IncidentContextDegradedStageSchema,
+    ]),
+    suspiciousChangeStage: SuspiciousChangeDetectionStageSchema,
+    hypothesisScoringStage: HypothesisScoringStageSchema,
+    remediationStage: RemediationPlanningStageSchema,
+    execution: InvestigationExecutionMetadataSchema,
+    error: z
+      .object({
+        code: z.union([
+          InvestigationDegradationErrorCodeSchema,
+          z.literal('INVESTIGATION_LIMIT_REACHED'),
+        ]),
+        message: z.string().trim().min(1).max(300),
+      })
+      .strict(),
+    failedOperation: InvestigationOperationSchema.optional(),
+    warnings: z.array(InvestigationWarningSchema).min(1).max(5),
+    nextSteps: z.array(InvestigationNextStepSchema).min(1).max(5),
+    report: InvestigationReportSchema.optional(),
+  })
+  .strict()
+  .superRefine((response, context) => {
+    if (
+      !(degradedTerminationReasons as readonly string[]).includes(
+        response.execution.terminationReason,
+      )
+    ) {
+      context.addIssue({
+        code: 'custom',
+        message: 'A degraded investigation requires a degradation termination reason.',
+        path: ['execution', 'terminationReason'],
+      });
+      return;
+    }
+    const reason = response.execution.terminationReason as Exclude<
+      InvestigationTerminationReason,
+      'completed'
+    >;
+    if (response.error.message !== INVESTIGATION_TERMINATION_MESSAGES[reason]) {
+      context.addIssue({
+        code: 'custom',
+        message: 'The degraded error message must match its stable termination reason.',
+        path: ['error', 'message'],
+      });
+    }
+
+    const allowedCodes: Partial<Record<InvestigationTerminationReason, readonly string[]>> = {
+      provider_timeout: ['METADATA_TIMEOUT'],
+      metadata_unavailable: [
+        'METADATA_UNCONFIGURED',
+        'METADATA_UNAUTHORIZED',
+        'METADATA_UNAVAILABLE',
+      ],
+      model_provider_timeout: ['MODEL_TIMEOUT'],
+      entity_not_found: ['ENTITY_NOT_FOUND'],
+      lineage_truncated: ['LINEAGE_TRUNCATED'],
+      tool_failure: ['METADATA_INVALID_RESPONSE', 'INTERNAL_ERROR'],
+      model_output_invalid: ['MODEL_OUTPUT_INVALID'],
+      agent_step_limit_reached: ['INVESTIGATION_LIMIT_REACHED'],
+      tool_call_limit_reached: ['INVESTIGATION_LIMIT_REACHED'],
+      lineage_depth_limit_reached: ['INVESTIGATION_LIMIT_REACHED'],
+      entity_limit_reached: ['INVESTIGATION_LIMIT_REACHED'],
+      retry_limit_reached: ['INVESTIGATION_LIMIT_REACHED'],
+      duration_limit_reached: ['INVESTIGATION_LIMIT_REACHED'],
+      model_output_limit_reached: ['INVESTIGATION_LIMIT_REACHED'],
+    };
+    if (!allowedCodes[reason]?.includes(response.error.code)) {
+      context.addIssue({
+        code: 'custom',
+        message: 'The degraded error code must match its termination reason.',
+        path: ['error', 'code'],
+      });
+    }
+
+    const operationRequired = [
+      'metadata_unavailable',
+      'model_provider_timeout',
+      'tool_failure',
+      'model_output_invalid',
+    ].includes(reason);
+    if (operationRequired && !response.failedOperation) {
+      context.addIssue({
+        code: 'custom',
+        message: 'An observable operation failure requires its allowlisted operation.',
+        path: ['failedOperation'],
+      });
+    }
+    if (
+      !operationRequired &&
+      reason !== 'provider_timeout' &&
+      response.failedOperation !== undefined
+    ) {
+      context.addIssue({
+        code: 'custom',
+        message: 'A non-operation termination cannot claim a failed operation.',
+        path: ['failedOperation'],
+      });
+    }
+    if (reason === 'model_provider_timeout' && response.failedOperation !== 'model_provider') {
+      context.addIssue({
+        code: 'custom',
+        message: 'A model timeout must identify the model-provider operation.',
+        path: ['failedOperation'],
+      });
+    }
+    if (reason === 'model_output_invalid' && response.failedOperation !== 'structured_output') {
+      context.addIssue({
+        code: 'custom',
+        message: 'Invalid structured output must identify the structured-output operation.',
+        path: ['failedOperation'],
+      });
+    }
+    const limitTermination = [
+      'agent_step_limit_reached',
+      'tool_call_limit_reached',
+      'lineage_depth_limit_reached',
+      'entity_limit_reached',
+      'retry_limit_reached',
+      'duration_limit_reached',
+      'model_output_limit_reached',
+    ].includes(reason);
+    if (
+      response.contextStage.status === 'degraded' &&
+      !limitTermination &&
+      response.failedOperation !== response.contextStage.failedOperation
+    ) {
+      context.addIssue({
+        code: 'custom',
+        message: 'The terminal failed operation must match the degraded context operation.',
+        path: ['failedOperation'],
+      });
+    }
+    if (
+      reason === 'provider_timeout' &&
+      response.contextStage.status === 'completed' &&
+      response.failedOperation !== undefined
+    ) {
+      context.addIssue({
+        code: 'custom',
+        message: 'A late provider timeout cannot claim a context operation failure.',
+        path: ['failedOperation'],
+      });
+    }
+    if (reason === 'lineage_truncated' && !response.report) {
+      context.addIssue({
+        code: 'custom',
+        message: 'A truncated-lineage partial result must preserve its validated report.',
+        path: ['report'],
+      });
+    }
+    if (reason !== 'lineage_truncated' && response.report) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Only the explicitly truncated-lineage state may return a partial report.',
+        path: ['report'],
+      });
+    }
+    const degradedContextRequired = ['metadata_unavailable', 'tool_failure'].includes(reason);
+    if (degradedContextRequired && response.contextStage.status !== 'degraded') {
+      context.addIssue({
+        code: 'custom',
+        message: 'A context operation failure requires a degraded context snapshot.',
+        path: ['contextStage'],
+      });
+    }
+    if (
+      [
+        'model_provider_timeout',
+        'entity_not_found',
+        'lineage_truncated',
+        'model_output_invalid',
+      ].includes(reason) &&
+      response.contextStage.status !== 'completed'
+    ) {
+      context.addIssue({
+        code: 'custom',
+        message: 'This degradation reason requires completed factual context.',
+        path: ['contextStage'],
+      });
+    }
+    if (reason === 'metadata_unavailable' && response.contextStage.facts.sourceMode !== 'datahub') {
+      context.addIssue({
+        code: 'custom',
+        message: 'Metadata-unavailable degradation requires live DataHub context.',
+        path: ['contextStage', 'facts', 'sourceMode'],
+      });
+    }
+    if (
+      reason === 'entity_not_found' &&
+      (response.contextStage.facts.selectedEntity !== undefined ||
+        response.contextStage.facts.candidateEntities.length !== 0)
+    ) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Entity-not-found degradation cannot contain a selected or candidate entity.',
+        path: ['contextStage', 'facts', 'candidateEntities'],
+      });
+    }
+    if (reason === 'lineage_truncated' && response.contextStage.facts.lineage?.truncated !== true) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Lineage-truncated degradation requires factual truncated lineage.',
+        path: ['contextStage', 'facts', 'lineage', 'truncated'],
+      });
+    }
+
+    const warningCodes = new Set<string>();
+    response.warnings.forEach((warning, index) => {
+      if (warningCodes.has(warning.code)) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Investigation warning codes must be unique.',
+          path: ['warnings', index, 'code'],
+        });
+      }
+      warningCodes.add(warning.code);
+    });
+    const nextStepIds = new Set<string>();
+    response.nextSteps.forEach((step, index) => {
+      if (nextStepIds.has(step.id)) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Investigation next-step IDs must be unique.',
+          path: ['nextSteps', index, 'id'],
+        });
+      }
+      nextStepIds.add(step.id);
+    });
+    const requiredWarningCodes: Partial<
+      Record<InvestigationTerminationReason, z.infer<typeof InvestigationWarningCodeSchema>>
+    > = {
+      entity_not_found: 'no_entity_match',
+      lineage_truncated: 'incomplete_lineage',
+      model_output_invalid: 'structured_output_rejected',
+    };
+    const requiredWarningCode = requiredWarningCodes[reason];
+    if (requiredWarningCode && !warningCodes.has(requiredWarningCode)) {
+      context.addIssue({
+        code: 'custom',
+        message: 'The degradation reason requires its stable warning.',
+        path: ['warnings'],
+      });
+    }
+    if (
+      reason === 'entity_not_found' &&
+      (!nextStepIds.has('provide_entity_candidate') || !nextStepIds.has('add_incident_context'))
+    ) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Entity-not-found degradation requires actionable intake next steps.',
+        path: ['nextSteps'],
+      });
+    }
+    if (reason === 'metadata_unavailable' && !nextStepIds.has('continue_fixture_mode')) {
+      context.addIssue({
+        code: 'custom',
+        message: 'DataHub unavailability requires explicit fixture continuation.',
+        path: ['nextSteps'],
+      });
+    }
+  });
+
 export const IncidentRetrievalResponseSchema = z
   .discriminatedUnion('status', [
     z
@@ -2247,10 +2705,7 @@ export const IncidentRetrievalResponseSchema = z
       .object({
         incidentId: z.uuid(),
         status: z.literal('completed'),
-        contextStage: z.union([
-          IncidentContextCompletedStageSchema,
-          IncidentContextFailedStageSchema,
-        ]),
+        contextStage: IncidentContextCompletedStageSchema,
         suspiciousChangeStage: SuspiciousChangeDetectionStageSchema,
         hypothesisScoringStage: HypothesisScoringStageSchema,
         remediationStage: RemediationPlanningStageSchema,
@@ -2258,6 +2713,7 @@ export const IncidentRetrievalResponseSchema = z
         report: InvestigationReportSchema,
       })
       .strict(),
+    InvestigationDegradedResponseSchema,
     z
       .object({
         incidentId: z.uuid(),
@@ -2281,6 +2737,24 @@ export const IncidentRetrievalResponseSchema = z
           path: ['execution', 'terminationReason'],
         });
         return;
+      }
+      if (
+        ![
+          'agent_step_limit_reached',
+          'tool_call_limit_reached',
+          'lineage_depth_limit_reached',
+          'entity_limit_reached',
+          'retry_limit_reached',
+          'duration_limit_reached',
+          'model_output_limit_reached',
+          'provider_timeout',
+        ].includes(response.execution.terminationReason)
+      ) {
+        context.addIssue({
+          code: 'custom',
+          message: 'A failed investigation requires a hard-limit or metadata-timeout reason.',
+          path: ['execution', 'terminationReason'],
+        });
       }
       const providerTimedOut = response.execution.terminationReason === 'provider_timeout';
       const expectedCode = providerTimedOut ? 'METADATA_TIMEOUT' : 'INVESTIGATION_LIMIT_REACHED';
@@ -2310,9 +2784,34 @@ export const IncidentRetrievalResponseSchema = z
         path: ['execution', 'terminationReason'],
       });
     }
+    if (response.status === 'completed' && !response.contextStage.facts.selectedEntity) {
+      context.addIssue({
+        code: 'custom',
+        message: 'A completed investigation requires an adapter-selected entity.',
+        path: ['contextStage', 'facts', 'selectedEntity'],
+      });
+    }
     const detection = response.suspiciousChangeStage;
     const scoring = response.hypothesisScoringStage;
     const remediation = response.remediationStage;
+    const terminalReport =
+      response.status === 'completed'
+        ? response.report
+        : response.status === 'degraded'
+          ? response.report
+          : undefined;
+    if (
+      response.status === 'degraded' &&
+      (detection.status === 'detecting' ||
+        scoring.status === 'scoring' ||
+        remediation.status === 'planning')
+    ) {
+      context.addIssue({
+        code: 'custom',
+        message: 'A degraded investigation cannot retain an active stage.',
+        path: ['status'],
+      });
+    }
     if (response.contextStage.status === 'gathering' && remediation.status !== 'planning') {
       context.addIssue({
         code: 'custom',
@@ -2361,7 +2860,7 @@ export const IncidentRetrievalResponseSchema = z
     }
     if (remediation.status === 'completed') {
       if (
-        response.status !== 'completed' ||
+        terminalReport === undefined ||
         response.contextStage.status !== 'completed' ||
         scoring.status !== 'completed'
       ) {
@@ -2374,7 +2873,7 @@ export const IncidentRetrievalResponseSchema = z
         !IncidentRemediationPlanningSchema.safeParse({
           contextStage: response.contextStage,
           scoringResult: scoring,
-          report: response.report,
+          report: terminalReport,
           result: remediation,
         }).success
       ) {
@@ -2436,7 +2935,7 @@ export const IncidentRetrievalResponseSchema = z
       if (
         response.contextStage.status !== 'completed' ||
         detection.status !== 'completed' ||
-        response.status !== 'completed'
+        terminalReport === undefined
       ) {
         context.addIssue({
           code: 'custom',
@@ -2447,7 +2946,7 @@ export const IncidentRetrievalResponseSchema = z
         const scoringReferences = IncidentHypothesisScoringSchema.safeParse({
           contextStage: response.contextStage,
           suspiciousChangeResult: detection,
-          evidence: response.report.evidence,
+          evidence: terminalReport.evidence,
           result: scoring,
         });
         if (!scoringReferences.success) {
@@ -2457,7 +2956,7 @@ export const IncidentRetrievalResponseSchema = z
             path: ['hypothesisScoringStage'],
           });
         }
-        if (JSON.stringify(response.report.hypotheses) !== JSON.stringify(scoring.hypotheses)) {
+        if (JSON.stringify(terminalReport.hypotheses) !== JSON.stringify(scoring.hypotheses)) {
           context.addIssue({
             code: 'custom',
             message: 'Completed reports must use the exact ranked scored hypotheses.',
@@ -3233,6 +3732,7 @@ export type IncidentContextMissingInformation = z.infer<
 >;
 export type IncidentContextFacts = z.infer<typeof IncidentContextFactsSchema>;
 export type IncidentContextCompletedStage = z.infer<typeof IncidentContextCompletedStageSchema>;
+export type IncidentContextDegradedStage = z.infer<typeof IncidentContextDegradedStageSchema>;
 export type IncidentContextStage = z.infer<typeof IncidentContextStageSchema>;
 export type SuspiciousChangeSignalCode = z.infer<typeof SuspiciousChangeSignalCodeSchema>;
 export type SuspiciousChangeSignal = z.infer<typeof SuspiciousChangeSignalSchema>;
@@ -3260,6 +3760,11 @@ export type IncidentStatus = z.infer<typeof IncidentStatusSchema>;
 export type IncidentAcceptedResponse = z.infer<typeof IncidentAcceptedResponseSchema>;
 export type IncidentIdParams = z.infer<typeof IncidentIdParamsSchema>;
 export type IncidentRetrievalResponse = z.infer<typeof IncidentRetrievalResponseSchema>;
+export type InvestigationDegradedResponse = z.infer<typeof InvestigationDegradedResponseSchema>;
+export type InvestigationOperation = z.infer<typeof InvestigationOperationSchema>;
+export type MetadataInvestigationOperation = z.infer<typeof MetadataInvestigationOperationSchema>;
+export type InvestigationWarning = z.infer<typeof InvestigationWarningSchema>;
+export type InvestigationNextStep = z.infer<typeof InvestigationNextStepSchema>;
 export type RuntimeLimitConfig = z.infer<typeof RuntimeLimitConfigSchema>;
 export type PublicIngressConfig = z.infer<typeof PublicIngressConfigSchema>;
 export type InvestigationTerminationReason = z.infer<typeof InvestigationTerminationReasonSchema>;

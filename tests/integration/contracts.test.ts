@@ -1074,15 +1074,21 @@ describe('shared investigation contracts', () => {
         },
         facts: {
           sourceMode: 'fixture',
-          candidateEntities: [],
+          candidateEntities: [
+            {
+              urn: 'urn:li:dataset:(urn:li:dataPlatform:snowflake,analytics.daily_revenue,PROD)',
+              name: 'analytics.daily_revenue',
+              kind: 'dataset',
+            },
+          ],
+          selectedEntity: {
+            urn: 'urn:li:dataset:(urn:li:dataPlatform:snowflake,analytics.daily_revenue,PROD)',
+            name: 'analytics.daily_revenue',
+            kind: 'dataset',
+          },
           recentChanges: [],
         },
-        missingInformation: [
-          {
-            code: 'entity_not_found',
-            message: 'No adapter-evidenced entity was returned.',
-          },
-        ],
+        missingInformation: [],
       },
       suspiciousChangeStage: {
         status: 'insufficient',
@@ -1133,6 +1139,7 @@ describe('shared investigation contracts', () => {
         agentSteps: 5,
         durationMs: 250,
         lineageEntitiesVisited: 3,
+        retries: 0,
         terminationReason: 'completed',
       },
       report: {

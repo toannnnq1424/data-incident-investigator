@@ -8,6 +8,7 @@ import {
 import { FixtureMetadataAdapter } from '../../packages/datahub-client/src/index.js';
 import {
   DEFAULT_PUBLIC_INGRESS_CONFIG,
+  IncidentRetrievalResponseSchema,
   IncidentRequestSchema,
   InvestigationReportSchema,
   MetadataEntitySearchResultSchema,
@@ -33,11 +34,12 @@ function jsonBodyAtBytes(byteLength: number) {
   return JSON.stringify({ question: 'x'.repeat(byteLength - Buffer.byteLength(emptyBody)) });
 }
 
-async function waitForInternalFailure(server: ReturnType<typeof buildServer>, incidentId: string) {
+async function waitForDegradedOutput(server: ReturnType<typeof buildServer>, incidentId: string) {
   for (let attempt = 0; attempt < 20; attempt += 1) {
     const response = await server.inject({ method: 'GET', url: `/incidents/${incidentId}` });
-    if (response.statusCode === 500) {
-      return response;
+    if (response.statusCode === 200) {
+      const incident = IncidentRetrievalResponseSchema.parse(response.json());
+      if (incident.status === 'degraded') return { response, incident };
     }
     await new Promise<void>((resolve) => setImmediate(resolve));
   }
@@ -286,12 +288,14 @@ describe('input normalization and untrusted output safety', () => {
     expect(InvestigationReportSchema.safeParse(report).success).toBe(true);
   });
 
-  it('rejects malformed structured runner output as a sanitized internal failure', async () => {
+  it('rejects malformed structured runner output after bounded retries', async () => {
+    let runnerCalls = 0;
     let scorerCalls = 0;
     let plannerCalls = 0;
     const server = trackedServer({
       runner: {
         async investigate() {
+          runnerCalls += 1;
           return {
             summary: '<script>raw-model-secret</script>',
             evidence: [],
@@ -317,20 +321,24 @@ describe('input normalization and untrusted output safety', () => {
       url: '/incidents',
       payload: { question: 'Why did revenue drop?' },
     });
-    const terminal = await waitForInternalFailure(
+    const terminal = await waitForDegradedOutput(
       server,
       accepted.json<{ incidentId: string }>().incidentId,
     );
 
-    expect(terminal.json()).toEqual({
-      error: {
-        code: 'INTERNAL_ERROR',
-        message: 'The investigation could not be completed.',
-      },
+    expect(runnerCalls).toBe(3);
+    expect(terminal.incident).toMatchObject({
+      status: 'degraded',
+      execution: { retries: 2, terminationReason: 'model_output_invalid' },
+      error: { code: 'MODEL_OUTPUT_INVALID' },
+      failedOperation: 'structured_output',
     });
     expect(scorerCalls).toBe(0);
     expect(plannerCalls).toBe(0);
-    expect(terminal.body).not.toMatch(/raw-model-secret|ignore validation|credential|script/i);
+    expect(terminal.incident).not.toHaveProperty('report');
+    expect(terminal.response.body).not.toMatch(
+      /raw-model-secret|ignore validation|reveal credentials|<script>/i,
+    );
   });
 
   it('schema-validates the public incident identifier path', async () => {

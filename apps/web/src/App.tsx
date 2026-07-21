@@ -35,6 +35,7 @@ import {
 } from '@dii/shared-types';
 
 type CompletedIncident = Extract<IncidentRetrievalResponse, { status: 'completed' }>;
+type DegradedIncident = Extract<IncidentRetrievalResponse, { status: 'degraded' }>;
 type ProcessingIncident = Extract<IncidentRetrievalResponse, { status: 'processing' }>;
 type ReportInference = CompletedIncident['report']['hypotheses'][number] & {
   confidenceLabel: string;
@@ -45,6 +46,7 @@ type SubmissionState =
   | { kind: 'submitting' }
   | { kind: 'processing'; incident: ProcessingIncident }
   | { kind: 'completed'; incident: CompletedIncident }
+  | { kind: 'degraded'; incident: DegradedIncident }
   | { kind: 'validation-error'; message: string }
   | { kind: 'api-error'; message: string };
 
@@ -1466,6 +1468,83 @@ function ProcessingStatus({ incident }: { incident: ProcessingIncident }) {
   );
 }
 
+export function getDegradedInvestigationPresentation(incident: DegradedIncident) {
+  return {
+    heading: 'Investigation degraded safely',
+    message: incident.error.message,
+    failedOperation: incident.failedOperation,
+    warningMessages: incident.warnings.map((warning) => warning.message),
+    nextStepDescriptions: incident.nextSteps.map((step) => step.description),
+    hasPartialReport: Boolean(incident.report),
+  };
+}
+
+export function DegradedInvestigation({ incident }: { incident: DegradedIncident }) {
+  const presentation = getDegradedInvestigationPresentation(incident);
+
+  return (
+    <div className="status-progress degraded-investigation" role="status">
+      <p>Investigation degraded</p>
+      <h3>{presentation.heading}</h3>
+      <p>{presentation.message}</p>
+      <dl>
+        <div>
+          <dt>Incident ID</dt>
+          <dd>{incident.incidentId}</dd>
+        </div>
+        <div>
+          <dt>Termination</dt>
+          <dd>
+            <code>{incident.execution.terminationReason}</code>
+          </dd>
+        </div>
+        {presentation.failedOperation && (
+          <div>
+            <dt>Failed operation</dt>
+            <dd>
+              <code>{presentation.failedOperation}</code>
+            </dd>
+          </div>
+        )}
+      </dl>
+      <IncidentContextStage stage={incident.contextStage} />
+      <SuspiciousChangeStage stage={incident.suspiciousChangeStage} />
+      <HypothesisScoringStage stage={incident.hypothesisScoringStage} />
+      <RemediationStage stage={incident.remediationStage} />
+      <section aria-labelledby="degradation-warnings-heading">
+        <h4 id="degradation-warnings-heading">Why this is incomplete</h4>
+        <TextList
+          items={presentation.warningMessages}
+          emptyMessage="No degradation warning was returned."
+        />
+      </section>
+      <section aria-labelledby="degradation-next-steps-heading">
+        <h4 id="degradation-next-steps-heading">Safe next steps</h4>
+        <ul className="text-list">
+          {incident.nextSteps.map((step) => (
+            <li key={step.id}>
+              <code>{step.id}</code> — {step.description}
+            </li>
+          ))}
+        </ul>
+      </section>
+      {incident.report && (
+        <section aria-labelledby="partial-report-heading">
+          <p className="report-label">Validated partial report · not a complete traversal</p>
+          <h4 id="partial-report-heading">Preserved report evidence</h4>
+          <p>{incident.report.summary}</p>
+          <EntityList entities={incident.report.entities} />
+          <EvidenceList
+            evidence={incident.report.evidence}
+            emptyMessage="No factual report evidence was preserved."
+            linkTargets
+          />
+        </section>
+      )}
+    </div>
+  );
+}
+
 export function CompletedReport({ incident }: { incident: CompletedIncident }) {
   const content = getCompletedReportContent(incident);
 
@@ -1901,6 +1980,11 @@ export function App() {
         return;
       }
 
+      if (parsedIncident.data.status === 'degraded') {
+        setState({ kind: 'degraded', incident: parsedIncident.data });
+        return;
+      }
+
       if (parsedIncident.data.status === 'failed') {
         setState({ kind: 'api-error', message: parsedIncident.data.error.message });
         return;
@@ -2272,6 +2356,7 @@ export function App() {
           )}
           {state.kind === 'processing' && <ProcessingStatus incident={state.incident} />}
           {state.kind === 'completed' && <CompletedReport incident={state.incident} />}
+          {state.kind === 'degraded' && <DegradedInvestigation incident={state.incident} />}
           {(state.kind === 'validation-error' || state.kind === 'api-error') && (
             <p className="status-error" role="alert">
               <strong>

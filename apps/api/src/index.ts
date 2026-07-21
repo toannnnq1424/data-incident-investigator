@@ -8,8 +8,10 @@ import {
   DeterministicRemediationPlanner,
   DeterministicSuspiciousChangeDetector,
   FIXTURE_INVESTIGATION_LIMITS,
+  IncidentContextOperationError,
   InvestigationExecutionBudget,
   InvestigationLimitError,
+  InvestigationModelProviderTimeoutError,
   type IncidentContextGatherer,
   type IncidentContextGatheringLimits,
   type HypothesisScorer,
@@ -36,13 +38,16 @@ import {
   DEFAULT_PUBLIC_INGRESS_CONFIG,
   DEFAULT_RUNTIME_LIMIT_CONFIG,
   INCIDENT_CONTEXT_MAX_CANDIDATES,
+  INVESTIGATION_NEXT_STEP_TEXT,
   INVESTIGATION_TERMINATION_MESSAGES,
+  INVESTIGATION_WARNING_MESSAGES,
   IncidentAcceptedResponseSchema,
   IncidentContextStageSchema,
   IncidentIdParamsSchema,
   HypothesisScoringStageSchema,
   IncidentRequestSchema,
   IncidentRetrievalResponseSchema,
+  InvestigationDegradedResponseSchema,
   InvestigationReportSchema,
   METADATA_ENTITY_SEARCH_MAX_LIMIT,
   METADATA_LINEAGE_MAX_NODES,
@@ -63,12 +68,17 @@ import {
   type HypothesisScoringStage,
   type InvestigationReport,
   type InvestigationExecutionMetadata,
+  type InvestigationDegradedResponse,
+  type InvestigationNextStep,
+  type InvestigationOperation,
+  type InvestigationTerminationReason,
   type MetadataHealthResponse,
   type MetadataSourceMode,
   type PublicIngressConfig,
   type RemediationPlanningStage,
   type RuntimeLimitConfig,
   type SuspiciousChangeDetectionStage,
+  type InvestigationWarning,
 } from '@dii/shared-types';
 import Fastify from 'fastify';
 
@@ -120,6 +130,7 @@ type StoredIncident =
         message: string;
       };
     }
+  | { status: 'degraded'; response: InvestigationDegradedResponse }
   | { status: 'failed' };
 
 class InvestigationProviderTimeoutError extends Error {
@@ -514,6 +525,36 @@ function unavailableRemediationPlanning(
           : 'Remediation planning is unavailable because scored hypotheses did not complete.',
     },
   });
+}
+
+function investigationWarning(code: InvestigationWarning['code']): InvestigationWarning {
+  return {
+    code,
+    message: INVESTIGATION_WARNING_MESSAGES[code],
+  };
+}
+
+function investigationNextStep(id: InvestigationNextStep['id']): InvestigationNextStep {
+  return {
+    id,
+    kind:
+      id === 'continue_fixture_mode'
+        ? 'fixture_continuation'
+        : id === 'provide_entity_candidate' || id === 'add_incident_context'
+          ? 'user_input'
+          : 'safe_diagnostic',
+    status: 'not_executed',
+    description: INVESTIGATION_NEXT_STEP_TEXT[id],
+  };
+}
+
+function hasPreservedContextEvidence(contextStage: IncidentContextStage) {
+  return (
+    (contextStage.status === 'completed' || contextStage.status === 'degraded') &&
+    (contextStage.facts.candidateEntities.length > 0 ||
+      Boolean(contextStage.facts.lineage) ||
+      contextStage.facts.recentChanges.length > 0)
+  );
 }
 
 export function buildServer(options: BuildServerOptions = {}) {
@@ -952,13 +993,70 @@ export function buildServer(options: BuildServerOptions = {}) {
       return undefined;
     };
 
+    const storeDegradedIncident = (input: {
+      contextStage: InvestigationDegradedResponse['contextStage'];
+      suspiciousChangeStage: SuspiciousChangeDetectionStage;
+      hypothesisScoringStage: HypothesisScoringStage;
+      remediationStage: RemediationPlanningStage;
+      execution: InvestigationExecutionMetadata;
+      errorCode: InvestigationDegradedResponse['error']['code'];
+      failedOperation?: InvestigationOperation;
+      warnings: InvestigationWarning[];
+      nextSteps: InvestigationNextStep[];
+      report?: InvestigationReport;
+    }) => {
+      if (input.execution.terminationReason === 'completed') {
+        throw new Error('A degraded incident cannot use completed execution metadata.');
+      }
+      const degraded = InvestigationDegradedResponseSchema.parse({
+        incidentId: response.incidentId,
+        status: 'degraded',
+        contextStage: input.contextStage,
+        suspiciousChangeStage: input.suspiciousChangeStage,
+        hypothesisScoringStage: input.hypothesisScoringStage,
+        remediationStage: input.remediationStage,
+        execution: input.execution,
+        error: {
+          code: input.errorCode,
+          message: INVESTIGATION_TERMINATION_MESSAGES[input.execution.terminationReason],
+        },
+        ...(input.failedOperation ? { failedOperation: input.failedOperation } : {}),
+        warnings: input.warnings,
+        nextSteps: input.nextSteps,
+        ...(input.report ? { report: input.report } : {}),
+      });
+      incidents.set(response.incidentId, { status: 'degraded', response: degraded });
+      server.log.warn(
+        {
+          incidentId: response.incidentId,
+          mode,
+          failedOperation: degraded.failedOperation,
+          warningCodes: degraded.warnings.map((warning) => warning.code),
+          toolCalls: degraded.execution.toolCalls,
+          agentSteps: degraded.execution.agentSteps,
+          retries: degraded.execution.retries,
+          durationMs: degraded.execution.durationMs,
+          lineageEntitiesVisited: degraded.execution.lineageEntitiesVisited,
+          terminationReason: degraded.execution.terminationReason,
+        },
+        'Investigation returned a controlled degraded result',
+      );
+    };
+
     const runBackgroundInvestigation = () => {
       void (async () => {
+        let contextStage: IncidentContextStage = IncidentContextStageSchema.parse({
+          status: 'gathering',
+        });
+        let suspiciousChangeStage: SuspiciousChangeDetectionStage =
+          SuspiciousChangeDetectionStageSchema.parse({ status: 'detecting' });
+        let hypothesisScoringStage: HypothesisScoringStage = HypothesisScoringStageSchema.parse({
+          status: 'scoring',
+        });
+        let remediationStage: RemediationPlanningStage = RemediationPlanningStageSchema.parse({
+          status: 'planning',
+        });
         try {
-          let contextStage: IncidentContextStage;
-          let suspiciousChangeStage: SuspiciousChangeDetectionStage;
-          let hypothesisScoringStage: HypothesisScoringStage;
-          let remediationStage: RemediationPlanningStage;
           try {
             executionBudget.beginAgentStep();
             contextStage = await contextGatherer.gather(parsedRequest.data, {
@@ -1014,6 +1112,57 @@ export function buildServer(options: BuildServerOptions = {}) {
             if (terminationError) {
               throw terminationError;
             }
+            if (error instanceof IncidentContextOperationError) {
+              contextStage = error.contextStage;
+              suspiciousChangeStage = unavailableSuspiciousChanges('CONTEXT_UNAVAILABLE');
+              hypothesisScoringStage = unavailableHypothesisScoring('CONTEXT_UNAVAILABLE');
+              remediationStage = unavailableRemediationPlanning('CONTEXT_UNAVAILABLE');
+              const contextCode = contextStage.error.code;
+              let reason: InvestigationTerminationReason = [
+                'METADATA_UNCONFIGURED',
+                'METADATA_UNAUTHORIZED',
+                'METADATA_UNAVAILABLE',
+              ].includes(contextCode)
+                ? 'metadata_unavailable'
+                : 'tool_failure';
+              let execution: InvestigationExecutionMetadata;
+              let errorCode: InvestigationDegradedResponse['error']['code'] = contextCode;
+              let failedOperation: InvestigationOperation | undefined = error.operation;
+              if (contextCode === 'METADATA_TIMEOUT') {
+                execution = executionBudget.snapshot('provider_timeout');
+                if (execution.durationMs > executionBudget.limits.agentTimeoutMs) {
+                  reason = 'duration_limit_reached';
+                  execution = { ...execution, terminationReason: reason };
+                  errorCode = 'INVESTIGATION_LIMIT_REACHED';
+                  failedOperation = undefined;
+                } else {
+                  reason = 'provider_timeout';
+                }
+              } else {
+                execution = executionBudget.snapshot(reason);
+              }
+              const warnings = [investigationWarning('external_dependency_failed')];
+              const nextSteps = [investigationNextStep('review_provider_availability')];
+              if (hasPreservedContextEvidence(contextStage)) {
+                warnings.unshift(investigationWarning('partial_evidence'));
+                nextSteps.unshift(investigationNextStep('review_partial_evidence'));
+              }
+              if (mode === 'datahub') {
+                nextSteps.push(investigationNextStep('continue_fixture_mode'));
+              }
+              storeDegradedIncident({
+                contextStage,
+                suspiciousChangeStage,
+                hypothesisScoringStage,
+                remediationStage,
+                execution,
+                errorCode,
+                ...(failedOperation ? { failedOperation } : {}),
+                warnings,
+                nextSteps,
+              });
+              return;
+            }
             contextStage = failedIncidentContext(error);
             suspiciousChangeStage = unavailableSuspiciousChanges('CONTEXT_UNAVAILABLE');
             hypothesisScoringStage = unavailableHypothesisScoring('CONTEXT_UNAVAILABLE');
@@ -1036,15 +1185,131 @@ export function buildServer(options: BuildServerOptions = {}) {
             );
           }
 
-          executionBudget.beginAgentStep();
-          const report = InvestigationReportSchema.parse(
-            await runner.investigate(parsedRequest.data, {
-              incidentId: response.incidentId,
-              metadata,
-              limits,
-              executionBudget,
-            }),
-          );
+          if (contextStage.status !== 'completed') {
+            incidents.set(response.incidentId, { status: 'failed' });
+            return;
+          }
+
+          if (!contextStage.facts.selectedEntity) {
+            if (
+              suspiciousChangeStage.status !== 'completed' &&
+              suspiciousChangeStage.status !== 'insufficient'
+            ) {
+              throw new Error('A no-match context requires terminal suspicious-change detection.');
+            }
+            executionBudget.beginAgentStep();
+            hypothesisScoringStage = hypothesisScorer.score(
+              contextStage,
+              suspiciousChangeStage,
+              [],
+            );
+            executionBudget.beginAgentStep();
+            remediationStage = remediationPlanner.plan(contextStage, hypothesisScoringStage);
+            const nextSteps = [
+              investigationNextStep('provide_entity_candidate'),
+              investigationNextStep('add_incident_context'),
+            ];
+            if (mode === 'datahub') {
+              nextSteps.push(investigationNextStep('continue_fixture_mode'));
+            }
+            storeDegradedIncident({
+              contextStage,
+              suspiciousChangeStage,
+              hypothesisScoringStage,
+              remediationStage,
+              execution: executionBudget.snapshot('entity_not_found'),
+              errorCode: 'ENTITY_NOT_FOUND',
+              warnings: [investigationWarning('no_entity_match')],
+              nextSteps,
+            });
+            return;
+          }
+
+          let report: InvestigationReport | undefined;
+          while (!report) {
+            executionBudget.beginAgentStep();
+            let rawReport: unknown;
+            try {
+              rawReport = await runner.investigate(parsedRequest.data, {
+                incidentId: response.incidentId,
+                metadata,
+                limits,
+                executionBudget,
+              });
+            } catch (error: unknown) {
+              if (error instanceof InvestigationModelProviderTimeoutError) {
+                const execution = executionBudget.snapshot('model_provider_timeout');
+                if (execution.durationMs > executionBudget.limits.agentTimeoutMs) {
+                  throw new InvestigationLimitError('duration_limit_reached', {
+                    ...execution,
+                    terminationReason: 'duration_limit_reached',
+                  });
+                }
+                hypothesisScoringStage = unavailableHypothesisScoring('SCORING_INVALID');
+                remediationStage = unavailableRemediationPlanning('SCORING_UNAVAILABLE');
+                const nextSteps = [
+                  investigationNextStep('review_partial_evidence'),
+                  investigationNextStep('review_provider_availability'),
+                ];
+                if (mode === 'datahub') {
+                  nextSteps.push(investigationNextStep('continue_fixture_mode'));
+                }
+                storeDegradedIncident({
+                  contextStage,
+                  suspiciousChangeStage,
+                  hypothesisScoringStage,
+                  remediationStage,
+                  execution,
+                  errorCode: 'MODEL_TIMEOUT',
+                  failedOperation: 'model_provider',
+                  warnings: [
+                    investigationWarning('partial_evidence'),
+                    investigationWarning('external_dependency_failed'),
+                  ],
+                  nextSteps,
+                });
+                return;
+              }
+              throw error;
+            }
+
+            const serializedReport = JSON.stringify(rawReport);
+            executionBudget.assertModelOutput(serializedReport);
+            const parsedReport = InvestigationReportSchema.safeParse(rawReport);
+            if (parsedReport.success) {
+              report = parsedReport.data;
+              break;
+            }
+            if (executionBudget.canRetry()) {
+              executionBudget.recordRetry();
+              continue;
+            }
+
+            hypothesisScoringStage = unavailableHypothesisScoring('SCORING_INVALID');
+            remediationStage = unavailableRemediationPlanning('SCORING_UNAVAILABLE');
+            const nextSteps = [investigationNextStep('review_partial_evidence')];
+            if (mode === 'datahub') {
+              nextSteps.push(investigationNextStep('continue_fixture_mode'));
+            }
+            storeDegradedIncident({
+              contextStage,
+              suspiciousChangeStage,
+              hypothesisScoringStage,
+              remediationStage,
+              execution: executionBudget.snapshot('model_output_invalid'),
+              errorCode: 'MODEL_OUTPUT_INVALID',
+              failedOperation: 'structured_output',
+              warnings: [
+                investigationWarning('partial_evidence'),
+                investigationWarning('structured_output_rejected'),
+              ],
+              nextSteps,
+            });
+            return;
+          }
+          if (!report) {
+            throw new Error('Structured report retry loop ended without a validated result.');
+          }
           let completedReport = report;
           if (
             contextStage.status === 'completed' &&
@@ -1091,7 +1356,36 @@ export function buildServer(options: BuildServerOptions = {}) {
             }
             remediationStage = invalidRemediationPlanning();
           }
+          const lineageTruncated = contextStage.facts.lineage?.truncated === true;
+          if (lineageTruncated) {
+            completedReport = InvestigationReportSchema.parse({
+              ...completedReport,
+              missingInformation: [
+                ...completedReport.missingInformation
+                  .filter((item) => item !== INVESTIGATION_WARNING_MESSAGES.incomplete_lineage)
+                  .slice(0, 19),
+                INVESTIGATION_WARNING_MESSAGES.incomplete_lineage,
+              ],
+            });
+          }
           executionBudget.assertModelOutput(JSON.stringify(completedReport));
+          if (lineageTruncated) {
+            storeDegradedIncident({
+              contextStage,
+              suspiciousChangeStage,
+              hypothesisScoringStage,
+              remediationStage,
+              execution: executionBudget.snapshot('lineage_truncated'),
+              errorCode: 'LINEAGE_TRUNCATED',
+              warnings: [
+                investigationWarning('partial_evidence'),
+                investigationWarning('incomplete_lineage'),
+              ],
+              nextSteps: [investigationNextStep('review_partial_evidence')],
+              report: completedReport,
+            });
+            return;
+          }
           const execution = executionBudget.snapshot();
           incidents.set(response.incidentId, {
             status: 'completed',
@@ -1117,6 +1411,7 @@ export function buildServer(options: BuildServerOptions = {}) {
               agentSteps: execution.agentSteps,
               durationMs: execution.durationMs,
               lineageEntitiesVisited: execution.lineageEntitiesVisited,
+              retries: execution.retries,
               terminationReason: execution.terminationReason,
             },
             'Fixture investigation completed',
@@ -1125,6 +1420,52 @@ export function buildServer(options: BuildServerOptions = {}) {
           const terminationError = terminationErrorFrom(error);
           if (terminationError) {
             const providerTimedOut = terminationError instanceof InvestigationProviderTimeoutError;
+            if (
+              (contextStage.status === 'completed' || contextStage.status === 'degraded') &&
+              hasPreservedContextEvidence(contextStage)
+            ) {
+              if (suspiciousChangeStage.status === 'detecting') {
+                suspiciousChangeStage = unavailableSuspiciousChanges(
+                  contextStage.status === 'completed' ? 'DETECTION_INVALID' : 'CONTEXT_UNAVAILABLE',
+                );
+              }
+              if (hypothesisScoringStage.status === 'scoring') {
+                hypothesisScoringStage = unavailableHypothesisScoring(
+                  contextStage.status !== 'completed'
+                    ? 'CONTEXT_UNAVAILABLE'
+                    : suspiciousChangeStage.status === 'unavailable'
+                      ? 'SUSPICIOUS_CHANGES_UNAVAILABLE'
+                      : 'SCORING_INVALID',
+                );
+              }
+              if (remediationStage.status === 'planning') {
+                remediationStage = unavailableRemediationPlanning(
+                  contextStage.status === 'completed'
+                    ? 'SCORING_UNAVAILABLE'
+                    : 'CONTEXT_UNAVAILABLE',
+                );
+              }
+              const warnings = [investigationWarning('partial_evidence')];
+              const nextSteps = [investigationNextStep('review_partial_evidence')];
+              if (providerTimedOut) {
+                warnings.push(investigationWarning('external_dependency_failed'));
+                nextSteps.push(investigationNextStep('review_provider_availability'));
+                if (mode === 'datahub') {
+                  nextSteps.push(investigationNextStep('continue_fixture_mode'));
+                }
+              }
+              storeDegradedIncident({
+                contextStage,
+                suspiciousChangeStage,
+                hypothesisScoringStage,
+                remediationStage,
+                execution: terminationError.execution,
+                errorCode: providerTimedOut ? 'METADATA_TIMEOUT' : 'INVESTIGATION_LIMIT_REACHED',
+                warnings,
+                nextSteps,
+              });
+              return;
+            }
             incidents.set(response.incidentId, {
               status: 'execution-failed',
               execution: terminationError.execution,
@@ -1141,6 +1482,7 @@ export function buildServer(options: BuildServerOptions = {}) {
                 agentSteps: terminationError.execution.agentSteps,
                 durationMs: terminationError.execution.durationMs,
                 lineageEntitiesVisited: terminationError.execution.lineageEntitiesVisited,
+                retries: terminationError.execution.retries,
                 terminationReason: terminationError.reason,
               },
               'Investigation stopped before completion',
@@ -1206,6 +1548,10 @@ export function buildServer(options: BuildServerOptions = {}) {
             },
           }),
         );
+      }
+
+      if (incident.status === 'degraded') {
+        return reply.code(200).send(IncidentRetrievalResponseSchema.parse(incident.response));
       }
 
       if (incident.status === 'execution-failed') {
