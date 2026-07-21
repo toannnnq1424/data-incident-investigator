@@ -147,6 +147,7 @@ const investigationTerminationReasons = [
   'retry_limit_reached',
   'duration_limit_reached',
   'model_output_limit_reached',
+  'provider_timeout',
 ] as const;
 
 export const InvestigationTerminationReasonSchema = z.enum(investigationTerminationReasons);
@@ -162,6 +163,11 @@ export const INVESTIGATION_LIMIT_MESSAGES = Object.freeze({
   duration_limit_reached: 'The investigation stopped after reaching its duration limit.',
   model_output_limit_reached:
     'The investigation stopped because its structured output exceeds the configured size limit.',
+});
+
+export const INVESTIGATION_TERMINATION_MESSAGES = Object.freeze({
+  ...INVESTIGATION_LIMIT_MESSAGES,
+  provider_timeout: 'The investigation stopped because the metadata provider timed out.',
 } satisfies Record<Exclude<(typeof investigationTerminationReasons)[number], 'completed'>, string>);
 
 export const InvestigationExecutionMetadataSchema = z
@@ -2165,7 +2171,7 @@ export const IncidentRetrievalResponseSchema = z
         execution: InvestigationExecutionMetadataSchema,
         error: z
           .object({
-            code: z.literal('INVESTIGATION_LIMIT_REACHED'),
+            code: z.enum(['INVESTIGATION_LIMIT_REACHED', 'METADATA_TIMEOUT']),
             message: z.string().min(1).max(300),
           })
           .strict(),
@@ -2182,13 +2188,22 @@ export const IncidentRetrievalResponseSchema = z
         });
         return;
       }
+      const providerTimedOut = response.execution.terminationReason === 'provider_timeout';
+      const expectedCode = providerTimedOut ? 'METADATA_TIMEOUT' : 'INVESTIGATION_LIMIT_REACHED';
+      if (response.error.code !== expectedCode) {
+        context.addIssue({
+          code: 'custom',
+          message: 'The investigation error code must match its stable termination reason.',
+          path: ['error', 'code'],
+        });
+      }
       if (
         response.error.message !==
-        INVESTIGATION_LIMIT_MESSAGES[response.execution.terminationReason]
+        INVESTIGATION_TERMINATION_MESSAGES[response.execution.terminationReason]
       ) {
         context.addIssue({
           code: 'custom',
-          message: 'The investigation limit message must match its stable termination reason.',
+          message: 'The investigation error message must match its stable termination reason.',
           path: ['error', 'message'],
         });
       }

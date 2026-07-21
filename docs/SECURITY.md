@@ -19,6 +19,10 @@ environment variables. Logs must redact authorization headers, tokens, and full 
 - Count only executed stages/provider calls and unique validated lineage URNs. A configured limit
   terminates with a stable safe reason and no completed report; current workflows perform zero retries
   and zero model calls.
+- Keep provider-owned timeout distinct from total-deadline exhaustion. A bounded provider timeout uses
+  `provider_timeout`/`METADATA_TIMEOUT`; `duration_limit_reached` is emitted only when the monotonic total
+  budget snapshot proves the configured deadline was exceeded. Neither response includes raw provider
+  errors or payloads.
 - Apply basic public rate limiting before deployment.
 - Do not render provider HTML or model-generated HTML.
 

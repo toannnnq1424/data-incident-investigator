@@ -76,7 +76,7 @@ import {
   type SuspiciousChangeSignalCode,
 } from '@dii/shared-types';
 
-type InvestigationLimitTerminationReason = Exclude<InvestigationTerminationReason, 'completed'>;
+type InvestigationLimitTerminationReason = keyof typeof INVESTIGATION_LIMIT_MESSAGES;
 
 export class InvestigationLimitError extends Error {
   readonly execution: InvestigationExecutionMetadata;

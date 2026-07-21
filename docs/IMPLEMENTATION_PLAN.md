@@ -2462,9 +2462,10 @@ rerun.
 
 ### Slice 6.1 — Runtime limits and configuration
 
-Status: local Level C and the fixture-backed Windows demo pass on
-`codex/phase-6-1-runtime-limits` from exact integrated Phase 5 `main`
-`900fa125b9687b5f7aa357b249f77dec091d339a`. Publication and final-head CI are pending.
+Status: Draft PR #33 is open from `codex/phase-6-1-runtime-limits` against exact integrated Phase 5
+`main` `900fa125b9687b5f7aa357b249f77dec091d339a`. Initial CI passed; Windows read-only QA then found a
+provider-timeout/duration-reason defect. The targeted factual-termination correction passes local
+affected validation and is pending publication, exact-new-head CI, and QA rerun.
 
 Objective: replace the currently disconnected hard-coded context/fixture limits and unwired environment
 examples with one schema-validated runtime configuration that safely bounds the complete public

@@ -6,6 +6,7 @@ import {
   IncidentRequestSchema,
   IncidentRetrievalResponseSchema,
   INVESTIGATION_LIMIT_MESSAGES,
+  INVESTIGATION_TERMINATION_MESSAGES,
   type IncidentRetrievalResponse,
 } from '../../packages/shared-types/src/index.js';
 
@@ -344,13 +345,16 @@ describe('incident API', () => {
     expect(completed.report.hypotheses[0]?.id).toBe('legacy-metadata-hypothesis');
   });
 
-  it('returns a safe non-completed duration-limit result after a context timeout', async () => {
+  it('reports a provider timeout factually while the total duration budget remains', async () => {
     let detectorCalls = 0;
+    let now = 0;
     const server = buildServer({
+      executionClock: () => now,
       logger: false,
       processingDelayMs: 0,
       metadataSearch: {
         async searchEntities() {
+          now = 2_000;
           throw new MetadataProviderError('timeout');
         },
       },
@@ -376,6 +380,56 @@ describe('incident API', () => {
     expect(terminal).toMatchObject({
       status: 'failed',
       execution: {
+        durationMs: 2_000,
+        terminationReason: 'provider_timeout',
+      },
+      error: {
+        code: 'METADATA_TIMEOUT',
+        message: INVESTIGATION_TERMINATION_MESSAGES.provider_timeout,
+      },
+    });
+    expect(JSON.stringify(terminal)).not.toContain('MetadataProviderError');
+    expect(terminal).not.toHaveProperty('report');
+    expect(terminal).not.toHaveProperty('contextStage');
+    expect(detectorCalls).toBe(0);
+  });
+
+  it('reports the duration limit only when the total investigation deadline is exhausted', async () => {
+    let detectorCalls = 0;
+    let now = 0;
+    const server = buildServer({
+      executionClock: () => now,
+      logger: false,
+      processingDelayMs: 0,
+      metadataSearch: {
+        async searchEntities() {
+          now = 90_001;
+          throw new MetadataProviderError('timeout');
+        },
+      },
+      suspiciousChangeDetector: {
+        detect() {
+          detectorCalls += 1;
+          throw new Error('Detector must not run after context failure.');
+        },
+      },
+    });
+    servers.push(server);
+    const accepted = await server.inject({
+      method: 'POST',
+      url: '/incidents',
+      payload: IncidentRequestSchema.parse(canonicalIncident.request),
+    });
+
+    const terminal = await waitForTerminal(
+      server,
+      accepted.json<{ incidentId: string }>().incidentId,
+    );
+
+    expect(terminal).toMatchObject({
+      status: 'failed',
+      execution: {
+        durationMs: 90_001,
         terminationReason: 'duration_limit_reached',
       },
       error: {
@@ -383,7 +437,6 @@ describe('incident API', () => {
         message: INVESTIGATION_LIMIT_MESSAGES.duration_limit_reached,
       },
     });
-    expect(JSON.stringify(terminal)).not.toContain('MetadataProviderError');
     expect(terminal).not.toHaveProperty('report');
     expect(terminal).not.toHaveProperty('contextStage');
     expect(detectorCalls).toBe(0);

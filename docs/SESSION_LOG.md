@@ -2363,3 +2363,51 @@ Không còn local source/test/build/smoke/browser blocker cho Slice 6.1.
 Format/check final docs, chạy final diff/secret/conflict/generated/ancestry/worktree audit, commit
 conventional, push branch, mở Draft PR base `main`, theo dõi exact-head CI tới terminal. Không merge,
 không dùng Mac và không bắt đầu Slice 6.2.
+
+## 2026-07-21 — Phase 6 Slice 6.1 provider-timeout QA correction
+
+### Objective
+
+Sửa blocker product/contract do Windows read-only QA phát hiện trên Draft PR #33 exact head
+`be3a23db1c7d46cbf2abd32804fde80f82f974ce`: timeout nội bộ của DataHub bị báo sai thành
+`duration_limit_reached` dù tổng budget chín mươi giây vẫn còn. Giữ đúng Slice 6.1, không thêm retry,
+graceful degradation, body/rate limit hay feature khác.
+
+### Completed
+
+Đã đọc đầy đủ QA evidence, xác minh lại exact failing head/tree và inspect đúng API mapping, monotonic
+budget seam, `MetadataProviderError('timeout')` cùng hai test trực tiếp. API nay lấy một factual budget
+snapshot khi nhận provider timeout: nếu `durationMs` vẫn trong budget thì trả terminal `failed` với
+`provider_timeout`, `METADATA_TIMEOUT`, fixed safe message và không report/stage; chỉ snapshot vượt
+deadline mới trả `duration_limit_reached`/`INVESTIGATION_LIMIT_REACHED`. Provider timeout không trở thành
+success, không retry và không tạo metric.
+
+Shared incident retrieval schema cho phép đúng hai cặp reason/code tương ứng và từ chối cặp sai. Agent
+limit error vẫn chỉ nhận các reason thuộc configured limit; `provider_timeout` là execution termination
+riêng, không bị gọi là limit. API/agent/data/security contract docs đã ghi rõ semantics này.
+
+### Files changed
+
+`packages/shared-types/src/index.ts`; `packages/agent-core/src/index.ts`; `apps/api/src/index.ts`;
+`tests/integration/incidents-api.test.ts`; `tests/integration/runtime-limits.test.ts`;
+`docs/API_CONTRACTS.md`; `docs/AGENT_DESIGN.md`; `docs/DATA_MODEL.md`; `docs/SECURITY.md`;
+`docs/IMPLEMENTATION_PLAN.md`; `docs/KNOWN_ISSUES.md`; và entry này. Không đổi provider client,
+manifest, lockfile, dependency, fixture, web/browser path hay repository structure.
+
+### Validation performed
+
+- Reproducer trước source cho expected red: provider timeout tại injected `2,000ms` bị nhận sai
+  `duration_limit_reached`; injected `90,001ms` vẫn đúng duration-limit. Sau fix, cả 2/2 PASS.
+- Directly adjacent `runtime-limits` + `incidents-api` PASS 23/23 tests trong `2.96s`; contract suite
+  PASS 17/17 tests trong `0.66s`. Không dùng wall-clock sleep cho hai boundary mới.
+- Changed-source ESLint PASS; shared-types/agent-core/API typecheck PASS 3/3; affected builds PASS 3/3.
+- Root `pnpm exec` lần đầu không resolve `vitest`; project-local binary trong sandbox tiếp tục tái hiện
+  known Vite/esbuild junction. Một scoped execution ngoài sandbox chạy đúng test inputs, không sửa repo.
+- Fixture success và web/browser path không đổi, nên không rerun E2E. Level D, live DataHub credential
+  smoke và mọi Slice 6.2-6.6 vẫn deferred; không dùng Mac.
+
+### Exact next step
+
+Format/check final docs, review diff/secret/conflict/generated scope, tạo một conventional fix commit mới
+trên cùng branch, push fast-forward vào Draft PR #33, theo dõi exact-new-head CI tới terminal. Không merge;
+sau CI xanh, controller rerun independent Windows read-only QA trên exact new head.

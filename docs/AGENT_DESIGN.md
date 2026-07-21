@@ -176,7 +176,9 @@ first attempted step/call/retry/entity/depth/output beyond its configured budget
 deadline, produces a typed `failed` incident with no report. Stable reasons are
 `agent_step_limit_reached`, `tool_call_limit_reached`, `lineage_depth_limit_reached`,
 `entity_limit_reached`, `retry_limit_reached`, `duration_limit_reached`, and
-`model_output_limit_reached`. Successful execution uses only `completed`.
+`model_output_limit_reached`. A provider-owned timeout while duration budget remains is separately
+terminal with `provider_timeout` and `METADATA_TIMEOUT`; only a monotonic snapshot beyond the total
+deadline becomes `duration_limit_reached`. Successful execution uses only `completed`.
 
 ## Evidence classification
 
@@ -193,6 +195,7 @@ summarization must not change entity selection or evidence identity in determini
 
 ## Failure behavior
 
-Validation failures stop before tool calls. Adapter timeouts are not retried indefinitely. Cyclic lineage
-uses a visited set. Truncation is reported. Insufficient evidence produces `inconclusive` reasoning with
-explicit missing information.
+Validation failures stop before tool calls. Adapter timeouts are not retried or reported as success, and
+their termination reason remains distinct from total-deadline exhaustion. Cyclic lineage uses a visited
+set. Truncation is reported. Insufficient evidence produces `inconclusive` reasoning with explicit
+missing information.

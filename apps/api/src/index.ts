@@ -35,7 +35,7 @@ import {
   ApiErrorSchema,
   DEFAULT_RUNTIME_LIMIT_CONFIG,
   INCIDENT_CONTEXT_MAX_CANDIDATES,
-  INVESTIGATION_LIMIT_MESSAGES,
+  INVESTIGATION_TERMINATION_MESSAGES,
   IncidentAcceptedResponseSchema,
   IncidentContextStageSchema,
   HypothesisScoringStageSchema,
@@ -107,10 +107,23 @@ type StoredIncident =
       execution: InvestigationExecutionMetadata;
     }
   | {
-      status: 'limit-failed';
+      status: 'execution-failed';
       execution: InvestigationExecutionMetadata;
+      error: {
+        code: 'INVESTIGATION_LIMIT_REACHED' | 'METADATA_TIMEOUT';
+        message: string;
+      };
     }
   | { status: 'failed' };
+
+class InvestigationProviderTimeoutError extends Error {
+  readonly reason = 'provider_timeout' as const;
+
+  constructor(readonly execution: InvestigationExecutionMetadata) {
+    super(INVESTIGATION_TERMINATION_MESSAGES.provider_timeout);
+    this.name = 'InvestigationProviderTimeoutError';
+  }
+}
 
 const fixtureProcessingDelayMs = 250;
 
@@ -765,15 +778,22 @@ export function buildServer(options: BuildServerOptions = {}) {
     server.log.info({ incidentId: response.incidentId, mode }, 'Investigation accepted');
     const executionBudget = new InvestigationExecutionBudget(runtimeLimits, options.executionClock);
 
-    const limitErrorFrom = (error: unknown) => {
-      if (error instanceof InvestigationLimitError) {
+    const terminationErrorFrom = (error: unknown) => {
+      if (
+        error instanceof InvestigationLimitError ||
+        error instanceof InvestigationProviderTimeoutError
+      ) {
         return error;
       }
       if (error instanceof MetadataProviderError && error.status === 'timeout') {
-        return new InvestigationLimitError(
-          'duration_limit_reached',
-          executionBudget.snapshot('duration_limit_reached'),
-        );
+        const execution = executionBudget.snapshot('provider_timeout');
+        if (execution.durationMs > executionBudget.limits.agentTimeoutMs) {
+          return new InvestigationLimitError('duration_limit_reached', {
+            ...execution,
+            terminationReason: 'duration_limit_reached',
+          });
+        }
+        return new InvestigationProviderTimeoutError(execution);
       }
       return undefined;
     };
@@ -799,9 +819,9 @@ export function buildServer(options: BuildServerOptions = {}) {
               hypothesisScoringStage = HypothesisScoringStageSchema.parse({ status: 'scoring' });
               remediationStage = RemediationPlanningStageSchema.parse({ status: 'planning' });
             } catch (error: unknown) {
-              const limitError = limitErrorFrom(error);
-              if (limitError) {
-                throw limitError;
+              const terminationError = terminationErrorFrom(error);
+              if (terminationError) {
+                throw terminationError;
               }
               suspiciousChangeStage = unavailableSuspiciousChanges('DETECTION_INVALID');
               hypothesisScoringStage = unavailableHypothesisScoring(
@@ -836,9 +856,9 @@ export function buildServer(options: BuildServerOptions = {}) {
               'Incident context gathered and suspicious changes classified',
             );
           } catch (error: unknown) {
-            const limitError = limitErrorFrom(error);
-            if (limitError) {
-              throw limitError;
+            const terminationError = terminationErrorFrom(error);
+            if (terminationError) {
+              throw terminationError;
             }
             contextStage = failedIncidentContext(error);
             suspiciousChangeStage = unavailableSuspiciousChanges('CONTEXT_UNAVAILABLE');
@@ -894,9 +914,9 @@ export function buildServer(options: BuildServerOptions = {}) {
                 });
               }
             } catch (error: unknown) {
-              const limitError = limitErrorFrom(error);
-              if (limitError) {
-                throw limitError;
+              const terminationError = terminationErrorFrom(error);
+              if (terminationError) {
+                throw terminationError;
               }
               hypothesisScoringStage = unavailableHypothesisScoring('SCORING_INVALID');
             }
@@ -909,9 +929,9 @@ export function buildServer(options: BuildServerOptions = {}) {
               completedReport,
             );
           } catch (error: unknown) {
-            const limitError = limitErrorFrom(error);
-            if (limitError) {
-              throw limitError;
+            const terminationError = terminationErrorFrom(error);
+            if (terminationError) {
+              throw terminationError;
             }
             remediationStage = invalidRemediationPlanning();
           }
@@ -946,23 +966,28 @@ export function buildServer(options: BuildServerOptions = {}) {
             'Fixture investigation completed',
           );
         } catch (error: unknown) {
-          const limitError = limitErrorFrom(error);
-          if (limitError) {
+          const terminationError = terminationErrorFrom(error);
+          if (terminationError) {
+            const providerTimedOut = terminationError instanceof InvestigationProviderTimeoutError;
             incidents.set(response.incidentId, {
-              status: 'limit-failed',
-              execution: limitError.execution,
+              status: 'execution-failed',
+              execution: terminationError.execution,
+              error: {
+                code: providerTimedOut ? 'METADATA_TIMEOUT' : 'INVESTIGATION_LIMIT_REACHED',
+                message: terminationError.message,
+              },
             });
             server.log.warn(
               {
                 incidentId: response.incidentId,
                 mode,
-                toolCalls: limitError.execution.toolCalls,
-                agentSteps: limitError.execution.agentSteps,
-                durationMs: limitError.execution.durationMs,
-                lineageEntitiesVisited: limitError.execution.lineageEntitiesVisited,
-                terminationReason: limitError.reason,
+                toolCalls: terminationError.execution.toolCalls,
+                agentSteps: terminationError.execution.agentSteps,
+                durationMs: terminationError.execution.durationMs,
+                lineageEntitiesVisited: terminationError.execution.lineageEntitiesVisited,
+                terminationReason: terminationError.reason,
               },
-              'Investigation stopped at a configured runtime limit',
+              'Investigation stopped before completion',
             );
             return;
           }
@@ -1015,19 +1040,13 @@ export function buildServer(options: BuildServerOptions = {}) {
         );
       }
 
-      if (incident.status === 'limit-failed') {
+      if (incident.status === 'execution-failed') {
         return reply.code(200).send(
           IncidentRetrievalResponseSchema.parse({
             incidentId,
             status: 'failed',
             execution: incident.execution,
-            error: {
-              code: 'INVESTIGATION_LIMIT_REACHED',
-              message:
-                incident.execution.terminationReason === 'completed'
-                  ? 'The investigation stopped at a configured runtime limit.'
-                  : INVESTIGATION_LIMIT_MESSAGES[incident.execution.terminationReason],
-            },
+            error: incident.error,
           }),
         );
       }

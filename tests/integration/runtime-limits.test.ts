@@ -8,6 +8,7 @@ import {
   DEFAULT_RUNTIME_LIMIT_CONFIG,
   IncidentRetrievalResponseSchema,
   INVESTIGATION_LIMIT_MESSAGES,
+  INVESTIGATION_TERMINATION_MESSAGES,
   RuntimeLimitConfigSchema,
   type RuntimeLimitConfig,
 } from '../../packages/shared-types/src/index.js';
@@ -266,6 +267,22 @@ describe('public incident execution metadata', () => {
       IncidentRetrievalResponseSchema.safeParse({
         ...failed,
         execution: { ...failed.execution, terminationReason: 'completed' },
+      }).success,
+    ).toBe(false);
+
+    const providerTimeout = {
+      ...failed,
+      execution: { ...failed.execution, terminationReason: 'provider_timeout' },
+      error: {
+        code: 'METADATA_TIMEOUT',
+        message: INVESTIGATION_TERMINATION_MESSAGES.provider_timeout,
+      },
+    };
+    expect(IncidentRetrievalResponseSchema.safeParse(providerTimeout).success).toBe(true);
+    expect(
+      IncidentRetrievalResponseSchema.safeParse({
+        ...providerTimeout,
+        error: { ...providerTimeout.error, code: 'INVESTIGATION_LIMIT_REACHED' },
       }).success,
     ).toBe(false);
   });

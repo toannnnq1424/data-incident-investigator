@@ -841,6 +841,33 @@ attempt beyond a count/depth/size budget or duration beyond the deadline termina
 is fixed by the reason and never includes configuration values, request text, provider payloads,
 credentials, exceptions, or stack traces.
 
+A metadata-provider timeout that occurs while the total investigation duration budget remains is also
+terminal and never becomes a completed report, but it is not a duration-limit claim. It uses the factual
+`provider_timeout` reason and the existing safe `METADATA_TIMEOUT` code:
+
+```json
+{
+  "incidentId": "576982bc-da91-4d69-a5ad-52206b3e17e2",
+  "status": "failed",
+  "execution": {
+    "toolCalls": 2,
+    "agentSteps": 1,
+    "durationMs": 2000,
+    "lineageEntitiesVisited": 0,
+    "terminationReason": "provider_timeout"
+  },
+  "error": {
+    "code": "METADATA_TIMEOUT",
+    "message": "The investigation stopped because the metadata provider timed out."
+  }
+}
+```
+
+The values above illustrate observed execution rather than fixed fixture metrics. A provider timeout is
+mapped to `duration_limit_reached` only when the same monotonic budget snapshot proves elapsed duration
+is beyond `AGENT_TIMEOUT_SECONDS`; that exhausted-deadline case retains
+`INVESTIGATION_LIMIT_REACHED`.
+
 When scoring completes, the actual fixture report uses the exact scored hypotheses and cited evidence
 shown by `hypothesisScoringStage`; shared validation rejects any divergence or unresolved evidence ID.
 When scoring is insufficient or unavailable, the compatible legacy report remains separately
@@ -860,9 +887,10 @@ Unknown incident response `404`:
 }
 ```
 
-If background investigation fails for a reason other than an enforced runtime limit, retrieval returns
-HTTP `500` with the sanitized `INTERNAL_ERROR` envelope. Limit terminations use the typed HTTP `200`
-`failed` lifecycle above. Logs include only the generated incident ID, fixture mode, bounded result/
+If background investigation fails for a reason other than an enforced runtime limit or normalized
+provider timeout, retrieval returns HTTP `500` with the sanitized `INTERNAL_ERROR` envelope. Limit and
+provider-timeout terminations use the typed HTTP `200` `failed` lifecycle above. Logs include only the
+generated incident ID, fixture mode, bounded result/
 execution counts, normalized termination reason or error class; incident text and credentials are not
 logged.
 

@@ -215,9 +215,10 @@ performs neither.
 A completed incident requires `terminationReason: completed` and retains the existing report and stage
 cross-reference invariants. A runtime budget block instead returns `status: failed`, the factual
 execution metadata, and `INVESTIGATION_LIMIT_REACHED` with the exact safe message mapped to its limit
-reason. It contains no report or stage payload and therefore cannot mislabel truncated execution as a
-completed investigation. The stable non-completed reasons cover agent steps, tool calls, lineage depth,
-entity count, retries, total duration, and serialized runner/model-output bytes.
+reason. A provider-owned timeout while the total budget remains also returns `failed` with no report or
+stage payload, but uses factual `provider_timeout`, `METADATA_TIMEOUT`, and its fixed safe message. Only
+a monotonic snapshot beyond the total deadline uses `duration_limit_reached`. These terminal contracts
+cannot mislabel truncated execution as completed or invent that the full duration budget was exhausted.
 
 ## Planned incident lifecycle
 
