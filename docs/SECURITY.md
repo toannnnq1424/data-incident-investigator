@@ -56,6 +56,15 @@ environment variables. Logs must redact authorization headers, tokens, and full 
   not fabricate provider availability. DataHub readiness separately requires the existing local
   investigation runtime/assets so external provider availability alone cannot produce a false ready
   claim.
+- Treat the investigation event trail as a public allowlisted product contract, not a debug trace or
+  reasoning transcript. Record only sequence-derived IDs, public UTC timestamps, fixed observable
+  action/warning/termination summaries, exact report evidence IDs, and terminal duration. Never record
+  the raw question, prompt/system policy, hidden chain-of-thought/private reasoning, tool arguments,
+  URNs, external descriptions/tags/comments, token counts, credentials, provider/model payloads,
+  hostnames, exceptions, or stacks. Schema validation rejects arbitrary summaries, unresolved evidence
+  references, duplicate/missing terminal events, and events after termination. The bounded process-local
+  trail is returned to the user; it is not copied into a new log, telemetry, analytics, tracing, or
+  persistence backend.
 
 ## External systems
 
@@ -72,6 +81,9 @@ exception message, or stack.
 
 Readiness logs contain only the selected mode and allowlisted reason codes. Liveness logs no dependency
 state. Provider-supplied readiness messages and rejected fixture/model values are never logged.
+
+Investigation activity is not backend logging. Existing structured logs continue to contain only the
+sanitized operational fields above and do not serialize `eventTrail` or its evidence references.
 
 ## Reporting
 

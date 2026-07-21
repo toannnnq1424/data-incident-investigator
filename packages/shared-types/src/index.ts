@@ -2482,6 +2482,168 @@ export const InvestigationWarningSchema = z
     }
   });
 
+export const INVESTIGATION_EVENT_MAX_COUNT = 64;
+
+export const INVESTIGATION_EVENT_ACTION_SUMMARIES = Object.freeze({
+  question_normalized: 'Incident intake was normalized and accepted.',
+  metadata_health_checked: 'Metadata source readiness was checked.',
+  entity_search_completed: 'A bounded metadata entity search completed.',
+  lineage_retrieved: 'Bounded lineage metadata was retrieved.',
+  recent_changes_retrieved: 'Bounded recent-change metadata was retrieved.',
+  suspicious_changes_classified:
+    'Recent metadata changes were classified with deterministic signals.',
+  evidence_collected: 'Validated factual evidence was collected.',
+  hypotheses_produced: 'Evidence-linked hypotheses were produced.',
+  recommendations_produced: 'Evidence-linked review recommendations were produced.',
+  report_produced: 'A schema-validated investigation report was produced.',
+} as const);
+
+export const INVESTIGATION_COMPLETED_EVENT_SUMMARY = 'The investigation completed.';
+
+export const INVESTIGATION_EVENT_ACTION_TYPES = [
+  'question_normalized',
+  'metadata_health_checked',
+  'entity_search_completed',
+  'lineage_retrieved',
+  'recent_changes_retrieved',
+  'suspicious_changes_classified',
+  'evidence_collected',
+  'hypotheses_produced',
+  'recommendations_produced',
+  'report_produced',
+  'warning_raised',
+  'investigation_terminated',
+] as const;
+
+export const InvestigationEventActionTypeSchema = z.enum(INVESTIGATION_EVENT_ACTION_TYPES);
+
+const InvestigationEventCoreSchema = z.object({
+  id: z.string().regex(/^event-\d{4}$/),
+  sequence: z.number().int().min(1).max(INVESTIGATION_EVENT_MAX_COUNT),
+  timestamp: z.iso.datetime(),
+  summary: z.string().trim().min(1).max(300),
+  evidenceIds: z.array(z.string().trim().min(1).max(200)).min(1).max(100).optional(),
+});
+
+const InvestigationObservableEventSchema = InvestigationEventCoreSchema.extend({
+  actionType: InvestigationEventActionTypeSchema.exclude([
+    'warning_raised',
+    'investigation_terminated',
+  ]),
+}).strict();
+
+const InvestigationWarningEventSchema = InvestigationEventCoreSchema.extend({
+  actionType: z.literal('warning_raised'),
+  warningCode: InvestigationWarningCodeSchema,
+}).strict();
+
+const InvestigationTerminationEventSchema = InvestigationEventCoreSchema.extend({
+  actionType: z.literal('investigation_terminated'),
+  terminationReason: InvestigationTerminationReasonSchema,
+  durationMs: z.number().int().min(0).max(Number.MAX_SAFE_INTEGER),
+}).strict();
+
+export const InvestigationEventSchema = z
+  .discriminatedUnion('actionType', [
+    InvestigationObservableEventSchema,
+    InvestigationWarningEventSchema,
+    InvestigationTerminationEventSchema,
+  ])
+  .superRefine((event, context) => {
+    const evidenceLinkedActions = ['evidence_collected', 'hypotheses_produced'];
+    if (evidenceLinkedActions.includes(event.actionType)) {
+      if (!event.evidenceIds) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Evidence-flow events require resolved evidence IDs.',
+          path: ['evidenceIds'],
+        });
+      }
+    } else if (event.evidenceIds !== undefined) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Only evidence-flow events may contain evidence IDs.',
+        path: ['evidenceIds'],
+      });
+    }
+
+    const evidenceIds = event.evidenceIds ?? [];
+    if (new Set(evidenceIds).size !== evidenceIds.length) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Investigation event evidence IDs must be unique.',
+        path: ['evidenceIds'],
+      });
+    }
+
+    const expectedSummary =
+      event.actionType === 'warning_raised'
+        ? INVESTIGATION_WARNING_MESSAGES[event.warningCode]
+        : event.actionType === 'investigation_terminated'
+          ? event.terminationReason === 'completed'
+            ? INVESTIGATION_COMPLETED_EVENT_SUMMARY
+            : INVESTIGATION_TERMINATION_MESSAGES[event.terminationReason]
+          : INVESTIGATION_EVENT_ACTION_SUMMARIES[event.actionType];
+    if (event.summary !== expectedSummary) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Investigation event summary must match its safety allowlist.',
+        path: ['summary'],
+      });
+    }
+  });
+
+export const InvestigationEventTrailSchema = z
+  .array(InvestigationEventSchema)
+  .min(1)
+  .max(INVESTIGATION_EVENT_MAX_COUNT)
+  .superRefine((events, context) => {
+    let previousTimestamp = Number.NEGATIVE_INFINITY;
+    let terminalIndex = -1;
+    events.forEach((event, index) => {
+      const expectedSequence = index + 1;
+      if (event.sequence !== expectedSequence) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Investigation event sequences must be contiguous from one.',
+          path: [index, 'sequence'],
+        });
+      }
+      if (event.id !== `event-${String(expectedSequence).padStart(4, '0')}`) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Investigation event IDs must be stable sequence derivations.',
+          path: [index, 'id'],
+        });
+      }
+      const timestamp = Date.parse(event.timestamp);
+      if (timestamp < previousTimestamp) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Investigation event timestamps must be nondecreasing.',
+          path: [index, 'timestamp'],
+        });
+      }
+      previousTimestamp = timestamp;
+      if (event.actionType === 'investigation_terminated') {
+        if (terminalIndex !== -1) {
+          context.addIssue({
+            code: 'custom',
+            message: 'An investigation trail cannot contain duplicate terminal events.',
+            path: [index, 'actionType'],
+          });
+        }
+        terminalIndex = index;
+      } else if (terminalIndex !== -1) {
+        context.addIssue({
+          code: 'custom',
+          message: 'An investigation trail cannot contain an event after termination.',
+          path: [index, 'actionType'],
+        });
+      }
+    });
+  });
+
 export const INVESTIGATION_NEXT_STEP_TEXT = Object.freeze({
   provide_entity_candidate:
     'Provide a concrete metadata entity name or URN candidate and retry the investigation.',
@@ -2576,6 +2738,7 @@ export const InvestigationDegradedResponseSchema = z
     hypothesisScoringStage: HypothesisScoringStageSchema,
     remediationStage: RemediationPlanningStageSchema,
     execution: InvestigationExecutionMetadataSchema,
+    eventTrail: InvestigationEventTrailSchema,
     error: z
       .object({
         code: z.union([
@@ -2842,6 +3005,7 @@ export const IncidentRetrievalResponseSchema = z
         suspiciousChangeStage: SuspiciousChangeDetectionStageSchema,
         hypothesisScoringStage: HypothesisScoringStageSchema,
         remediationStage: RemediationPlanningStageSchema,
+        eventTrail: InvestigationEventTrailSchema,
       })
       .strict(),
     z
@@ -2853,6 +3017,7 @@ export const IncidentRetrievalResponseSchema = z
         hypothesisScoringStage: HypothesisScoringStageSchema,
         remediationStage: RemediationPlanningStageSchema,
         execution: InvestigationExecutionMetadataSchema,
+        eventTrail: InvestigationEventTrailSchema,
         report: InvestigationReportSchema,
       })
       .strict(),
@@ -2862,6 +3027,7 @@ export const IncidentRetrievalResponseSchema = z
         incidentId: z.uuid(),
         status: z.literal('failed'),
         execution: InvestigationExecutionMetadataSchema,
+        eventTrail: InvestigationEventTrailSchema,
         error: z
           .object({
             code: z.enum(['INVESTIGATION_LIMIT_REACHED', 'METADATA_TIMEOUT']),
@@ -2872,6 +3038,56 @@ export const IncidentRetrievalResponseSchema = z
       .strict(),
   ])
   .superRefine((response, context) => {
+    const terminalEvents = response.eventTrail.filter(
+      (event) => event.actionType === 'investigation_terminated',
+    );
+    if (response.status === 'processing') {
+      if (terminalEvents.length !== 0) {
+        context.addIssue({
+          code: 'custom',
+          message: 'A processing investigation cannot contain a terminal event.',
+          path: ['eventTrail'],
+        });
+      }
+    } else {
+      const terminalEvent = terminalEvents[0];
+      if (terminalEvents.length !== 1 || !terminalEvent) {
+        context.addIssue({
+          code: 'custom',
+          message: 'A terminal investigation requires exactly one terminal event.',
+          path: ['eventTrail'],
+        });
+      } else if (
+        terminalEvent.terminationReason !== response.execution.terminationReason ||
+        terminalEvent.durationMs !== response.execution.durationMs
+      ) {
+        context.addIssue({
+          code: 'custom',
+          message: 'The terminal event must match factual execution metadata.',
+          path: ['eventTrail', response.eventTrail.length - 1],
+        });
+      }
+    }
+
+    const reportEvidenceIds = new Set(
+      response.status === 'completed'
+        ? response.report.evidence.map((evidence) => evidence.id)
+        : response.status === 'degraded' && response.report
+          ? response.report.evidence.map((evidence) => evidence.id)
+          : [],
+    );
+    response.eventTrail.forEach((event, eventIndex) => {
+      event.evidenceIds?.forEach((evidenceId, evidenceIndex) => {
+        if (!reportEvidenceIds.has(evidenceId)) {
+          context.addIssue({
+            code: 'custom',
+            message: 'Investigation event evidence reference does not exist in the report.',
+            path: ['eventTrail', eventIndex, 'evidenceIds', evidenceIndex],
+          });
+        }
+      });
+    });
+
     if (response.status === 'failed') {
       if (response.execution.terminationReason === 'completed') {
         context.addIssue({
@@ -3911,6 +4127,9 @@ export type InvestigationDegradedResponse = z.infer<typeof InvestigationDegraded
 export type InvestigationOperation = z.infer<typeof InvestigationOperationSchema>;
 export type MetadataInvestigationOperation = z.infer<typeof MetadataInvestigationOperationSchema>;
 export type InvestigationWarning = z.infer<typeof InvestigationWarningSchema>;
+export type InvestigationEventActionType = z.infer<typeof InvestigationEventActionTypeSchema>;
+export type InvestigationEvent = z.infer<typeof InvestigationEventSchema>;
+export type InvestigationEventTrail = z.infer<typeof InvestigationEventTrailSchema>;
 export type InvestigationNextStep = z.infer<typeof InvestigationNextStepSchema>;
 export type RuntimeLimitConfig = z.infer<typeof RuntimeLimitConfigSchema>;
 export type PublicIngressConfig = z.infer<typeof PublicIngressConfigSchema>;

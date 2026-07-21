@@ -7,6 +7,7 @@ import {
 import {
   DEFAULT_RUNTIME_LIMIT_CONFIG,
   IncidentRetrievalResponseSchema,
+  INVESTIGATION_EVENT_ACTION_SUMMARIES,
   INVESTIGATION_LIMIT_MESSAGES,
   INVESTIGATION_TERMINATION_MESSAGES,
   RuntimeLimitConfigSchema,
@@ -24,6 +25,30 @@ function runtimeLimits(overrides: Partial<RuntimeLimitConfig> = {}) {
     ...DEFAULT_RUNTIME_LIMIT_CONFIG,
     ...overrides,
   });
+}
+
+function failedEventTrail(
+  reason: Exclude<keyof typeof INVESTIGATION_TERMINATION_MESSAGES, 'completed'>,
+  durationMs = 10,
+) {
+  return [
+    {
+      id: 'event-0001',
+      sequence: 1,
+      timestamp: '2026-07-21T00:00:00.000Z',
+      actionType: 'question_normalized' as const,
+      summary: INVESTIGATION_EVENT_ACTION_SUMMARIES.question_normalized,
+    },
+    {
+      id: 'event-0002',
+      sequence: 2,
+      timestamp: '2026-07-21T00:00:01.000Z',
+      actionType: 'investigation_terminated' as const,
+      summary: INVESTIGATION_TERMINATION_MESSAGES[reason],
+      terminationReason: reason,
+      durationMs,
+    },
+  ];
 }
 
 function expectLimit(
@@ -258,6 +283,7 @@ describe('public incident execution metadata', () => {
         retries: 0,
         terminationReason: 'tool_call_limit_reached',
       },
+      eventTrail: failedEventTrail('tool_call_limit_reached'),
       error: {
         code: 'INVESTIGATION_LIMIT_REACHED',
         message: 'Caller-controlled message.',
@@ -275,6 +301,7 @@ describe('public incident execution metadata', () => {
     const providerTimeout = {
       ...failed,
       execution: { ...failed.execution, terminationReason: 'provider_timeout' },
+      eventTrail: failedEventTrail('provider_timeout'),
       error: {
         code: 'METADATA_TIMEOUT',
         message: INVESTIGATION_TERMINATION_MESSAGES.provider_timeout,

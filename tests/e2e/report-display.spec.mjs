@@ -230,7 +230,39 @@ try {
   await page
     .getByRole('heading', { name: 'Planning safe verification and remediation' })
     .waitFor({ timeout: 2_000 });
-  await page.getByText('Investigation completed').waitFor({ timeout: 5_000 });
+  await page.getByText('Investigation completed', { exact: true }).waitFor({ timeout: 5_000 });
+
+  const activity = page.locator('.investigation-activity');
+  await activity
+    .getByRole('heading', { name: 'Investigation activity' })
+    .waitFor({ timeout: 2_000 });
+  const activityActions = await activity
+    .locator('.investigation-event-meta > code')
+    .allTextContents();
+  const expectedActivityActions = [
+    'question_normalized',
+    'metadata_health_checked',
+    'entity_search_completed',
+    'lineage_retrieved',
+    'recent_changes_retrieved',
+    'suspicious_changes_classified',
+    'evidence_collected',
+    'hypotheses_produced',
+    'recommendations_produced',
+    'report_produced',
+    'investigation_terminated',
+  ];
+  if (
+    activityActions.join('|') !== expectedActivityActions.join('|') ||
+    (await activity.locator('time').count()) !== expectedActivityActions.length ||
+    (await activity.locator('.investigation-event-terminal').count()) !== 1 ||
+    (await activity.locator('.investigation-event-warning').count()) !== 0 ||
+    (await activity.locator('a[href="#evidence-change-removed-gross-revenue"]').count()) !== 2
+  ) {
+    fail(
+      'Structured investigation activity did not render deterministic accessible evidence flow.',
+    );
+  }
 
   const contextStage = page.locator('.incident-context-stage');
   await contextStage

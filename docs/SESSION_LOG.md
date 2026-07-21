@@ -2679,3 +2679,71 @@ Managed Windows child PATH và sandbox esbuild junction vẫn là environment-on
 
 Tạo một conventional commit, push normal, mở đúng một Draft PR base current `main`, theo dõi exact-head
 CI tới SUCCESS và không merge.
+
+## 2026-07-21 — Phase 6 Slice 6.5 structured audit trail
+
+### Objective
+
+Từ exact merged Slice 6.4 `725f8966efba53e392240844df405bd3036cd60e`, thêm một
+`Investigation activity` trail bounded/user-safe mô tả observable operations và evidence flow, tuyệt
+đối không lưu chain-of-thought, private reasoning, prompt/policy, credential, raw provider/model payload
+hoặc tool secret; không làm Slice 6.6 hay Phase 7.
+
+### Completed
+
+Đã bootstrap/fetch/xác minh exact main/tree/parents, tạo branch
+`codex/phase-6-5-structured-audit-trail`, đọc docs-first và khóa plan trước source. Shared schema có
+1-64 event strict với stable sequence/id/time/action/allowlisted summary, resolved evidence references,
+warning và terminal invariants. Agent-core callback chỉ phát sau metadata response schema-valid. API giữ
+safe processing prefix, đúng một terminal matching execution, evidence event chỉ khi cùng response giữ
+report thật. Web render ordered `<time>` activity, evidence links và typed failed state; evidence list cũ
+vẫn là evidence timeline duy nhất.
+
+### Files changed
+
+`packages/shared-types/src/index.ts`; `packages/agent-core/src/index.ts`; `apps/api/src/index.ts`;
+`apps/web/src/App.tsx`; `apps/web/src/styles.css`; `tests/integration/structured-audit-trail.test.ts`;
+direct contract/context/degradation/runtime/API/web regressions; `tests/e2e/report-display.spec.mjs`;
+`docs/AGENT_DESIGN.md`; `docs/API_CONTRACTS.md`; `docs/SECURITY.md`; `docs/TEST_STRATEGY.md`;
+`docs/IMPLEMENTATION_PLAN.md`; `docs/KNOWN_ISSUES.md`; và entry này. Không đổi config, env, fixture,
+manifest, lockfile, dependency hay repository map.
+
+### Decisions
+
+Sequence là thứ tự authoritative; timestamp là canonical UTC và injectable trong test. Summary hoàn
+toàn code-owned. Metadata success event chỉ có sau validation. `evidence_collected` và
+`hypotheses_produced` chỉ link evidence ID có trong report cùng response; report-less termination không
+có evidence ref. Warning dedupe theo code; terminal event đúng một, cuối trail, reason/duration exact.
+Activity trail không phải backend log/telemetry/tracing/persistence và không phải reasoning transcript.
+
+### Validation performed
+
+- Final formatter/check và affected ESLint PASS; 5/5 typechecks PASS (`3.74s`-`4.88s`).
+- Final evidence 9 files/89 tests PASS trong `3.40s`; direct lineage-truncated assertion recovery 14/14
+  PASS trong `1.43s`. Matrix cover success, DataHub/tool/model/provider failure, degraded/failed limits,
+  invalid structured output, exact references/order/terminal/duration và leakage sentinels.
+- 5/5 builds PASS; scoped web Vite recovery transform 109 modules/build `2.30s`. Artifact smoke PASS
+  built API/web cùng real fixture `/health` và `/ready`.
+- Browser gate đầu tiên chỉ lộ selector collision test-only; exact selector fix format/lint PASS.
+  Final-input recovery PASS `4797ms` trên ports `62149`/`62150`, exact 11 events/times, resolved links,
+  accessibility, clean console/overflow và owned cleanup.
+- Exact 20-path audit PASS: diff/format/ancestry sạch; zero credential pattern, conflict/production-
+  debug sentinel, generated junk, manifest/lock/env/config/fixture drift, test listener hay owned Node
+  process. Review bỏ một Vitest import lặp; formatter/lint và exact render recovery 4/4 PASS trong
+  `1.04s`.
+
+### Validation intentionally deferred
+
+Full suite/Level D, Mac, live credentials/DataHub/model network, Slice 6.6 confidence, auth, persistence,
+deployment và Phase 7.
+
+### Known issues
+
+Managed Windows `pnpm exec` workspace-binary lookup và sandbox Vite/esbuild junction vẫn là environment-
+only limitation; scoped recovery đã dùng đúng runtime bootstrap. Incident/event state vẫn process-local,
+không durable. Publication/CI chưa thực hiện tại thời điểm entry này.
+
+### Exact next step
+
+Tạo một conventional commit, push normal, mở đúng một Draft PR base `main`, theo dõi exact-head CI tới
+SUCCESS, không merge và không bắt đầu Slice 6.6/Phase 7.

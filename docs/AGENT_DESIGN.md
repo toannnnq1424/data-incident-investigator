@@ -266,6 +266,39 @@ logs contain only mode and allowlisted reason codes. Neither endpoint contains e
 environment values, internal hostnames, provider/model payloads, exceptions, stacks, uptime, private
 reasoning, retry history, or a success claim about an investigation.
 
+## Slice 6.5 structured audit-trail boundary
+
+Every incident retrieval response contains one bounded `eventTrail` describing only observable
+workflow activity. Sequence is authoritative: events use contiguous one-based sequence values and
+stable `event-NNNN` IDs, while an injected clock supplies nondecreasing canonical UTC timestamps for
+deterministic tests. The trail is capped at 64 events and is process-local with the incident; this
+slice adds no telemetry sink, tracing vendor, database, or durable history.
+
+The allowlist contains normalized intake acceptance; completed metadata health, entity search,
+lineage, and recent-change retrieval; suspicious-change classification; validated evidence,
+hypothesis, recommendation, and report production; stable warnings; and termination. Agent-core emits
+metadata-operation callbacks only after the existing provider response passes its shared schema. A
+failed operation therefore has no matching success event. The callback contains only the allowlisted
+operation identity, never a query, URN, provider argument, payload, or exception.
+
+Summaries are exact code-owned allowlist text. Warning summaries resolve from their existing warning
+codes, and the single final termination event resolves from the exact execution termination reason and
+duration. Processing exposes only its safe prefix and cannot contain a terminal event. Every terminal
+response has exactly one final terminal event matching execution metadata; no event may follow it.
+Polling or terminal storage cannot append a second terminal event.
+
+Evidence-flow events are added only when a schema-valid report is actually preserved in the same
+response. `evidence_collected` cites exact report evidence IDs; `hypotheses_produced` cites only the
+exact evidence IDs used by completed scored hypotheses. Shared validation rejects duplicate or
+unresolved references. Report-less failed/degraded responses contain no event evidence reference, so
+partial counters or discarded structured output can never invent evidence.
+
+The trail contains no chain-of-thought, hidden deliberation, private reasoning, system/developer
+prompt, tool policy, raw question, external metadata description/tag/comment, model token count,
+credential, tool argument, provider/model payload, hostname, exception, or stack. The web labels it
+`Investigation activity`. The existing report evidence list remains the sole evidence timeline and is
+linked from activity events rather than duplicated.
+
 ## Evidence classification
 
 - Fact: directly observed metadata, lineage, change, or pipeline signal.

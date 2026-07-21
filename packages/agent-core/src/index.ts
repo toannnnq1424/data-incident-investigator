@@ -282,6 +282,7 @@ export interface IncidentContextGatheringContext {
   mode: MetadataSourceMode;
   limits: IncidentContextGatheringLimits;
   executionBudget?: InvestigationExecutionBudget;
+  recordCompletedOperation?: (operation: MetadataInvestigationOperation) => void;
 }
 
 export interface IncidentContextGatherer {
@@ -471,6 +472,7 @@ export class DeterministicIncidentContextGatherer implements IncidentContextGath
       if (health.status !== 'ready') {
         throw new MetadataProviderError(health.status);
       }
+      context.recordCompletedOperation?.('metadata_health');
     } catch (error: unknown) {
       contextOperationFailed(
         'metadata_health',
@@ -502,6 +504,7 @@ export class DeterministicIncidentContextGatherer implements IncidentContextGath
         throw new MetadataProviderError('invalid_response');
       }
       candidateEntities = parsedSearch.data.results;
+      context.recordCompletedOperation?.('entity_search');
     } catch (error: unknown) {
       contextOperationFailed(
         'entity_search',
@@ -554,6 +557,7 @@ export class DeterministicIncidentContextGatherer implements IncidentContextGath
         throw new MetadataProviderError('invalid_response');
       }
       lineage = parsedLineage.data;
+      context.recordCompletedOperation?.('lineage');
     } catch (error: unknown) {
       contextOperationFailed(
         'lineage',
@@ -612,6 +616,7 @@ export class DeterministicIncidentContextGatherer implements IncidentContextGath
           throw new MetadataProviderError('invalid_response');
         }
         recentChanges.push(parsedRecentChanges.data);
+        context.recordCompletedOperation?.('recent_changes');
       } catch (error: unknown) {
         contextOperationFailed(
           'recent_changes',

@@ -515,6 +515,15 @@ Processing response `200`:
 {
   "incidentId": "576982bc-da91-4d69-a5ad-52206b3e17e2",
   "status": "processing",
+  "eventTrail": [
+    {
+      "id": "event-0001",
+      "sequence": 1,
+      "timestamp": "2026-07-21T00:00:00.000Z",
+      "actionType": "question_normalized",
+      "summary": "Incident intake was normalized and accepted."
+    }
+  ],
   "contextStage": {
     "status": "gathering"
   },
@@ -529,6 +538,50 @@ Processing response `200`:
   }
 }
 ```
+
+#### Structured investigation activity
+
+Every processing, completed, degraded, and typed failed retrieval contains required `eventTrail`.
+`InvestigationEventTrailSchema` is an ordered array of 1-64 strict events. Each event has:
+
+- `id`: exact stable `event-NNNN` derivation of its one-based position;
+- `sequence`: contiguous integer from one, which is the authoritative order;
+- `timestamp`: canonical UTC public event time; timestamps are nondecreasing;
+- `actionType`: one allowlisted observable action;
+- `summary`: exact fixed text owned by that action/warning/termination code;
+- optional unique `evidenceIds`, only for `evidence_collected` and `hypotheses_produced`; and
+- `durationMs` only on `investigation_terminated`, matching `execution.durationMs`.
+
+Observable action types are `question_normalized`, `metadata_health_checked`,
+`entity_search_completed`, `lineage_retrieved`, `recent_changes_retrieved`,
+`suspicious_changes_classified`, `evidence_collected`, `hypotheses_produced`,
+`recommendations_produced`, `report_produced`, `warning_raised`, and
+`investigation_terminated`. Metadata success actions are appended only after the actual response passes
+its existing shared schema. A failed operation is represented by stable warning/termination events,
+not a false success action.
+
+Processing contains no terminal event. Every terminal response has exactly one final
+`investigation_terminated` event whose reason/duration equals `execution`; no event may follow it.
+Warnings use one existing allowlisted `warningCode` and its exact fixed message. Report-less
+failed/degraded responses cannot contain event evidence references. When a completed or
+lineage-truncated response preserves a report, every event evidence ID must resolve to that exact report
+evidence catalog; unresolved or duplicate IDs reject the whole response.
+
+The canonical completed fixture action order is intake; metadata health; entity search; lineage;
+recent changes; suspicious-change classification; evidence collection; hypotheses; recommendations;
+report; termination. Sequence/action/summary/evidence content is deterministic. Timestamps come from an
+injectable public clock for tests, and production uses canonical UTC time. The terminal duration is the
+existing factual monotonic execution duration.
+
+The trail never contains the incident question, raw metadata description/tag/comment, URN/tool
+argument, raw provider/model payload, prompt or system policy, hidden chain-of-thought/private
+reasoning, token count, credential, hostname, exception, or stack. The web renders it as
+`Investigation activity` and links event evidence IDs to the existing factual evidence rows. The
+existing evidence list remains the sole evidence timeline; activity does not duplicate evidence
+statements.
+
+The remaining retrieval examples are stage-focused abridgements. `eventTrail` is still required in
+their real responses and follows the contract above even where the field is omitted for readability.
 
 While the legacy report remains `processing`, `contextStage` may already be terminal. A successful
 facts-only stage has this provider-neutral shape (values abridged):

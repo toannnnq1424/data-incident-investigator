@@ -39,12 +39,16 @@ import {
   DEFAULT_RUNTIME_LIMIT_CONFIG,
   HealthResponseSchema,
   INCIDENT_CONTEXT_MAX_CANDIDATES,
+  INVESTIGATION_COMPLETED_EVENT_SUMMARY,
+  INVESTIGATION_EVENT_ACTION_SUMMARIES,
   INVESTIGATION_NEXT_STEP_TEXT,
   INVESTIGATION_TERMINATION_MESSAGES,
   INVESTIGATION_WARNING_MESSAGES,
   IncidentAcceptedResponseSchema,
   IncidentContextStageSchema,
   IncidentIdParamsSchema,
+  InvestigationEventSchema,
+  InvestigationEventTrailSchema,
   HypothesisScoringStageSchema,
   IncidentRequestSchema,
   IncidentRetrievalResponseSchema,
@@ -73,9 +77,12 @@ import {
   type InvestigationExecutionMetadata,
   type InvestigationDegradedResponse,
   type InvestigationNextStep,
+  type InvestigationEventActionType,
+  type InvestigationEventTrail,
   type InvestigationOperation,
   type InvestigationTerminationReason,
   type MetadataHealthResponse,
+  type MetadataInvestigationOperation,
   type MetadataSourceMode,
   type PublicIngressConfig,
   type RemediationPlanningStage,
@@ -92,6 +99,7 @@ import Fastify from 'fastify';
 interface BuildServerOptions {
   environment?: NodeJS.ProcessEnv;
   executionClock?: () => number;
+  eventClock?: () => number;
   logger?: boolean;
   metadata?: MetadataAdapter;
   metadataHealth?: MetadataHealthProvider;
@@ -121,6 +129,7 @@ type StoredIncident =
       suspiciousChangeStage: SuspiciousChangeDetectionStage;
       hypothesisScoringStage: HypothesisScoringStage;
       remediationStage: RemediationPlanningStage;
+      eventTrail: InvestigationEventTrail;
     }
   | {
       status: 'completed';
@@ -130,6 +139,7 @@ type StoredIncident =
       remediationStage: RemediationPlanningStage;
       report: InvestigationReport;
       execution: InvestigationExecutionMetadata;
+      eventTrail: InvestigationEventTrail;
     }
   | {
       status: 'execution-failed';
@@ -138,9 +148,131 @@ type StoredIncident =
         code: 'INVESTIGATION_LIMIT_REACHED' | 'METADATA_TIMEOUT';
         message: string;
       };
+      eventTrail: InvestigationEventTrail;
     }
   | { status: 'degraded'; response: InvestigationDegradedResponse }
   | { status: 'failed' };
+
+type ObservableInvestigationEventAction = Exclude<
+  InvestigationEventActionType,
+  'warning_raised' | 'investigation_terminated'
+>;
+
+type InvestigationEventDraft =
+  | {
+      actionType: ObservableInvestigationEventAction;
+      summary: string;
+      evidenceIds?: string[];
+    }
+  | {
+      actionType: 'warning_raised';
+      warningCode: InvestigationWarning['code'];
+      summary: string;
+    }
+  | {
+      actionType: 'investigation_terminated';
+      terminationReason: InvestigationTerminationReason;
+      durationMs: number;
+      summary: string;
+    };
+
+const metadataOperationEventActions: Record<
+  MetadataInvestigationOperation,
+  ObservableInvestigationEventAction
+> = {
+  metadata_health: 'metadata_health_checked',
+  entity_search: 'entity_search_completed',
+  lineage: 'lineage_retrieved',
+  recent_changes: 'recent_changes_retrieved',
+};
+
+class InvestigationEventRecorder {
+  private readonly events: InvestigationEventTrail[number][] = [];
+  private lastTimestampMs = Number.NEGATIVE_INFINITY;
+
+  constructor(private readonly clock: () => number = Date.now) {}
+
+  private timestamp() {
+    const observedTimestamp = this.clock();
+    if (!Number.isFinite(observedTimestamp)) {
+      throw new Error('The investigation event clock returned an invalid timestamp.');
+    }
+    this.lastTimestampMs = Math.max(this.lastTimestampMs, Math.floor(observedTimestamp));
+    return new Date(this.lastTimestampMs).toISOString();
+  }
+
+  private append(event: InvestigationEventDraft) {
+    if (this.events.at(-1)?.actionType === 'investigation_terminated') {
+      throw new Error('An investigation event cannot be recorded after termination.');
+    }
+    const sequence = this.events.length + 1;
+    this.events.push(
+      InvestigationEventSchema.parse({
+        id: `event-${String(sequence).padStart(4, '0')}`,
+        sequence,
+        timestamp: this.timestamp(),
+        ...event,
+      }),
+    );
+  }
+
+  recordAction(actionType: ObservableInvestigationEventAction, evidenceIds?: string[]) {
+    this.append({
+      actionType,
+      summary: INVESTIGATION_EVENT_ACTION_SUMMARIES[actionType],
+      ...(evidenceIds ? { evidenceIds } : {}),
+    });
+  }
+
+  recordWarning(warning: InvestigationWarning) {
+    if (
+      this.events.some(
+        (event) => event.actionType === 'warning_raised' && event.warningCode === warning.code,
+      )
+    ) {
+      return;
+    }
+    this.append({
+      actionType: 'warning_raised',
+      warningCode: warning.code,
+      summary: warning.message,
+    });
+  }
+
+  recordReportFlow(
+    report: InvestigationReport,
+    scoring: HypothesisScoringStage,
+    remediation: RemediationPlanningStage,
+  ) {
+    const evidenceIds = report.evidence.map((evidence) => evidence.id);
+    this.recordAction('evidence_collected', evidenceIds);
+    if (scoring.status === 'completed') {
+      this.recordAction('hypotheses_produced', [
+        ...new Set(scoring.hypotheses.flatMap((hypothesis) => hypothesis.evidenceIds)),
+      ]);
+    }
+    if (remediation.status === 'completed' && remediation.recommendations.length > 0) {
+      this.recordAction('recommendations_produced');
+    }
+    this.recordAction('report_produced');
+  }
+
+  terminate(execution: InvestigationExecutionMetadata) {
+    this.append({
+      actionType: 'investigation_terminated',
+      terminationReason: execution.terminationReason,
+      durationMs: execution.durationMs,
+      summary:
+        execution.terminationReason === 'completed'
+          ? INVESTIGATION_COMPLETED_EVENT_SUMMARY
+          : INVESTIGATION_TERMINATION_MESSAGES[execution.terminationReason],
+    });
+  }
+
+  snapshot() {
+    return InvestigationEventTrailSchema.parse(this.events);
+  }
+}
 
 class InvestigationProviderTimeoutError extends Error {
   readonly reason = 'provider_timeout' as const;
@@ -1115,15 +1247,33 @@ export function buildServer(options: BuildServerOptions = {}) {
       incidentId: randomUUID(),
       status: 'processing',
     });
+    const eventRecorder = new InvestigationEventRecorder(options.eventClock);
+    eventRecorder.recordAction('question_normalized');
     incidents.set(response.incidentId, {
       status: 'processing',
       contextStage: IncidentContextStageSchema.parse({ status: 'gathering' }),
       suspiciousChangeStage: SuspiciousChangeDetectionStageSchema.parse({ status: 'detecting' }),
       hypothesisScoringStage: HypothesisScoringStageSchema.parse({ status: 'scoring' }),
       remediationStage: RemediationPlanningStageSchema.parse({ status: 'planning' }),
+      eventTrail: eventRecorder.snapshot(),
     });
     server.log.info({ incidentId: response.incidentId, mode }, 'Investigation accepted');
     const executionBudget = new InvestigationExecutionBudget(runtimeLimits, options.executionClock);
+
+    const updateProcessingEventTrail = () => {
+      const storedIncident = incidents.get(response.incidentId);
+      if (storedIncident?.status === 'processing') {
+        incidents.set(response.incidentId, {
+          ...storedIncident,
+          eventTrail: eventRecorder.snapshot(),
+        });
+      }
+    };
+
+    const recordCompletedOperation = (operation: MetadataInvestigationOperation) => {
+      eventRecorder.recordAction(metadataOperationEventActions[operation]);
+      updateProcessingEventTrail();
+    };
 
     const terminationErrorFrom = (error: unknown) => {
       if (
@@ -1160,6 +1310,15 @@ export function buildServer(options: BuildServerOptions = {}) {
       if (input.execution.terminationReason === 'completed') {
         throw new Error('A degraded incident cannot use completed execution metadata.');
       }
+      if (input.report) {
+        eventRecorder.recordReportFlow(
+          input.report,
+          input.hypothesisScoringStage,
+          input.remediationStage,
+        );
+      }
+      input.warnings.forEach((warning) => eventRecorder.recordWarning(warning));
+      eventRecorder.terminate(input.execution);
       const degraded = InvestigationDegradedResponseSchema.parse({
         incidentId: response.incidentId,
         status: 'degraded',
@@ -1168,6 +1327,7 @@ export function buildServer(options: BuildServerOptions = {}) {
         hypothesisScoringStage: input.hypothesisScoringStage,
         remediationStage: input.remediationStage,
         execution: input.execution,
+        eventTrail: eventRecorder.snapshot(),
         error: {
           code: input.errorCode,
           message: INVESTIGATION_TERMINATION_MESSAGES[input.execution.terminationReason],
@@ -1216,10 +1376,12 @@ export function buildServer(options: BuildServerOptions = {}) {
               mode,
               limits: contextLimits,
               executionBudget,
+              recordCompletedOperation,
             });
             try {
               executionBudget.beginAgentStep();
               suspiciousChangeStage = suspiciousChangeDetector.detect(contextStage);
+              eventRecorder.recordAction('suspicious_changes_classified');
               hypothesisScoringStage = HypothesisScoringStageSchema.parse({ status: 'scoring' });
               remediationStage = RemediationPlanningStageSchema.parse({ status: 'planning' });
             } catch (error: unknown) {
@@ -1239,6 +1401,7 @@ export function buildServer(options: BuildServerOptions = {}) {
               suspiciousChangeStage,
               hypothesisScoringStage,
               remediationStage,
+              eventTrail: eventRecorder.snapshot(),
             });
             server.log.info(
               {
@@ -1325,6 +1488,7 @@ export function buildServer(options: BuildServerOptions = {}) {
               suspiciousChangeStage,
               hypothesisScoringStage,
               remediationStage,
+              eventTrail: eventRecorder.snapshot(),
             });
             server.log.warn(
               {
@@ -1433,6 +1597,8 @@ export function buildServer(options: BuildServerOptions = {}) {
               break;
             }
             if (executionBudget.canRetry()) {
+              eventRecorder.recordWarning(investigationWarning('structured_output_rejected'));
+              updateProcessingEventTrail();
               executionBudget.recordRetry();
               continue;
             }
@@ -1539,6 +1705,8 @@ export function buildServer(options: BuildServerOptions = {}) {
             return;
           }
           const execution = executionBudget.snapshot();
+          eventRecorder.recordReportFlow(completedReport, hypothesisScoringStage, remediationStage);
+          eventRecorder.terminate(execution);
           incidents.set(response.incidentId, {
             status: 'completed',
             contextStage,
@@ -1547,6 +1715,7 @@ export function buildServer(options: BuildServerOptions = {}) {
             remediationStage,
             report: completedReport,
             execution,
+            eventTrail: eventRecorder.snapshot(),
           });
           server.log.info(
             {
@@ -1625,6 +1794,10 @@ export function buildServer(options: BuildServerOptions = {}) {
                 code: providerTimedOut ? 'METADATA_TIMEOUT' : 'INVESTIGATION_LIMIT_REACHED',
                 message: terminationError.message,
               },
+              eventTrail: (() => {
+                eventRecorder.terminate(terminationError.execution);
+                return eventRecorder.snapshot();
+              })(),
             });
             server.log.warn(
               {
@@ -1712,6 +1885,7 @@ export function buildServer(options: BuildServerOptions = {}) {
             incidentId,
             status: 'failed',
             execution: incident.execution,
+            eventTrail: incident.eventTrail,
             error: incident.error,
           }),
         );
@@ -1728,6 +1902,7 @@ export function buildServer(options: BuildServerOptions = {}) {
                 hypothesisScoringStage: incident.hypothesisScoringStage,
                 remediationStage: incident.remediationStage,
                 execution: incident.execution,
+                eventTrail: incident.eventTrail,
                 report: incident.report,
               }
             : {
@@ -1737,6 +1912,7 @@ export function buildServer(options: BuildServerOptions = {}) {
                 suspiciousChangeStage: incident.suspiciousChangeStage,
                 hypothesisScoringStage: incident.hypothesisScoringStage,
                 remediationStage: incident.remediationStage,
+                eventTrail: incident.eventTrail,
               },
         ),
       );

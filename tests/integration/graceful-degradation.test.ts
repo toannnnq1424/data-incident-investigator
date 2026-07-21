@@ -237,6 +237,17 @@ describe('graceful investigation degradation', () => {
     expect(terminal.report?.missingInformation).toContain(
       'The lineage graph is incomplete because configured depth or entity bounds omitted reachable entities.',
     );
+    const reportEvidenceIds = new Set(terminal.report?.evidence.map((evidence) => evidence.id));
+    expect(
+      terminal.eventTrail
+        .flatMap((event) => event.evidenceIds ?? [])
+        .every((evidenceId) => reportEvidenceIds.has(evidenceId)),
+    ).toBe(true);
+    expect(terminal.eventTrail.map((event) => event.actionType)).toContain('report_produced');
+    expect(terminal.eventTrail.at(-1)).toMatchObject({
+      actionType: 'investigation_terminated',
+      terminationReason: 'lineage_truncated',
+    });
   });
 
   it('distinguishes model-provider timeout from total duration exhaustion and preserves context', async () => {
