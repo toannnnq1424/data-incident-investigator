@@ -239,6 +239,33 @@ context, no report, and no scorer/planner call. `InvestigationModelProviderTimeo
 `model_provider_timeout`/`MODEL_TIMEOUT` while the monotonic total budget remains; the identical timeout
 becomes `duration_limit_reached` only when the same snapshot proves the overall deadline was exceeded.
 
+## Slice 6.4 health/readiness boundary
+
+Process liveness and dependency readiness are separate API boundaries. `GET /health` is a constant,
+strict process response and invokes no adapter, provider, runner, model, credential, configuration, or
+clock. `GET /ready` evaluates only the selected operating mode and returns an ordered allowlisted set of
+checks with stable reason codes; it starts no investigation and cannot change mode.
+
+Fixture readiness calls the same fixture adapter health seam used by the runtime. Default fixture load
+or schema failure is converted to a safe unavailable adapter, so the API process remains live while
+readiness reports `FIXTURE_ASSETS_INVALID`; operational calls also fail safely instead of using partial
+or invented fixture data. Fixture readiness never reads DataHub/model configuration or credentials.
+
+DataHub readiness calls the existing health provider once under its two-second timeout/AbortSignal plus
+the same outer route bound. Missing/unsafe configuration, authorization rejection, unavailable,
+timeout, and invalid response become fixed DataHub reason codes; provider messages and values are
+discarded. A separate `investigation_runtime` check validates the local deterministic report
+runtime/assets still required by the existing live flow, preventing DataHub availability alone from
+creating a false ready state. The current deterministic investigation has no model call or model
+provider, so model is explicitly `not_required` and no `OPENAI_API_KEY` read or availability claim
+occurs. An explicitly composed future model-health dependency becomes required and uses the same bounded
+normalized status seam, but this slice adds no model client, routing, retry, or network probe.
+
+Any required non-ready check makes `/ready` HTTP `503` while `/health` remains HTTP `200`. Readiness
+logs contain only mode and allowlisted reason codes. Neither endpoint contains endpoint/token/header,
+environment values, internal hostnames, provider/model payloads, exceptions, stacks, uptime, private
+reasoning, retry history, or a success claim about an investigation.
+
 ## Evidence classification
 
 - Fact: directly observed metadata, lineage, change, or pipeline signal.

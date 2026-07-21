@@ -37,6 +37,7 @@ import {
   ApiErrorSchema,
   DEFAULT_PUBLIC_INGRESS_CONFIG,
   DEFAULT_RUNTIME_LIMIT_CONFIG,
+  HealthResponseSchema,
   INCIDENT_CONTEXT_MAX_CANDIDATES,
   INVESTIGATION_NEXT_STEP_TEXT,
   INVESTIGATION_TERMINATION_MESSAGES,
@@ -54,6 +55,7 @@ import {
   MetadataEntitySearchRequestSchema,
   MetadataEntitySearchResponseSchema,
   MetadataHealthResponseSchema,
+  MetadataHealthStatusSchema,
   MetadataLineageRequestSchema,
   MetadataLineageResponseSchema,
   MetadataRecentChangesRequestSchema,
@@ -62,6 +64,7 @@ import {
   REMEDIATION_FALLBACK_STEP_TEXT,
   RemediationPlanningStageSchema,
   PublicIngressConfigSchema,
+  ReadinessResponseSchema,
   RuntimeLimitConfigSchema,
   SuspiciousChangeDetectionStageSchema,
   type IncidentContextStage,
@@ -79,6 +82,10 @@ import {
   type RuntimeLimitConfig,
   type SuspiciousChangeDetectionStage,
   type InvestigationWarning,
+  type MetadataHealthStatus,
+  type ReadinessCheck,
+  type ReadinessReasonCode,
+  type ReadinessResponse,
 } from '@dii/shared-types';
 import Fastify from 'fastify';
 
@@ -88,6 +95,7 @@ interface BuildServerOptions {
   logger?: boolean;
   metadata?: MetadataAdapter;
   metadataHealth?: MetadataHealthProvider;
+  modelHealth?: MetadataHealthProvider;
   metadataLineage?: MetadataLineageProvider;
   metadataRecentChanges?: MetadataRecentChangesProvider;
   metadataSearch?: MetadataSearchProvider;
@@ -103,6 +111,7 @@ interface BuildServerOptions {
   runtimeLimits?: RuntimeLimitConfig;
   publicIngress?: PublicIngressConfig;
   requestClock?: () => number;
+  readinessTimeoutMs?: number;
 }
 
 type StoredIncident =
@@ -282,6 +291,92 @@ function unavailableMetadataHealth(mode: MetadataSourceMode): MetadataHealthResp
       mode === 'datahub'
         ? 'DataHub metadata is unavailable. Check the service and network connection.'
         : 'Fixture metadata is unavailable. Restart the application and try again.',
+  });
+}
+
+const defaultReadinessTimeoutMs = 2_000;
+const minimumReadinessTimeoutMs = 10;
+const maximumReadinessTimeoutMs = 10_000;
+
+const dataHubReadinessReasons = {
+  unconfigured: 'DATAHUB_CONFIG_MISSING',
+  unauthorized: 'DATAHUB_UNAUTHORIZED',
+  unavailable: 'DATAHUB_UNAVAILABLE',
+  timeout: 'DATAHUB_TIMEOUT',
+  invalid_response: 'DATAHUB_INVALID_RESPONSE',
+} as const satisfies Record<Exclude<MetadataHealthStatus, 'ready'>, ReadinessReasonCode>;
+
+const modelReadinessReasons = {
+  unconfigured: 'MODEL_CONFIG_MISSING',
+  unauthorized: 'MODEL_UNAUTHORIZED',
+  unavailable: 'MODEL_UNAVAILABLE',
+  timeout: 'MODEL_TIMEOUT',
+  invalid_response: 'MODEL_INVALID_RESPONSE',
+} as const satisfies Record<Exclude<MetadataHealthStatus, 'ready'>, ReadinessReasonCode>;
+
+function boundedReadinessTimeout(value: number | undefined) {
+  if (value === undefined || !Number.isFinite(value)) {
+    return defaultReadinessTimeoutMs;
+  }
+  return Math.min(
+    maximumReadinessTimeoutMs,
+    Math.max(minimumReadinessTimeoutMs, Math.floor(value)),
+  );
+}
+
+async function probeHealthStatus(
+  provider: MetadataHealthProvider,
+  timeoutMs: number,
+): Promise<MetadataHealthStatus> {
+  const controller = new AbortController();
+  return new Promise((resolve) => {
+    let settled = false;
+    const finish = (status: MetadataHealthStatus) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      clearTimeout(timeout);
+      resolve(status);
+    };
+
+    const timeout = setTimeout(() => {
+      controller.abort();
+      finish('timeout');
+    }, timeoutMs);
+
+    void Promise.resolve()
+      .then(() => provider.healthCheck({ signal: controller.signal }))
+      .then(
+        (result) => {
+          const parsedStatus = MetadataHealthStatusSchema.safeParse(result.status);
+          finish(parsedStatus.success ? parsedStatus.data : 'invalid_response');
+        },
+        () => finish('unavailable'),
+      );
+  });
+}
+
+function dependencyReadinessCheck(
+  name: 'datahub' | 'model',
+  status: MetadataHealthStatus,
+): ReadinessCheck {
+  if (status === 'ready') {
+    return { name, status: 'ready' };
+  }
+  return {
+    name,
+    status: 'not_ready',
+    reasonCode:
+      name === 'datahub' ? dataHubReadinessReasons[status] : modelReadinessReasons[status],
+  };
+}
+
+function readinessResponse(mode: MetadataSourceMode, checks: ReadinessCheck[]): ReadinessResponse {
+  return ReadinessResponseSchema.parse({
+    status: checks.some((check) => check.status === 'not_ready') ? 'not_ready' : 'ready',
+    mode,
+    checks,
   });
 }
 
@@ -571,6 +666,7 @@ export function buildServer(options: BuildServerOptions = {}) {
     requestTimeout: runtimeLimits.agentTimeoutMs,
   });
   const requestClock = options.requestClock ?? (() => Date.now());
+  const readinessTimeoutMs = boundedReadinessTimeout(options.readinessTimeoutMs);
   const protectedPostRoutes = new Set([
     '/metadata/search',
     '/metadata/lineage',
@@ -702,6 +798,7 @@ export function buildServer(options: BuildServerOptions = {}) {
           gmsUrl: environment.DATAHUB_GMS_URL,
           token: environment.DATAHUB_TOKEN,
         }));
+  const modelHealth = options.modelHealth;
   const metadataSearch =
     options.metadataSearch ??
     (mode === 'fixture'
@@ -763,11 +860,66 @@ export function buildServer(options: BuildServerOptions = {}) {
     });
   const incidents = new Map<string, StoredIncident>();
 
-  server.get('/health', async () => ({
-    status: 'ok',
-    service: 'data-incident-investigator-api',
-    mode,
-  }));
+  server.get('/health', async (_request, reply) =>
+    reply.code(200).send(HealthResponseSchema.parse({ status: 'ok' })),
+  );
+
+  server.get('/ready', async (_request, reply) => {
+    let response: ReadinessResponse;
+
+    if (mode === 'fixture') {
+      const fixtureStatus = await probeHealthStatus(metadataHealth, readinessTimeoutMs);
+      response = readinessResponse('fixture', [
+        fixtureStatus === 'ready'
+          ? { name: 'fixture_assets', status: 'ready' }
+          : {
+              name: 'fixture_assets',
+              status: 'not_ready',
+              reasonCode: 'FIXTURE_ASSETS_INVALID',
+            },
+      ]);
+    } else {
+      const dataHubStatusPromise = probeHealthStatus(metadataHealth, readinessTimeoutMs);
+      const investigationRuntimeStatusPromise = probeHealthStatus(metadata, readinessTimeoutMs);
+      const modelStatusPromise = modelHealth
+        ? probeHealthStatus(modelHealth, readinessTimeoutMs)
+        : undefined;
+      const [dataHubStatus, investigationRuntimeStatus] = await Promise.all([
+        dataHubStatusPromise,
+        investigationRuntimeStatusPromise,
+      ]);
+      const investigationRuntimeCheck: ReadinessCheck =
+        investigationRuntimeStatus === 'ready'
+          ? { name: 'investigation_runtime', status: 'ready' }
+          : {
+              name: 'investigation_runtime',
+              status: 'not_ready',
+              reasonCode: 'INVESTIGATION_RUNTIME_INVALID',
+            };
+      const modelCheck: ReadinessCheck = modelStatusPromise
+        ? dependencyReadinessCheck('model', await modelStatusPromise)
+        : { name: 'model', status: 'not_required', reasonCode: 'MODEL_NOT_REQUIRED' };
+      response = readinessResponse('datahub', [
+        dependencyReadinessCheck('datahub', dataHubStatus),
+        investigationRuntimeCheck,
+        modelCheck,
+      ]);
+    }
+
+    if (response.status === 'not_ready') {
+      server.log.warn(
+        {
+          mode: response.mode,
+          reasonCodes: response.checks.flatMap((check) =>
+            check.reasonCode === undefined ? [] : [check.reasonCode],
+          ),
+        },
+        'Service is not ready',
+      );
+    }
+
+    return reply.code(response.status === 'ready' ? 200 : 503).send(response);
+  });
 
   server.get('/metadata/health', async (_request, reply) => {
     let response: MetadataHealthResponse;

@@ -6,6 +6,7 @@ import {
   CanonicalIncidentScenarioCatalogSchema,
   CanonicalIncidentScenarioSchema,
   formatUntrustedEvidence,
+  HealthResponseSchema,
   HYPOTHESIS_SCORE_FACTOR_LABELS,
   HYPOTHESIS_SCORE_FACTOR_WEIGHTS,
   HypothesisScoringResultSchema,
@@ -28,6 +29,7 @@ import {
   MetadataRecentChangesRequestSchema,
   MetadataRecentChangesResponseSchema,
   REMEDIATION_FALLBACK_STEP_TEXT,
+  ReadinessResponseSchema,
   RemediationPlanningStageSchema,
   SUSPICIOUS_CHANGE_SIGNAL_LABELS,
   SuspiciousChangeDetectionResultSchema,
@@ -781,6 +783,97 @@ describe('shared investigation contracts', () => {
         message: 'Provider-specific error.',
       }).success,
     ).toBe(false);
+  });
+
+  it('enforces strict liveness and mode-specific readiness invariants', () => {
+    expect(HealthResponseSchema.parse({ status: 'ok' })).toEqual({ status: 'ok' });
+    expect(HealthResponseSchema.safeParse({ status: 'ok', mode: 'fixture' }).success).toBe(false);
+
+    expect(
+      ReadinessResponseSchema.parse({
+        status: 'ready',
+        mode: 'fixture',
+        checks: [{ name: 'fixture_assets', status: 'ready' }],
+      }),
+    ).toEqual({
+      status: 'ready',
+      mode: 'fixture',
+      checks: [{ name: 'fixture_assets', status: 'ready' }],
+    });
+    expect(
+      ReadinessResponseSchema.safeParse({
+        status: 'not_ready',
+        mode: 'datahub',
+        checks: [
+          {
+            name: 'datahub',
+            status: 'not_ready',
+            reasonCode: 'DATAHUB_TIMEOUT',
+          },
+          { name: 'investigation_runtime', status: 'ready' },
+          {
+            name: 'model',
+            status: 'not_required',
+            reasonCode: 'MODEL_NOT_REQUIRED',
+          },
+        ],
+      }).success,
+    ).toBe(true);
+
+    for (const invalidResponse of [
+      {
+        status: 'ready',
+        mode: 'datahub',
+        checks: [
+          {
+            name: 'datahub',
+            status: 'not_ready',
+            reasonCode: 'DATAHUB_UNAVAILABLE',
+          },
+          { name: 'investigation_runtime', status: 'ready' },
+          {
+            name: 'model',
+            status: 'not_required',
+            reasonCode: 'MODEL_NOT_REQUIRED',
+          },
+        ],
+      },
+      {
+        status: 'ready',
+        mode: 'fixture',
+        checks: [{ name: 'datahub', status: 'ready' }],
+      },
+      {
+        status: 'ready',
+        mode: 'fixture',
+        checks: [
+          {
+            name: 'fixture_assets',
+            status: 'ready',
+            reasonCode: 'FIXTURE_ASSETS_INVALID',
+          },
+        ],
+      },
+      {
+        status: 'not_ready',
+        mode: 'datahub',
+        checks: [
+          {
+            name: 'datahub',
+            status: 'not_ready',
+            reasonCode: 'MODEL_TIMEOUT',
+          },
+          { name: 'investigation_runtime', status: 'ready' },
+          {
+            name: 'model',
+            status: 'not_required',
+            reasonCode: 'MODEL_NOT_REQUIRED',
+          },
+        ],
+      },
+    ]) {
+      expect(ReadinessResponseSchema.safeParse(invalidResponse).success).toBe(false);
+    }
   });
 
   it('trims and bounds metadata entity search requests', () => {

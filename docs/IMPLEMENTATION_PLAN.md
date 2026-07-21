@@ -2869,8 +2869,132 @@ Targeted correction result, 2026-07-21:
 
 ### Slice 6.4 — Health and readiness
 
-Plan: separate liveness from dependency/configuration readiness, document deployment probe semantics,
-and prove health remains cheap and available while readiness reports only normalized safe state.
+Status: local Level C and built-artifact HTTP smoke passed on
+`codex/phase-6-4-health-readiness` from exact merged Slice 6.3 `main`
+`aa853d7b1dd2fdbeca45d08766643ba18ca2aa53` (tree
+`d61c3637d168cb33003b845b62a876e2d19363c3`). Final pre-commit audit passed; commit, publication,
+Draft PR, exact-head CI, and review remain pending.
+
+Objective: separate a cheap process-only liveness contract from operating-mode-aware readiness. Fixture
+readiness must prove the checked-in runtime assets are valid without reading or requiring DataHub/model
+credentials. DataHub readiness must reuse the existing bounded health boundary, normalize configuration
+and availability failures, and never leak an endpoint, token, provider body, hostname, exception, or
+stack. No probe may claim a successful investigation or silently change operating mode.
+
+Minimum files:
+
+- `packages/shared-types/src/index.ts` and focused contract tests for strict liveness/readiness response,
+  check-name/status/reason-code, ordering, uniqueness, and overall ready/not-ready invariants.
+- `packages/datahub-client/src/index.ts` and its focused fixture tests so default fixture loading failure
+  becomes a safe unavailable adapter/readiness result instead of preventing the API process from
+  exposing liveness; valid fixture behavior remains byte-stable.
+- `apps/api/src/index.ts` and one focused readiness integration file for process-only `/health`,
+  mode-specific `/ready`, the existing DataHub health timeout/AbortSignal boundary, optional model-health
+  injection only when a model dependency actually exists, stable HTTP status, and sanitized logs/body.
+- `tests/smoke/health.test.ts` plus `scripts/smoke.mjs` for injection coverage and real HTTP smoke against
+  built fixture artifacts. Existing metadata-health/DataHub/incident tests remain adjacent regressions.
+- `docs/AGENT_DESIGN.md`, `docs/API_CONTRACTS.md`, `docs/DEPLOYMENT.md`, `docs/SECURITY.md`,
+  `docs/TEST_STRATEGY.md`, this plan, `docs/KNOWN_ISSUES.md`, and `docs/SESSION_LOG.md` for exact probe
+  semantics, deployment use, limitations, validation, and handoff. `.env.example` changes only if the
+  existing `APP_MODE`, `DATAHUB_GMS_URL`, and `DATAHUB_TOKEN` contract proves insufficient; no new
+  timeout or model setting is planned.
+
+Acceptance criteria:
+
+- `GET /health` returns HTTP `200` with only strict stable process liveness `{ "status": "ok" }`. It
+  performs no fixture, DataHub, model, credential, configuration, network, clock, uptime, hostname, or
+  incident probe and remains successful while every external readiness dependency is unavailable.
+- `GET /ready` returns strict stable `status`, selected `mode`, and a bounded ordered list of sanitized
+  checks. Overall ready uses HTTP `200`; not-ready uses HTTP `503`. A check contains only an allowlisted
+  name/status/reason code and never an endpoint, token, header, environment value, hostname, raw provider
+  payload, exception, stack, uptime, or private reasoning.
+- Fixture mode calls only the fixture-assets/runtime health boundary. Valid checked-in assets return
+  ready without reading `DATAHUB_*`, model configuration, Stitch, or another credential. Invalid or
+  missing fixture assets keep the process live, make readiness predictably not-ready with one stable
+  fixture reason, and make no successful-investigation claim.
+- DataHub mode reuses the existing `MetadataHealthProvider` and its two-second bounded timeout/
+  AbortSignal behavior. Ready, missing/unsafe configuration, unauthorized, unavailable, timeout, and
+  invalid response map to distinct fixed DataHub reason codes. Exceptions and provider text collapse to
+  unavailable. A separate local `investigation_runtime` check validates the deterministic report
+  runtime/assets still required by the existing live flow, so DataHub availability alone cannot produce
+  a false ready state. Neither `/health` nor `/ready` silently switches to fixture mode.
+- The current deterministic workflow performs zero model calls, so model is explicitly `not_required`
+  and does not read `OPENAI_API_KEY` or fabricate availability. If a real model-health dependency is
+  supplied through the existing server construction seam, its ready, unconfigured, unauthorized,
+  unavailable, timeout, and invalid-response states use distinct fixed model reason codes and become
+  readiness-authoritative. No model client, provider routing, or network integration is added here.
+- Readiness makes no retry and cannot wait indefinitely: every invoked live dependency receives the
+  same short bounded readiness timeout/AbortSignal, while deterministic injected providers exercise
+  every result without sleep or live network. Transient DataHub/model failure changes readiness only;
+  liveness remains `200`.
+- Focused tests prove exact status/body/schema, fixture no-credential success and invalid-asset failure,
+  liveness during external failure, live missing config/DataHub unavailable/timeout/ready, optional
+  model unavailable/timeout/ready, invalid live investigation runtime, sanitized response/log sentinels,
+  no silent mode switch, and unchanged fixture incident completion. Built-artifact smoke performs real
+  HTTP calls to fixture `/health` and `/ready`; browser is intentionally omitted because no web-visible
+  contract changes.
+
+Deferred: `/metadata/health` UI redesign, broad monitoring/metrics, authentication, storage/database,
+distributed coordination, deployment-platform integration, a real model client or provider probe,
+provider proliferation, automatic recovery/mode switching, audit trail (Slice 6.5), confidence work
+(Slice 6.6), live credential smoke, Mac validation, and Phase 6 Level D closure.
+
+Exact Level C validation commands, run once on coherent final inputs and repeat only a classified
+affected failure:
+
+- `pnpm exec prettier --write packages/shared-types/src/index.ts packages/datahub-client/src/index.ts apps/api/src/index.ts tests/integration/contracts.test.ts tests/integration/fixture-adapter.test.ts tests/integration/health-readiness.test.ts tests/smoke/health.test.ts scripts/smoke.mjs docs/AGENT_DESIGN.md docs/API_CONTRACTS.md docs/DEPLOYMENT.md docs/SECURITY.md docs/TEST_STRATEGY.md docs/IMPLEMENTATION_PLAN.md docs/KNOWN_ISSUES.md docs/SESSION_LOG.md`, then the same path list with `pnpm exec prettier --check`.
+- `pnpm exec eslint packages/shared-types/src/index.ts packages/datahub-client/src/index.ts apps/api/src/index.ts tests/integration/contracts.test.ts tests/integration/fixture-adapter.test.ts tests/integration/health-readiness.test.ts tests/integration/metadata-health-api.test.ts tests/integration/datahub-health.test.ts tests/integration/incidents-api.test.ts tests/smoke/health.test.ts scripts/smoke.mjs`.
+- `pnpm --filter @dii/shared-types typecheck`, `pnpm --filter @dii/datahub-client typecheck`,
+  `pnpm --filter @dii/agent-core typecheck`, `pnpm --filter @dii/api typecheck`, and
+  `pnpm --filter @dii/web typecheck`.
+- `pnpm exec vitest run tests/integration/health-readiness.test.ts tests/smoke/health.test.ts tests/integration/contracts.test.ts tests/integration/fixture-adapter.test.ts tests/integration/datahub-health.test.ts tests/integration/metadata-health-api.test.ts tests/integration/incidents-api.test.ts`.
+- `pnpm --filter @dii/shared-types build`, `pnpm --filter @dii/datahub-client build`,
+  `pnpm --filter @dii/agent-core build`, `pnpm --filter @dii/api build`, and
+  `pnpm --filter @dii/web build`; then `pnpm smoke`, whose built-artifact fixture probe uses real HTTP.
+- `git diff --check`; scoped tracked/untracked diff/name/stat review; secret, credential, authorization,
+  environment-value, internal-hostname, provider/model payload, stack/private-reasoning, conflict/debug,
+  and generated-artifact scans; manifest/lockfile/dependency drift review; exact base ancestry; runtime
+  listener/process cleanup; and final worktree review before one conventional commit.
+
+Local affected Level C result on the Windows managed worktree, 2026-07-21:
+
+- The tracked bootstrap completed first with Node `v24.14.0`, pnpm `11.9.0`, frozen 259-package
+  installation, supply-chain verification, Prettier `3.9.5`, and the static format check. Fetch then
+  proved exact `origin/main` commit/tree/parents and no later commit before this branch was created. The
+  objective, minimum files, acceptance, deferred work, and exact commands above were recorded before any
+  source edit.
+- The initial narrow pnpm typecheck/test launch stopped before compilation because the managed child
+  process did not inherit Node/root-bin PATH. The documented process-local bundled runtime recovery made
+  shared-types, datahub-client, and API typechecks pass; the first Vitest recovery then reached 45/46
+  assertions, with the sole failure a test expectation that omitted the required `model: not_required`
+  check. Its focused correction passed 18/18. Final typecheck evidence is 5/5 for shared-types,
+  datahub-client, agent-core, API, and web.
+- The first affected ESLint run found only `prefer-const` in the new timeout helper and one unused test
+  parameter. The two-file format/lint recovery and direct API typecheck passed; the readiness file
+  remained 18/18. Full diff review then found the live flow's required local deterministic report
+  runtime needed its own check to prevent DataHub-only false readiness. The focused correction and all
+  transitive validation passed. Final seven-file evidence is 7/7 files and 71/71 tests in `2.86s`
+  Vitest time (`3.89s` wall): 19 readiness, two liveness/readiness smoke, 18 shared contract, eight
+  fixture adapter, nine DataHub health, three metadata-health API, and 12 incident compatibility tests.
+  No test sleeps, reads a credential, calls a live provider/model, or changes mode.
+- Shared-types, datahub-client, agent-core, and API builds passed directly. Web typecheck passed before
+  Vite met the known sandbox-only esbuild junction restriction; the final Vite portion passed with scoped
+  access, transforming 109 modules and building in `1.13s`. Thus all five affected builds
+  have passing evidence without changing a dependency, manifest, lockfile, package export, or timeout.
+- Extending `pnpm smoke` from artifact existence to real built-API HTTP calls first exposed the existing
+  workspace package exports pointing at TypeScript source under plain Node. The script now resolves the
+  API-owned existing `tsx/esm/api` runtime programmatically and imports the built API entrypoint without
+  a manifest/dependency change. Its scoped run passed `apps/api/dist/index.js`,
+  `apps/web/dist/index.html`, exact fixture `GET /health`, exact fixture `GET /ready`, ephemeral loopback
+  binding, and server close in `1.03s`.
+- No web source or user-visible browser contract changed, so browser validation was intentionally omitted.
+  Mac, live credentials/DataHub/model network, broad monitoring, auth, persistence, deployment-platform
+  integration, audit trail, confidence work, and Phase 6 Level D were not used. `.env.example`, fixtures,
+  repository structure, manifests, lockfile, and dependencies remain unchanged.
+- Final pre-commit audit passed for exactly 16 intended paths. `git diff --check`, full tracked/untracked
+  patch/name/stat review, high-risk secret and production hostname/token/stack/provider sentinel scans,
+  conflict/generated-artifact checks, manifest/lock/environment/fixture/web drift review, exact
+  `aa853d7…` ancestry, and owned runtime-process cleanup all reported zero unintended finding.
 
 ### Slice 6.5 — Structured audit trail
 

@@ -2,21 +2,24 @@
 
 Last updated: 2026-07-21.
 
-- Phase 6 Slice 6.2 is merged through PR #34 at exact main merge
-  `4d34fc2d42797402e96a5e7dcd12500512794523` (tree
-  `d8ac5131da3b485eb628dfd8b19ac863fe846949`); main CI run `29830766984`, job `88634693352`, passed.
-  Slice 6.1's factual provider-timeout semantics and Slice 6.2's input/output safety remain intact.
-- Slice 6.3 is on Draft PR #35. Independent Windows QA failed exact head `d8371bd` because a late
-  runner metadata timeout preserved completed context in the API but the public schema required every
-  `provider_timeout` context to be `degraded`, leaving polling in `processing`. The targeted correction
-  now permits completed factual context only for a late provider timeout while retaining degraded
-  context plus an allowlisted operation for context-stage failures. Its deterministic reproducer is
-  green locally; additive commit, exact-new-head CI, and independent Windows QA rerun remain pending.
+- Phase 6 Slice 6.3 is merged through PR #35 at exact main merge
+  `aa853d7b1dd2fdbeca45d08766643ba18ca2aa53` (tree
+  `d61c3637d168cb33003b845b62a876e2d19363c3`); main CI run `29844355484`, job `88680987052`, passed.
+  The late provider-timeout QA correction, Slice 6.1 factual timeout semantics, and Slice 6.2
+  input/output safety remain intact.
+- Slice 6.4 health/readiness is implemented locally on exact merged Slice 6.3. `/health` is now strict
+  process-only liveness; `/ready` uses stable mode-specific checks/reasons, HTTP `200`/`503`, fixture
+  asset validation, the existing bounded DataHub health seam, required local investigation-runtime
+  validation, and sanitized optional model-health composition. Focused validation passes 7 files/71
+  tests, five typechecks/builds, real built-artifact HTTP smoke, and the exact 16-path pre-commit audit.
+  Commit, Draft PR, exact-head CI, and review remain pending.
 - Fixture continuation in a degraded DataHub response is deliberately advisory and `not_executed`;
-  the operator must explicitly start the app in fixture mode. There is no runtime mode switch, model
-  provider implementation, durable incident storage, automatic retry for provider timeouts, or
-  production remediation. Readiness (Slice 6.4), structured audit trail (6.5), confidence work (6.6),
-  authentication, deployment, distributed limiting, and Phase 6 Level D remain deferred.
+  the operator must explicitly start the app in fixture mode. The current investigation makes zero model
+  calls, so readiness accurately marks model `not_required`; it does not read `OPENAI_API_KEY` or claim
+  model availability. There is no runtime mode switch, model provider implementation, durable incident
+  storage, automatic retry for provider timeouts, or production remediation. Structured audit trail
+  (6.5), confidence work (6.6), authentication, deployment, distributed limiting, and Phase 6 Level D
+  remain deferred.
 
 - Phase 5 integration checkpoint local Level D evidence passes on exact Slice 5.1 final HEAD
   `883bf9bf` and unique branch `codex/phase-5-integration-checkpoint`. The single `pnpm validate`

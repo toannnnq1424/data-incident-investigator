@@ -88,13 +88,79 @@ Response `200`:
 
 ```json
 {
-  "status": "ok",
-  "service": "data-incident-investigator-api",
-  "mode": "fixture"
+  "status": "ok"
 }
 ```
 
-This endpoint does not reveal credentials or provider URLs.
+`HealthResponseSchema` is strict. This endpoint confirms only that the API process can serve a request.
+It does not read or report mode, configuration, credentials, hostname, uptime, fixture assets, DataHub,
+model state, incidents, provider payloads, exceptions, or stacks. It performs no dependency or network
+probe and remains HTTP `200` when readiness dependencies fail.
+
+### `GET /ready`
+
+The readiness endpoint evaluates only dependencies required by the selected operating mode and returns
+`ReadinessResponseSchema`. Ready is HTTP `200`; not-ready is HTTP `503`. The response contains only a
+stable overall status, `fixture|datahub` mode, and an ordered allowlisted check list. It never returns a
+configured value, URL, token, authorization header, provider/model message or body, internal hostname,
+exception, stack, uptime, or retry history.
+
+Fixture ready response `200`:
+
+```json
+{
+  "status": "ready",
+  "mode": "fixture",
+  "checks": [{ "name": "fixture_assets", "status": "ready" }]
+}
+```
+
+Fixture readiness calls only the checked-in fixture adapter health boundary. Invalid or missing fixture
+assets keep `/health` live and return `503` with check `fixture_assets`, status `not_ready`, and reason
+`FIXTURE_ASSETS_INVALID`. Fixture readiness does not read DataHub, model, OpenAI, Stitch, or another
+credential.
+
+Current DataHub ready response `200`:
+
+```json
+{
+  "status": "ready",
+  "mode": "datahub",
+  "checks": [
+    { "name": "datahub", "status": "ready" },
+    { "name": "investigation_runtime", "status": "ready" },
+    {
+      "name": "model",
+      "status": "not_required",
+      "reasonCode": "MODEL_NOT_REQUIRED"
+    }
+  ]
+}
+```
+
+DataHub readiness reuses the existing `MetadataHealthProvider` `/config` probe and its bounded
+two-second timeout/AbortSignal; the readiness route adds the same outer bound and no retry. The local
+`investigation_runtime` check validates the deterministic report runtime/assets that the existing live
+flow still requires, without a network call. The current deterministic investigation performs zero model
+calls, so production composition explicitly marks model as `not_required`, does not read
+`OPENAI_API_KEY`, and makes no model-availability claim. If a real model-health dependency is explicitly
+composed later, it becomes required and uses the model reason codes below; Slice 6.4 does not add a model
+client or provider network call.
+
+Stable non-ready reasons are:
+
+| Check                   | Reason codes                                                                                                           |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `fixture_assets`        | `FIXTURE_ASSETS_INVALID`                                                                                               |
+| `datahub`               | `DATAHUB_CONFIG_MISSING`, `DATAHUB_UNAUTHORIZED`, `DATAHUB_UNAVAILABLE`, `DATAHUB_TIMEOUT`, `DATAHUB_INVALID_RESPONSE` |
+| `investigation_runtime` | `INVESTIGATION_RUNTIME_INVALID`                                                                                        |
+| `model`                 | `MODEL_CONFIG_MISSING`, `MODEL_UNAUTHORIZED`, `MODEL_UNAVAILABLE`, `MODEL_TIMEOUT`, `MODEL_INVALID_RESPONSE`           |
+
+`MODEL_NOT_REQUIRED` is allowed only with model status `not_required`. A ready check has no reason.
+Overall `not_ready` is required when any required check is not ready. Fixture checks are exactly
+`fixture_assets`; DataHub checks are exactly `datahub`, `investigation_runtime`, then `model`, so the
+schema/status/body remain stable. A failure changes readiness only: it does not change `/health`, start
+an investigation, retry, switch to fixture mode, or claim successful DataHub/model work.
 
 ### `GET /metadata/health`
 
