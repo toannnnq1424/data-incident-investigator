@@ -3628,3 +3628,94 @@ Complete the final exact diff/secret/generated-residue/ancestry/process/port aud
 conventional commit, normal-push `codex/phase-7-3-main-release-validation`, open exactly one Draft PR
 against unchanged current `main`, and require that exact head's `PR CI` run/job to reach terminal
 SUCCESS. Do not merge, mark Ready, dispatch the pre-merge manual workflow, or start Slice 7.4+.
+
+## 2026-07-22 — Phase 7 Slice 7.4 repository collaboration templates
+
+### Objective
+
+Add only current repository collaboration templates and concise contributor routing from exact Phase
+7.3 main `79430f6b5f323b5acab2e4dd834ada39dbd4efc5`, without changing workflows, product behavior,
+release metadata, artifacts, deployment, rollback, or later Phase 7 work.
+
+### Completed
+
+Fetched origin without prune and matched the assigned commit, tree
+`b5f7b4e3e55bb389fb6e67fd155075b64308ae40`, `FETCH_HEAD`, and clean detached worktree before creating
+`codex/phase-7-4-collaboration-templates`. Audited the existing PR template, issue chooser, repository
+security-policy page, contributor guide, and stable `PR CI` / `validate` check.
+
+Expanded the PR template to collect scope, linked context, implementation notes, security/redaction,
+exact validation evidence, deferred work, UI evidence, and a completion checklist. Added separate
+GitHub issue forms for reproducible bugs, bounded features, and actionable documentation/support gaps.
+Each public form prohibits secrets, credentials, authorization headers, private endpoints, raw
+provider payloads, and raw sensitive incident data while routing vulnerability details to the private
+instructions in `docs/SECURITY.md`. Disabled blank issues and kept custom contact links empty because
+GitHub already detects and displays the repository security policy; no unsupported Discussions, email,
+or private-vulnerability channel is advertised.
+
+### Files changed
+
+`.github/pull_request_template.md`, `.github/ISSUE_TEMPLATE/bug_report.yml`,
+`.github/ISSUE_TEMPLATE/feature_request.yml`,
+`.github/ISSUE_TEMPLATE/documentation_support.yml`, `.github/ISSUE_TEMPLATE/config.yml`,
+`CONTRIBUTING.md`, `docs/IMPLEMENTATION_PLAN.md`, `docs/REPOSITORY_MAP.md`, and this session log.
+No workflow, source, runtime, test, fixture, script, package, workspace, lock, version, changelog,
+release, artifact, deployment, rollback, README, release-checklist, or security-policy file changed.
+
+### Decisions
+
+Use three non-overlapping issue forms with no default labels or assignees, since repository label or
+triage ownership was not established in this slice. Require the minimum fields needed for an
+actionable report while leaving supporting evidence optional when it is not necessary. Preserve
+GitHub's native detected security-policy link instead of adding a duplicate contact link. Keep the PR
+publication gate named exactly `PR CI` / `validate`, and distinguish targeted local evidence from
+deferred full validation.
+
+### Validation performed
+
+- Tracked Windows bootstrap: Node `v24.14.0`, pnpm `11.9.0`, frozen 259-package graph, zero downloads,
+  supply-chain policy PASS, and Prettier `3.9.5` available.
+- Authenticated in-app Browser: private repository reachable; current chooser exposes Blank issue plus
+  the detected `docs/SECURITY.md` policy route; repository policy and stable check references are
+  truthful.
+- Changed-file Prettier and `git diff --check`: PASS.
+- YAML/schema audit: PASS for exactly three issue forms plus config; supported top-level/body keys and
+  types, unique valid IDs, boolean required values, and nonempty unique options all pass. Bug form has
+  10 elements/9 IDs, feature 10/9, and documentation/support 9/8.
+- Discoverability/duplicate, required intake field, private-security routing, prohibited-data wording,
+  secret-signature, LF/trailing-whitespace, local-link, exact check-name, scope, and documentation
+  consistency audits: PASS.
+- Changed-path allowlist and base ancestry: PASS. `.github/workflows/`, runtime/source/tests/fixtures,
+  scripts, package/workspace/lock files, README, `docs/SECURITY.md`, and
+  `docs/RELEASE_CHECKLIST.md` remain unchanged from exact base.
+- Direct Windows process/listener/residue diagnostic: only Codex Browser kernels are running and none
+  invokes repository code or package commands; ports `3001`/`5173` are free; ignored state contains
+  only seven expected bootstrap dependency links.
+
+The first formatter call reproduced the known fallback-pnpm root-bin resolution limitation and changed
+no file; the bootstrap-installed root Prettier binary then passed. Two process-audit harness attempts
+exposed only sandbox access, overly broad ignored-status filtering, and a PowerShell 5.1 string-method
+overload mismatch. They changed no repository state; the direct process diagnostic replaced that
+harness and passed together with the listener and residue checks.
+
+### Validation intentionally deferred
+
+Unchanged lint/typecheck/tests/build/smoke, full Level D, evaluation, browser E2E, release/manual
+validation, Mac, and live DataHub/model credentials were not rerun. Workflow changes (already complete
+in 7.2/7.3), SemVer/changelog/version/tag/release work (7.5), artifact/deployment/rollback work (7.6),
+full release/RC/fresh-clone validation (7.7), Phase 8, every product feature, Ready state, and merge
+remain deferred.
+
+### Known issues
+
+GitHub CLI remains unavailable on the Windows host; the authorized in-app Browser is working and is
+the scoped PR/CI surface. The repository remains private and live DataHub smoke remains
+credential-gated by design. Neither blocks repository collaboration templates.
+
+### Exact next step
+
+Complete the final format/diff/secret/allowlist/identity/process audit, create exactly one additive
+conventional commit, normal-push `codex/phase-7-4-collaboration-templates`, open exactly one Draft PR
+against unchanged current `main`, verify exact head/tree/parent/base/diff and OPEN/DRAFT/CLEAN state,
+then wait for that exact head's `PR CI` run and `validate` job to reach terminal SUCCESS without rerun.
+Do not mark Ready, merge, create a duplicate issue/PR, or start Slice 7.5+.

@@ -4351,6 +4351,107 @@ Local Windows result (2026-07-22):
   Draft PR, and terminal SUCCESS for its exact-head `PR CI`/`validate` job. Independent QA must perform
   the first safe manual dispatch only after this workflow is merged onto exact current `main`.
 
+### Slice 7.4 — Repository collaboration templates
+
+Status: locally complete on `codex/phase-7-4-collaboration-templates` from exact integrated Phase 7.3 main
+`79430f6b5f323b5acab2e4dd834ada39dbd4efc5` (tree
+`b5f7b4e3e55bb389fb6e67fd155075b64308ae40`).
+
+Objective: provide current, accessible GitHub collaboration entrypoints for actionable bugs, scoped
+feature requests, documentation or contributor-support requests, and pull requests without changing
+runtime behavior or workflows. Every public form must request only sanitized, reproducible evidence;
+security vulnerabilities must route to the private process in `docs/SECURITY.md` and no template may
+solicit credentials, secrets, private endpoints, or raw sensitive incident data.
+
+Minimum files:
+
+- `.github/pull_request_template.md` for scope, linked context, change summary, security/redaction,
+  validation evidence, deferred work, and an author checklist aligned with the stable `validate` PR
+  check.
+- `.github/ISSUE_TEMPLATE/bug_report.yml`, `feature_request.yml`, and
+  `documentation_support.yml` for distinct actionable intake without a duplicate security form.
+- `.github/ISSUE_TEMPLATE/config.yml` to disable unstructured blank issues while preserving GitHub's
+  detected security-policy route; do not add a duplicate link or claim Discussions, email, or private
+  vulnerability reporting that the repository does not provide.
+- `CONTRIBUTING.md`, `docs/IMPLEMENTATION_PLAN.md`, `docs/REPOSITORY_MAP.md`, and
+  `docs/SESSION_LOG.md` for concise contributor routing, current `.github` ownership, the slice
+  contract, validation evidence, and exact handoff.
+
+Acceptance criteria:
+
+- GitHub discovers exactly one pull request template and three non-overlapping issue forms. Each form
+  has valid top-level keys, unique nonblank IDs, supported body element types, truthful labels, useful
+  descriptions, accessible prompts, and required validations only where an actionable report needs
+  them.
+- Bug intake captures expected and actual behavior, minimal reproduction, affected mode, environment,
+  regression status, and sanitized validation evidence. Feature intake captures the problem, bounded
+  outcome, scope/non-goals, alternatives, and validation proposal. Documentation/support intake routes
+  setup, contributor, documentation, or usage gaps with the attempted path and desired correction.
+- Every issue form and the PR template explicitly prohibit secrets, credentials, authorization
+  headers, private endpoints, and raw sensitive incident data. Vulnerability details are never
+  requested publicly; the chooser links to the repository security policy and its private-reporting
+  instructions.
+- The PR template captures scope, evidence, validation and deferral, security/redaction review, docs,
+  user-visible evidence when relevant, and exact-head `PR CI` / `validate` completion without
+  misrepresenting local full validation as mandatory for docs-only changes.
+- Contributor guidance names the correct issue routes, private security policy, one Draft PR per
+  coherent slice, exact-head CI requirement, and the no-secrets/redacted-evidence rule without broad
+  documentation rewrite.
+- Changed-path formatting, YAML/schema/static audits, discoverability/duplicate/path/security/link/doc
+  consistency checks, and Git integrity checks pass. Create one additive conventional commit, push
+  normally, open exactly one Draft PR against unchanged current `main`, and require its exact-head
+  `PR CI` / `validate` job to reach terminal SUCCESS. Do not mark Ready or merge.
+
+Deferred: all workflow edits or policy automation; SemVer/changelog/version/tag/release work (7.5);
+artifacts, deployment, rollback, publish, and release creation (7.6); full release/RC/fresh-clone
+validation (7.7); Phase 8; product/source/test/fixture/package/workspace/lock changes; full Level D,
+evaluation, browser E2E, Mac, and live credential/provider/model validation.
+
+Exact targeted Windows validation:
+
+- run Prettier only on changed Markdown/YAML files and `git diff --check`;
+- parse every changed issue form/config as YAML and assert supported top-level/body keys and types,
+  unique IDs, required validation types, nonempty dropdown options, discoverable filenames, and the
+  absence of legacy/conflicting templates;
+- scan changed templates and contributor guidance for secret/sensitive-data solicitation, public
+  vulnerability intake, untruthful contact routes, stale check names, broken local references, and
+  inconsistent security or validation language;
+- enforce the changed-path allowlist and prove workflows, runtime/source/tests/fixtures/manifests,
+  workspace YAML, lockfile, version/release files, artifacts, deployment, and rollback are unchanged;
+- verify exact base/head/tree/parent/diff/ancestry, clean worktree, generated residue, repository
+  processes, and listeners, then require the Draft PR's exact-head `PR CI` run and `validate` job to
+  reach terminal SUCCESS without rerun.
+
+Local Windows result (2026-07-22):
+
+- A no-prune fetch matched the assigned `origin/main` commit
+  `79430f6b5f323b5acab2e4dd834ada39dbd4efc5` and tree
+  `b5f7b4e3e55bb389fb6e67fd155075b64308ae40`; detached `HEAD`, `FETCH_HEAD`, and `origin/main` were
+  identical and the worktree was clean before branch creation. The tracked bootstrap passed with Node
+  `v24.14.0`, pnpm `11.9.0`, the frozen 259-package graph, zero downloads, supply-chain policy, and
+  Prettier `3.9.5`.
+- Authenticated in-app Browser inspection proved the private repository and current issue chooser are
+  reachable. GitHub detects `docs/SECURITY.md` and exposes its security-policy route; no Discussions,
+  email, or separate private-vulnerability intake was claimed. The new config therefore disables blank
+  issues with an empty custom-contact list, avoiding a duplicate security link.
+- The repository now has exactly one pull request template, three distinct issue forms, and one issue
+  config. A focused YAML/schema audit parses all forms and validates their supported keys/types,
+  nonblank unique IDs, required booleans, and nonempty unique dropdown/checkbox options: bug has 10
+  elements/9 IDs, feature has 10/9, and documentation/support has 9/8.
+- Changed-file Prettier and `git diff --check` pass. Discoverability, intake-field, security/redaction,
+  secret-signature, LF/trailing-whitespace, local-reference, exact check-name, and security-policy
+  consistency audits pass. The allowlist contains only the templates/config, contributor guide,
+  repository map, plan, and session log; workflows, runtime/source/tests/fixtures/scripts, manifests,
+  workspace YAML, lockfile, README, security policy, and release checklist are unchanged.
+- No application process or listener remains: direct Windows process inspection found only Codex
+  Browser kernels, none invoking repository code or package commands; ports `3001` and `5173` are
+  free. Ignored residue is limited to the seven expected bootstrap `node_modules` links.
+- The first formatter invocation reproduced the documented fallback-pnpm root-bin limitation and
+  changed no file; direct use of the bootstrap-installed root binary passed. Two process-audit harness
+  attempts exposed only sandbox access, ignored-status filtering, and PowerShell 5.1 string-overload
+  limitations; they changed no repository state. The corrected direct process diagnostic and listener/
+  residue checks passed.
+
 ## Phase 8 — Submission
 
 Public repository, deployment URL, screenshots, video, Devpost copy, architecture explanation, known

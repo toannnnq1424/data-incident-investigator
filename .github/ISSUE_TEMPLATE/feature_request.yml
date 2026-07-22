@@ -1,0 +1,92 @@
+name: Feature request
+description: Propose a bounded product or contributor-workflow improvement
+title: '[Feature]: '
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for a concrete problem and a bounded outcome that fits Data Incident Investigator.
+
+        **Security:** Do not disclose a vulnerability here. Follow the [security policy](https://github.com/toannnnq1424/data-incident-investigator/security/policy) and contact the repository owner privately.
+
+        Do not include secrets, credentials, authorization headers, private endpoints, raw provider payloads, or raw sensitive incident data.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem to solve
+      description: Describe the user or contributor problem, who experiences it, and why the current path is insufficient.
+    validations:
+      required: true
+  - type: dropdown
+    id: affected_area
+    attributes:
+      label: Primary area
+      description: Select the area most directly affected by the proposal.
+      options:
+        - Incident intake
+        - Metadata or lineage retrieval
+        - Evidence or hypothesis ranking
+        - Report, export, or activity trail
+        - Fixture or DataHub mode
+        - Evaluation, validation, or contributor workflow
+        - Documentation
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: desired_outcome
+    attributes:
+      label: Desired outcome
+      description: Describe the observable result and how it improves the current workflow.
+    validations:
+      required: true
+  - type: textarea
+    id: proposed_scope
+    attributes:
+      label: Proposed scope and non-goals
+      description: Define the smallest useful scope and list behavior that should remain out of scope.
+      placeholder: |
+        In scope:
+        - …
+
+        Not in scope:
+        - …
+    validations:
+      required: true
+  - type: textarea
+    id: proposed_approach
+    attributes:
+      label: Proposed approach
+      description: Outline a solution if you have one. Product outcomes matter more than implementation detail.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Describe workarounds or smaller alternatives and why they are insufficient.
+    validations:
+      required: true
+  - type: textarea
+    id: validation_plan
+    attributes:
+      label: Validation and evidence
+      description: Explain how the outcome could be verified with fixtures, tests, or sanitized user-visible evidence.
+    validations:
+      required: true
+  - type: textarea
+    id: security_data_impact
+    attributes:
+      label: Security and data impact
+      description: Note new trust boundaries, external systems, or sensitive-data handling. Write "None identified" when applicable; never include actual credentials, endpoints, or incident data.
+    validations:
+      required: true
+  - type: checkboxes
+    id: acknowledgements
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and pull requests for the same proposal.
+          required: true
+        - label: I kept the proposal bounded and stated its non-goals.
+          required: true
+        - label: I removed secrets and sensitive data, and this issue does not disclose a security vulnerability.
+          required: true

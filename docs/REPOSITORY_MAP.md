@@ -19,7 +19,7 @@ validation layout.
 | `tests/e2e`               | Browser flows                                               | `report-display.spec.mjs`                                                     |
 | `scripts`                 | Repository operations, worktree bootstrap, and smoke checks | `bootstrap-worktree.ps1`, `bootstrap-worktree.sh`, `smoke.mjs`                |
 | `docs`                    | Product, architecture, plan, memory, and release docs       | see list below                                                                |
-| `.github`                 | Isolated PR, exact-main, and read-only manual validation    | `workflows/pr-ci.yml`, `workflows/ci.yml`, `workflows/release.yml`            |
+| `.github`                 | Collaboration intake plus scoped repository validation      | `ISSUE_TEMPLATE/`, `pull_request_template.md`, `workflows/`                   |
 | `.codex`                  | Trusted project-scoped Codex settings without secrets       | `config.toml`                                                                 |
 
 ## Root configuration
@@ -36,7 +36,13 @@ validation layout.
 - `LICENSE` and `CONTRIBUTING.md`: MIT terms and contributor workflow.
 - `CODEX.md` and `AGENTS.md`: durable agent workflow.
 
-## GitHub validation
+## GitHub collaboration and validation
+
+- `.github/pull_request_template.md`: scoped change summary, security/redaction review, exact
+  validation evidence, deferred work, and exact-head `PR CI` handoff.
+- `.github/ISSUE_TEMPLATE/`: actionable bug, feature, and documentation/support forms. Blank issues
+  are disabled; GitHub's detected repository security-policy route remains available for private
+  vulnerability-reporting instructions.
 
 - `.github/workflows/pr-ci.yml`: read-only validation of the exact pull-request head; owned by Slice
   7.2 and unchanged by Slice 7.3.

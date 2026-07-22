@@ -13,6 +13,21 @@
 Start from the [README quick start](README.md#quick-start). The tracked platform bootstrap enforces the
 repository's Node and pnpm contract and installs dependencies with the frozen lockfile.
 
+## Issues and support
+
+- Use the bug form for a reproducible defect, including a minimal sanitized reproduction, relevant
+  environment, and validation evidence.
+- Use the feature form for a bounded problem and outcome, explicit scope and non-goals, alternatives,
+  and a validation proposal.
+- Use the documentation/support form for an actionable setup, usage, documentation, validation, or
+  contributor-workflow gap.
+- Report suspected vulnerabilities privately by following [`docs/SECURITY.md`](docs/SECURITY.md).
+  Never put vulnerability details in a public issue or pull request.
+
+Search existing issues before filing. Never submit secrets, credentials, authorization headers,
+private endpoints, raw provider payloads, `.env` files, or raw sensitive incident data. Prefer fixture
+mode, minimal examples, and sanitized evidence.
+
 ## Commands
 
 - `pnpm dev`: run web and API development servers.
@@ -28,6 +43,13 @@ repository's Node and pnpm contract and installs dependencies with the frozen lo
 
 Use `feat:`, `fix:`, `test:`, `docs:`, `refactor:`, `chore:`, or `ci:`. Do not commit secrets,
 generated build output, local `.env` files, or credentials copied from chats.
+
+## Pull requests
+
+Open one Draft pull request per coherent outcome and complete `.github/pull_request_template.md` with
+scope, security/redaction review, exact validation evidence, and deferred work. Keep the pull request
+Draft until its exact head has a terminal-success `PR CI` / `validate` job; do not imply that deferred
+or inapplicable checks passed.
 
 ## Two-machine coordination
 
