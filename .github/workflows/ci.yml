@@ -7,19 +7,46 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ci-main-${{ github.sha }}
+  cancel-in-progress: false
+
 jobs:
   validate:
-    runs-on: ubuntu-latest
+    name: validate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-      - name: Install pnpm
-        uses: pnpm/action-setup@v6
-      - name: Set up Node.js
-        uses: actions/setup-node@v6
+      - name: Checkout exact main commit
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
-          node-version: 24
+          repository: ${{ github.repository }}
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Verify checked-out commit
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          resolved_sha="$(git rev-parse HEAD)"
+          printf 'Resolved main commit: %s\n' "$resolved_sha"
+          if [[ "$resolved_sha" != "$EXPECTED_SHA" ]]; then
+            printf 'Expected main commit %s but checked out %s.\n' "$EXPECTED_SHA" "$resolved_sha" >&2
+            exit 1
+          fi
+      - name: Install pnpm
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+        with:
+          version: 11.9.0
+          run_install: false
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 24.14.0
           cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Validate

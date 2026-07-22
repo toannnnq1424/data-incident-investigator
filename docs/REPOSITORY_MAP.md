@@ -1,25 +1,26 @@
 # Repository map
 
-Last verified: 2026-07-22 against the integrated Phase 7.1 tree and the Phase 7.2 PR CI layout.
+Last verified: 2026-07-22 against exact integrated Phase 7.2 main and the Slice 7.3 main/manual
+validation layout.
 
 ## Directories
 
-| Path                      | Responsibility                                               | Important entrypoints                                                         |
-| ------------------------- | ------------------------------------------------------------ | ----------------------------------------------------------------------------- |
-| `apps/web`                | React/Vite user interface                                    | `src/App.tsx`, `src/main.tsx`, `vite.config.ts`                               |
-| `apps/api`                | Fastify HTTP API                                             | `src/index.ts`                                                                |
-| `packages/shared-types`   | Zod schemas and shared types                                 | `src/index.ts`                                                                |
-| `packages/datahub-client` | Provider-neutral contract plus fixture and DataHub adapters  | `src/index.ts`                                                                |
-| `packages/agent-core`     | Bounded deterministic investigation orchestration            | `src/index.ts`                                                                |
-| `packages/evaluation`     | Canonical evaluation cases, runner, metrics, and reporters   | `src/index.ts`, `src/cli.ts`                                                  |
-| `fixtures`                | Deterministic metadata, incidents, and demo data             | `metadata/removed-schema-column.json`, `incidents/removed-schema-column.json` |
-| `tests/integration`       | Cross-package contract, safety, provider, and report tests   | `contracts.test.ts`, `incidents-api.test.ts`, `markdown-export.test.ts`       |
-| `tests/smoke`             | Primary health and build smoke tests                         | `health.test.ts`                                                              |
-| `tests/e2e`               | Browser flows                                                | `report-display.spec.mjs`                                                     |
-| `scripts`                 | Repository operations, worktree bootstrap, and smoke checks  | `bootstrap-worktree.ps1`, `bootstrap-worktree.sh`, `smoke.mjs`                |
-| `docs`                    | Product, architecture, plan, memory, and release docs        | see list below                                                                |
-| `.github`                 | Isolated PR CI, main CI, release validation, and PR template | `workflows/pr-ci.yml`, `workflows/ci.yml`, `workflows/release.yml`            |
-| `.codex`                  | Trusted project-scoped Codex settings without secrets        | `config.toml`                                                                 |
+| Path                      | Responsibility                                              | Important entrypoints                                                         |
+| ------------------------- | ----------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `apps/web`                | React/Vite user interface                                   | `src/App.tsx`, `src/main.tsx`, `vite.config.ts`                               |
+| `apps/api`                | Fastify HTTP API                                            | `src/index.ts`                                                                |
+| `packages/shared-types`   | Zod schemas and shared types                                | `src/index.ts`                                                                |
+| `packages/datahub-client` | Provider-neutral contract plus fixture and DataHub adapters | `src/index.ts`                                                                |
+| `packages/agent-core`     | Bounded deterministic investigation orchestration           | `src/index.ts`                                                                |
+| `packages/evaluation`     | Canonical evaluation cases, runner, metrics, and reporters  | `src/index.ts`, `src/cli.ts`                                                  |
+| `fixtures`                | Deterministic metadata, incidents, and demo data            | `metadata/removed-schema-column.json`, `incidents/removed-schema-column.json` |
+| `tests/integration`       | Cross-package contract, safety, provider, and report tests  | `contracts.test.ts`, `incidents-api.test.ts`, `markdown-export.test.ts`       |
+| `tests/smoke`             | Primary health and build smoke tests                        | `health.test.ts`                                                              |
+| `tests/e2e`               | Browser flows                                               | `report-display.spec.mjs`                                                     |
+| `scripts`                 | Repository operations, worktree bootstrap, and smoke checks | `bootstrap-worktree.ps1`, `bootstrap-worktree.sh`, `smoke.mjs`                |
+| `docs`                    | Product, architecture, plan, memory, and release docs       | see list below                                                                |
+| `.github`                 | Isolated PR, exact-main, and read-only manual validation    | `workflows/pr-ci.yml`, `workflows/ci.yml`, `workflows/release.yml`            |
+| `.codex`                  | Trusted project-scoped Codex settings without secrets       | `config.toml`                                                                 |
 
 ## Root configuration
 
@@ -34,6 +35,17 @@ Last verified: 2026-07-22 against the integrated Phase 7.1 tree and the Phase 7.
 - `.env.example`: environment contract with blank credentials.
 - `LICENSE` and `CONTRIBUTING.md`: MIT terms and contributor workflow.
 - `CODEX.md` and `AGENTS.md`: durable agent workflow.
+
+## GitHub validation
+
+- `.github/workflows/pr-ci.yml`: read-only validation of the exact pull-request head; owned by Slice
+  7.2 and unchanged by Slice 7.3.
+- `.github/workflows/ci.yml`: push-to-`main` validation of the exact event SHA with a frozen install,
+  root-lockfile pnpm cache, fixed toolchain/runner, and no persisted checkout credential.
+- `.github/workflows/release.yml`: read-only `workflow_dispatch` validation from the current `main`
+  workflow. A blank input selects that main SHA; otherwise the operator must provide an exact
+  40-character commit SHA. It reports and verifies the resolved commit and has no upload, publish,
+  release, tag, deploy, or repository-mutation step.
 
 ## Commands
 

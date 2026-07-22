@@ -2,16 +2,19 @@
 
 Last updated: 2026-07-22.
 
-- Phase 7.1 is integrated through normal merge `636f0c4fe7d73958ce99ea9f36a39280ed64d7be`
-  (tree `42bb8156c9ff51610b2aef085d50e757c6abf4e7`; parents
-  `cb1758fec4ca358df7af62f1e7f5f0aedd30ddb6` and
-  `1f477a3771e942f3482c5eacb77787039c72e104`). Exact main CI run `29922721752`, job
-  `88931968979`, passed. Phase 7.2 now isolates `pull_request` validation in a read-only, exact-head,
-  immutable-action-pinned `PR CI` workflow while retaining the previous `CI` job unchanged for `main`
-  pushes. The existing package-owned `pnpm validate`, frozen lockfile, and bootstrap contract remain
-  unchanged. Exact-head Draft PR CI and independent Slice 7.2 QA are still required. This work does not
-  replace main/manual/release hardening, credential-gated live DataHub validation, Mac coverage,
-  deployment, release, submission, or any product gate.
+- Phase 7.2 is integrated through normal merge `f29f6f9d3fec4696a53902b1b94f496b2f0b26d6`
+  (tree `58dd600adbb838ef2e01b1432948b209c4dd516a`; parents
+  `636f0c4fe7d73958ce99ea9f36a39280ed64d7be` and
+  `c6f3ed52439774522d369eb1658854182e5dd507`). Exact main CI run `29926761530`, job
+  `88945813753`, passed. Slice 7.3 hardens only push-to-main and manual release validation with exact
+  immutable checkout, read-only permission, no persisted credential, fixed runner/Node/pnpm/action
+  pins, root-lockfile cache, frozen install, bounded runtime, non-cancelling isolated concurrency, and
+  resolved-SHA reporting. Manual input is blank for current main or exactly 40 hexadecimal characters;
+  artifact upload and every publish/release/tag/deploy/repository-mutation step are absent. PR CI and
+  package/workspace/lock/bootstrap contracts remain byte-identical. The changed manual workflow cannot
+  be safely proven as the default-branch dispatch before merge, so an independent post-merge dispatch
+  from exact `main` remains the publication gate; full release/RC validation, artifacts, deployment,
+  release metadata, live credentials, Mac, and Phase 8 remain deferred.
 
 - Phase 6 Slice 6.3 is merged through PR #35 at exact main merge
   `aa853d7b1dd2fdbeca45d08766643ba18ca2aa53` (tree

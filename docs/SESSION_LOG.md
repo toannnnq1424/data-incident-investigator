@@ -3547,3 +3547,84 @@ Complete the final exact diff/secret/generated-residue/ancestry/process/port aud
 conventional commit, normal-push `codex/phase-7-2-pr-ci`, open exactly one Draft PR against unchanged
 `main`, and wait for that exact head's `PR CI` run/job to reach terminal SUCCESS. Do not merge, mark
 Ready, start Slice 7.3+, or delete/archive/hide/pin any branch, PR, task, or conversation.
+
+## 2026-07-22 — Phase 7 Slice 7.3 main and manual release validation
+
+### Objective
+
+Harden only push-to-`main` and operator-triggered release validation from exact Phase 7.2 merge
+`f29f6f9d3fec4696a53902b1b94f496b2f0b26d6`, preserving PR CI byte-for-byte and adding no product,
+template, version, release, artifact, deployment, rollback, publication, or submission behavior.
+
+### Completed
+
+Fetched origin without prune and matched the assigned main SHA, tree, both parents, and authoritative
+successful main CI run `29926761530`/job `88945813753` before creating
+`codex/phase-7-3-main-release-validation`. Recorded the full docs-first contract while the plan was the
+only changed path.
+
+Main CI now validates its exact push event SHA, reports and compares the resolved checkout, and retains
+the stable `validate` check. Manual validation runs only from the `main` workflow, defaults a blank
+input to that current main SHA, accepts otherwise only an exact 40-hex commit, normalizes it, checks out
+and reports that resolved commit, and runs only the repository-owned validation. Both workflows use
+read-only contents, no persisted checkout credential, immutable reviewed action pins, Ubuntu 24.04,
+Node `24.14.0`, pnpm `11.9.0`, root-lockfile cache, frozen install, 20-minute timeout, and concurrency
+that cannot cancel unrelated validation. Removed both legacy artifact uploads and added no publish,
+release, tag, deploy, credential, or repository mutation path.
+
+### Files changed
+
+`.github/workflows/ci.yml`, `.github/workflows/release.yml`, `docs/IMPLEMENTATION_PLAN.md`,
+`docs/REPOSITORY_MAP.md`, `docs/KNOWN_ISSUES.md`, and this session entry. PR CI, package manifests,
+workspace YAML, lockfile, bootstrap, source, runtime, tests, fixtures, templates, release metadata,
+artifacts, deployment, rollback, and submission files are unchanged.
+
+### Decisions
+
+Use exact SHA-scoped main concurrency and run-unique manual concurrency with cancellation disabled so
+every unrelated validation remains independent. Require manual dispatch itself to originate on
+`refs/heads/main`, making blank input unambiguously mean current main. Treat only 40-hex commit IDs as
+immutable operator input and move that untrusted value through an environment variable and validated
+step output, never shell interpolation. Preserve the Phase 7.2 action pins and PR CI blob exactly.
+
+### Validation performed
+
+Tracked bootstrap passed with Node `v24.14.0`, pnpm `11.9.0`, frozen 259-package install, zero
+downloads, supply-chain policy, and Prettier `3.9.5`. Changed-file Prettier, YAML parsing, and
+`git diff --check` pass. The focused workflow audit passes trigger/filter, read-only permission,
+secret/token/write absence, immutable pins, fixed runner/toolchain, exact checkout, disabled credential
+persistence, resolved-SHA comparison, root lock cache, frozen install, project validation, timeout,
+concurrency, input-taint, and no-side-effect checks. Git Bash syntax passes 3/3 multiline blocks; the
+manual selector passes 4/4 cases for blank main, valid uppercase SHA normalization, shell-like input
+rejection, and non-main dispatch rejection. PR CI remains exact blob
+`9217bbe025a09c10d095159b78c91ba52cd2872c`, and package/workspace/lock/bootstrap files are unchanged.
+
+The first formatter command reproduced the documented fallback-pnpm root-bin resolution limitation;
+the process-local root bin fixed it. Later Prettier checks identified and formatted only the changed
+release workflow and repository-map table, then passed. Bash harness attempts initially exposed only
+Windows argument quoting, .NET environment API, and empty-environment propagation defects; they changed
+no repository file, and the corrected stdin-based syntax and selector checks passed without a workflow
+correction.
+
+### Validation intentionally deferred
+
+Local lint/typecheck/tests/build/smoke, full Phase 6 Level D, evaluation, browser/E2E, Mac, live
+credentials/provider/model, templates 7.4, version/tag/changelog 7.5, artifacts/deployment/rollback
+7.6, full release/RC/fresh-clone 7.7, Phase 8, merge, and every runtime feature were not run or started.
+The changed `workflow_dispatch` is not safely the default-branch workflow before merge, so its first
+real dispatch is deliberately deferred to independent post-merge exact-main QA and remains the
+publication gate.
+
+### Known issues
+
+GitHub CLI is unavailable on the Windows host. The in-app browser is currently policy-blocked from
+opening `github.com`, so the assigned main CI run/job is retained as authoritative start evidence and
+Git commit/tree/parents were independently proven after fetch. The repository remains private and live
+DataHub smoke remains credential-gated; neither changes the workflow implementation.
+
+### Exact next step
+
+Complete the final exact diff/secret/generated-residue/ancestry/process/port audit, create one additive
+conventional commit, normal-push `codex/phase-7-3-main-release-validation`, open exactly one Draft PR
+against unchanged current `main`, and require that exact head's `PR CI` run/job to reach terminal
+SUCCESS. Do not merge, mark Ready, dispatch the pre-merge manual workflow, or start Slice 7.4+.
