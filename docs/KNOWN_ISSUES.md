@@ -2,17 +2,17 @@
 
 Last updated: 2026-07-22.
 
-- Integrated Phase 6 main is exact merge `d18ecf2bbd1799de8374ee8390da40f170816741` with successful
-  main CI run `29886862413`, job `88819080470`. The Windows Level D checkpoint is locally complete on
-  `codex/phase-6-checkpoint`: both stable-input full matrices pass 37/37 files and 345/345 tests, six
-  typechecks/builds, built health/readiness smoke, deterministic seven-case evaluation, fixture browser
-  flow, blast-radius unknown/truncation coverage, and sanitized Markdown download/sample inspection.
-  The first production dependency audit found GHSA-`v2hh-gcrm-f6hx` in transitive `fast-uri` 3.1.3 and
-  4.1.0; narrow workspace overrides now resolve only patched 3.1.4/4.1.1, frozen install and affected
-  API validation pass, and `pnpm audit --prod` reports zero known vulnerabilities. Exact-head Draft PR
-  CI remains the publication condition before closing existing Issue #28 and its sole-issue Phase 6
-  milestone. Live credentials/DataHub/model network, Mac, authentication, sharing/storage, deployment,
-  merge, Phase 7, and further product extensions remain deferred.
+- Phase 6 is integrated through normal merge `cb1758fec4ca358df7af62f1e7f5f0aedd30ddb6` (tree
+  `a29a021f4bfb2c115b24e58f4b9cdfbe5a7aacc8`; parents
+  `d18ecf2bbd1799de8374ee8390da40f170816741` and
+  `32eabf8cbeba9e24bfe1085b6f4f7ad509c705b8`). Exact main CI run `29890249461`, job
+  `88829098894`, passed; Issue #28 and milestone 7 are closed, while the branch and task history remain
+  retained. Phase 7.1 repository hygiene starts from that exact checkpoint. Its 108-file inventory is
+  clean; existing ignore/attribute rules cover the current workspace narrowly, root/workspace/lock
+  metadata is consistent after adding the missing MIT package field, and the tracked Windows frozen
+  bootstrap passes. Exact-head Draft PR CI and independent Slice 7.1 QA remain required. This evidence
+  does not replace credential-gated live DataHub validation, Mac coverage, deployment, release,
+  submission, or any Phase 7.2+ gate.
 
 - Phase 6 Slice 6.3 is merged through PR #35 at exact main merge
   `aa853d7b1dd2fdbeca45d08766643ba18ca2aa53` (tree

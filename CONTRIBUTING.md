@@ -4,10 +4,14 @@
 
 1. Read `CODEX.md` and the current state documents.
 2. Pick one incomplete vertical slice with explicit acceptance criteria.
-3. Branch from current `main`, for example `slice/submit-incident`.
+3. Fetch and verify current `main`, then create one scoped branch such as `codex/phase-7-1-repository-hygiene`.
 4. Change only the minimum files and direct tests required by the slice.
 5. Run slice-level validation, update docs, and create one conventional commit.
-6. Push and open a pull request using `.github/pull_request_template.md`.
+6. Push normally and open one Draft pull request using `.github/pull_request_template.md`; require the
+   exact-head CI result before handing the slice to independent QA.
+
+Start from the [README quick start](README.md#quick-start). The tracked platform bootstrap enforces the
+repository's Node and pnpm contract and installs dependencies with the frozen lockfile.
 
 ## Commands
 
@@ -32,10 +36,8 @@ generated build output, local `.env` files, or credentials copied from chats.
 - The second machine works on an assigned branch and avoids changing integration-owned files unless
   the pull request explicitly coordinates the change.
 - Use one GitHub issue per slice and one pull request per coherent outcome.
-- Rebase on current `main` before starting and immediately before final validation.
+- Verify the exact base before starting. If `main` advances after publication, coordinate the additive
+  integration strategy with the owner; do not rebase or force-push shared history without explicit
+  authorization.
 - Do not edit the same vertical slice concurrently on both machines.
-
-Recommended lanes after the Phase 1 contracts are stable:
-
-- Integration/Windows: API, agent core, metadata adapters, shared contracts, CI.
-- Mac: web experience, fixture scenarios, evaluation cases, and visual QA.
+- Use GitHub issues and pull requests as the coordination plane; task chat is not shared project state.
