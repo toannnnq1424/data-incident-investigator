@@ -3399,3 +3399,75 @@ present for validation but no generated artifact is tracked.
 Format and audit the final docs/config diff, create one additive conventional commit, normal-push
 `codex/phase-6-checkpoint`, open one Draft PR based on unchanged exact `main`, wait for exact-head CI
 SUCCESS, then close existing Issue #28 and milestone 7 without merging or starting Phase 7.
+
+## 2026-07-22 — Phase 7 Slice 7.1 repository hygiene
+
+### Objective
+
+Make the repository clean, reproducible, and contributor-safe on Windows from exact Phase 6 merge
+`cb1758fec4ca358df7af62f1e7f5f0aedd30ddb6`, without changing runtime behavior, inspecting or editing
+workflow implementation, or starting any Phase 7.2+ or release task.
+
+### Completed
+
+Reverified exact `origin/main`, tree `a29a021f4bfb2c115b24e58f4b9cdfbe5a7aacc8`, both merge parents,
+default branch `main`, and successful main CI run `29890249461`/job `88829098894` before creating
+`codex/phase-7-1-repository-hygiene`. Audited all 108 tracked paths, ignored/untracked state, file modes,
+EOL attributes, generated/credential/temp patterns, package manifests, six workspace members, seven
+lock importers, and the current contributor-facing repository documents.
+
+The inventory found no tracked or untracked generated residue, credential, secret signature, log,
+cache, local tool/binary, editor/OS junk, conflict marker, or tracked-ignored path. Existing ignore and
+attribute rules passed every actual/probe case, so they remain unchanged. Added only the missing root
+MIT package metadata and corrected stale Phase 0/1.1 README, contribution workflow, repository map,
+Phase 6 known state, setup checklist evidence, plan, and this handoff.
+
+### Files changed
+
+`package.json`, `README.md`, `CONTRIBUTING.md`, `docs/REPOSITORY_MAP.md`,
+`docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md`, `docs/RELEASE_CHECKLIST.md`, and this session log.
+No source, test, fixture, `.github` workflow, `.gitignore`, `.gitattributes`, workspace YAML, lockfile,
+dependency, version, changelog, artifact, deployment, rollback, release, or submission file changed.
+
+### Decisions
+
+Retain `.gitignore` and `.gitattributes` because exact probes prove they already cover current outputs
+without hiding legitimate inputs. Treat the repository-level MIT file as authoritative and add its
+matching root package field only; private workspace packages inherit repository terms and do not need
+duplicated publish metadata. Preserve `0.1.0`, all dependency resolutions, and additive Git history.
+
+### Validation performed
+
+- Tracked Windows bootstrap: Node `v24.14.0`, exact pnpm `11.9.0`, supply-chain policy PASS, frozen
+  259-package install with zero downloads and lockfile resolution skipped, Prettier `3.9.5` static check
+  PASS.
+- Recursive workspace listing: exactly one private root and six expected private workspace packages,
+  all `0.1.0`; workspace directory and lock-importer comparison has no missing or extra entry.
+- All 108 tracked files are regular mode `100644` and `i/lf`, `w/lf`, `text=auto eol=lf`; generated,
+  secret-like, nonblank credential, conflict-marker, debug/temp, tracked-ignored, and ignore-probe audits
+  PASS.
+- Final changed-file Prettier check, `git diff --check`, exact scope/name/stat/ancestry review, and final
+  tracked/untracked/generated-residue audit PASS. The only ignored paths are the expected root and six
+  workspace `node_modules/` dependency links created by bootstrap. Package lint/typecheck was not
+  required because the manifest-only change adds non-executable license metadata.
+
+### Validation intentionally deferred
+
+Unchanged Phase 6 format/lint/typecheck/tests/build/smoke, evaluation, browser/download, production
+audit, and full Level D were not rerun. `.github` workflow behavior and all Phase 7.2–7.7 CI/release,
+SemVer/changelog, artifact/deployment/rollback, and full release-validation work remain deferred, as do
+Mac, live credentials/DataHub/model network, repository publicity, tag, release, submission, and every
+product feature.
+
+### Known issues
+
+The Windows host does not expose the documented GitHub CLI prerequisite on `PATH`; authenticated
+browser access provides the scoped metadata and Draft PR fallback without adding a repository tool.
+The repository remains private and live DataHub smoke remains credential-gated by design. Neither is a
+Slice 7.1 repository-hygiene blocker.
+
+### Exact next step
+
+After the one additive commit is normal-pushed, exactly one Draft PR is open against unchanged `main`,
+and that exact head reaches terminal CI SUCCESS, hand Slice 7.1 to independent QA. Do not merge, start
+Slice 7.2, alter release/tag/deployment/submission state, or delete/archive/hide/pin any branch or task.

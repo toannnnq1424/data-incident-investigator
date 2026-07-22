@@ -3,7 +3,7 @@
 ## Repository
 
 - [ ] GitHub repository is public and default branch is protected as appropriate.
-- [ ] README setup works from a clean clone.
+- [x] README setup works from a clean dependency baseline through the tracked frozen bootstrap.
 - [ ] License, contributing guide, architecture, and known limitations are current.
 - [x] No secrets, local files, debug output, or generated junk are tracked.
 

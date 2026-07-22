@@ -4065,6 +4065,116 @@ Slack/Jira, autonomous execution, and every further product extension.
 
 Finalize branch/PR workflow, full CI, release validation, smoke tests, and merge readiness.
 
+### Slice 7.1 — Repository hygiene
+
+Status: locally complete on `codex/phase-7-1-repository-hygiene` from exact Phase 6 checkpoint merge
+`cb1758fec4ca358df7af62f1e7f5f0aedd30ddb6` (tree
+`a29a021f4bfb2c115b24e58f4b9cdfbe5a7aacc8`; parents
+`d18ecf2bbd1799de8374ee8390da40f170816741` and
+`32eabf8cbeba9e24bfe1085b6f4f7ad509c705b8`). Exact main CI run `29890249461`, job
+`88829098894`, was verified successful before this plan or any repository change.
+
+Objective: make the repository clean, reproducible, and contributor-safe without changing runtime,
+API, provider, evaluation, or UI behavior. Audit first and change only proven repository-hygiene gaps.
+
+Audit inventory:
+
+- Enumerate every tracked path and classify generated build/coverage output, local environment or
+  credential files, logs, temporary harness/output files, editor/OS junk, local tools, caches,
+  downloaded binaries, and secret-like names or content.
+- Inspect only root hygiene/configuration metadata and package manifests required to prove workspace,
+  engine, package-manager, license, and lock consistency; do not rescan application source.
+- Compare actual ignored and untracked workspace outputs with `.gitignore`, and compare tracked file
+  types with `.gitattributes`, using narrow cross-platform rules that preserve legitimate source,
+  documentation, fixtures, and examples.
+- Review the repository map, contributor-facing README status/quick start, known issues, release
+  checklist, implementation plan, and session memory for hygiene-relevant Phase 0 staleness.
+
+Minimum files:
+
+- `docs/IMPLEMENTATION_PLAN.md`, `docs/REPOSITORY_MAP.md`, `docs/KNOWN_ISSUES.md`,
+  `docs/RELEASE_CHECKLIST.md`, `docs/SESSION_LOG.md`, `README.md`, and `CONTRIBUTING.md` for the planned
+  audit and truthful contributor/repository state. The audit specifically proved that the contribution
+  guide still prescribed Phase 1-era lanes and rebasing published work.
+- `.gitignore` and `.gitattributes` only where the inventory proves a narrow missing rule.
+- Root `package.json`, `pnpm-workspace.yaml`, and `pnpm-lock.yaml` only if their metadata or generated
+  dependency graph is inconsistent; do not change version or changelog semantics.
+- No `.github` workflow, product source, API/schema, test behavior, fixture, deployment/rollback,
+  release artifact, tag, or submission file unless a release-blocking hygiene defect is first
+  documented and returned to the controller for scope.
+
+Acceptance criteria:
+
+- No tracked generated build output, coverage, local `.env` or credentials, logs, temporary harnesses
+  or outputs, editor/OS junk, local tools, caches, downloaded binaries, or secret-like files remain.
+- `.gitignore` covers actual local outputs without hiding legitimate repository inputs, and
+  `.gitattributes` applies narrow LF/text and binary rules suitable for Windows and POSIX contributors.
+- Root/workspace package names, private status, Node engine, exact package manager, license metadata,
+  workspace membership, dependency links, override state, and lock importers are truthful and frozen-
+  install consistent. Slice 7.1 performs no SemVer or changelog work.
+- Repository map, README current status and quick start, known issues, release checklist, plan, and
+  session state are current where directly required for repository hygiene, without submission or
+  marketing polish.
+- The targeted validation leaves no tracked or untracked generated residue and makes no product,
+  source, API, UI, fixture, evaluation, workflow, release, deployment, or rollback behavior change.
+- One coherent additive conventional commit is normal-pushed to one Draft PR based on current `main`;
+  its exact-head CI must reach terminal SUCCESS before handoff. Do not merge or delete/archive/pin the
+  branch, PR, task, or conversation.
+
+Deferred to Slices 7.2–7.7: CI workflow changes, branch/PR policy automation, release-validation
+semantics, changelog/SemVer/release naming, artifact or deployment/rollback implementation, and full
+release Level D validation. Phase 8 submission, repository publicity, tags, releases, deployment, and
+product features are also out of scope.
+
+Exact targeted Windows validation (one focused Level C-like hygiene pass):
+
+- run `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/bootstrap-worktree.ps1` only if the
+  managed worktree does not already have the frozen dependency state required by the checks;
+- `pnpm exec prettier --check <changed docs/config files>`;
+- `git diff --check`;
+- compare all workspace manifests with `pnpm-workspace.yaml` and the lockfile importers, then run
+  `pnpm install --frozen-lockfile --offline` only if a manifest/workspace/lock edit requires proof;
+- audit tracked, untracked, ignored, generated, secret-like, conflict-marker, debug, and temporary
+  residue using the exact inventory and `git check-ignore` probes;
+- run package-scoped lint/typecheck only if a manifest or executable configuration edit affects a
+  package; do not rerun unchanged Phase 6 validation, evaluation, browser, production audit, builds,
+  smoke, or full Level D commands. Exact-head CI is the integration proof.
+
+Local Windows result (2026-07-22):
+
+- The exact starting commit, tree, parents, `origin/main`, default branch, and successful main CI above
+  were reverified before branch creation or edits. The GitHub repository remains private, as expected
+  before Phase 8; Issue #28 and milestone 7 are closed and their history remains retained.
+- The inventory contains 108 tracked regular files, all mode `100644` and all LF in the index and worktree.
+  No generated build/coverage output, dependency store, cache, local `.env`, nonblank credential,
+  secret-like file/signature, log, temporary output/harness, editor/OS junk, local tool, downloaded
+  binary, conflict marker, or tracked-ignored path was found. The three paths containing `report` are
+  legitimate E2E/integration source files.
+- Existing `.gitignore` probes correctly cover dependency trees/store, root and nested build output,
+  coverage, all local env variants while preserving `.env.example`, logs, macOS/Windows junk, IDE
+  state, TypeScript build info, local tools, and evaluation output. Existing `.gitattributes` applies
+  `text=auto eol=lf` to every current tracked type and narrowly marks common image/PDF formats binary.
+  Neither file needed a speculative change.
+- All six workspace directories exactly match the six non-root lock importers; the root importer,
+  workspace links, exact `pnpm@11.9.0`, Node `>=24`, private `0.1.0` package state, two patched
+  `fast-uri` overrides, and lockfile remain consistent. Root `package.json` now declares the existing
+  MIT license; no version, dependency, workspace YAML, or lockfile change was required.
+- README status/runtime/quick-start, the contribution workflow, repository map, Phase 6 known state,
+  and the directly proved release-checklist setup item now reflect the integrated repository. No
+  product/source/API/UI/test/fixture/workflow/release/deployment/submission behavior changed.
+- The tracked Windows bootstrap passed with Node `v24.14.0`, pnpm `11.9.0`, a frozen 259-package graph,
+  zero downloads, an up-to-date lockfile, supply-chain policy verification, and Prettier `3.9.5`.
+  Recursive workspace listing found exactly the root plus six expected private packages. Final
+  changed-file Prettier, `git diff --check`, manifest/importer, tracked/untracked/ignored, secret,
+  generated-residue, conflict/debug, scope, and ancestry checks passed. Package static checks were not
+  repeated because the only manifest edit is non-executable license metadata. The final ignored state
+  contains only the expected root and six workspace `node_modules/` dependency links from bootstrap;
+  there is no ignored store, build, coverage, evaluation, log, or temporary output.
+
+Publication and independent QA remain separate: create one additive conventional commit, normal-push
+the branch, open exactly one Draft PR against the still-current `main`, and require exact-head CI
+terminal SUCCESS. Do not merge or begin Slice 7.2.
+
 ## Phase 8 — Submission
 
 Public repository, deployment URL, screenshots, video, Devpost copy, architecture explanation, known
