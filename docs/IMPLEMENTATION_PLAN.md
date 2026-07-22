@@ -4253,6 +4253,104 @@ Publication and independent QA remain separate: finish the final diff/residue/pr
 create one additive conventional commit, normal-push, open exactly one Draft PR against unchanged
 `main`, and require that exact head's `PR CI` job to reach terminal SUCCESS. Do not merge or begin 7.3.
 
+### Slice 7.3 — Main and manual release validation
+
+Status: locally complete on `codex/phase-7-3-main-release-validation` from exact integrated Phase 7.2 main
+`f29f6f9d3fec4696a53902b1b94f496b2f0b26d6` (tree
+`58dd600adbb838ef2e01b1432948b209c4dd516a`; parents
+`636f0c4fe7d73958ce99ea9f36a39280ed64d7be` and
+`c6f3ed52439774522d369eb1658854182e5dd507`). Exact main CI run `29926761530`, job
+`88945813753`, is the authoritative successful starting gate.
+
+Objective: make push-to-`main` CI and operator-triggered release validation deterministic,
+least-privilege, bounded, and auditable without changing product/runtime behavior, PR CI, release
+metadata, artifacts, deployment, rollback, or publication behavior. Main pushes must validate their
+exact event commit. Manual validation must run only the project-tracked read-only validation against an
+explicit 40-character commit SHA, or the current `main` commit when the input is blank, and must report
+the resolved commit before validation.
+
+Minimum files:
+
+- `.github/workflows/ci.yml` for the stable main `validate` check, exact event-SHA checkout,
+  deterministic toolchain/cache, bounded concurrency, timeout, and least-privilege execution.
+- `.github/workflows/release.yml` for safe `workflow_dispatch` input validation, exact immutable
+  checkout and reporting, the same deterministic validation contract, and removal of artifact upload
+  or any other repository/release side effect.
+- `docs/IMPLEMENTATION_PLAN.md`, `docs/REPOSITORY_MAP.md`, `docs/KNOWN_ISSUES.md`, and
+  `docs/SESSION_LOG.md` for the planned contract, workflow map, deferred post-merge gate, limitations,
+  and exact handoff.
+- `.github/workflows/pr-ci.yml` must remain byte-for-byte identical to the Phase 7.2 main baseline.
+  Root package/workspace/lock/bootstrap files change only if a shared correctness prerequisite is
+  proven first; none is currently identified.
+
+Acceptance criteria:
+
+- Push-to-`main` keeps one stable `validate` job with no path filter, checks out exactly
+  `github.sha`, disables persisted credentials, grants only read-only contents access, and prints then
+  verifies the resolved `HEAD` before running repository code.
+- Both workflows pin the GitHub-hosted Ubuntu image, Node `24.14.0`, pnpm `11.9.0`, and every action to
+  the already reviewed immutable commit used by PR CI; setup-node caches pnpm from the root
+  `pnpm-lock.yaml`; install remains `pnpm install --frozen-lockfile`; validation remains the tracked
+  `pnpm validate` command under a 20-minute job timeout.
+- Main concurrency isolates exact commit SHAs and never cancels another commit's validation. Manual
+  runs have run-unique concurrency and never cancel or replace another selected commit's validation.
+- `workflow_dispatch` is accepted only from `refs/heads/main`; blank `commit_sha` selects the dispatch
+  event's current main SHA, and a nonblank value must match exactly 40 hexadecimal characters. The
+  untrusted input crosses into shell only through an environment variable, is never interpolated into
+  shell source, and checkout receives only the validated step output.
+- Manual validation checks out the selected SHA from the current repository with depth one and no
+  persisted credential, prints and compares the resolved commit, and performs no artifact upload,
+  publish, release, tag, deploy, repository mutation, write permission, secret access, or retained
+  token use.
+- Static YAML/security/scope/invariant checks, changed-file formatting, diff/secret/residue review, and
+  exact-head Draft PR CI pass. One additive conventional commit is normal-pushed to exactly one Draft
+  PR against current `main`; do not merge or mark Ready.
+
+Deferred: Issue/PR templates and policy automation (7.4); SemVer, changelog, tag, and release metadata
+(7.5); artifact packaging/upload, deployment, rollback, publish, and release creation (7.6); the full
+release/RC/fresh-clone validation and publication gate (7.7); Phase 8; Mac; browser/evaluation/full
+Phase 6 Level D; live DataHub/model credentials; and every product/runtime feature. Because a changed
+`workflow_dispatch` definition is not the default-branch workflow before merge, this implementation
+turn will not dispatch or weaken it: an independent post-merge dispatch from exact `main`, with the
+resolved SHA proven in its logs, is the publication gate.
+
+Exact targeted Windows validation:
+
+- `pnpm exec prettier --check .github/workflows/ci.yml .github/workflows/release.yml docs/IMPLEMENTATION_PLAN.md docs/REPOSITORY_MAP.md docs/KNOWN_ISSUES.md docs/SESSION_LOG.md`;
+- `git diff --check` and a focused YAML/event/job/permission/action-pin/runner/timeout/checkout/cache/
+  frozen-install/concurrency/input-taint/side-effect audit of only the two changed workflows;
+- compare `.github/workflows/pr-ci.yml` byte-for-byte with exact base and prove package manifests,
+  `pnpm-workspace.yaml`, `pnpm-lock.yaml`, and bootstrap scripts are unchanged;
+- inspect exact base/head/tree/parent/diff/files plus changed-file secret signatures, generated
+  residue, worktree cleanliness, repository-related processes, and expected application ports;
+- require the Draft PR's exact-head `PR CI` run and `validate` job to reach terminal SUCCESS. Do not
+  run local full Level D, evaluation, browser/E2E, or a pre-merge manual dispatch.
+
+Local Windows result (2026-07-22):
+
+- A no-prune fetch matched the assigned main commit, tree, both parents, and the authoritative
+  successful main CI run/job before branch creation. The tracked bootstrap passed with Node
+  `v24.14.0`, exact pnpm `11.9.0`, the frozen 259-package graph, zero downloads, supply-chain policy,
+  and Prettier `3.9.5`.
+- The docs-first contract was recorded while `docs/IMPLEMENTATION_PLAN.md` was the only changed path.
+  Main CI now checks and reports the exact event SHA; manual validation accepts only blank/current-main
+  or a 40-hex commit, checks and reports the resolved SHA, and contains no artifact or external
+  mutation step. Both use read-only contents, no persisted checkout credential, immutable action pins,
+  Ubuntu 24.04, a 20-minute timeout, exact Node/pnpm, root-lockfile cache, frozen install, and the
+  repository-owned validation command.
+- Changed-file Prettier and `git diff --check` pass. The focused audit passes every trigger, permission,
+  checkout, cache, toolchain, timeout, concurrency, input-taint, pin, and side-effect invariant. Git
+  Bash parses all three multiline blocks, and the exact manual selector passes four cases: blank main,
+  uppercase immutable SHA normalization, shell-like input rejection, and non-main dispatch rejection.
+- `.github/workflows/pr-ci.yml` retains exact blob
+  `9217bbe025a09c10d095159b78c91ba52cd2872c`; package manifests, workspace YAML, lockfile, and both
+  bootstrap scripts are unchanged. No product source, runtime, test, fixture, dependency, release
+  metadata, template, artifact, deployment, rollback, publish, tag, or submission file changed.
+- Local full Level D, evaluation, browser/E2E, and pre-merge manual dispatch were intentionally not
+  run. Publication remains separate: one additive conventional commit, one normal push, exactly one
+  Draft PR, and terminal SUCCESS for its exact-head `PR CI`/`validate` job. Independent QA must perform
+  the first safe manual dispatch only after this workflow is merged onto exact current `main`.
+
 ## Phase 8 — Submission
 
 Public repository, deployment URL, screenshots, video, Devpost copy, architecture explanation, known
