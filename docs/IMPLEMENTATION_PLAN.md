@@ -4452,6 +4452,167 @@ Local Windows result (2026-07-22):
   limitations; they changed no repository state. The corrected direct process diagnostic and listener/
   residue checks passed.
 
+### Slice 7.5 — SemVer policy and changelog
+
+Status: locally complete on `codex/phase-7-5-semver-changelog` from exact integrated Phase 7.4 main
+`dff1fb416610060f5e5fad2d9289605ab7de1781` (tree
+`f1c640d7ee8a8d89e10387694979eedc5ebf0c74`; parents
+`79430f6b5f323b5acab2e4dd834ada39dbd4efc5` and
+`53ed4b4806013a7436d8741d8b14402d8ec407b5`).
+
+Objective: define one truthful conventional SemVer and changelog contract for the private monorepo,
+curate the completed unreleased product/security/reliability/documentation work, and give later
+operators explicit checklists for the Phase 7.7 `v1.0.0-rc.1` cut and eventual Phase 8 `v1.0.0`
+release without performing either release or changing runtime behavior.
+
+Minimum files:
+
+- `docs/VERSIONING.md` for the product/package version source of truth, pre-release syntax,
+  compatibility and breaking-change rules, workspace-alignment rules, and deferred cut procedure.
+- `CHANGELOG.md` for a Keep a Changelog-style `Unreleased` record based only on integrated repository
+  evidence, with no invented release, date, contributor, issue, API guarantee, or comparison link.
+- `CONTRIBUTING.md` and `docs/RELEASE_CHECKLIST.md` for narrow contributor/operator links and the later
+  RC/final cut checklists.
+- `docs/IMPLEMENTATION_PLAN.md`, `docs/REPOSITORY_MAP.md`, `docs/KNOWN_ISSUES.md`, and
+  `docs/SESSION_LOG.md` for the slice contract, documentation ownership, current limitations,
+  validation evidence, and exact handoff.
+- Root/workspace `package.json` files, `pnpm-workspace.yaml`, and `pnpm-lock.yaml` remain unchanged
+  unless the audit proves a consistency defect. The current aligned private `0.1.0` manifests are a
+  development baseline, not evidence of a published release; changing them now would preempt 7.7.
+
+Acceptance criteria:
+
+- Every version-bearing package manifest is enumerated; package names, private state, versions,
+  workspace links, workspace membership, and lock importers are mutually consistent. Existing local
+  and remote tag/release state is recorded without creating or changing it.
+- `docs/VERSIONING.md` makes the repository root manifest the product version source of truth; defines
+  SemVer major/minor/patch meaning for the product's documented CLI, HTTP/schema, configuration,
+  report, fixture/demo, and supported-environment contracts; defines `-rc.N` pre-releases; and says
+  when all private workspace package versions must remain aligned.
+- `CHANGELOG.md` has `Unreleased` plus appropriate Added/Changed/Fixed/Security documentation, contains
+  only evidence already integrated on the starting main, and does not imply that `0.1.0`,
+  `1.0.0-rc.1`, or `1.0.0` has been tagged, published, or released.
+- The Phase 7.7 RC checklist identifies the exact validated commit, updates all seven aligned manifest
+  versions to `1.0.0-rc.1` in one change, regenerates the lockfile only if pnpm records those versions,
+  moves the curated changelog entries to an actual dated release section, runs the separately scoped
+  release gate, and only then creates the matching tag and Draft GitHub Release. Phase 7.7 keeps that
+  Release Draft and must not publish it; publication requires a separately authorized later gate. The
+  Phase 8 final checklist likewise uses `1.0.0` only after acceptance and validation.
+- No workflow, source, runtime, test, fixture, dependency, lockfile, artifact, deployment, rollback,
+  publish, tag, GitHub Release, or product behavior changes. One additive conventional commit is
+  normal-pushed to one Draft PR against unchanged current `main`; its exact-head `PR CI` / `validate`
+  job reaches terminal SUCCESS without rerun. Do not mark Ready, merge, or begin 7.6+.
+
+Deferred: every version bump, lockfile regeneration, release date, changelog release section,
+comparison link, tag, GitHub Release, artifact/package publication, deployment, rollback, and full
+release/RC/fresh-clone gate; all workflow/runtime/source/test/fixture/dependency changes; Phase 7.6,
+Phase 7.7, Phase 8, Mac, live credentials, and product features.
+
+Exact targeted Windows validation:
+
+- enumerate the root and six workspace manifests, parse every SemVer string, compare workspace
+  membership and lock importers, and prove manifests/workspace YAML/lockfile remain unchanged;
+- inspect local/remote tag and GitHub release state read-only, then scan the diff for accidental
+  `v1.0.0-rc.1`/`v1.0.0` release claims, dates, tags, publish/deploy steps, or false links;
+- run direct root Prettier only on changed Markdown files, `git diff --check`, UTF-8/LF/final-newline
+  checks, local-link/reference checks, documentation-consistency checks, and the changed-path allowlist;
+- scan changed content for secret signatures, nonblank credentials, sensitive incident/provider data,
+  conflict markers, generated residue, and out-of-scope workflow/runtime/source/test/fixture/dependency
+  changes;
+- verify exact base/head/tree/parent/diff/ancestry, clean worktree, repository processes and listeners,
+  Draft PR OPEN/DRAFT/CLEAN or mergeability state, and the exact-head `PR CI` run/job terminal SUCCESS.
+  Do not run local full tests, build, smoke, evaluation, browser E2E, or full Level D.
+
+Local Windows result (2026-07-22):
+
+- The no-prune fetch matched the assigned main commit, tree, and ordered parents exactly;
+  `HEAD`, `FETCH_HEAD`, and `origin/main` were identical and the detached worktree was clean before
+  branch creation. Bootstrap verified Node `v24.14.0`, pnpm `11.9.0`, the frozen 259-package graph,
+  and the supply-chain policy. Its final `pnpm exec` Prettier probe reproduced the documented
+  fallback-pnpm root-bin limitation; the installed direct root binary passed without a repository
+  workaround.
+- The version audit enumerated the root plus six workspace manifests. All seven are private, parse as
+  and align at `0.1.0`; all internal `@dii/*` links use `workspace:*`; the six workspace directories
+  match the six non-root lock importers plus root importer `.`. The root remains the only manifest
+  owning `pnpm@11.9.0` and the MIT license. Authenticated GitHub Browser and local Git inspection found
+  no tag or GitHub Release, and no prior changelog or version-policy file existed.
+- `docs/VERSIONING.md` now owns the coordinated product policy, compatibility/breaking-change rules,
+  pre-release identifiers, root version ownership, aligned private-workspace rule, immutable `v` tag
+  convention, and exact deferred RC/final procedures. `CHANGELOG.md` contains one unreleased,
+  evidence-based Added/Changed/Fixed/Security record and claims no release, date, contributor, issue,
+  comparison link, or API guarantee.
+- The release checklist now separates the unperformed Phase 7.7 `v1.0.0-rc.1` and Phase 8 `v1.0.0`
+  operations. All seven manifests remain `0.1.0`; workspace YAML, lockfile, three workflows, product
+  source, tests, fixtures, dependencies, artifacts, deployment, rollback, tag, and release state are
+  unchanged.
+- Direct root Prettier, the eight-path allowlist, `git diff --check`, SemVer parsing, changelog
+  structure, absent release headings/reference links, UTF-8 without BOM, LF/final-newline, local-link,
+  secret-signature, conflict-marker, manifest/workspace/lock/workflow identity, and local-tag audits
+  pass. Ports `3001`/`5173` are free, no repository process remains, and the generated bootstrap store
+  was removed; only the seven expected ignored dependency links remain.
+- Local tests, build, smoke, evaluation, browser E2E, full Level D, Mac, and live credential checks were
+  intentionally not run because their executable inputs are unchanged. Publication remains separate:
+  one additive conventional commit, one normal push, exactly one Draft PR, exact identity/diff/state
+  verification, and terminal SUCCESS for that exact head's `PR CI` / `validate` job without rerun.
+
+#### QA correction — Phase 7.7 RC Draft Release gate
+
+Status: locally complete from exact Phase 7.5 commit
+`654277839e4b0a0ee3f38cdd13d1903bac48517c` (tree
+`d28d42e12e4656224e3f2a04d673fffb96e76f10`; parent
+`dff1fb416610060f5e5fad2d9289605ab7de1781`) on the existing branch and Draft PR #46.
+
+Objective: close the release-policy ambiguity that allowed Phase 7.7 to create a GitHub Release
+without explicitly keeping it Draft. Require the `v1.0.0-rc.1` GitHub Release to be created as Draft,
+remain Draft throughout Phase 7.7, and never be published by that phase; publication requires a
+separate later authorization and gate.
+
+Minimum files: `docs/VERSIONING.md` and `docs/RELEASE_CHECKLIST.md` for the policy/checklist fix, plus
+this plan and `docs/SESSION_LOG.md` for the required narrow persistent evidence. Do not change any
+manifest, workspace YAML, lockfile, workflow, changelog content, source, runtime, test, fixture,
+dependency, artifact, deployment, rollback, tag, or release state.
+
+Acceptance criteria:
+
+- The coordinated release procedure distinguishes an RC Draft Release from publication and explicitly
+  prohibits Phase 7.7 from publishing it.
+- The Phase 7.7 checklist requires the matching GitHub Release to be created as Draft and kept Draft
+  through the phase; publication remains deferred to a separately authorized later gate.
+- Existing SemVer ownership, workspace alignment, changelog, immutable tag, final `v1.0.0`, and
+  no-release-in-Phase-7.5 rules remain unchanged.
+- Exact before/after wording evidence, changed-file Prettier, `git diff --check`, local links,
+  version/changelog invariants, four-path allowlist, secret/conflict/UTF-8/LF checks, unchanged
+  manifest/lock/workflow proof, tag/release absence, and clean process/port checks pass. Do not run
+  full tests, build, smoke, evaluation, or browser E2E.
+- Create one new additive conventional commit on the existing branch, normal-push it to existing Draft
+  PR #46, verify OPEN/DRAFT/conflict-free state and the new exact identities/diff, then require the new
+  exact-head `PR CI` / `validate` job to reach terminal SUCCESS without rerun. Do not amend, rebase,
+  force-push, duplicate, mark Ready, merge, or start 7.6.
+
+Deferred: every manifest/lock/version/changelog-release change, tag or GitHub Release creation,
+publication, artifact, deployment, rollback, Phase 7.6, Phase 7.7 execution, Phase 8, and product work.
+
+Local Windows result (2026-07-23):
+
+- The exact pre-edit reproducer found `docs/RELEASE_CHECKLIST.md:33-34` instructing creation of the
+  matching GitHub Release and `docs/VERSIONING.md:95-96` permitting Release creation after gates, with
+  neither location requiring Draft state or prohibiting Phase 7.7 publication.
+- The coordinated procedure and explicit Phase 7.7 policy now require the matching RC GitHub Release
+  to be created only as Draft, kept Draft throughout the candidate phase, and not published by Phase
+  7.7. The checklist independently requires the Draft state and records that publication is deferred
+  until a separately authorized later publication gate.
+- The corrected wording is consistent in policy, checklist, and the original Slice 7.5 acceptance
+  criteria; the ambiguous old phrases are absent. Existing root version ownership, seven-package
+  alignment, SemVer/pre-release/tag rules, changelog contract, and final `v1.0.0` instructions remain
+  intact.
+- Targeted direct Prettier, `git diff --check`, three-path pre-session allowlist, local-link,
+  UTF-8/LF/final-newline, secret/conflict, SemVer/changelog, frozen manifest/workspace/lock/workflow,
+  local-tag, process, port, and residue checks pass. No executable input changed, so full tests, build,
+  smoke, evaluation, and browser E2E remain intentionally unrun.
+- Publication remains separate: append the required session evidence, run the final four-path audit,
+  create one new additive commit without history rewriting, normal-push the existing branch, retain
+  Draft PR #46, and require its new exact-head `PR CI` / `validate` SUCCESS without rerun.
+
 ## Phase 8 — Submission
 
 Public repository, deployment URL, screenshots, video, Devpost copy, architecture explanation, known

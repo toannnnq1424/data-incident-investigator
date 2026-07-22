@@ -1,7 +1,7 @@
 # Repository map
 
-Last verified: 2026-07-22 against exact integrated Phase 7.2 main and the Slice 7.3 main/manual
-validation layout.
+Last verified: 2026-07-22 against exact integrated Phase 7.4 main and the Slice 7.5 version-policy and
+changelog layout.
 
 ## Directories
 
@@ -34,6 +34,7 @@ validation layout.
 - `eslint.config.mjs`, `.prettierrc.json`: static quality rules.
 - `.env.example`: environment contract with blank credentials.
 - `LICENSE` and `CONTRIBUTING.md`: MIT terms and contributor workflow.
+- `CHANGELOG.md`: curated unreleased and released product changes under the coordinated SemVer policy.
 - `CODEX.md` and `AGENTS.md`: durable agent workflow.
 
 ## GitHub collaboration and validation
@@ -89,7 +90,7 @@ Product and design: `PRODUCT_SPEC.md`, `ARCHITECTURE.md`, `DATA_MODEL.md`, `API_
 `AGENT_DESIGN.md`, `FRONTEND_WORKFLOW.md`.
 
 Execution and quality: `IMPLEMENTATION_PLAN.md`, `TEST_STRATEGY.md`, `SECURITY.md`, `DEPLOYMENT.md`,
-`DECISIONS.md`, `LOCAL_ENVIRONMENT.md`, `KNOWN_ISSUES.md`, `SESSION_LOG.md`.
+`DECISIONS.md`, `LOCAL_ENVIRONMENT.md`, `KNOWN_ISSUES.md`, `SESSION_LOG.md`, `VERSIONING.md`.
 
 Submission: `DEMO_SCRIPT.md`, `DEVPOST_SUBMISSION.md`, `RELEASE_CHECKLIST.md`.
 

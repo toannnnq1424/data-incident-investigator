@@ -44,6 +44,17 @@ mode, minimal examples, and sanitized evidence.
 Use `feat:`, `fix:`, `test:`, `docs:`, `refactor:`, `chore:`, or `ci:`. Do not commit secrets,
 generated build output, local `.env` files, or credentials copied from chats.
 
+## Versioning and changelog
+
+Follow [`docs/VERSIONING.md`](docs/VERSIONING.md). Record notable user, operator, security,
+reliability, and documentation changes under `Unreleased` in [`CHANGELOG.md`](CHANGELOG.md). Call out
+breaking changes explicitly even before `1.0.0`.
+
+Do not change manifest versions during ordinary feature or documentation work. A scoped release task
+updates the root and all six private workspace manifests together, performs the deterministic
+lockfile check, finalizes the changelog with the actual cut date, and creates a tag or release only
+after the required exact-commit validation succeeds.
+
 ## Pull requests
 
 Open one Draft pull request per coherent outcome and complete `.github/pull_request_template.md` with
