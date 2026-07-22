@@ -5,22 +5,22 @@
 - [ ] GitHub repository is public and default branch is protected as appropriate.
 - [ ] README setup works from a clean clone.
 - [ ] License, contributing guide, architecture, and known limitations are current.
-- [ ] No secrets, local files, debug output, or generated junk are tracked.
+- [x] No secrets, local files, debug output, or generated junk are tracked.
 
 ## Validation
 
-- [ ] Clean `pnpm install --frozen-lockfile` succeeds.
-- [ ] Repository format, lint, type-check, tests, build, and smoke pass.
-- [ ] Full evaluation report is generated and reviewed.
-- [ ] Fixture-backed e2e passes.
+- [x] Clean `pnpm install --frozen-lockfile` succeeds.
+- [x] Repository format, lint, type-check, tests, build, and smoke pass.
+- [x] Full evaluation report is generated and reviewed.
+- [x] Fixture-backed e2e passes.
 - [ ] Real DataHub smoke passes when credentials are available.
 
 ## Deployment
 
-- [ ] Production API starts and `/health` succeeds.
+- [x] Production API starts and `/health` succeeds.
 - [ ] Web artifact points to the production API.
 - [ ] Public fixture demo completes end-to-end.
-- [ ] Timeout/provider error states are user-friendly.
+- [x] Timeout/provider error states are user-friendly.
 - [ ] Rollback target is identified.
 
 ## Submission

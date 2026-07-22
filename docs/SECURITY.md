@@ -94,6 +94,15 @@ environment variables. Logs must redact authorization headers, tokens, and full 
   complete UUID as the deterministic filename collision suffix, enforce ASCII traversal/device/control/
   header safety and a fixed length bound, return `no-store`/`nosniff`, and never persist the attachment.
 
+## Dependency hygiene
+
+Use the tracked bootstrap and frozen lockfile for checkpoint and CI installs. Production dependency
+audits must be clean before a security/readiness phase closes. A workspace override is acceptable only
+for the smallest advisory-specific patched transitive range, with lockfile integrity, resolved-version
+inspection, targeted affected validation, and a recorded removal path when the direct dependency adopts
+the patch. The Phase 6 checkpoint applies this rule only to vulnerable `fast-uri` 3.1.3/4.1.0
+resolutions, pinning the patched 3.1.4/4.1.1 releases accepted by their existing parent ranges.
+
 ## External systems
 
 Treat DataHub, model, Stitch, browser, and uploaded content as untrusted. Use least-privilege credentials

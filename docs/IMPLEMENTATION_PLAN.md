@@ -3886,6 +3886,181 @@ ESLint in `2056ms`, shared-types typecheck in `1548ms`, and exactly one affected
 2/2 files and 67/67 tests in `3.87s` (`4419ms` command wall). Additive publication/new exact-head CI
 remain pending; no deferred gate was run.
 
+### Phase 6 integration checkpoint — Level D closure
+
+Status: locally complete on `codex/phase-6-checkpoint` from exact integrated `origin/main`
+`d18ecf2bbd1799de8374ee8390da40f170816741` (tree
+`0110d4a2ae2b67b4056cb5219b6c7a209d1f821b`; parents
+`601f3616658780d0d51f7ccc46ff4e665f61d8db` and
+`eeb339ab5a58594a56ad3d01f9de4518ac0559eb`). Exact main CI run `29886862413`, job
+`88819080470`, was verified successful before this plan or any repository change.
+
+Objective: close Phase 6 with one Windows-only repository checkpoint over integrated Slices 6.1–6.6,
+the approved deterministic blast-radius extension, and `incident-markdown-v1`. Prove the complete
+credential-free fixture investigation, deterministic seven-case evaluation, runtime/input/output
+safety, graceful degradation, liveness/readiness, observable audit trail, confidence provenance,
+bounded blast radius, and stateless Markdown download. Add no product feature or extension, do not use
+Mac or live DataHub/model credentials, and stop before Phase 7.
+
+Minimum files:
+
+- This plan, `docs/KNOWN_ISSUES.md`, `docs/SECURITY.md`, `.env.example`,
+  `docs/RELEASE_CHECKLIST.md`, and `docs/SESSION_LOG.md` only where terminal evidence requires a
+  truthful Phase 6 closure update.
+- No product source, test/browser file, fixture, provider, evaluation contract, manifest, lockfile,
+  dependency, bootstrap, deployment behavior, or repository-map change unless a classified failing
+  gate proves the smallest Phase 6 acceptance blocker.
+
+Acceptance criteria:
+
+- Tracked Windows bootstrap proves Node/pnpm versions and one frozen-lockfile installation from the
+  clean dependency baseline. Repository format, lint, all workspace typechecks, the complete unit/
+  integration/smoke suite, all production builds, built artifact smoke, fixture `/health`, and fixture
+  `/ready` pass through one Level D core gate without rerunning an unchanged successful command.
+- The full suite proves strict startup/env and public-ingress contracts; request/rate/runtime/output
+  bounds; factual counters, timeouts, retry ceilings, and termination; safe provider/model/tool
+  degradation; explicit credential-free fixture continuation; sanitization and prompt-injection
+  isolation; readiness reason codes; one bounded observable event trail; exact confidence factors and
+  evidence provenance; and no automatic mutation or fabricated completion.
+- The deterministic evaluation CLI runs exactly once after the build, emits the canonical seven cases
+  in stable order with the Phase 6 confidence expectations, zero model tokens, bounded telemetry, zero
+  unsupported claims, and matching validated JSON/Markdown metrics. Both temporary artifacts are
+  hashed, inspected, and removed from an exact verified temporary directory.
+- Exactly one canonical fixture browser command proves scenario selection and editable intake through
+  metadata search, bounded/cycle-safe lineage, recent changes, factual context, suspicious changes,
+  confidence, remediation, full report, `blast-radius-v1`, observable activity, and a real
+  `incident-markdown-v1` attachment download. It also proves clean console/accessibility/desktop-mobile
+  overflow, the three-minute bound, dynamic-port release, owned-process cleanup, safe filename, and
+  canonical Markdown content.
+- Blast-radius tests retain complete/partial/unknown/unavailable semantics, downstream-only typed
+  impacts, exact provenance, cycle-safe shortest paths, and depth/entity truncation without a false
+  zero-impact claim. Markdown tests retain byte determinism, canonical/insufficient/degraded/failed/
+  truncated content, exact download headers, LF/UTF-8/final-newline behavior, full-UUID filename, and
+  the complete 43-case credential-boundary sanitizer table plus adjacent input/output safety.
+- One canonical terminal Markdown sample is generated only under a verified temporary path from the
+  built fixture API/public serializer, checked for renderer version, confidence, both impacts,
+  remediation, activity, resolved content and safe filename, hashed, and removed. It is never checked
+  in or persisted by the application.
+- A dependency/security and tracked-file secret scan, `.env.example`/runtime-config contract review,
+  conflict/debug/private-reasoning/raw-provider/model/credential scan, generated-junk and ignored-output
+  audit, exact ancestry/diff review, and final Git/process/listener checks are clean. Fixture execution
+  reads no live credential and makes no live provider/model call.
+- Issue #28 and milestone `Phase 6 — Security and readiness` are inspected without duplicate tracking
+  and remain open until terminal green checkpoint evidence plus current docs exist. If publication is
+  required, one additive conventional commit is pushed normally to one Draft PR based on the exact
+  current `main`; exact-head CI must pass before closing the issue/milestone. Do not merge the PR.
+
+Failure policy:
+
+- Classify every failure as product, test, dependency, environment, or unrelated before editing. Find
+  the smallest reproducer and make only a coherent Phase 6 acceptance fix when necessary.
+- Rerun only the failed gate after a correction. Do not repeat the full Level D on unchanged inputs. If
+  a blocking fix changes integrated checkpoint inputs, first make every affected targeted gate green;
+  only then may one final full rerun occur, with the reason and changed inputs recorded.
+
+Exact checkpoint sequence on Windows:
+
+- clean Git/process/port/environment-presence baseline, then
+  `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/bootstrap-worktree.ps1`;
+- exactly one `pnpm validate` on coherent checkpoint inputs;
+- exactly one
+  `pnpm --filter @dii/evaluation evaluate -- --output-dir C:\tmp\dii-phase-6-checkpoint-evaluation`,
+  followed by exact-path content/hash inspection and cleanup;
+- exactly one `pnpm test:e2e:report`;
+- one built-fixture Markdown sample/hash/content check under a separate exact verified temporary path,
+  then its cleanup;
+- `pnpm audit --prod`, repository secret/config/artifact scans, `git diff --check`, exact diff/name/stat/
+  ancestry review, and final process/listener/Git status checks. Run changed-document Prettier write/
+  check only after recording final evidence; do not repeat successful product gates for docs-only
+  evidence changes.
+
+#### Checkpoint correction — patched `fast-uri` transitive dependencies
+
+Status: planned after the first `pnpm audit --prod` found GHSA-`v2hh-gcrm-f6hx` at High severity on
+the integrated checkpoint input. The affected production paths are Fastify -> Ajv/compiler ->
+`fast-uri@3.1.3` and Fastify -> fast-json-stringify -> `fast-uri@4.1.0`; their declared ranges accept
+the patched `3.1.4` and `4.1.1` releases.
+
+Objective: remove only those two vulnerable transitive resolutions without changing Fastify, Ajv,
+application behavior, or another dependency. This dependency-security failure blocks truthful Phase 6
+production-readiness acceptance.
+
+Minimum files: `pnpm-workspace.yaml` for two exact pnpm 11 override rules, `pnpm-lock.yaml` for the
+generated patched resolutions, and the persistent checkpoint documents for evidence. Pnpm 11 ignores
+the legacy root `package.json.pnpm.overrides` location, so the initially attempted block was removed
+without changing a resolution. No source, test, fixture, provider, API contract, environment contract,
+browser behavior, or product feature is changed.
+
+Acceptance and validation:
+
+- Generate the lockfile with exact pnpm `11.9.0`, install it frozen, and prove `pnpm why fast-uri`
+  resolves only `3.1.4` and `4.1.1` through the existing ranges.
+- Rerun only the failed `pnpm audit --prod` gate to zero known production vulnerabilities, then run
+  affected API typecheck, contract/input-safety/incident/readiness/smoke tests, API build, and built
+  smoke before any integrated rerun.
+- Because the manifest, lockfile, and installed production dependency graph change after the first
+  green core/evaluation/browser evidence, run exactly one final complete Level D sequence on the new
+  stable inputs: `pnpm validate`, the canonical evaluation CLI with verified temporary cleanup, and
+  `pnpm test:e2e:report`. This is the single exception allowed by the checkpoint failure policy; do not
+  rerun them again for docs-only evidence changes.
+- Final diff, license/integrity, secret/generated-junk, process/port, and Git audits must remain clean.
+
+Local Windows Level D result (2026-07-22):
+
+- The clean baseline had no `node_modules`, no workspace-owned process, no listener on `3001`/`5173`,
+  no live DataHub/model/Stitch credential, and a clean Git status. The tracked bootstrap passed in
+  `15.090s` with Node `v24.14.0`, pnpm `11.9.0`, a frozen 259-package install, the supply-chain policy,
+  and the exact starting commit/tree/parents plus successful main CI above.
+- On the initial integrated input, `pnpm validate` passed format/lint, all six typechecks, 37/37 test
+  files and 345/345 tests, all six production builds, web's 109-module build, built smoke, `/health`,
+  and `/ready` in approximately `84.05s`. The canonical seven-case evaluation passed in `1.547s`,
+  produced deterministic 64,639-byte JSON and 2,474-byte Markdown with SHA-256
+  `F8AE4481D03301A852ABFB1A574C29B90927B002EF2C738CFDF72332F496316B` and
+  `F9ED8FAC3873C5290F777B91500E15DE02F2674DF91F93E3111ABCACD1F0C6A5`, then was removed. The
+  initial browser fixture flow passed in `9,248ms` on dynamic ports `53007`/`53008`.
+- The direct built-fixture export produced a 9,215-byte terminal Markdown attachment with SHA-256
+  `DB3882ABE03FAC77B64EFB772C9EA2E6749B2EC23FD29C2E8AF34279C14AB0C4`. Inspection proved the
+  safe full-UUID filename, exact download headers, renderer/confidence, dataset/dashboard impacts,
+  remediation, 11 activity events, four resolved evidence items, LF/final newline, and absence of
+  unsafe URLs, credential assignments, scripts, stacks, or private reasoning. The verified temporary
+  directory was removed and no sample was checked in.
+- The initial production audit then found the two High `fast-uri` resolutions described above. After
+  the two narrow workspace overrides, lock-only generation took `10.108s`, frozen installation
+  `4.109s`, `pnpm why fast-uri` showed only `3.1.4`/`4.1.1`, and the failed audit gate passed with zero
+  known vulnerabilities in `2.691s`. The affected API matrix passed typecheck, 6/6 files and 119/119
+  tests, API build, built smoke, `/health`, and `/ready` in `22.277s`.
+- Because the production graph changed, the single permitted final integrated sequence passed:
+  `pnpm validate` in approximately `64.08s` with the same 37/37 files and 345/345 tests, six
+  typechecks/builds and smoke; evaluation in `1.290s` with byte-identical hashes/metrics and exact
+  cleanup; and the browser flow in `9,401ms` on ports `53228`/`53229`, including real Markdown
+  download and port/process release. The seven evaluation scores remain `70/59/62/44/59/44`, the
+  insufficient-evidence case remains unscored, retrieval/top-1/top-3/evidence/reference rates are all
+  `1`, unsupported claims are `0/18`, model tokens are `0`, latency is bounded at `168ms` total, and
+  tool calls are bounded at 26 total.
+- Validation recoveries were classified. Exact temporary cleanup needed approved access because the
+  artifacts were created outside the managed workspace; a first inline Markdown harness had a local
+  quoting syntax error before starting the app and was replaced by one reviewed temporary harness;
+  terminal compaction lost the first final browser exit record; and one recovery launch used an
+  incorrect Node path and stopped before test execution. Only the affected evidence/browser gate was
+  rerun with the bootstrap-verified runtime; no unchanged full Level D gate was repeated.
+- The final static audit found no secret signature, nonblank tracked credential, conflict marker,
+  tracked generated artifact, old vulnerable lock resolution, or untracked file. `.env.example`
+  retains blank credentials and safe fixture defaults. The only private-reasoning/raw-provider terms
+  are negative security fixtures, and the only source `console.log` is the bounded smoke PASS message.
+  Ignored `node_modules`/build outputs are local bootstrap artifacts, not tracked release content.
+
+Publication remains deliberately separate: make one additive conventional commit, normal-push one
+Draft PR against the unchanged exact `main`, require exact-head CI SUCCESS, then close the already
+inspected Issue #28 and its sole-issue Phase 6 milestone. Do not merge or begin Phase 7.
+
+Deferred: unrelated dependency updates, major/minor package upgrades, product/security redesign,
+provider/model work, and every Phase 7/release task.
+
+Deferred: live DataHub/model credential smoke without newly supplied safe authorization; Mac; Phase 7,
+release/deployment publication, repository visibility/protection, authentication, persistence,
+distributed limiting, telemetry/analytics, new providers/models, report sharing/storage, PDF/email/
+Slack/Jira, autonomous execution, and every further product extension.
+
 ## Phase 7 — GitHub, CI, and release
 
 Finalize branch/PR workflow, full CI, release validation, smoke tests, and merge readiness.
