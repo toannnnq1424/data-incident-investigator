@@ -2,7 +2,7 @@
 
 This checklist is governed by [`VERSIONING.md`](VERSIONING.md). The candidate and final-release items
 below are instructions for their later scoped phases; no version, date, tag, or release is created by
-Phase 7.5.
+Phase 7.5 or Phase 7.6.
 
 ## Repository
 
@@ -18,6 +18,19 @@ Phase 7.5.
 - [x] Full evaluation report is generated and reviewed.
 - [x] Fixture-backed e2e passes.
 - [ ] Real DataHub smoke passes when credentials are available.
+
+## Phase 7.6 — artifact/deployment/rollback readiness
+
+- [x] Build the clean exact commit once with `pnpm release:artifact`; retain the exact archive name,
+      full commit/tree, file count, archive SHA-256, and sidecar.
+- [x] Verify the archive before extraction and the extracted directory afterward against a separately
+      approved full commit and version; confirm exact contents and forbidden-path exclusions.
+- [x] Prove a frozen production install plus fixture API `/health`, `/ready`, and bounded incident
+      smoke from the extracted artifact on a dynamic loopback port.
+- [x] Rehearse immutable-artifact selection, staging, validation, and teardown locally. Record that no
+      distinct prior release exists yet, so cross-version rollback remains unproven.
+- [x] Confirm no artifact, tag, Release, package, or deployment was uploaded/published and no external
+      environment was mutated.
 
 ## Phase 7.7 — `v1.0.0-rc.1` candidate (not performed)
 
@@ -54,7 +67,7 @@ Phase 7.5.
 - [ ] Web artifact points to the production API.
 - [ ] Public fixture demo completes end-to-end.
 - [x] Timeout/provider error states are user-friendly.
-- [ ] Rollback target is identified.
+- [ ] A distinct deployed last-known-good rollback artifact is identified and retained.
 
 ## Submission
 

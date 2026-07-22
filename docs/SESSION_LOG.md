@@ -3887,3 +3887,115 @@ conventional commit on `codex/phase-7-5-semver-changelog`, normal-push without a
 the existing Draft PR #46, verify the new exact head/tree/parents/full PR diff and OPEN/DRAFT/
 conflict-free state with no duplicate, then wait for that new head's `PR CI` / `validate` job to reach
 terminal SUCCESS without rerun. Do not mark Ready, merge, create another task/PR, or start 7.6.
+
+## 2026-07-23 — Phase 7 Slice 7.6 release artifacts, deployment, and rollback
+
+### Objective
+
+Create the smallest deterministic, reproducible release-artifact contract and truthful Node-host
+deployment/rollback runbooks needed by Phase 7.7 from exact integrated Phase 7.5 main
+`de9228262f34a3171377aeaadec5f6dd9cfa1f85`, without a version bump, tag, Release, publication, CI
+artifact upload, external deployment, product behavior change, or unsupported platform claim.
+
+### Completed
+
+Fetched `origin/main` without prune and matched `HEAD`, `FETCH_HEAD`, and `origin/main` to the assigned
+commit. Independently matched tree `228979f1ddd292ff9b974c830775d70ba168168e`, ordered parents
+`dff1fb416610060f5e5fad2d9289605ab7de1781` and
+`d2eed3e9c40e07c97d962a5de477c866d9dca82c`, both ancestries, and a clean detached worktree before
+creating `codex/phase-7-6-artifacts-deployment-rollback`. Authenticated in-app GitHub inspection proved
+main CI run `29945647951`, job `89010231061`, completed successfully and logged the exact resolved main
+commit.
+
+Added a clean-commit artifact builder and standalone strict verifier. One tracked command pins Node
+`24.14.0`, pnpm `11.9.0`, and web API base `/api`; runs one build; packages only the built API/web,
+current runtime workspace sources/manifests, canonical fixture assets, lock/workspace/config/license,
+and operator documents; and emits a deterministic version-plus-commit gzip/ustar archive and SHA-256
+sidecar under ignored output. The canonical internal manifest owns full commit/tree, toolchain,
+host/mode/state contract, lockfile inventory, and sorted file sizes/hashes. Verification rejects unsafe
+paths, links, duplicates, noncanonical ordering/metadata/JSON, unapproved or missing files, secret/cache/
+test/log/map paths, mismatched identity/content/sidecar, more than 500 files, archives over 25 MiB, and
+expanded tar payloads over 50 MiB.
+
+Replaced the obsolete planned-deployment notes with the evidenced generic Node-host contract and a
+credential-free fixture rehearsal. Documented exact effective runtime/build-time variables, API and
+operator-owned web ports, same-origin `/api` reverse proxy/prefix stripping, probes, startup/shutdown,
+sanitized observability, read-only DataHub caveats, process-local state/no migrations, and the explicit
+absence of Docker/cloud/public-host support. Added a rollback runbook for independently retained
+immutable prior artifact selection, double verification, staged restore, temporary and post-switch
+health/readiness/smoke, state/provider caveats, failure retention, and explicit abort/escalation. It
+truthfully records that no prior release artifact exists, so Phase 7.6 can rehearse mechanics locally
+but cannot prove cross-version rollback.
+
+### Files changed
+
+`.env.example`, `package.json`, `README.md`, `CHANGELOG.md`,
+`scripts/build-release-artifact.mjs`, `scripts/verify-release-artifact.mjs`,
+`tests/release-artifact.contract.mjs`, `docs/DEPLOYMENT.md`, new `docs/ROLLBACK.md`,
+`docs/RELEASE_CHECKLIST.md`, `docs/REPOSITORY_MAP.md`, `docs/IMPLEMENTATION_PLAN.md`,
+`docs/KNOWN_ISSUES.md`, and this session log. No workspace manifest, workspace YAML, lockfile,
+bootstrap, dependency, workflow, runtime/product source, fixture, existing test, version, tag, Release,
+published artifact, or external deployment changes.
+
+### Decisions
+
+Support only the target evidenced by the repository: a generic Node 24 host, with local fixture as the
+credential-free rehearsal. Keep the host's static server, TLS, service manager, and reverse proxy as
+explicit operator prerequisites instead of inventing a container or cloud platform. Pin release builds
+to the exact CI Node/pnpm toolchain and package current runtime workspace source because their existing
+exports resolve `src/index.ts`; changing those exports would alter established build/test behavior.
+
+Use the included frozen lockfile plus exact runtime package manifests as the dependency inventory; do
+not claim an unsupported generated SBOM. Keep workflows byte-identical because local tracked commands
+provide the required Phase 7.7 seam and no CI upload is needed. Treat the SHA-256 sidecar as integrity,
+not authenticity. Require a separately approved full commit/version and trusted release channel.
+
+### Validation performed
+
+- Tracked bootstrap selected Node `v24.14.0` and pnpm `11.9.0`, installed the frozen 259-package graph,
+  and passed the 309-entry supply-chain policy. Windows Execution Policy required the process-scoped
+  documented bypass. The final fallback-pnpm root-Prettier probe reproduced its known shim limitation;
+  the direct installed Prettier binary is green.
+- Direct Node syntax for both scripts, focused ESLint for scripts/test, changed-file Prettier, and the
+  two Node contract tests pass. The tests cover allowed canonical paths, traversal/absolute/Windows/
+  secret/cache/test/map/log rejection, and malformed non-gzip rejection.
+- The builder's dirty-worktree gate fails closed before build/package and leaves no artifact. Two prior
+  inline negative-test harness attempts stopped at Node parsing because Windows stripped quoted
+  JavaScript literals; they changed no file or output. The tracked Node test is the portable recovery.
+- Pre-session 13-path allowlist, `git diff --check`, UTF-8 without BOM, LF/final-newline, local links,
+  conflict markers, blank credential assignments, secret signatures, and no artifact residue pass.
+  Seven manifests remain private and aligned `0.1.0`; workspace manifests, workspace YAML, lockfile,
+  bootstrap scripts, dependencies, runtime source, and all three workflows are unchanged.
+- Workflow audit passes read-only permission, immutable action pins, exact checkout, disabled persisted
+  credentials, fixed runner/Node/pnpm, root-lock cache, frozen install, concurrency, timeout, manual
+  input handling, and absence of upload/publish/release/tag/deploy behavior.
+
+### Validation intentionally deferred
+
+The final clean commit is required for truthful self-provenance, so the one release build/package,
+archive verification, extraction verification, frozen production install, extracted fixture API
+health/readiness/smoke, local immutable-artifact rollback rehearsal, and cleanup follow the single
+commit and precede push. Full local validation, evaluation, browser E2E, fresh-clone, manual release
+workflow dispatch, live DataHub credentials, Mac, `1.0.0-rc.1`, tag, Draft Release, publication,
+registry/CI artifact upload, container/cloud/public deployment, Phase 7.7, and Phase 8 remain deferred.
+
+### Known issues
+
+The API retains incidents only in process memory; every restart/deploy/rollback invalidates their IDs.
+The web build needs an operator-supplied same-origin proxy that strips `/api`; cross-origin API use is
+unsupported. There is no previously released artifact, persistent database/migration contract,
+container, cloud configuration, or public deployment. Live DataHub readiness remains credential-gated.
+None is hidden or treated as a Phase 7.6 local fixture blocker.
+
+### Exact next step
+
+Run the final 14-path format/diff/secret/identity/process/port audit, create exactly one additive
+conventional commit, then run `pnpm release:artifact` exactly once on that clean commit. Verify its
+exact archive/sidecar/provenance/contents, extract and verify once under `C:\tmp`, perform one frozen
+production install and one extracted fixture health/readiness/incident smoke plus local rollback
+staging rehearsal, then stop owned processes and remove all generated output/staging/store residue.
+After all local gates pass, normal-push the branch, create exactly one Draft PR against unchanged
+`main` through the authenticated in-app Browser, verify exact identities/base/diff and OPEN/DRAFT/
+conflict-free state with no duplicate, and wait for its exact-head `PR CI` / `validate` terminal SUCCESS
+without rerun. Do not mark Ready, merge, bump a version, tag, create/publish a Release, upload an
+artifact, deploy externally, dispatch release validation, or start 7.7.

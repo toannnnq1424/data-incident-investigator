@@ -1,6 +1,16 @@
 # Known issues
 
-Last updated: 2026-07-22.
+Last updated: 2026-07-23.
+
+- Phase 7.5 is integrated through normal merge `de9228262f34a3171377aeaadec5f6dd9cfa1f85`
+  (tree `228979f1ddd292ff9b974c830775d70ba168168e`; parents
+  `dff1fb416610060f5e5fad2d9289605ab7de1781` and
+  `d2eed3e9c40e07c97d962a5de477c866d9dca82c`). Main CI run `29945647951`, job
+  `89010231061`, passed for that exact commit. Phase 7.6 defines a generic Node-host artifact and local
+  fixture deployment/rollback rehearsal only. The repository still has no Docker/cloud/public
+  deployment, persistent incident state, database/migration restore, or previously released immutable
+  artifact; therefore a real cross-version rollback target cannot exist until a later approved release
+  retains one. The web artifact requires an operator-supplied same-origin `/api` reverse proxy.
 
 - Phase 7.4 is integrated through normal merge `dff1fb416610060f5e5fad2d9289605ab7de1781`
   (tree `f1c640d7ee8a8d89e10387694979eedc5ebf0c74`; parents

@@ -22,6 +22,8 @@ No version has been released from this changelog yet. All integrated work remain
   root-cause, evidence-support, unsupported-claim, latency, tool-call, and token-use metrics.
 - Repository-owned Windows and POSIX bootstrap commands plus exact-head pull-request, main, and manual
   release-validation gates.
+- A deterministic version-and-commit-provenanced host release artifact with a SHA-256 sidecar, strict
+  manifest verifier, frozen dependency inventory, and bounded deployment/rollback runbooks.
 
 ### Changed
 

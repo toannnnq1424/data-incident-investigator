@@ -64,6 +64,19 @@ pnpm smoke
 Run `pnpm validate` only at a phase or release checkpoint. During a slice, use package-scoped or
 targeted commands described in `docs/TEST_STRATEGY.md`.
 
+## Release artifact and deployment
+
+From a clean exact commit, `pnpm release:artifact` performs one pinned release build and creates a
+version-and-commit-named deterministic archive plus SHA-256 sidecar under ignored
+`outputs/release/`. Verify it with `pnpm release:verify -- --artifact <archive>` and the separately
+approved full commit/version before extraction.
+
+The supported deployment boundary is a generic Node 24 host with a static web host and same-origin
+`/api` reverse proxy. No Docker/cloud/public deployment is currently claimed. See
+[`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for the artifact contents and host procedure and
+[`docs/ROLLBACK.md`](docs/ROLLBACK.md) for immutable prior-artifact selection, state caveats, and abort
+conditions.
+
 ## Runtime modes
 
 - `APP_MODE=fixture`: deterministic local/demo mode with no DataHub or model credentials.
