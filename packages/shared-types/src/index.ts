@@ -1472,6 +1472,7 @@ export const ApiErrorCodeSchema = z.enum([
   'VALIDATION_ERROR',
   'PAYLOAD_TOO_LARGE',
   'RATE_LIMIT_EXCEEDED',
+  'REPORT_NOT_READY',
   'NOT_FOUND',
   'INTERNAL_ERROR',
   'INVESTIGATION_LIMIT_REACHED',
@@ -4146,6 +4147,516 @@ export const IncidentRetrievalResponseSchema = z
       });
     }
   });
+
+export const INCIDENT_MARKDOWN_EXPORT_VERSION = 'incident-markdown-v1' as const;
+export const INCIDENT_MARKDOWN_EXPORT_MAX_FILENAME_LENGTH = 120;
+
+const markdownExportBidiControls = /[\u061c\u200e\u200f\u202a-\u202e\u2066-\u2069]/gu;
+const markdownExportUnsafeUrl = /\b(?:https?|ftp|file|javascript|data):[^\s,"'<>]*/giu;
+const markdownExportAuthorizationKeyPattern = String.raw`(?:auth(?:orization)?|token)`;
+const markdownExportCredentialKeyPattern = String.raw`(?:api[_ -]?key|access[_ -]?token|${markdownExportAuthorizationKeyPattern}|bearer|password|secret)`;
+const markdownExportCredentialFieldPattern = String.raw`(?:[a-z][a-z0-9_-]{0,31}|${markdownExportCredentialKeyPattern})`;
+const markdownExportQuotedCredentialValuePattern = String.raw`(?:"(?:\\.|[^"\\\r\n])*"|'(?:\\.|[^'\\\r\n])*')`;
+const markdownExportUnquotedCredentialValuePattern = String.raw`[^\s"']*?`;
+const markdownExportQuotedCredentialBoundaryPattern = String.raw`(?=$|\s|[;,|])`;
+const markdownExportUnquotedCredentialBoundaryPattern = String.raw`(?=$|\s|[;,|](?=[ \t]*${markdownExportCredentialFieldPattern}[ \t]*(?:=|:)))`;
+const markdownExportQuotedAuthorizationCredential = new RegExp(
+  String.raw`\b${markdownExportAuthorizationKeyPattern}[ \t]*(?:=|:)[ \t]*(?:bearer|basic)[ \t]+${markdownExportQuotedCredentialValuePattern}${markdownExportQuotedCredentialBoundaryPattern}`,
+  'giu',
+);
+const markdownExportUnquotedAuthorizationCredential = new RegExp(
+  String.raw`\b${markdownExportAuthorizationKeyPattern}[ \t]*(?:=|:)[ \t]*(?:bearer|basic)[ \t]+${markdownExportUnquotedCredentialValuePattern}${markdownExportUnquotedCredentialBoundaryPattern}`,
+  'giu',
+);
+const markdownExportQuotedCredential = new RegExp(
+  String.raw`\b${markdownExportCredentialKeyPattern}[ \t]*(?:=|:)[ \t]*${markdownExportQuotedCredentialValuePattern}${markdownExportQuotedCredentialBoundaryPattern}`,
+  'giu',
+);
+const markdownExportUnquotedCredential = new RegExp(
+  String.raw`\b${markdownExportCredentialKeyPattern}[ \t]*(?:=|:)[ \t]*${markdownExportUnquotedCredentialValuePattern}${markdownExportUnquotedCredentialBoundaryPattern}`,
+  'giu',
+);
+const markdownExportSecretToken =
+  /\b(?:sk-[a-z0-9_-]{8,}|ghp_[a-z0-9_-]{8,}|github_pat_[a-z0-9_-]{8,}|bearer\s+[a-z0-9._~+/=-]{4,})(?![a-z0-9._~+/=-])/giu;
+const markdownExportInternalHost =
+  /\b(?:localhost|[a-z0-9-]+(?:\.[a-z0-9-]+)*\.(?:internal|local)|10(?:\.\d{1,3}){3}|127(?:\.\d{1,3}){3}|192\.168(?:\.\d{1,3}){2}|172\.(?:1[6-9]|2\d|3[01])(?:\.\d{1,3}){2})(?::\d{1,5})?\b/giu;
+const markdownExportStackLocation =
+  /\b(?:at\s+[a-z0-9_$.-]+\s*\([^\r\n)]*:\d+:\d+\)|[a-z]:\\[^\r\n]+:\d+:\d+)\b/giu;
+const markdownExportReservedDeviceName = /^(?:con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/iu;
+
+function sanitizeMarkdownExportText(value: string) {
+  const normalized = sanitizeUntrustedDisplayText(
+    value.normalize('NFKC').replace(markdownExportBidiControls, ''),
+  )
+    .replace(markdownExportUnsafeUrl, '[redacted URL]')
+    .replace(markdownExportQuotedAuthorizationCredential, '[redacted credential]')
+    .replace(markdownExportUnquotedAuthorizationCredential, '[redacted credential]')
+    .replace(markdownExportQuotedCredential, '[redacted credential]')
+    .replace(markdownExportUnquotedCredential, '[redacted credential]')
+    .replace(markdownExportSecretToken, '[redacted credential]')
+    .replace(markdownExportInternalHost, '[redacted internal host]')
+    .replace(markdownExportStackLocation, '[redacted stack location]');
+
+  return normalized.replace(/([\\`*_{}[\]()<>#+\-.!|&])/gu, '\\$1');
+}
+
+function markdownExportOrdinal(value: number) {
+  return String(value).padStart(3, '0');
+}
+
+function markdownExportReferenceLinks(
+  ids: readonly string[],
+  indexes: ReadonlyMap<string, number>,
+  kind: 'Evidence' | 'Hypothesis',
+) {
+  return ids
+    .map((id) => {
+      const index = indexes.get(id);
+      if (index === undefined) {
+        throw new Error(`Markdown export ${kind.toLowerCase()} reference is unresolved.`);
+      }
+      const ordinal = markdownExportOrdinal(index);
+      return `[${kind} ${ordinal}](#${kind.toLowerCase()}-${ordinal})`;
+    })
+    .join(', ');
+}
+
+function appendMarkdownExportSection(lines: string[], title: string) {
+  if (lines.at(-1) !== '') lines.push('');
+  lines.push(`## ${title}`, '');
+}
+
+function appendMarkdownExportTextList(
+  lines: string[],
+  values: readonly string[],
+  emptyMessage: string,
+) {
+  if (values.length === 0) {
+    lines.push(emptyMessage);
+    return;
+  }
+  values.forEach((value) => lines.push(`- ${sanitizeMarkdownExportText(value)}`));
+}
+
+function markdownExportFilenameLabel(
+  response: Exclude<z.infer<typeof IncidentRetrievalResponseSchema>, { status: 'processing' }>,
+) {
+  if (response.status !== 'failed') {
+    const context = response.contextStage;
+    if (context.status === 'completed' || context.status === 'degraded') {
+      return context.facts.selectedEntity?.name ?? context.intent.question;
+    }
+  }
+  return 'incident';
+}
+
+function markdownExportFilenameSlug(value: string) {
+  const normalized = value
+    .normalize('NFKD')
+    .replace(markdownExportBidiControls, '')
+    .replace(/[\u0300-\u036f]/gu, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/gu, '-')
+    .replace(/^-+|-+$/gu, '')
+    .slice(0, 48)
+    .replace(/[-. ]+$/gu, '');
+  if (!normalized || markdownExportReservedDeviceName.test(normalized)) {
+    return 'incident';
+  }
+  return normalized;
+}
+
+function createIncidentMarkdownFilename(
+  response: Exclude<z.infer<typeof IncidentRetrievalResponseSchema>, { status: 'processing' }>,
+) {
+  const filename = `incident-report-${markdownExportFilenameSlug(markdownExportFilenameLabel(response))}-${response.incidentId}.md`;
+  if (filename.length > INCIDENT_MARKDOWN_EXPORT_MAX_FILENAME_LENGTH) {
+    throw new Error('Markdown export filename exceeds its code-owned bound.');
+  }
+  return filename;
+}
+
+function renderIncidentMarkdown(
+  response: Exclude<z.infer<typeof IncidentRetrievalResponseSchema>, { status: 'processing' }>,
+) {
+  const report =
+    response.status === 'completed'
+      ? response.report
+      : response.status === 'degraded'
+        ? response.report
+        : undefined;
+  const context = response.status === 'failed' ? undefined : response.contextStage;
+  const contextWithFacts =
+    context?.status === 'completed' || context?.status === 'degraded' ? context : undefined;
+  const evidence = report?.evidence ?? [];
+  const hypotheses = report?.hypotheses ?? [];
+  const evidenceIndexes = new Map(evidence.map((item, index) => [item.id, index + 1]));
+  const hypothesisIndexes = new Map(hypotheses.map((item, index) => [item.id, index + 1]));
+  const lines = ['# Data Incident Investigation Report', ''];
+
+  if (response.status === 'degraded') {
+    lines.push(
+      '> Degraded investigation: this export is incomplete and must not be read as a successful investigation.',
+      '',
+    );
+  } else if (response.status === 'failed') {
+    lines.push(
+      '> Failed investigation: no schema-validated investigation report was produced.',
+      '',
+    );
+  }
+
+  appendMarkdownExportSection(lines, 'Incident identity');
+  lines.push(
+    `- Incident ID: ${sanitizeMarkdownExportText(response.incidentId)}`,
+    `- Investigation status: ${response.status}`,
+    `- Question summary: ${
+      contextWithFacts
+        ? sanitizeMarkdownExportText(contextWithFacts.intent.question)
+        : 'Unavailable in this terminal response.'
+    }`,
+    `- Selected entity: ${
+      contextWithFacts?.facts.selectedEntity
+        ? `${sanitizeMarkdownExportText(contextWithFacts.facts.selectedEntity.name)} (${contextWithFacts.facts.selectedEntity.kind})`
+        : 'No adapter-validated entity was selected.'
+    }`,
+  );
+
+  appendMarkdownExportSection(lines, 'Investigation summary and termination');
+  if (report) {
+    if (response.status === 'degraded') {
+      lines.push(
+        'A schema-validated partial report was preserved, but the investigation did not complete.',
+        '',
+      );
+    }
+    lines.push(sanitizeMarkdownExportText(report.summary), '');
+  } else {
+    lines.push('No schema-validated report was preserved for this terminal state.', '');
+  }
+  lines.push(
+    `- Termination reason: ${response.execution.terminationReason}`,
+    `- Duration: ${response.execution.durationMs} ms`,
+    `- Agent stages: ${response.execution.agentSteps}`,
+    `- Tool calls: ${response.execution.toolCalls}`,
+    `- Lineage entities visited: ${response.execution.lineageEntitiesVisited}`,
+    `- Structured-output retries: ${response.execution.retries}`,
+  );
+  if (response.status === 'degraded' || response.status === 'failed') {
+    lines.push(`- Terminal error: ${sanitizeMarkdownExportText(response.error.message)}`);
+  }
+  if (response.status === 'degraded') {
+    lines.push(
+      `- Failed operation: ${response.failedOperation ?? 'No context operation was claimed.'}`,
+      `- Warnings: ${response.warnings.map((warning) => warning.code).join(', ')}`,
+    );
+  }
+
+  appendMarkdownExportSection(lines, 'Ranked hypotheses and confidence');
+  if (!report) {
+    const scoringStatus =
+      response.status === 'degraded' ? response.hypothesisScoringStage.status : '';
+    lines.push(
+      scoringStatus
+        ? `No report hypothesis was preserved. Deterministic scoring status: ${scoringStatus}.`
+        : 'Hypotheses and confidence are unavailable because no report was produced.',
+    );
+  } else {
+    report.hypotheses.forEach((hypothesis, index) => {
+      const ordinal = markdownExportOrdinal(index + 1);
+      lines.push(`### Hypothesis ${ordinal}`, '');
+      lines.push(
+        `- Hypothesis ID: ${sanitizeMarkdownExportText(hypothesis.id)}`,
+        `- Summary: ${sanitizeMarkdownExportText(hypothesis.summary)}`,
+      );
+      if (hypothesis.confidence.status === 'scored') {
+        if (!('rank' in hypothesis)) {
+          throw new Error('Scored Markdown export hypothesis is missing its rank.');
+        }
+        lines.push(
+          `- Rank: ${hypothesis.rank}`,
+          `- Evidence confidence: ${hypothesis.confidence.scorePercent}% (${hypothesis.confidence.level})`,
+          `- Formula: ${hypothesis.confidence.formulaVersion}`,
+          `- Why: ${sanitizeMarkdownExportText(hypothesis.confidence.explanation)}`,
+          `- Evidence references: ${markdownExportReferenceLinks(
+            hypothesis.evidenceIds,
+            evidenceIndexes,
+            'Evidence',
+          )}`,
+          '- Confidence factors:',
+        );
+        hypothesis.confidence.factors.forEach((factor) => {
+          const signedContribution =
+            factor.contributionBasisPoints > 0
+              ? `+${factor.contributionBasisPoints}`
+              : String(factor.contributionBasisPoints);
+          const factorEvidence =
+            factor.evidenceIds.length > 0
+              ? `; evidence ${markdownExportReferenceLinks(
+                  factor.evidenceIds,
+                  evidenceIndexes,
+                  'Evidence',
+                )}`
+              : '';
+          lines.push(
+            `  - ${factor.code}: ${signedContribution} basis points (${factor.reasonCode})${factorEvidence}`,
+          );
+        });
+      } else {
+        lines.push(
+          '- Rank: Not assigned.',
+          `- Evidence confidence: not scored (${hypothesis.confidence.reasonCode})`,
+          `- Why: ${sanitizeMarkdownExportText(hypothesis.confidence.explanation)}`,
+          `- Evidence references: ${markdownExportReferenceLinks(
+            hypothesis.evidenceIds,
+            evidenceIndexes,
+            'Evidence',
+          )}`,
+        );
+      }
+      lines.push('');
+    });
+    if (lines.at(-1) === '') lines.pop();
+  }
+
+  appendMarkdownExportSection(lines, 'Evidence catalog');
+  if (!report) {
+    lines.push('No report evidence was preserved for this terminal state.');
+  } else {
+    report.evidence.forEach((item, index) => {
+      const ordinal = markdownExportOrdinal(index + 1);
+      lines.push(`### Evidence ${ordinal}`, '');
+      lines.push(
+        `- Evidence ID: ${sanitizeMarkdownExportText(item.id)}`,
+        `- Category: ${item.category}`,
+        `- Summary: ${sanitizeMarkdownExportText(item.statement)}`,
+        `- Source entity: ${
+          item.sourceEntity
+            ? `${sanitizeMarkdownExportText(item.sourceEntity.name)} (${item.sourceEntity.kind}); ${sanitizeMarkdownExportText(item.sourceEntity.urn)}`
+            : 'Not supplied.'
+        }`,
+        `- Observed at: ${item.observedAt ?? 'Not supplied.'}`,
+        '',
+      );
+    });
+    if (lines.at(-1) === '') lines.pop();
+  }
+
+  appendMarkdownExportSection(lines, 'Blast radius');
+  if (!report) {
+    lines.push(
+      'Blast-radius coverage is unavailable because no report was preserved. This is not a verified zero-impact result.',
+    );
+  } else {
+    const blastRadius = report.blastRadius;
+    lines.push(
+      `- Analysis version: ${blastRadius.analysisVersion}`,
+      `- Status: ${blastRadius.status}`,
+      `- Explanation: ${sanitizeMarkdownExportText(blastRadius.explanation)}`,
+      `- Coverage: analyzed ${blastRadius.coverage.rootsAnalyzed}/${blastRadius.coverage.rootsConsidered} roots; visited ${blastRadius.coverage.visitedEntities} entities; truncated graphs ${blastRadius.coverage.truncatedGraphs}.`,
+      `- Applied limits: depth ${blastRadius.coverage.appliedLimits.maxDepth}; entities ${blastRadius.coverage.appliedLimits.maxEntities}; roots ${blastRadius.coverage.appliedLimits.maxRootEntities}.`,
+      `- Coverage reasons: ${
+        blastRadius.coverage.reasonCodes.length > 0
+          ? blastRadius.coverage.reasonCodes.join(', ')
+          : 'none'
+      }`,
+      `- Impact counts: ${blastRadius.summary.total} total; ${blastRadius.summary.datasets} datasets; ${blastRadius.summary.dashboards} dashboards; ${blastRadius.summary.pipelines} pipelines.`,
+    );
+    if (blastRadius.impacts.length === 0) {
+      lines.push(
+        blastRadius.status === 'complete'
+          ? '- No supported downstream impact was returned within the fully analyzed applied bounds.'
+          : '- No downstream impact was verified; incomplete or unavailable coverage must not be read as zero impact.',
+      );
+    } else {
+      blastRadius.impacts.forEach((impact, index) => {
+        lines.push('', `### Impact ${markdownExportOrdinal(index + 1)}`, '');
+        lines.push(
+          `- Entity: ${sanitizeMarkdownExportText(impact.entity.name)} (${impact.entity.kind})`,
+          `- Entity URN: ${sanitizeMarkdownExportText(impact.entity.urn)}`,
+          `- Relation and distance: ${impact.relation}; ${impact.distance} hop${impact.distance === 1 ? '' : 's'}`,
+          `- Root URN: ${sanitizeMarkdownExportText(impact.rootUrn)}`,
+          `- Path: ${impact.pathUrns.map(sanitizeMarkdownExportText).join(' → ')}`,
+          `- Hypothesis references: ${markdownExportReferenceLinks(
+            impact.hypothesisIds,
+            hypothesisIndexes,
+            'Hypothesis',
+          )}`,
+          `- Evidence references: ${markdownExportReferenceLinks(
+            impact.evidenceIds,
+            evidenceIndexes,
+            'Evidence',
+          )}`,
+        );
+      });
+    }
+  }
+
+  appendMarkdownExportSection(lines, 'Remediation and safe next steps');
+  if (response.status === 'failed') {
+    lines.push('No remediation recommendation was produced before the investigation failed.');
+  } else {
+    const remediation = response.remediationStage;
+    lines.push(`- Planning status: ${remediation.status}`);
+    if (remediation.status === 'completed') {
+      remediation.recommendations.forEach((recommendation, index) => {
+        lines.push('', `### Recommendation ${markdownExportOrdinal(index + 1)}`, '');
+        lines.push(
+          `- Recommendation ID: ${sanitizeMarkdownExportText(recommendation.id)}`,
+          `- Type: ${recommendation.type}`,
+          `- Priority: ${recommendation.priority}`,
+          `- Execution status: ${recommendation.status}`,
+          `- Title: ${sanitizeMarkdownExportText(recommendation.title)}`,
+          `- Rationale: ${sanitizeMarkdownExportText(recommendation.rationale)}`,
+          `- Verification: ${sanitizeMarkdownExportText(recommendation.verificationStep)}`,
+          `- Reversibility: ${sanitizeMarkdownExportText(recommendation.reversibilityNote)}`,
+          `- Hypothesis references: ${markdownExportReferenceLinks(
+            recommendation.references.hypothesisIds,
+            hypothesisIndexes,
+            'Hypothesis',
+          )}`,
+          `- Evidence references: ${markdownExportReferenceLinks(
+            recommendation.references.evidenceIds,
+            evidenceIndexes,
+            'Evidence',
+          )}`,
+          `- Entity references: ${recommendation.references.entityUrns
+            .map(sanitizeMarkdownExportText)
+            .join(', ')}`,
+          `- Change references: ${recommendation.references.changeIds
+            .map(sanitizeMarkdownExportText)
+            .join(', ')}`,
+        );
+      });
+    } else if (remediation.status === 'planning') {
+      lines.push('- Planning did not reach a terminal result.');
+    } else {
+      if (remediation.status === 'unavailable') {
+        lines.push(`- Planning error: ${sanitizeMarkdownExportText(remediation.error.message)}`);
+      }
+      appendMarkdownExportTextList(
+        lines,
+        remediation.missingInformation.map((item) => `${item.code}: ${item.message}`),
+        'No structured remediation gap was returned.',
+      );
+      appendMarkdownExportTextList(
+        lines,
+        remediation.nextSteps.map((step) => `${step.id} (${step.status}): ${step.description}`),
+        'No remediation fallback step was returned.',
+      );
+    }
+    if (report?.recommendations.length) {
+      lines.push('', '### Report recommendation summaries', '');
+      appendMarkdownExportTextList(lines, report.recommendations, '');
+    }
+  }
+
+  appendMarkdownExportSection(lines, 'Investigation activity');
+  response.eventTrail.forEach((event) => {
+    const ordinal = markdownExportOrdinal(event.sequence);
+    lines.push(`### Event ${ordinal}`, '');
+    lines.push(
+      `- Time: ${event.timestamp}`,
+      `- Action: ${event.actionType}`,
+      `- Summary: ${sanitizeMarkdownExportText(event.summary)}`,
+    );
+    if (event.evidenceIds) {
+      lines.push(
+        `- Evidence references: ${markdownExportReferenceLinks(
+          event.evidenceIds,
+          evidenceIndexes,
+          'Evidence',
+        )}`,
+      );
+    }
+    if (event.actionType === 'warning_raised') {
+      lines.push(`- Warning code: ${event.warningCode}`);
+    }
+    if (event.actionType === 'investigation_terminated') {
+      lines.push(
+        `- Termination reason: ${event.terminationReason}`,
+        `- Duration: ${event.durationMs} ms`,
+      );
+    }
+    lines.push('');
+  });
+  if (lines.at(-1) === '') lines.pop();
+
+  appendMarkdownExportSection(lines, 'Assumptions, limitations, and missing information');
+  if (report?.assumptions.length) {
+    lines.push('### Assumptions', '');
+    appendMarkdownExportTextList(lines, report.assumptions, 'No assumptions were returned.');
+    lines.push('');
+  }
+  const limitations: string[] = [];
+  report?.missingInformation.forEach((item) => limitations.push(`Report: ${item}`));
+  contextWithFacts?.missingInformation.forEach((item) =>
+    limitations.push(`Context ${item.code}: ${item.message}`),
+  );
+  if (response.status !== 'failed') {
+    const suspicious = response.suspiciousChangeStage;
+    if (suspicious.status === 'insufficient') {
+      suspicious.missingInformation.forEach((item) =>
+        limitations.push(`Suspicious changes ${item.code}: ${item.message}`),
+      );
+    } else if (suspicious.status === 'unavailable') {
+      limitations.push(`Suspicious changes unavailable: ${suspicious.error.message}`);
+    }
+    const scoring = response.hypothesisScoringStage;
+    if (scoring.status === 'insufficient') {
+      scoring.missingInformation.forEach((item) =>
+        limitations.push(`Confidence ${item.code}: ${item.message}`),
+      );
+    } else if (scoring.status === 'unavailable') {
+      limitations.push(`Confidence unavailable: ${scoring.error.message}`);
+    }
+    if (response.status === 'degraded') {
+      response.warnings.forEach((warning) =>
+        limitations.push(`Warning ${warning.code}: ${warning.message}`),
+      );
+    }
+    report?.blastRadius.coverage.reasonCodes.forEach((reason) =>
+      limitations.push(`Blast-radius coverage: ${reason}`),
+    );
+  }
+  if (response.status === 'failed') {
+    limitations.push(`Failure: ${response.error.message}`);
+  }
+  appendMarkdownExportTextList(
+    lines,
+    [...new Set(limitations)],
+    'No explicit assumption, limitation, truncation, or missing-information item was returned.',
+  );
+
+  appendMarkdownExportSection(lines, 'Export metadata');
+  lines.push(
+    `- Renderer version: ${INCIDENT_MARKDOWN_EXPORT_VERSION}`,
+    '- Encoding: UTF-8 without BOM.',
+    '- Newlines: LF with one final newline.',
+    '- Generation time: intentionally omitted; this renderer has no clock input.',
+  );
+
+  while (lines.at(-1) === '') lines.pop();
+  return `${lines.join('\n')}\n`;
+}
+
+export type IncidentMarkdownExport = Readonly<{
+  version: typeof INCIDENT_MARKDOWN_EXPORT_VERSION;
+  filename: string;
+  markdown: string;
+}>;
+
+export function createIncidentMarkdownExport(input: unknown): IncidentMarkdownExport {
+  const response = IncidentRetrievalResponseSchema.parse(input);
+  if (response.status === 'processing') {
+    throw new Error('A processing investigation cannot be exported.');
+  }
+  return Object.freeze({
+    version: INCIDENT_MARKDOWN_EXPORT_VERSION,
+    filename: createIncidentMarkdownFilename(response),
+    markdown: renderIncidentMarkdown(response),
+  });
+}
 
 export const EVALUATION_MAX_FACTS = 20;
 export const EVALUATION_MAX_ENTITIES = 20;

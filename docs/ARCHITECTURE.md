@@ -46,6 +46,13 @@ entity, tool-call, and deadline limits. It adds no provider, connector, retry pa
 dataset. The API runs it after deterministic hypothesis scoring and before remediation planning, then
 validates the combined public report through the shared schema.
 
+Markdown export is a downstream presentation boundary over that already composed terminal public
+response. `@dii/shared-types` reparses `IncidentRetrievalResponseSchema` and owns the clock-free
+`incident-markdown-v1` serializer, ordinal report-reference anchors, sanitization, and safe filename.
+The API exposes the resulting UTF-8 attachment directly and the web uses a native download link. The
+runner/model boundary cannot provide Markdown or a filename, and no report file, share record, or new
+runtime dependency is stored.
+
 ## Trust boundaries
 
 User input, provider responses, and model output are untrusted. Validate at the API boundary and again
@@ -54,6 +61,10 @@ sanitized. External design tools such as Stitch assist design only and are not p
 Blast-radius paths and IDs come only from schema-validated lineage plus existing scored
 hypothesis/evidence references. Provider labels are normalized as untrusted display text; status copy
 and coverage reasons are code-owned and contain no raw metadata or model prose.
+Markdown serialization treats every public dynamic value as untrusted again, emits no external link,
+and resolves evidence/hypothesis links only through the parsed response catalogs. Unsafe Markdown/HTML,
+URLs, credentials, internal hosts, controls, and bidi controls are neutralized or redacted before bytes
+leave the API.
 
 ## Deployment target
 

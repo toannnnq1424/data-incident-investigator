@@ -1198,6 +1198,46 @@ logged.
 `packages/shared-types` are the source of truth. In-memory fixture state is intentionally not durable
 across API restarts.
 
+### `GET /incidents/:incidentId/report.md`
+
+The browser calls `/api/incidents/:incidentId/report.md`; direct API clients omit `/api`. The UUID path,
+unknown-incident, and internal-failure handling is identical to incident retrieval. The endpoint first
+reconstructs and parses the exact public `IncidentRetrievalResponseSchema`; it never calls the runner,
+model, adapter, provider, or a storage service.
+
+Only terminal `completed | degraded | failed` responses are exportable. A processing response returns
+HTTP `409` and the strict safe error:
+
+```json
+{
+  "error": {
+    "code": "REPORT_NOT_READY",
+    "message": "The incident report is still processing."
+  }
+}
+```
+
+A successful response is HTTP `200` with:
+
+- `Content-Type: text/markdown; charset=utf-8`;
+- `Content-Disposition: attachment; filename="incident-report-<safe-label>-<incident-uuid>.md"`;
+- `Cache-Control: no-store`; and
+- `X-Content-Type-Options: nosniff`.
+
+`incident-markdown-v1` is clock-free and code-owned. The same validated terminal response produces
+byte-identical UTF-8 without BOM, LF-only newlines, and one final newline. Its fixed order is identity;
+summary/termination; ranked confidence; evidence; blast radius; remediation; observable activity;
+assumptions/limitations/missing information; and deterministic export metadata. Degraded/failed output
+is explicitly non-successful; unknown/unavailable coverage is never a zero-impact claim.
+
+All dynamic text, IDs, URNs, and labels are escaped as untrusted Markdown text after control/bidi,
+HTML, unsafe URL, credential, internal-host, and stack-location neutralization. Links are internal
+renderer-owned ordinal anchors resolved from the same report evidence/hypothesis catalogs. No external
+URL, raw provider/model payload, prompt/private reasoning, tool argument, credential, server filename,
+or generated timestamp is accepted. The ASCII label is bounded and traversal/device-name safe; the full
+schema-valid UUID is the deterministic collision suffix. No server-side report file is created, and
+fixture download requires no credential.
+
 ## Compatibility
 
 Add fields compatibly during the MVP. Any removal or semantic change requires an ADR and coordinated

@@ -86,6 +86,13 @@ environment variables. Logs must redact authorization headers, tokens, and full 
   partial coverage. Every impact must retain a bounded path plus resolved report evidence provenance.
   Sanitize provider labels before API/UI output, emit only code-owned explanations/reason codes, never
   log raw graph metadata, and never silently replace a DataHub failure with fixture reach.
+- Treat Markdown export as a second presentation trust boundary after terminal public-response
+  validation. The code-owned renderer must neutralize Markdown/HTML/list/table/code-fence syntax,
+  controls and bidi controls, unsafe URL schemes, credential-like assignments/tokens, internal hosts,
+  and stack locations in every dynamic value. Emit only renderer-owned ordinal internal anchors; never
+  preserve an external link or accept Markdown/filename/export metadata from a runner/model. Use the
+  complete UUID as the deterministic filename collision suffix, enforce ASCII traversal/device/control/
+  header safety and a fixed length bound, return `no-store`/`nosniff`, and never persist the attachment.
 
 ## External systems
 

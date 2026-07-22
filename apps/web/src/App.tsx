@@ -1633,6 +1633,17 @@ export function InvestigationActivity({
   );
 }
 
+export function MarkdownReportDownload({ incidentId }: { incidentId: string }) {
+  return (
+    <div className="report-export-action">
+      <a href={`${apiBaseUrl}/incidents/${encodeURIComponent(incidentId)}/report.md`} download>
+        Download Markdown report
+      </a>
+      <p>UTF-8 · deterministic · no server-side report file is stored</p>
+    </div>
+  );
+}
+
 function ProcessingStatus({ incident }: { incident: ProcessingIncident }) {
   return (
     <div className="status-progress processing-status" role="status">
@@ -1687,6 +1698,7 @@ export function DegradedInvestigation({ incident }: { incident: DegradedIncident
           </div>
         )}
       </dl>
+      <MarkdownReportDownload incidentId={incident.incidentId} />
       <InvestigationActivity events={incident.eventTrail} linkEvidence={Boolean(incident.report)} />
       <IncidentContextStage stage={incident.contextStage} />
       <SuspiciousChangeStage stage={incident.suspiciousChangeStage} />
@@ -1747,6 +1759,7 @@ export function FailedInvestigation({ incident }: { incident: FailedIncident }) 
           </dd>
         </div>
       </dl>
+      <MarkdownReportDownload incidentId={incident.incidentId} />
       <InvestigationActivity events={incident.eventTrail} />
     </div>
   );
@@ -1768,6 +1781,7 @@ export function CompletedReport({ incident }: { incident: CompletedIncident }) {
           <dd>{content.status}</dd>
         </div>
       </dl>
+      <MarkdownReportDownload incidentId={incident.incidentId} />
       <InvestigationActivity events={incident.eventTrail} linkEvidence />
       <IncidentContextStage stage={incident.contextStage} />
       <SuspiciousChangeStage stage={incident.suspiciousChangeStage} />

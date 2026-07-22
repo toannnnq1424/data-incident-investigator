@@ -2,6 +2,18 @@
 
 Last updated: 2026-07-22.
 
+- Draft PR #40 carries the final approved Phase 6 optional Markdown export from exact main `601f361…`.
+  Its public HEAD `54137630…` and exact CI run `29884438220`, job `88811980391`, passed, and the four
+  QA4 Authorization/Auth/Token Bearer/Basic cases are fixed. QA5 correctly blocked acceptance at 41/43
+  because a quoted scheme value could fall back to the unquoted matcher and leak its whitespace suffix,
+  while quoted assignment and URL matchers consumed comma-delimited safe text. The targeted local
+  correction uses separate quoted-first/unquoted matchers, forbids quote fallback, and bounds URLs at
+  commas while retaining scheme order and shared key patterns. Exact pre-fix 41/43 and post-fix 43/43,
+  format/check, affected lint/typecheck, and the single 2-file/67-test Markdown/security matrix are
+  recorded; additive commit, push, and new exact-head CI are pending on the same branch/PR.
+  Sharing, storage, email/Slack/Jira/PDF, authentication, a checked-in sample, Phase 6 Level D/
+  checkpoint, and Phases 7-8 remain out of scope.
+
 - Phase 6 Slice 6.3 is merged through PR #35 at exact main merge
   `aa853d7b1dd2fdbeca45d08766643ba18ca2aa53` (tree
   `d61c3637d168cb33003b845b62a876e2d19363c3`); main CI run `29844355484`, job `88680987052`, passed.

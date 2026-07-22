@@ -843,6 +843,43 @@ button:disabled {
   font-weight: 800;
 }
 
+.report-export-action {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 1rem 0;
+}
+
+.report-export-action a {
+  display: inline-flex;
+  min-height: 2.8rem;
+  align-items: center;
+  padding: 0.65rem 0.9rem;
+  border: 1px solid #4e8e8d;
+  border-radius: 0.7rem;
+  color: #bff9ef;
+  background: #0c2c30;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.report-export-action a:hover {
+  border-color: #73e7d5;
+  background: #123a3e;
+}
+
+.report-export-action a:focus-visible {
+  outline: 0;
+  border-color: #73e7d5;
+  box-shadow: 0 0 0 3px rgb(115 231 213 / 18%);
+}
+
+.report-export-action p {
+  margin: 0;
+  color: #8ba1a8;
+  font-size: 0.78rem;
+}
+
 .incident-context-stage {
   display: grid;
   gap: 0.8rem;
@@ -1820,6 +1857,7 @@ dd {
 
   .panel-heading,
   .submission-row,
+  .report-export-action,
   .inference-heading,
   .scored-hypothesis-heading,
   .remediation-recommendation-heading,

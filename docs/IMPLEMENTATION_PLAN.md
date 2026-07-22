@@ -3448,6 +3448,444 @@ affected failure:
   temporary output, listener, and owned-process cleanup; then one conventional commit, normal push,
   exactly one Draft PR against current `main`, and exact-head CI to terminal SUCCESS without merge.
 
+### Optional extension — Deterministic Markdown incident report export
+
+Status: locally implemented and Level C validated on `codex/phase-6-extension-markdown-export` from
+exact merged blast-radius `main`
+`601f3616658780d0d51f7ccc46ff4e665f61d8db` (tree
+`f53bacec505980b67ffcd36705c101be2de52e3f`; parents
+`43e57aee320c86da0930deb4dd2fae38ca4b80e6` and
+`762067d37757ccfe6c5c3cd9a6757bfcbece1ec7`). Exact main CI run `29865446602`, job
+`88752378237`, passed. Bootstrap, safe fetch, exact base/tree/parent/CI verification, docs-first
+reading, and the scoped public-report/evidence/confidence/blast-radius/fallback/audit/UI/evaluation
+export audit preceded every source edit.
+
+Objective: export one self-contained, deterministic, evidence-linked Markdown incident report from
+the already schema-validated terminal public investigation response. The serializer, section order,
+copy, references, escaping, filename, and renderer version are code-owned. Runner/model drafts cannot
+author Markdown, a filename, a link, or export metadata. Do not add sharing, persistence, email,
+Slack/Jira, PDF, authentication, provider changes, Phase 6 Level D/checkpoint, Phase 7, or Phase 8.
+
+Format and boundary decisions:
+
+- `incident-markdown-v1` is the stable renderer version. `createIncidentMarkdownExport` reparses one
+  terminal `IncidentRetrievalResponseSchema` and rejects `processing`; identical validated input
+  returns byte-identical UTF-8 text with LF newlines, one final newline, no BOM, no clock, and no
+  generated-at timestamp.
+- The fixed section order is incident identity/status/question, investigation summary/termination,
+  hypotheses and deterministic confidence, evidence catalog, blast radius, remediation, observable
+  activity, assumptions/limitations/missing information, then deterministic export metadata. Missing,
+  insufficient, degraded, partial, truncated, unavailable, and failed states use explicit non-success
+  copy and never imply verified success or zero impact.
+- Evidence and hypothesis links use renderer-owned ordinal anchors resolved only from the parsed report
+  catalog. Blast-radius and remediation references reuse those exact mappings. No external URL is
+  emitted and no unsupported reference can cross the existing public schema/composition invariants.
+- Every dynamic question, label, statement, summary, identifier, URN, path, and metadata value is
+  treated as untrusted again at serialization. The renderer removes controls and bidi controls,
+  redacts unsafe URL/credential/internal-host sentinels, neutralizes HTML and Markdown syntax, and never
+  emits raw provider/model payloads, tool arguments, prompts, stacks, credentials, or private
+  reasoning.
+- The ASCII filename is `incident-report-<safe-label>-<full-incident-uuid>.md`. The label is bounded,
+  traversal/control/punctuation/device-name safe, with `incident` fallback; the full schema-valid UUID
+  is the deterministic collision suffix. The filename is below 120 characters and needs no
+  caller/model input.
+- `GET /incidents/:incidentId/report.md` is stateless and returns only terminal exports with
+  `text/markdown; charset=utf-8`, attachment `Content-Disposition`, `Cache-Control: no-store`, and
+  `X-Content-Type-Options: nosniff`. Processing returns fixed `409 REPORT_NOT_READY`; existing invalid,
+  unknown, and internal-failure semantics remain typed and sanitized.
+- The web uses one native, keyboard-accessible download link on completed, degraded, and failed
+  terminal presentations. Fixture mode requires no credential. No client-side Markdown composition or
+  server-side file storage is added.
+- No checked-in sample Markdown is planned. Repository convention explicitly generates evaluation
+  Markdown into ignored/temporary output and removes it; the canonical fixture API/browser download is
+  the reproducible demo artifact. A generated sample must not be introduced or hand-edited silently in
+  this extension.
+
+Minimum files:
+
+- `packages/shared-types/src/index.ts` and `tests/integration/markdown-export.test.ts` for the versioned
+  terminal export contract, deterministic renderer, ordinal references, unsafe-text/URL/credential/
+  bidi escaping, safe bounded filename, canonical/degraded/failed/insufficient/partial/truncated/
+  unknown/unavailable content, LF/UTF-8 bytes, and leakage sentinels.
+- `apps/api/src/index.ts` plus the focused export/API tests for post-composition parsing, terminal-only
+  download, exact headers/body/filename, validation/not-found/not-ready errors, fixture no-credential
+  behavior, and no persistence.
+- `apps/web/src/App.tsx`, `apps/web/src/styles.css`, `tests/integration/web-report.test.ts`, and
+  `tests/e2e/report-display.spec.mjs` for the accessible native action and one real browser
+  download/filename/content verification without redesign.
+- `tests/integration/contracts.test.ts`, `tests/integration/input-output-safety.test.ts`, and
+  `tests/integration/incidents-api.test.ts` only where direct shared/API safety or canonical public
+  response compatibility needs an adjacent regression.
+- `docs/PRODUCT_SPEC.md`, `docs/ARCHITECTURE.md`, `docs/AGENT_DESIGN.md`, `docs/API_CONTRACTS.md`,
+  `docs/DATA_MODEL.md`, `docs/SECURITY.md`, `docs/TEST_STRATEGY.md`, this plan,
+  `docs/KNOWN_ISSUES.md`, and `docs/SESSION_LOG.md` only where the new public/download contract or
+  durable handoff is material. Repository map, fixtures, evaluation output/source, deployment config,
+  `.env.example`, manifests, lockfile, and dependencies remain unchanged unless focused validation
+  proves otherwise; none is planned.
+
+Acceptance criteria:
+
+- Only a terminal response that passes `IncidentRetrievalResponseSchema` can be serialized. Drafts,
+  runners, models, processing state, arbitrary Markdown, filenames, external links, and unresolved
+  evidence/impact/remediation references are rejected or absent before export.
+- Repeated serialization of the same validated response is byte-identical. Tests pin renderer version,
+  exact section order, UTF-8 bytes, LF-only newlines, one trailing newline, stable ordinal anchors,
+  stable filename, and canonical fixture content including `81% high`, both exact blast-radius impacts,
+  structured `not_executed` remediation, resolved evidence, and observable activity.
+- Focused variants truthfully render completed-but-insufficient/not-scored and unknown blast radius;
+  degraded/no-report; failed-before-evidence; and lineage-truncated partial-report states. Missing or
+  unavailable evidence/coverage is never phrased as successful completion or zero impact.
+- Adversarial fixtures cover Markdown headings/lists/tables/code fences, HTML/script/comments, links and
+  unsafe schemes, control/bidi characters, traversal, Windows reserved/device names, long labels,
+  credential/internal-host/stack/raw-payload/private-reasoning sentinels, and filename header injection.
+- API tests prove exact content headers, safe filename, invalid/unknown/processing behavior, body bytes,
+  and credential-free fixture download. Static web tests prove one accessible terminal action; the
+  single Windows browser gate downloads the attachment and verifies suggested filename plus canonical
+  content before clean process/listener teardown.
+- Existing confidence, blast-radius, remediation, audit, degradation, readiness, rate/body safety,
+  evaluation, provider, fixture, manifest, lockfile, and no-model-call contracts remain unchanged.
+
+Deferred: checked-in generated report samples, report storage/history, signed/share links, email,
+Slack/Jira, PDF, comparison, authentication/authorization, persistence/database, telemetry/analytics,
+provider/model routing, live credential/DataHub smoke, Mac validation, Phase 6 Level D/checkpoint/
+closure, Phase 7, and Phase 8.
+
+Exact Level C validation commands, run once on coherent final inputs and repeat only a classified
+affected failure:
+
+- `pnpm exec prettier --write packages/shared-types/src/index.ts apps/api/src/index.ts apps/web/src/App.tsx apps/web/src/styles.css tests/integration/markdown-export.test.ts tests/integration/contracts.test.ts tests/integration/input-output-safety.test.ts tests/integration/incidents-api.test.ts tests/integration/web-report.test.ts tests/e2e/report-display.spec.mjs docs/PRODUCT_SPEC.md docs/ARCHITECTURE.md docs/AGENT_DESIGN.md docs/API_CONTRACTS.md docs/DATA_MODEL.md docs/SECURITY.md docs/TEST_STRATEGY.md docs/IMPLEMENTATION_PLAN.md docs/KNOWN_ISSUES.md docs/SESSION_LOG.md`, then the same path list with `pnpm exec prettier --check`.
+- `pnpm exec eslint packages/shared-types/src/index.ts apps/api/src/index.ts apps/web/src/App.tsx tests/integration/markdown-export.test.ts tests/integration/contracts.test.ts tests/integration/input-output-safety.test.ts tests/integration/incidents-api.test.ts tests/integration/web-report.test.ts tests/e2e/report-display.spec.mjs`.
+- `pnpm --filter @dii/shared-types typecheck`, `pnpm --filter @dii/datahub-client typecheck`,
+  `pnpm --filter @dii/agent-core typecheck`, `pnpm --filter @dii/api typecheck`,
+  `pnpm --filter @dii/web typecheck`, and `pnpm --filter @dii/evaluation typecheck`.
+- `pnpm exec vitest run tests/integration/markdown-export.test.ts tests/integration/contracts.test.ts tests/integration/input-output-safety.test.ts tests/integration/incidents-api.test.ts tests/integration/web-report.test.ts`.
+- `pnpm --filter @dii/shared-types build`, `pnpm --filter @dii/datahub-client build`,
+  `pnpm --filter @dii/agent-core build`, `pnpm --filter @dii/api build`,
+  `pnpm --filter @dii/web build`, and `pnpm --filter @dii/evaluation build`; then `pnpm smoke` and
+  exactly one `pnpm test:e2e:report` credential-free Windows fixture regression with real attachment
+  download/content verification.
+- `git diff --check`; exact tracked/untracked diff/name/stat and full patch review; secret, credential,
+  unsafe URL/HTML/Markdown/bidi, filename traversal/device/header-injection, prompt/private-reasoning,
+  raw provider/model payload, hostname, stack, unsupported-reference, conflict/debug, and generated-
+  artifact scans; manifest/lockfile/dependency/config/fixture/evaluation drift review; exact base/tree/
+  parent ancestry; browser download/temp/listener/owned-process cleanup; then one or more coherent
+  conventional commits without history rewriting, normal push, exactly one Draft PR against current
+  `main`, and exact-head CI to terminal SUCCESS without merge.
+
+Local implementation result: `incident-markdown-v1`, the terminal-only stateless endpoint, accessible
+native download action, and focused serializer/API/UI/browser coverage meet the acceptance above. The
+canonical fixture remains `81% high` with the exact dataset and dashboard impacts, resolved ordinal
+evidence links, and `not_executed` remediation. No sample, storage, share link, provider/config,
+manifest, lockfile, dependency, fixture, or evaluation-source change was introduced.
+
+Level C result on the coherent final source/test input: focused Prettier write/check passed in
+`8738ms`/`9067ms`; corrected affected formatting/lint passed in `10177ms`; 6/6 typechecks passed
+(`6862ms`, `6873ms`, `7292ms`, `9380ms`, `10036ms`, `6526ms`); the exact five-file deterministic
+matrix passed 5/5 files and 57/57 tests in `7.10s` (`9674ms` command wall); 6/6 builds passed
+(`9494ms`, `10271ms`, `11131ms`, `13418ms`, `21972ms`, `9893ms`) with 109 web modules and a `5.46s`
+Vite build; built fixture smoke passed in `5508ms`; and exactly one final Windows browser regression
+passed in `21965ms` (`30582ms` command wall) on temporary ports `62328`/`62329`, including real
+attachment filename/content verification. Both listeners were released. Publication, exact-head CI,
+review, merge, Level D/checkpoint, and later phases remain separate; this task stops after a successful
+Draft PR CI without merge.
+
+A final security-audit increment extended bare-token and header-injection coverage. Affected format,
+lint, and shared-types typecheck passed in one `22547ms` command; after correcting an intentionally
+malicious test value that exceeded the existing public 300-character bound, the final dedicated export
+regression passed 5/5 tests in `5.55s` (`8090ms` command wall). No production contract was widened.
+
+#### QA correction — complete credential-assignment redaction
+
+Status: targeted correction in progress on the existing Draft PR #40. QA evaluated exact public HEAD
+`9d306a5c2e7229c9cfa956f4bb7ff0f818bf0b13` (tree
+`20edaa661b4e3143561c2004c75492c91051158c`) and classified a product/security blocker while exact-head
+CI run `29869641617`, job `88766368897`, remained successful. Draft PR #40 is still OPEN/Draft/CLEAN,
+base `main`, with that exact head before correction; public history must remain additive.
+
+Objective: minimally correct `incident-markdown-v1` credential-assignment sanitization so punctuation
+in an untrusted value cannot survive as a secret suffix. In particular, `password=p@ssw0rd` and
+`api_key=abcd!XYZ` must each become one complete redaction. Preserve the existing renderer version,
+schema/composition boundary, deterministic bytes/order, URL/token/internal-host redaction, and all
+report/API/UI behavior.
+
+Minimum files and decisions:
+
+- `packages/shared-types/src/index.ts`: replace only the credential-assignment value matcher. Quoted
+  single-line values may contain spaces and escaped characters and end at their matching quote;
+  unquoted values may contain punctuation and end only at whitespace/end or at a field separator that
+  is immediately followed by another key/value assignment. Redaction must not consume safe prefix or
+  suffix text, a following line after whitespace normalization, or a following non-credential field.
+- `tests/integration/markdown-export.test.ts`: add deterministic public-export regression for both QA
+  payloads plus quoted punctuation, whitespace/newline, and adjacent separator boundaries. Assert the
+  full secret and distinguishing suffix are absent while allowlisted surrounding text remains.
+- This plan, `docs/KNOWN_ISSUES.md`, and `docs/SESSION_LOG.md`: record the blocker, classified failing
+  reproduction, exact focused validation, additive commit/publication, and next action. No other
+  source, API, UI, fixture, configuration, manifest, lockfile, or dependency file is needed.
+
+Acceptance:
+
+- The pre-fix targeted regression fails against `9d306a5…` because the exported Markdown contains
+  `p@ssw0rd` and `!XYZ`; the same regression passes after the minimum matcher correction.
+- Full assignments with common punctuation are replaced by the fixed escaped
+  `\[redacted credential\]` marker with no secret fragment or suffix. Quoted values containing spaces
+  remain wholly redacted. Horizontal whitespace and normalized newline boundaries preserve unrelated
+  text; `,`, `;`, or `|` separates a following field only when followed by another key/value label.
+- The complete dedicated Markdown-export file and the adjacent input/output-safety file pass. Affected
+  format/check, lint, shared-types typecheck, `git diff --check`, scope/secret/generated-junk audit, and
+  remote CI pass. Previously green browser/build/byte-order gates are not rerun locally because neither
+  their code nor canonical input changed; configured exact-head CI remains authoritative.
+
+Deferred: any sanitizer redesign beyond credential assignments, new secret taxonomy, renderer-version
+change, report/UI/API changes, full suite, Level D/checkpoint, Phase 7, Phase 8, merge, sharing/storage,
+PDF/email/Slack/Jira, auth, providers, credentials, Mac, and deployment/release work.
+
+Exact targeted commands:
+
+- Pre-fix reproduction, then post-fix confirmation:
+  `pnpm exec vitest run tests/integration/markdown-export.test.ts -t "redacts complete credential assignments without consuming adjacent text"`.
+- `pnpm exec prettier --write packages/shared-types/src/index.ts tests/integration/markdown-export.test.ts docs/IMPLEMENTATION_PLAN.md docs/KNOWN_ISSUES.md docs/SESSION_LOG.md`, then the same list with
+  `pnpm exec prettier --check`; `pnpm exec eslint packages/shared-types/src/index.ts tests/integration/markdown-export.test.ts`;
+  `pnpm --filter @dii/shared-types typecheck`.
+- Affected deterministic matrix only:
+  `pnpm exec vitest run tests/integration/markdown-export.test.ts tests/integration/input-output-safety.test.ts`.
+- `git diff --check`; exact path/stat/patch, secret/debug/conflict/generated-artifact and forbidden-drift
+  audit; verify base/ancestry; create one additive conventional commit without amend/rebase, push the
+  existing branch, verify only Draft PR #40 remains OPEN/Draft/CLEAN against `main`, and wait for the
+  new exact-head CI run/job to terminal SUCCESS without merge.
+
+Local correction result: the old matcher reproduced the blocker in 1/1 targeted test (`1.62s`,
+`2404ms` command wall), leaving `p@ssw0rd` and `\!XYZ` in public Markdown. The replacement matcher now
+redacts six complete assignment variants while preserving four allowlisted surrounding-text sentinels
+and the following `mode`, `status`, and `state` fields. The first post-fix run proved all six redactions
+but one assertion overlooked the existing Markdown escape for `-`; replacing only that test sentinel
+with alphabetic text produced a 1/1 PASS in `1.06s` (`1573ms` command wall). Focused format/check passed
+in `2070ms`, affected lint in `2464ms`, shared-types typecheck in `1529ms`, and the exact two-file matrix
+passed 2/2 files and 21/21 tests in `1.78s` (`2308ms` command wall). Additive publication and the new
+exact-head CI remain pending; browser, build, full suite, Level D, and later phases were not rerun.
+Final five-path source/test/persistent-doc Prettier write/check also passed in `5283ms`.
+
+#### QA correction 2 — field-label lookahead must not cross whitespace
+
+Status: targeted correction planned on the existing Draft PR #40 after QA evaluated exact public HEAD
+`35f460c9b6a73f0dc9f7dfb34b026de46b9a410d` (tree
+`92bec81fbd25575a87efb26ce4d656c654f786b6`). Exact-head CI run `29880998722`, job `88801642396`,
+passed, but product/security acceptance remains blocked. PR #40 is still the sole OPEN/Draft/CLEAN and
+MERGEABLE PR for the branch, with base `main`; history remains additive only.
+
+Objective: keep punctuation inside an unquoted credential value through the next whitespace boundary.
+For `SAFE_PREFIX password=p@ss|TAIL mode=fixture SAFE_SUFFIX`, redact all of `p@ss|TAIL`, preserve the
+following `mode=fixture` and safe sentinels, and apply the same rule to `;` and `,`. Preserve the two QA
+payloads already fixed: `password=p@ssw0rd` and `api_key=abcd!XYZ,mode=fixture`.
+
+Minimum change and boundary decision:
+
+- `packages/shared-types/src/index.ts`: remove whitespace from only the field-label token inside the
+  separator lookahead. A real separator may be followed by horizontal whitespace around its delimiter,
+  but its label itself must be one contiguous ASCII identifier using letters, digits, `_`, or `-`.
+  Therefore `|state=allowed` remains a separator before a following field, while `|TAIL mode=fixture`
+  remains credential punctuation/value until whitespace ends the unquoted credential.
+- `tests/integration/markdown-export.test.ts`: add one public-export regression containing exact `|`,
+  `;`, and `,` QA variants immediately before whitespace-delimited `mode`, `status`, and `state` fields.
+  Pin full-secret/suffix absence, three fixed redaction markers, safe prefix/suffix/newline survival,
+  following-field survival, and the two previously corrected payloads.
+- Update only this plan, `docs/KNOWN_ISSUES.md`, and `docs/SESSION_LOG.md` for durable QA evidence. No
+  API/UI/schema/version, fixture, provider, config, manifest, lockfile, dependency, build, or browser
+  input changes.
+
+Acceptance and exact validation:
+
+- Before the source fix, run
+  `pnpm exec vitest run tests/integration/markdown-export.test.ts -t "keeps whitespace-delimited fields outside punctuation-bearing credential values"`; it must reproduce the leak for all three punctuation variants.
+- After the one-token matcher correction, rerun that exact test to PASS. Then run affected
+  format/check for the five source/test/doc paths, ESLint for shared-types and the Markdown test,
+  shared-types typecheck, and exactly
+  `pnpm exec vitest run tests/integration/markdown-export.test.ts tests/integration/input-output-safety.test.ts`.
+- Audit `git diff --check`, exact paths/stat/patch, secrets/debug/conflicts/generated artifacts and
+  forbidden drift. Create one additive conventional commit without amend/rebase, normal-push the same
+  branch, verify only PR #40 remains OPEN/Draft/CLEAN/MERGEABLE against `main`, and wait for its new
+  exact-head CI run/job to terminal SUCCESS without merge.
+
+Deferred: sanitizer redesign, expanded secret taxonomy, renderer-version/API/UI changes, browser,
+build, smoke, full suite, Level D/checkpoint, Phase 7/8, release/deployment, Mac, providers, credentials,
+sharing/storage, and merge.
+
+Local QA2 result: the exact pre-fix regression reproduced the three leaked punctuation suffixes in
+1/1 failed test (`1.33s`, `1981ms` command wall). Removing only the space from the contiguous
+field-label character class made that same test pass 1/1 in `1.18s` (`1746ms` command wall), while
+retaining both prior QA payloads and all following-field/safe-text assertions. Focused format/check
+passed in `2371ms`, affected lint in `22359ms`, shared-types typecheck in `4441ms`, and the exact
+two-file matrix passed 2/2 files and 22/22 tests in `1.84s` (`2410ms` command wall). Additive
+publication/new exact-head CI remain pending; no deferred gate was run.
+
+#### QA correction 3 — share allowlisted multiword credential keys
+
+Status: targeted correction planned on the existing Draft PR #40 after QA evaluated exact public HEAD
+`c9e255d4d0a9b932b28251092cc2ae9662eee725` (tree
+`571f754eb39a6f4039715249390a4fa6fb7b015d`). Exact-head CI run `29882336711`, job `88805664838`,
+passed, but product/security acceptance remains blocked. Local, remote, and the sole
+OPEN/Draft/CLEAN/MERGEABLE PR #40 head all match before correction; base remains `main` and history
+remains additive only.
+
+Objective: support the canonical multiword credential keys after punctuation separators without
+reintroducing arbitrary space-bearing labels. For
+`SAFE password=p@ss|api key=abcd!XYZ SAFE_AFTER`, redact both credential assignments and preserve safe
+text/following fields. Apply the same rule to `access token`; retain correct adjacent `api-key` and
+`api_key`, QA2 `|TAIL mode=`, `;TAIL status=`, `,TAIL state=`, and real `|state=` behavior.
+
+Minimum change and boundary decision:
+
+- `packages/shared-types/src/index.ts`: define one code-owned credential-key regex fragment equal to the
+  current canonical allowlist and interpolate it into both the main assignment matcher and the
+  separator field-label alternative. The generic field-label alternative stays contiguous; only exact
+  allowlisted keys such as `api key` and `access token` may contain the already supported single space.
+  No arbitrary `TAIL mode` label, parser, taxonomy, or renderer-version change is introduced.
+- `tests/integration/markdown-export.test.ts`: add one public-export regression for adjacent
+  `|api key=`, `|access token=`, `|api-key=`, and `|api_key=`. Assert all secrets/suffixes disappear,
+  expected redaction count is stable, safe prefix/suffix/newline and following `mode/status/state/next`
+  fields survive. Running the complete file also pins all QA1/QA2 boundaries.
+- Update only this plan, `docs/KNOWN_ISSUES.md`, and `docs/SESSION_LOG.md`. No API/UI/schema/version,
+  fixture, config, manifest, lockfile, dependency, build/browser, provider, or evaluation input changes.
+
+Acceptance and exact validation:
+
+- Before the source fix, run
+  `pnpm exec vitest run tests/integration/markdown-export.test.ts -t "redacts allowlisted multiword credential fields after punctuation separators"`; it must reproduce the leaked multiword-key suffixes.
+- After the shared-fragment correction, rerun that exact test to PASS. Run affected format/check for the
+  five source/test/doc paths, ESLint for shared-types and the Markdown test, shared-types typecheck, and
+  exactly
+  `pnpm exec vitest run tests/integration/markdown-export.test.ts tests/integration/input-output-safety.test.ts`.
+- Audit `git diff --check`, exact paths/stat/patch, secrets/debug/conflicts/generated artifacts and
+  forbidden drift. Create one additive conventional commit without amend/rebase, normal-push the same
+  branch, verify only PR #40 remains OPEN/Draft/CLEAN/MERGEABLE against `main`, and wait for its new
+  exact-head CI run/job to terminal SUCCESS without merge.
+
+Deferred: broader sanitizer/parser changes, new key taxonomy, renderer/API/UI changes, browser, build,
+smoke, full suite, Level D/checkpoint, Phase 7/8, release/deployment, Mac, providers, credentials,
+sharing/storage, and merge.
+
+Local QA3 result: the exact pre-fix test reproduced a missing adjacent credential redaction (7 markers
+instead of 8) in `1.17s` (`1752ms` command wall). A single shared canonical key fragment now drives
+both the main assignment matcher and the separator lookahead; the strengthened regression also checks
+unique alphanumeric secret fragments so Markdown escaping cannot mask a suffix leak. The same test
+passed 1/1 in `1.08s` (`1657ms` command wall). Focused format/check passed in `2277ms`, affected lint in
+`1327ms`, shared-types typecheck in `1313ms`, and the exact two-file matrix passed 2/2 files and 23/23
+tests in `1.88s` (`2469ms` command wall). Additive publication/new exact-head CI remain pending; no
+deferred gate was run.
+
+#### QA correction 4 — atomically redact assignment scheme credentials
+
+Status: targeted correction planned on the existing Draft PR #40 after QA evaluated exact public HEAD
+`4bd4fb5aaa16b3f7f87cbf6d7a544e9d8dafdb9f` (tree
+`69ea8cc7de68f4b5c047bc89a6c6c809f33934d4`). Exact-head CI run `29883276289`, job `88808482832`,
+passed, but product/security acceptance remains blocked. Local, remote, and the sole
+OPEN/Draft/CLEAN/MERGEABLE PR #40 head all match before correction; base remains `main` and history
+remains additive only.
+
+Objective: redact an exact supported `Authorization | Auth | Token` assignment plus `Bearer | Basic`
+scheme and its credential as one unit before the generic assignment matcher can remove the scheme
+sentinel. `PRE Authorization: Bearer abcdefgh POST` must preserve `PRE`/`POST` and remove the token;
+the same applies to `auth=Bearer`, `token=Bearer`, and `Authorization: Basic`.
+
+Minimum change and boundary decision:
+
+- `packages/shared-types/src/index.ts`: derive a small authorization-key fragment used by the existing
+  canonical credential-key fragment, share the existing quoted/unquoted credential-value and field
+  boundary fragments, and add one exact case-insensitive Bearer/Basic assignment matcher before the
+  generic assignment matcher. It consumes only the supported key, delimiter, scheme, and one bounded
+  credential value; whitespace/end or a real field separator ends the value, preserving safe adjacent
+  text and following fields. Unsafe URLs continue to redact first; ordinary standalone Bearer tokens
+  continue through the existing token matcher.
+- `tests/integration/markdown-export.test.ts`: add one public-export regression for the four QA scheme
+  cases plus standalone Bearer, ordinary password assignment, URL-userinfo, and quoted value. Pin
+  secret-fragment absence, fixed marker counts, safe prefix/suffix/newline, following
+  `mode/status/state/next`, URL marker, and quoted boundary. Running the complete file pins QA1-QA3.
+- Update only this plan, `docs/KNOWN_ISSUES.md`, and `docs/SESSION_LOG.md`. No API/UI/schema/version,
+  fixture, config, manifest, lockfile, dependency, provider/evaluation, build, browser, or smoke input
+  changes.
+
+Acceptance and exact validation:
+
+- Before the source fix, run
+  `pnpm exec vitest run tests/integration/markdown-export.test.ts -t "atomically redacts assignment scheme credentials without consuming safe boundaries"`; it must reproduce exposed Bearer/Basic credential fragments.
+- After the ordered atomic matcher correction, rerun that exact test to PASS. Run affected format/check
+  for the five source/test/doc paths, ESLint for shared-types and the Markdown test, shared-types
+  typecheck, and exactly
+  `pnpm exec vitest run tests/integration/markdown-export.test.ts tests/integration/input-output-safety.test.ts`.
+- Audit `git diff --check`, exact paths/stat/patch, secrets/debug/conflicts/generated artifacts and
+  forbidden drift. Create one additive conventional commit without amend/rebase, normal-push the same
+  branch, verify only PR #40 remains OPEN/Draft/CLEAN/MERGEABLE against `main`, and wait for its new
+  exact-head CI run/job to terminal SUCCESS without merge.
+
+Deferred: parser/sanitizer redesign, new key/scheme taxonomy, renderer/API/UI changes, browser, build,
+smoke, full suite, Level D/checkpoint, Phase 7/8, release/deployment, Mac, providers, credentials,
+sharing/storage, and merge.
+
+Local QA4 result: the exact pre-fix test reproduced exposed unique credential fragments for all four
+assignment scheme cases in `1.84s` (`2696ms` command wall). The ordered atomic matcher and shared
+key/value/boundary fragments made the same test pass 1/1 in `1.70s` (`2504ms` command wall), with seven
+credential markers, one URL marker, safe surrounding text, newline, and following fields intact.
+Focused format/check passed in `3191ms`, affected lint in `1904ms`, shared-types typecheck in `1981ms`,
+and the exact two-file matrix passed 2/2 files and 24/24 tests in `2.69s` (`3558ms` command wall).
+Additive publication/new exact-head CI remain pending; no deferred gate was run.
+
+#### QA correction 5 — atomic quoted boundaries and URL suffix preservation
+
+Status: targeted correction planned on the existing Draft PR #40 after QA evaluated exact public HEAD
+`54137630c975dd08aa2081af7431b160a9c53275` (tree
+`a892c08a0c9b559616c6df0ca4beff1bafdbfe90`). Exact-head CI run `29884438220`, job `88811980391`,
+passed, but the finite sanitizer table remains blocked at 41/43. Local, remote, and the sole
+OPEN/Draft/CLEAN/MERGEABLE PR #40 head all match before correction; base remains `main` and history
+remains additive only.
+
+Objective: keep quoted credential values atomic through their matching quote, preserve safe punctuation
+and text after that quote, and stop unsafe-URL redaction before a comma-delimited safe suffix. Exact
+`Authorization: Bearer "alpha beta",SAFE`, `password="QuotedSecret42!",SafeAfter`, and
+`https://user:password@example.com/path,SafeAfter` reproducers must redact their secret or URL while
+retaining the safe suffix, following text/field, and newline.
+
+Minimum change and boundary decision:
+
+- `packages/shared-types/src/index.ts`: split the shared credential value/boundary fragments into an
+  explicitly quoted branch that ends at the matching quote and accepts safe punctuation after it, and
+  an unquoted branch that cannot start with a quote and retains the existing field-aware punctuation
+  boundary. Apply both branches in quoted-first order to authorization-scheme and generic assignment
+  redaction so an opening quote can never fall back to the unquoted matcher. Keep URL redaction first,
+  but exclude comma from the URL body so comma-delimited safe text is not consumed. Preserve the shared
+  authorization/key patterns and standalone token order.
+- `tests/integration/markdown-export.test.ts`: add a public-export finite 43-case table that pins the
+  exact three QA5 reproducers, all QA1-QA4 credential/scheme/separator variants, ordinary standalone
+  token and URL-userinfo cases, safe prefix/suffix/newline, and following `mode/status/state/next`
+  fields. Require every case to retain its safe sentinel and remove its unique unsafe sentinel.
+- Update only this plan, `docs/KNOWN_ISSUES.md`, and `docs/SESSION_LOG.md`. No API/UI/schema/version,
+  fixture, config, manifest, lockfile, dependency, provider/evaluation, build, browser, or smoke input
+  changes.
+
+Acceptance and exact validation:
+
+- Before the source fix, run
+  `pnpm exec vitest run tests/integration/markdown-export.test.ts -t "passes the finite credential boundary security table"`; it must reproduce exactly the quoted-scheme leak and the two safe-suffix losses.
+- After the targeted matcher correction, rerun that exact table to PASS 43/43. Run affected
+  format/check for the five source/test/doc paths, ESLint for shared-types and the Markdown test,
+  shared-types typecheck, and exactly one affected matrix:
+  `pnpm exec vitest run tests/integration/markdown-export.test.ts tests/integration/input-output-safety.test.ts`.
+- Audit `git diff --check`, exact paths/stat/patch, secrets/debug/conflicts/generated artifacts and
+  forbidden drift. Create one additive conventional commit without amend/rebase, normal-push the same
+  branch, verify only PR #40 remains OPEN/Draft/CLEAN/MERGEABLE against `main`, and wait for its new
+  exact-head CI run/job to terminal SUCCESS without merge.
+
+Deferred: parser/sanitizer redesign, new key/scheme taxonomy, renderer/API/UI changes, browser, build,
+smoke, full suite, Level D/checkpoint, Phase 7/8, release/deployment, Mac, providers, credentials,
+sharing/storage, and merge.
+
+Local QA5 result: the first `pnpm exec vitest` launcher stopped before collection because managed
+PowerShell lacked `node` on `PATH`; the direct verified bundled-Node invocation then reproduced exactly
+41/43 passing cases and the two expected QA5 failures in `3.10s` (`3671ms` command wall). After the
+quoted-first matcher split and comma-bounded URL correction, that exact selector passed 43/43 in
+`3.13s` (`3629ms` command wall). Focused Prettier write/check passed in `1074ms`/`1137ms`, affected
+ESLint in `2056ms`, shared-types typecheck in `1548ms`, and exactly one affected two-file matrix passed
+2/2 files and 67/67 tests in `3.87s` (`4419ms` command wall). Additive publication/new exact-head CI
+remain pending; no deferred gate was run.
+
 ## Phase 7 — GitHub, CI, and release
 
 Finalize branch/PR workflow, full CI, release validation, smoke tests, and merge readiness.

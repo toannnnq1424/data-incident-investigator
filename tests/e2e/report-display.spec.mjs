@@ -1,3 +1,4 @@
+import { Buffer } from 'node:buffer';
 import { log } from 'node:console';
 import process from 'node:process';
 import { fileURLToPath, URL } from 'node:url';
@@ -23,6 +24,15 @@ function assertText(text, pattern, label) {
   if (!pattern.test(text)) {
     fail(`Expected browser report to include ${label}.`);
   }
+}
+
+async function readDownloadText(download) {
+  const stream = await download.createReadStream();
+  const chunks = [];
+  for await (const chunk of stream) {
+    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+  }
+  return Buffer.concat(chunks).toString('utf8');
 }
 
 async function assertNoHorizontalOverflow(page, label) {
@@ -231,6 +241,34 @@ try {
     .getByRole('heading', { name: 'Planning safe verification and remediation' })
     .waitFor({ timeout: 2_000 });
   await page.getByText('Investigation completed', { exact: true }).waitFor({ timeout: 5_000 });
+
+  const downloadLink = page.getByRole('link', { name: 'Download Markdown report' });
+  await downloadLink.waitFor({ timeout: 2_000 });
+  const downloadStarted = page.waitForEvent('download');
+  await downloadLink.click();
+  const markdownDownload = await downloadStarted;
+  const suggestedFilename = markdownDownload.suggestedFilename();
+  if (
+    !/^incident-report-analytics-daily-revenue-[0-9a-f-]{36}\.md$/.test(suggestedFilename) ||
+    /[\\/:*?"<>|\r\n]/u.test(suggestedFilename)
+  ) {
+    fail(`Markdown download suggested an unsafe or unstable filename: ${suggestedFilename}`);
+  }
+  const markdownReport = await readDownloadText(markdownDownload);
+  if (
+    markdownReport.includes('\r') ||
+    !markdownReport.endsWith('\n') ||
+    markdownReport.endsWith('\n\n')
+  ) {
+    fail('Markdown download did not use the exact LF/final-newline contract.');
+  }
+  assertText(markdownReport, /Renderer version: incident-markdown-v1/, 'renderer version');
+  assertText(markdownReport, /Evidence confidence: 81% \(high\)/, 'canonical confidence');
+  assertText(markdownReport, /Entity: analytics\\\.daily\\_revenue \(dataset\)/, 'dataset impact');
+  assertText(markdownReport, /Entity: Revenue overview \(dashboard\)/, 'dashboard impact');
+  assertText(markdownReport, /Execution status: not_executed/, 'remediation status');
+  assertText(markdownReport, /\[Evidence 004\]\(#evidence-004\)/, 'resolved evidence link');
+  await markdownDownload.delete();
 
   const activity = page.locator('.investigation-activity');
   await activity
