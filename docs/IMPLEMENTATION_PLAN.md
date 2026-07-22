@@ -3772,6 +3772,62 @@ passed 1/1 in `1.08s` (`1657ms` command wall). Focused format/check passed in `2
 tests in `1.88s` (`2469ms` command wall). Additive publication/new exact-head CI remain pending; no
 deferred gate was run.
 
+#### QA correction 4 — atomically redact assignment scheme credentials
+
+Status: targeted correction planned on the existing Draft PR #40 after QA evaluated exact public HEAD
+`4bd4fb5aaa16b3f7f87cbf6d7a544e9d8dafdb9f` (tree
+`69ea8cc7de68f4b5c047bc89a6c6c809f33934d4`). Exact-head CI run `29883276289`, job `88808482832`,
+passed, but product/security acceptance remains blocked. Local, remote, and the sole
+OPEN/Draft/CLEAN/MERGEABLE PR #40 head all match before correction; base remains `main` and history
+remains additive only.
+
+Objective: redact an exact supported `Authorization | Auth | Token` assignment plus `Bearer | Basic`
+scheme and its credential as one unit before the generic assignment matcher can remove the scheme
+sentinel. `PRE Authorization: Bearer abcdefgh POST` must preserve `PRE`/`POST` and remove the token;
+the same applies to `auth=Bearer`, `token=Bearer`, and `Authorization: Basic`.
+
+Minimum change and boundary decision:
+
+- `packages/shared-types/src/index.ts`: derive a small authorization-key fragment used by the existing
+  canonical credential-key fragment, share the existing quoted/unquoted credential-value and field
+  boundary fragments, and add one exact case-insensitive Bearer/Basic assignment matcher before the
+  generic assignment matcher. It consumes only the supported key, delimiter, scheme, and one bounded
+  credential value; whitespace/end or a real field separator ends the value, preserving safe adjacent
+  text and following fields. Unsafe URLs continue to redact first; ordinary standalone Bearer tokens
+  continue through the existing token matcher.
+- `tests/integration/markdown-export.test.ts`: add one public-export regression for the four QA scheme
+  cases plus standalone Bearer, ordinary password assignment, URL-userinfo, and quoted value. Pin
+  secret-fragment absence, fixed marker counts, safe prefix/suffix/newline, following
+  `mode/status/state/next`, URL marker, and quoted boundary. Running the complete file pins QA1-QA3.
+- Update only this plan, `docs/KNOWN_ISSUES.md`, and `docs/SESSION_LOG.md`. No API/UI/schema/version,
+  fixture, config, manifest, lockfile, dependency, provider/evaluation, build, browser, or smoke input
+  changes.
+
+Acceptance and exact validation:
+
+- Before the source fix, run
+  `pnpm exec vitest run tests/integration/markdown-export.test.ts -t "atomically redacts assignment scheme credentials without consuming safe boundaries"`; it must reproduce exposed Bearer/Basic credential fragments.
+- After the ordered atomic matcher correction, rerun that exact test to PASS. Run affected format/check
+  for the five source/test/doc paths, ESLint for shared-types and the Markdown test, shared-types
+  typecheck, and exactly
+  `pnpm exec vitest run tests/integration/markdown-export.test.ts tests/integration/input-output-safety.test.ts`.
+- Audit `git diff --check`, exact paths/stat/patch, secrets/debug/conflicts/generated artifacts and
+  forbidden drift. Create one additive conventional commit without amend/rebase, normal-push the same
+  branch, verify only PR #40 remains OPEN/Draft/CLEAN/MERGEABLE against `main`, and wait for its new
+  exact-head CI run/job to terminal SUCCESS without merge.
+
+Deferred: parser/sanitizer redesign, new key/scheme taxonomy, renderer/API/UI changes, browser, build,
+smoke, full suite, Level D/checkpoint, Phase 7/8, release/deployment, Mac, providers, credentials,
+sharing/storage, and merge.
+
+Local QA4 result: the exact pre-fix test reproduced exposed unique credential fragments for all four
+assignment scheme cases in `1.84s` (`2696ms` command wall). The ordered atomic matcher and shared
+key/value/boundary fragments made the same test pass 1/1 in `1.70s` (`2504ms` command wall), with seven
+credential markers, one URL marker, safe surrounding text, newline, and following fields intact.
+Focused format/check passed in `3191ms`, affected lint in `1904ms`, shared-types typecheck in `1981ms`,
+and the exact two-file matrix passed 2/2 files and 24/24 tests in `2.69s` (`3558ms` command wall).
+Additive publication/new exact-head CI remain pending; no deferred gate was run.
+
 ## Phase 7 — GitHub, CI, and release
 
 Finalize branch/PR workflow, full CI, release validation, smoke tests, and merge readiness.

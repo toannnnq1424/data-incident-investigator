@@ -3136,6 +3136,70 @@ Format năm path, audit exact delta/secrets/generated junk/ancestry, tạo một
 commit không amend/rebase, normal-push cùng branch, xác minh chỉ PR #40 vẫn OPEN/Draft/CLEAN/MERGEABLE,
 và chờ new exact-head CI terminal SUCCESS; không merge hoặc bắt đầu checkpoint/Phase 7.
 
+## 2026-07-22 — QA correction 4: atomic assignment scheme credentials
+
+### Objective
+
+Sửa product/security blocker QA4 tại exact public HEAD
+`4bd4fb5aaa16b3f7f87cbf6d7a544e9d8dafdb9f` (tree
+`69ea8cc7de68f4b5c047bc89a6c6c809f33934d4`) của Draft PR #40, dù exact CI run `29883276289`, job
+`88808482832`, SUCCESS. `Authorization/Auth/Token + Bearer/Basic + credential` phải bị che nguyên khối
+trước generic assignment; safe prefix/suffix/newline/following fields và toàn bộ QA1-QA3 phải giữ.
+
+### Completed
+
+Đã xác minh local/remote/PR cùng exact `4bd4fb5…`, worktree sạch, PR #40 là PR duy nhất và vẫn
+OPEN/Draft/CLEAN/MERGEABLE, base `main`. Pre-fix public-export regression chứng minh generic matcher chỉ
+che `Authorization: Bearer`, `auth=Bearer`, `token=Bearer`, `Authorization: Basic`, rồi để bốn unique
+credential fragments lộ phía sau. Standalone Bearer, password assignment, URL-userinfo và quoted value
+vẫn đúng.
+
+Production nay tách shared authorization-key, credential-key, quoted/unquoted value, field, và boundary
+fragments. Exact case-insensitive assignment scheme matcher dùng các fragment đó, chạy sau URL redaction
+nhưng trước generic assignment. Nó chỉ nuốt supported key, delimiter, Bearer/Basic scheme và một value;
+whitespace/end hoặc real following field dừng value. Existing standalone token matcher vẫn chạy sau.
+
+### Files changed
+
+Chỉ `packages/shared-types/src/index.ts`, `tests/integration/markdown-export.test.ts`,
+`docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md` và entry này. Không đổi API/UI/schema/version,
+fixture, config, manifest, lockfile, dependency, provider/evaluation source hoặc generated artifact.
+
+### Decisions
+
+Sửa ordering bằng atomic exact matcher thay vì mở rộng generic assignment hoặc viết parser mới. Reuse
+value/boundary fragments giữ quoted values, punctuation, whitespace, separator và multiword-key
+semantics đồng nhất. URL redaction vẫn ưu tiên trước để URL-userinfo không bị credential matcher tách;
+standalone Bearer vẫn thuộc secret-token matcher hiện hữu.
+
+### Validation performed
+
+- Exact pre-fix reproducer expected FAIL 1/1 trong `1.84s` (`2696ms` command wall), lộ bốn unique
+  Bearer/Basic credential fragments.
+- Exact post-fix targeted PASS 1/1 trong `1.70s` (`2504ms` command wall), đúng 7 credential markers, 1
+  URL marker và toàn bộ safe/following-field assertions.
+- Focused Prettier write/check PASS `3191ms`; affected ESLint PASS `1904ms`; shared-types typecheck PASS
+  `1981ms`.
+- Exact affected matrix PASS 2/2 files, 24/24 tests trong `2.69s` (`3558ms` command wall): 9 Markdown
+  export tests và 15 input/output-safety tests.
+
+### Validation intentionally deferred
+
+Browser/download, builds, smoke, full suite, Level D/checkpoint, Phase 7/8, Mac, live credentials/
+provider/model network, release/deployment và merge không chạy lại vì inputs liên quan không đổi.
+
+### Known issues
+
+Public PR head `4bd4fb5…` vẫn chứa QA4 blocker cho tới khi additive correction commit được push. Managed
+Windows esbuild junction tiếp tục cần approved bundled runtime cho Vitest; đây là environment-only
+limitation đã biết.
+
+### Exact next step
+
+Format năm path, audit exact delta/secrets/generated junk/ancestry, tạo một additive conventional
+commit không amend/rebase, normal-push cùng branch, xác minh chỉ PR #40 vẫn OPEN/Draft/CLEAN/MERGEABLE,
+và chờ new exact-head CI terminal SUCCESS; không merge hoặc bắt đầu checkpoint/Phase 7.
+
 ## 2026-07-22 — QA correction 3: shared multiword credential keys
 
 ### Objective

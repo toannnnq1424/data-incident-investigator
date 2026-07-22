@@ -422,6 +422,57 @@ describe('deterministic Markdown incident export', () => {
     expect(markdown).toContain('next=kept');
   });
 
+  it('atomically redacts assignment scheme credentials without consuming safe boundaries', async () => {
+    const { terminal } = await canonicalCompleted();
+    const unsafe = clone(terminal);
+    unsafe.contextStage.intent.question = [
+      'SchemePrefix Authorization: Bearer AuthBearerSecret42! POST mode=fixture SchemeSuffix',
+      'AuthPrefix auth=Bearer AuthShortSecret42! status=healthy AuthSuffix',
+      'TokenPrefix token=Bearer TokenSecret42! state=allowed TokenSuffix',
+      'BasicPrefix Authorization: Basic BasicSecret42+/= next=kept BasicSuffix',
+      'StandalonePrefix Bearer StandaloneSecret42+ StandaloneSuffix',
+      'AssignmentPrefix password=AssignmentSecret42! AssignmentSuffix',
+      'UrlPrefix https://user:password@example.com/path UrlSuffix',
+      'QuotedPrefix password="Quoted Secret42!@#" QuotedSuffix',
+      'SafeAfterNewline',
+    ].join('\n');
+
+    const markdown = createIncidentMarkdownExport(unsafe).markdown;
+
+    expect(markdown).not.toContain('AuthBearerSecret42');
+    expect(markdown).not.toContain('AuthShortSecret42');
+    expect(markdown).not.toContain('TokenSecret42');
+    expect(markdown).not.toContain('BasicSecret42');
+    expect(markdown).not.toContain('StandaloneSecret42');
+    expect(markdown).not.toContain('AssignmentSecret42');
+    expect(markdown).not.toContain('user:password@example.com');
+    expect(markdown).not.toContain('Quoted Secret42');
+    expect(markdown.match(/\\\[redacted credential\\\]/gu)).toHaveLength(7);
+    expect(markdown.match(/\\\[redacted URL\\\]/gu)).toHaveLength(1);
+    expect(markdown).toContain('SchemePrefix');
+    expect(markdown).toContain('POST');
+    expect(markdown).toContain('SchemeSuffix');
+    expect(markdown).toContain('AuthPrefix');
+    expect(markdown).toContain('AuthSuffix');
+    expect(markdown).toContain('TokenPrefix');
+    expect(markdown).toContain('TokenSuffix');
+    expect(markdown).toContain('BasicPrefix');
+    expect(markdown).toContain('BasicSuffix');
+    expect(markdown).toContain('StandalonePrefix');
+    expect(markdown).toContain('StandaloneSuffix');
+    expect(markdown).toContain('AssignmentPrefix');
+    expect(markdown).toContain('AssignmentSuffix');
+    expect(markdown).toContain('UrlPrefix');
+    expect(markdown).toContain('UrlSuffix');
+    expect(markdown).toContain('QuotedPrefix');
+    expect(markdown).toContain('QuotedSuffix');
+    expect(markdown).toContain('SafeAfterNewline');
+    expect(markdown).toContain('mode=fixture');
+    expect(markdown).toContain('status=healthy');
+    expect(markdown).toContain('state=allowed');
+    expect(markdown).toContain('next=kept');
+  });
+
   it('neutralizes Markdown, HTML, links, bidi, credentials, internal hosts, and unsafe filenames', async () => {
     const { terminal } = await canonicalCompleted();
     const unsafe = clone(terminal);
