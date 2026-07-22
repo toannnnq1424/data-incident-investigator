@@ -3330,3 +3330,72 @@ Windows pnpm launcher tiếp tục cần verified bundled Node trong shell; đâ
 Format năm path, audit exact delta/secrets/generated junk/ancestry, tạo một additive conventional commit
 không amend/rebase, normal-push cùng branch, xác minh chỉ PR #40 vẫn OPEN/Draft/CLEAN/MERGEABLE, và chờ
 new exact-head CI terminal SUCCESS; không merge hoặc bắt đầu checkpoint/Phase 7.
+
+## 2026-07-22 — Phase 6 Windows Level D integration checkpoint
+
+### Objective
+
+Close Phase 6 on Windows from exact integrated main `d18ecf2bbd1799de8374ee8390da40f170816741`
+and successful main CI run `29886862413`, job `88819080470`, using credential-free fixture evidence for
+Slices 6.1–6.6, blast radius, and Markdown export. Do not use Mac, live credentials, Phase 7 work, a
+product extension, or merge.
+
+### Completed
+
+Verified the exact commit/tree/parents and unchanged `origin/main`, clean dependency/process/port/
+credential baseline, then ran the tracked frozen bootstrap and the complete Level D matrix. Validated
+format/lint, six typechecks, 37/37 files and 345/345 tests, six production builds, built health/readiness
+smoke, the canonical seven-case evaluation, one full fixture browser investigation, deterministic
+blast-radius/truncation/unknown behavior, and a real sanitized Markdown attachment plus a separately
+hashed built-fixture sample.
+
+The initial production audit found High advisory GHSA-`v2hh-gcrm-f6hx` through `fast-uri` 3.1.3 and
+4.1.0. Added only two pnpm 11 workspace overrides to patched 3.1.4/4.1.1, regenerated the lockfile,
+proved both resolved paths, reran the failed audit and affected API gates, then ran the single permitted
+final integrated sequence because the production graph changed. No source, test, API, fixture, provider,
+evaluation, UI, or feature behavior changed.
+
+### Files changed
+
+`pnpm-workspace.yaml`, `pnpm-lock.yaml`, `.env.example`, `docs/IMPLEMENTATION_PLAN.md`,
+`docs/SECURITY.md`, `docs/KNOWN_ISSUES.md`, `docs/RELEASE_CHECKLIST.md`, and this session log.
+
+### Decisions
+
+Use exact advisory-bounded transitive overrides instead of broad dependency upgrades. Retain blank
+credential placeholders and fixture defaults. Mark only release checklist items directly proved by this
+checkpoint; leave public repository, live DataHub, deployment, submission, tag, and all Phase 7 work
+unchecked. Keep Issue #28 and milestone 7 open until the one Draft PR's exact-head CI succeeds.
+
+### Validation performed
+
+Bootstrap passed in `15.090s`. Initial `pnpm validate` passed in approximately `84.05s`; final-input
+`pnpm validate` passed in approximately `64.08s`, each with 37/37 files and 345/345 tests. The canonical
+evaluation was byte-identical across inputs: 64,639-byte JSON SHA-256
+`F8AE4481D03301A852ABFB1A574C29B90927B002EF2C738CFDF72332F496316B` and 2,474-byte Markdown
+SHA-256 `F9ED8FAC3873C5290F777B91500E15DE02F2674DF91F93E3111ABCACD1F0C6A5`; all seven cases completed,
+unsupported claims were `0/18`, and model tokens were zero. Final browser E2E passed in `9,401ms` on
+dynamic ports `53228`/`53229`. The 9,215-byte built-fixture Markdown sample SHA-256 was
+`DB3882ABE03FAC77B64EFB772C9EA2E6749B2EC23FD29C2E8AF34279C14AB0C4`; its exact temporary output
+was removed. Frozen dependency recovery, resolved-version inspection, zero-vulnerability production
+audit, 6-file/119-test affected API matrix, secret/env/config/artifact/ancestry/diff audit, and
+credential-absence checks passed.
+
+### Validation intentionally deferred
+
+Live DataHub/model credentials and network, Mac, public deployment, repository visibility/protection,
+authentication, persistence, sharing/storage, additional providers or product features, Phase 7/8,
+release tag, and merge.
+
+### Known issues
+
+The managed Windows shell does not place the bundled Node runtime on `PATH` automatically, and exact
+temporary outputs created by approved processes need approved exact-path cleanup. These are classified
+environment limitations, not product or CI blockers. Ignored local dependency/build outputs remain
+present for validation but no generated artifact is tracked.
+
+### Exact next step
+
+Format and audit the final docs/config diff, create one additive conventional commit, normal-push
+`codex/phase-6-checkpoint`, open one Draft PR based on unchanged exact `main`, wait for exact-head CI
+SUCCESS, then close existing Issue #28 and milestone 7 without merging or starting Phase 7.
