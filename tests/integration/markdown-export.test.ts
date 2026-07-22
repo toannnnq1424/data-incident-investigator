@@ -352,6 +352,42 @@ describe('deterministic Markdown incident export', () => {
     expect(markdown).toContain('state=allowed');
   });
 
+  it('keeps whitespace-delimited fields outside punctuation-bearing credential values', async () => {
+    const { terminal } = await canonicalCompleted();
+    const unsafe = clone(terminal);
+    unsafe.contextStage.intent.question = [
+      'SAFE_PREFIX password=p@ss|TAIL mode=fixture SAFE_SUFFIX',
+      'SAFE_SEMICOLON_PREFIX password=p@ss;TAIL status=healthy SAFE_SEMICOLON_SUFFIX',
+      'SAFE_COMMA_PREFIX password=p@ss,TAIL state=allowed SAFE_COMMA_SUFFIX',
+      'password=p@ssw0rd',
+      'api_key=abcd!XYZ,mode=fixture',
+      'SAFE_AFTER_NEWLINE',
+    ].join('\n');
+
+    const markdown = createIncidentMarkdownExport(unsafe).markdown;
+
+    expect(markdown).not.toContain('p@ss|TAIL');
+    expect(markdown).not.toContain('p@ss;TAIL');
+    expect(markdown).not.toContain('p@ss,TAIL');
+    expect(markdown).not.toContain('|TAIL');
+    expect(markdown).not.toContain(';TAIL');
+    expect(markdown).not.toContain(',TAIL');
+    expect(markdown).not.toContain('p@ssw0rd');
+    expect(markdown).not.toContain('abcd!XYZ');
+    expect(markdown).not.toContain('!XYZ');
+    expect(markdown.match(/\\\[redacted credential\\\]/gu)).toHaveLength(5);
+    expect(markdown).toContain('SAFE\\_PREFIX');
+    expect(markdown).toContain('SAFE\\_SUFFIX');
+    expect(markdown).toContain('SAFE\\_SEMICOLON\\_PREFIX');
+    expect(markdown).toContain('SAFE\\_SEMICOLON\\_SUFFIX');
+    expect(markdown).toContain('SAFE\\_COMMA\\_PREFIX');
+    expect(markdown).toContain('SAFE\\_COMMA\\_SUFFIX');
+    expect(markdown).toContain('SAFE\\_AFTER\\_NEWLINE');
+    expect(markdown.match(/mode=fixture/gu)).toHaveLength(2);
+    expect(markdown).toContain('status=healthy');
+    expect(markdown).toContain('state=allowed');
+  });
+
   it('neutralizes Markdown, HTML, links, bidi, credentials, internal hosts, and unsafe filenames', async () => {
     const { terminal } = await canonicalCompleted();
     const unsafe = clone(terminal);

@@ -3072,3 +3072,66 @@ biết, không phải repository defect.
 Format persistent docs, audit exact 5-path delta/secrets/generated junk/ancestry, tạo một additive
 conventional commit không amend/rebase, push cùng branch, xác minh chỉ Draft PR #40 vẫn OPEN/Draft/CLEAN,
 và chờ new exact-head CI tới terminal SUCCESS; không merge hoặc bắt đầu checkpoint/Phase 7.
+
+## 2026-07-22 — QA correction 2: field-label lookahead boundary
+
+### Objective
+
+Sửa product/security blocker QA2 tại exact public HEAD
+`35f460c9b6a73f0dc9f7dfb34b026de46b9a410d` (tree
+`92bec81fbd25575a87efb26ce4d656c654f786b6`) của Draft PR #40, dù exact CI run `29880998722`, job
+`88801642396`, SUCCESS. Với `SAFE_PREFIX password=p@ss|TAIL mode=fixture SAFE_SUFFIX`, toàn bộ
+`p@ss|TAIL` phải bị che nhưng following field và safe text phải còn nguyên. Giữ đúng hai QA payload
+trước, additive history only, không mở rộng phase/checkpoint.
+
+### Completed
+
+Đã xác minh local/remote/PR cùng exact `35f460c…`, worktree sạch, PR #40 OPEN/Draft/CLEAN/MERGEABLE và
+base `main`. Regression public export mới tái hiện đúng cả ba leak `\|TAIL`, `;TAIL`, `,TAIL` khi
+punctuation đứng trước whitespace-delimited `mode`, `status`, `state`.
+
+Production chỉ bỏ một ký tự space khỏi field-label character class. Label sau separator giờ phải là
+một token ASCII liền mạch gồm chữ, số, `_`, `-`; optional whitespace quanh `=`/`:` vẫn hợp lệ. Vì vậy
+`|state=allowed` vẫn là separator thật, còn `|TAIL mode=fixture` thuộc credential cho tới whitespace.
+Regression pin năm redaction markers, safe prefix/suffix/newline, ba following fields và hai QA payload
+`password=p@ssw0rd`, `api_key=abcd!XYZ,mode=fixture`.
+
+### Files changed
+
+Chỉ `packages/shared-types/src/index.ts`, `tests/integration/markdown-export.test.ts`,
+`docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md` và entry này. Không đổi API/UI/schema/version,
+fixture, config, manifest, lockfile, dependency, provider/evaluation source hoặc generated artifact.
+
+### Decisions
+
+Không parse label xuyên whitespace vì chuỗi `TAIL mode` không phải một field identifier. Không cấm
+punctuation trong unquoted credential; punctuation chỉ trở thành separator khi phần ngay sau nó là một
+contiguous identifier dẫn trực tiếp tới `=` hoặc `:`. Đây là correction hẹp của matcher hiện hữu, không
+redesign sanitizer và không đổi `incident-markdown-v1`.
+
+### Validation performed
+
+- Exact pre-fix reproducer expected FAIL 1/1 trong `1.33s` (`1981ms` command wall), chứng minh cả ba
+  suffix punctuation còn trong Markdown.
+- Exact post-fix targeted PASS 1/1 trong `1.18s` (`1746ms` command wall).
+- Focused Prettier write/check PASS `2371ms`; affected ESLint PASS `22359ms`; shared-types typecheck PASS
+  `4441ms`.
+- Exact affected matrix PASS 2/2 files, 22/22 tests trong `1.84s` (`2410ms` command wall): 7 Markdown
+  export tests và 15 input/output-safety tests.
+
+### Validation intentionally deferred
+
+Browser/download, builds, smoke, full suite, Level D/checkpoint, Phase 7/8, Mac, live credentials/
+provider/model network, release/deployment và merge không chạy lại vì inputs liên quan không đổi.
+
+### Known issues
+
+Public PR head `35f460c…` vẫn chứa QA2 blocker cho tới khi additive correction commit được push. Managed
+Windows esbuild junction tiếp tục cần approved bundled runtime cho Vitest; đây là environment-only
+limitation đã biết.
+
+### Exact next step
+
+Format năm path, audit exact delta/secrets/generated junk/ancestry, tạo một additive conventional
+commit không amend/rebase, normal-push cùng branch, xác minh chỉ PR #40 vẫn OPEN/Draft/CLEAN/MERGEABLE,
+và chờ new exact-head CI terminal SUCCESS; không merge hoặc bắt đầu checkpoint/Phase 7.

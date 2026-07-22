@@ -3,12 +3,12 @@
 Last updated: 2026-07-22.
 
 - Draft PR #40 carries the final approved Phase 6 optional Markdown export from exact main `601f361…`.
-  Its public HEAD `9d306a5…` and exact CI run `29869641617`, job `88766368897`, passed, but QA correctly
-  blocked acceptance because punctuation-bearing credential assignments could leak a full secret or
-  suffix. The targeted local correction now redacts complete quoted/unquoted assignment values,
-  including `@`, `!`, internal separators, spaces, and normalized newline boundaries, while preserving
-  unrelated surrounding text and following fields. Focused reproduction, format/check, lint,
-  shared-types typecheck, and the 2-file/21-test Markdown/security matrix pass locally; additive commit,
+  Its public HEAD `35f460c…` and exact CI run `29880998722`, job `88801642396`, passed, but QA2
+  correctly blocked acceptance because the separator lookahead allowed spaces inside a field label:
+  `password=p@ss|TAIL mode=fixture` left `|TAIL` visible. The targeted local correction makes the label
+  one contiguous ASCII identifier, so `|`, `;`, and `,` remain credential punctuation until whitespace
+  while real adjacent assignments still delimit fields. Pre-fix reproduction, format/check, affected
+  lint/typecheck, and the 2-file/22-test Markdown/security matrix pass after the fix; additive commit,
   push, and new exact-head CI are pending on the same branch/PR. Sharing, storage, email/Slack/Jira/PDF,
   authentication, a checked-in sample, Phase 6 Level D/checkpoint, and Phases 7-8 remain out of scope.
 

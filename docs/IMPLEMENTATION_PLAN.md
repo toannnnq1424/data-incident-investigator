@@ -3664,6 +3664,59 @@ passed 2/2 files and 21/21 tests in `1.78s` (`2308ms` command wall). Additive pu
 exact-head CI remain pending; browser, build, full suite, Level D, and later phases were not rerun.
 Final five-path source/test/persistent-doc Prettier write/check also passed in `5283ms`.
 
+#### QA correction 2 — field-label lookahead must not cross whitespace
+
+Status: targeted correction planned on the existing Draft PR #40 after QA evaluated exact public HEAD
+`35f460c9b6a73f0dc9f7dfb34b026de46b9a410d` (tree
+`92bec81fbd25575a87efb26ce4d656c654f786b6`). Exact-head CI run `29880998722`, job `88801642396`,
+passed, but product/security acceptance remains blocked. PR #40 is still the sole OPEN/Draft/CLEAN and
+MERGEABLE PR for the branch, with base `main`; history remains additive only.
+
+Objective: keep punctuation inside an unquoted credential value through the next whitespace boundary.
+For `SAFE_PREFIX password=p@ss|TAIL mode=fixture SAFE_SUFFIX`, redact all of `p@ss|TAIL`, preserve the
+following `mode=fixture` and safe sentinels, and apply the same rule to `;` and `,`. Preserve the two QA
+payloads already fixed: `password=p@ssw0rd` and `api_key=abcd!XYZ,mode=fixture`.
+
+Minimum change and boundary decision:
+
+- `packages/shared-types/src/index.ts`: remove whitespace from only the field-label token inside the
+  separator lookahead. A real separator may be followed by horizontal whitespace around its delimiter,
+  but its label itself must be one contiguous ASCII identifier using letters, digits, `_`, or `-`.
+  Therefore `|state=allowed` remains a separator before a following field, while `|TAIL mode=fixture`
+  remains credential punctuation/value until whitespace ends the unquoted credential.
+- `tests/integration/markdown-export.test.ts`: add one public-export regression containing exact `|`,
+  `;`, and `,` QA variants immediately before whitespace-delimited `mode`, `status`, and `state` fields.
+  Pin full-secret/suffix absence, three fixed redaction markers, safe prefix/suffix/newline survival,
+  following-field survival, and the two previously corrected payloads.
+- Update only this plan, `docs/KNOWN_ISSUES.md`, and `docs/SESSION_LOG.md` for durable QA evidence. No
+  API/UI/schema/version, fixture, provider, config, manifest, lockfile, dependency, build, or browser
+  input changes.
+
+Acceptance and exact validation:
+
+- Before the source fix, run
+  `pnpm exec vitest run tests/integration/markdown-export.test.ts -t "keeps whitespace-delimited fields outside punctuation-bearing credential values"`; it must reproduce the leak for all three punctuation variants.
+- After the one-token matcher correction, rerun that exact test to PASS. Then run affected
+  format/check for the five source/test/doc paths, ESLint for shared-types and the Markdown test,
+  shared-types typecheck, and exactly
+  `pnpm exec vitest run tests/integration/markdown-export.test.ts tests/integration/input-output-safety.test.ts`.
+- Audit `git diff --check`, exact paths/stat/patch, secrets/debug/conflicts/generated artifacts and
+  forbidden drift. Create one additive conventional commit without amend/rebase, normal-push the same
+  branch, verify only PR #40 remains OPEN/Draft/CLEAN/MERGEABLE against `main`, and wait for its new
+  exact-head CI run/job to terminal SUCCESS without merge.
+
+Deferred: sanitizer redesign, expanded secret taxonomy, renderer-version/API/UI changes, browser,
+build, smoke, full suite, Level D/checkpoint, Phase 7/8, release/deployment, Mac, providers, credentials,
+sharing/storage, and merge.
+
+Local QA2 result: the exact pre-fix regression reproduced the three leaked punctuation suffixes in
+1/1 failed test (`1.33s`, `1981ms` command wall). Removing only the space from the contiguous
+field-label character class made that same test pass 1/1 in `1.18s` (`1746ms` command wall), while
+retaining both prior QA payloads and all following-field/safe-text assertions. Focused format/check
+passed in `2371ms`, affected lint in `22359ms`, shared-types typecheck in `4441ms`, and the exact
+two-file matrix passed 2/2 files and 22/22 tests in `1.84s` (`2410ms` command wall). Additive
+publication/new exact-head CI remain pending; no deferred gate was run.
+
 ## Phase 7 — GitHub, CI, and release
 
 Finalize branch/PR workflow, full CI, release validation, smoke tests, and merge readiness.
