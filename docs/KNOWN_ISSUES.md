@@ -2,15 +2,15 @@
 
 Last updated: 2026-07-22.
 
-- The final approved Phase 6 optional extension now implements deterministic terminal Markdown export
-  locally on `codex/phase-6-extension-markdown-export` from exact main `601f361…`. The clock-free
-  `incident-markdown-v1` renderer reparses the public response, preserves non-success states, resolves
-  evidence/confidence/blast-radius/remediation/activity links, escapes/redacts untrusted content, and
-  returns one no-store fixture-capable attachment with a bounded full-UUID filename. Sharing, storage,
-  email/Slack/Jira/PDF, authentication, a checked-in generated sample, Phase 6 Level D/checkpoint, and
-  Phases 7-8 remain out of scope. Final local Level C passes focused format/check and affected lint,
-  6/6 typechecks, 5/5 files and 57/57 tests, 6/6 builds, built smoke, exactly one fixture browser
-  attachment regression, and listener cleanup. Draft PR publication and exact-head CI are pending.
+- Draft PR #40 carries the final approved Phase 6 optional Markdown export from exact main `601f361…`.
+  Its public HEAD `9d306a5…` and exact CI run `29869641617`, job `88766368897`, passed, but QA correctly
+  blocked acceptance because punctuation-bearing credential assignments could leak a full secret or
+  suffix. The targeted local correction now redacts complete quoted/unquoted assignment values,
+  including `@`, `!`, internal separators, spaces, and normalized newline boundaries, while preserving
+  unrelated surrounding text and following fields. Focused reproduction, format/check, lint,
+  shared-types typecheck, and the 2-file/21-test Markdown/security matrix pass locally; additive commit,
+  push, and new exact-head CI are pending on the same branch/PR. Sharing, storage, email/Slack/Jira/PDF,
+  authentication, a checked-in sample, Phase 6 Level D/checkpoint, and Phases 7-8 remain out of scope.
 
 - Phase 6 Slice 6.3 is merged through PR #35 at exact main merge
   `aa853d7b1dd2fdbeca45d08766643ba18ca2aa53` (tree

@@ -320,6 +320,38 @@ describe('deterministic Markdown incident export', () => {
     expect(truncatedMarkdown).toMatch(/schema-validated partial report/i);
   });
 
+  it('redacts complete credential assignments without consuming adjacent text', async () => {
+    const { terminal } = await canonicalCompleted();
+    const unsafe = clone(terminal);
+    unsafe.contextStage.intent.question = [
+      'AllowlistedPrefix password=p@ssw0rd AllowlistedAfterSpace',
+      'api_key=abcd!XYZ,mode=fixture',
+      'password="two words!@#" AllowlistedAfterQuote',
+      'password=semi;colon;status=healthy',
+      'password=pipe|inside|state=allowed',
+      'password=line-secret',
+      'AllowlistedAfterNewline',
+    ].join('\n');
+
+    const markdown = createIncidentMarkdownExport(unsafe).markdown;
+
+    expect(markdown).not.toContain('p@ssw0rd');
+    expect(markdown).not.toContain('abcd!XYZ');
+    expect(markdown).not.toContain('!XYZ');
+    expect(markdown).not.toContain('two words!@#');
+    expect(markdown).not.toContain('semi;colon');
+    expect(markdown).not.toContain('pipe|inside');
+    expect(markdown).not.toContain('line-secret');
+    expect(markdown.match(/\\\[redacted credential\\\]/gu)).toHaveLength(6);
+    expect(markdown).toContain('AllowlistedPrefix');
+    expect(markdown).toContain('AllowlistedAfterSpace');
+    expect(markdown).toContain('AllowlistedAfterQuote');
+    expect(markdown).toContain('AllowlistedAfterNewline');
+    expect(markdown).toContain('mode=fixture');
+    expect(markdown).toContain('status=healthy');
+    expect(markdown).toContain('state=allowed');
+  });
+
   it('neutralizes Markdown, HTML, links, bidi, credentials, internal hosts, and unsafe filenames', async () => {
     const { terminal } = await canonicalCompleted();
     const unsafe = clone(terminal);

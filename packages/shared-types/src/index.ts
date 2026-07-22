@@ -4154,7 +4154,7 @@ export const INCIDENT_MARKDOWN_EXPORT_MAX_FILENAME_LENGTH = 120;
 const markdownExportBidiControls = /[\u061c\u200e\u200f\u202a-\u202e\u2066-\u2069]/gu;
 const markdownExportUnsafeUrl = /\b(?:https?|ftp|file|javascript|data):[^\s"'<>]*/giu;
 const markdownExportCredential =
-  /\b(?:api[_ -]?key|access[_ -]?token|token|auth(?:orization)?|bearer|password|secret)\s*(?:=|:)\s*["']?[a-z0-9._~+/=-]{4,}["']?/giu;
+  /\b(?:api[_ -]?key|access[_ -]?token|token|auth(?:orization)?|bearer|password|secret)[ \t]*(?:=|:)[ \t]*(?:"(?:\\.|[^"\\\r\n])*"|'(?:\\.|[^'\\\r\n])*'|[^\s]*?)(?=$|\s|[;,|](?=[ \t]*[a-z][a-z0-9 _-]{0,31}[ \t]*(?:=|:)))/giu;
 const markdownExportSecretToken =
   /\b(?:sk-[a-z0-9_-]{8,}|ghp_[a-z0-9_-]{8,}|github_pat_[a-z0-9_-]{8,}|bearer\s+[a-z0-9._~+/=-]{4,})(?![a-z0-9._~+/=-])/giu;
 const markdownExportInternalHost =

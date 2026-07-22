@@ -3006,3 +3006,69 @@ deployment/release engineering, Phase 7 và Phase 8.
 Audit final delta, tạo một normal conventional commit, push normal, mở đúng một Draft PR base current
 `main`, theo dõi exact-head CI tới terminal SUCCESS và không merge. Sau đó dừng để human review; Level
 D/checkpoint cần task/approval riêng.
+
+## 2026-07-22 — QA correction: complete Markdown credential redaction
+
+### Objective
+
+Sửa product/security blocker do QA phát hiện tại exact public HEAD
+`9d306a5c2e7229c9cfa956f4bb7ff0f818bf0b13` (tree
+`20edaa661b4e3143561c2004c75492c91051158c`) của Draft PR #40, dù exact CI run `29869641617`, job
+`88766368897`, vẫn SUCCESS. `password=p@ssw0rd` không được lọt nguyên và `api_key=abcd!XYZ` không được
+để lại suffix `!XYZ`. Giữ nguyên PR/branch, public history additive, renderer contract và toàn bộ phạm
+vi ngoài blocker.
+
+### Completed
+
+Đã xác minh PR #40 vẫn OPEN/Draft/CLEAN, base `main`, head/remote/local cùng exact `9d306a5…`; main vẫn
+`601f361…`. Regression mới qua public `createIncidentMarkdownExport` tái hiện FAIL trên matcher cũ:
+Markdown còn `p@ssw0rd`, `\!XYZ`, quoted punctuation và suffix sau internal separator.
+
+Matcher credential assignment duy nhất được thay đổi. Quoted single-line value nhận khoảng trắng và
+escaped characters đến matching quote. Unquoted value nhận mọi punctuation và dừng tại whitespace/end,
+hoặc trước `,`, `;`, `|` chỉ khi separator đó đứng ngay trước một field assignment kế tiếp. Sáu payload
+bao phủ đúng hai QA secret, quoted spaces/punctuation, semicolon/pipe nội bộ và normalized newline;
+allowlisted prefix/suffix cùng các field `mode`, `status`, `state` kế tiếp vẫn còn nguyên.
+
+### Files changed
+
+Chỉ `packages/shared-types/src/index.ts`, `tests/integration/markdown-export.test.ts`,
+`docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md` và entry này. Không đổi API/UI/schema version,
+fixture, config, manifest, lockfile, dependency, provider/evaluation source hoặc generated sample.
+
+### Decisions
+
+Không broad-redesign sanitizer và không đổi `incident-markdown-v1`: đây là correction của security
+contract đã công bố. Boundary field separator cần lookahead tới một label có `=` hoặc `:` để punctuation
+nằm trong password không bị cắt sớm; whitespace/end luôn kết thúc unquoted value. Safe surrounding text
+được test bằng alphabetic sentinels để không lẫn với Markdown escaping hiện hữu.
+
+### Validation performed
+
+- Pre-fix targeted reproduction: expected FAIL 1/1 (`1.62s`, `2404ms` command wall), chứng minh
+  `p@ssw0rd` và `\!XYZ` xuất hiện trong Markdown.
+- Post-fix đầu tiên đã tạo đủ sáu redaction nhưng FAIL một stale assertion vì test quên `-` bị escape
+  thành `\-`; minimum test-only sentinel correction không đổi production. Targeted rerun PASS 1/1
+  trong `1.06s` (`1573ms` command wall).
+- Focused Prettier write/check PASS `2070ms`; affected ESLint PASS `2464ms`; shared-types typecheck PASS
+  `1529ms`. Final five-path source/test/persistent-doc Prettier write/check PASS `5283ms`.
+- Exact affected matrix PASS 2/2 files, 21/21 tests trong `1.78s` (`2308ms` command wall): 6 Markdown
+  export tests và 15 input/output-safety tests.
+
+### Validation intentionally deferred
+
+Browser/download gate, builds, byte-identical canonical gates ngoài dedicated file, full suite, Level
+D/checkpoint, Phase 7/8, Mac, live credentials/provider/model network, release/deployment và merge không
+được rerun vì code/input tương ứng không đổi.
+
+### Known issues
+
+Public PR head `9d306a5…` vẫn chứa blocker cho tới khi additive correction commit được push. Managed
+Windows esbuild junction vẫn cần approved bundled runtime cho Vitest; đây là environment limitation đã
+biết, không phải repository defect.
+
+### Exact next step
+
+Format persistent docs, audit exact 5-path delta/secrets/generated junk/ancestry, tạo một additive
+conventional commit không amend/rebase, push cùng branch, xác minh chỉ Draft PR #40 vẫn OPEN/Draft/CLEAN,
+và chờ new exact-head CI tới terminal SUCCESS; không merge hoặc bắt đầu checkpoint/Phase 7.
