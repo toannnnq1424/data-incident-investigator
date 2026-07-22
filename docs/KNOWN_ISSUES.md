@@ -2,17 +2,16 @@
 
 Last updated: 2026-07-22.
 
-- Phase 6 is integrated through normal merge `cb1758fec4ca358df7af62f1e7f5f0aedd30ddb6` (tree
-  `a29a021f4bfb2c115b24e58f4b9cdfbe5a7aacc8`; parents
-  `d18ecf2bbd1799de8374ee8390da40f170816741` and
-  `32eabf8cbeba9e24bfe1085b6f4f7ad509c705b8`). Exact main CI run `29890249461`, job
-  `88829098894`, passed; Issue #28 and milestone 7 are closed, while the branch and task history remain
-  retained. Phase 7.1 repository hygiene starts from that exact checkpoint. Its 108-file inventory is
-  clean; existing ignore/attribute rules cover the current workspace narrowly, root/workspace/lock
-  metadata is consistent after adding the missing MIT package field, and the tracked Windows frozen
-  bootstrap passes. Exact-head Draft PR CI and independent Slice 7.1 QA remain required. This evidence
-  does not replace credential-gated live DataHub validation, Mac coverage, deployment, release,
-  submission, or any Phase 7.2+ gate.
+- Phase 7.1 is integrated through normal merge `636f0c4fe7d73958ce99ea9f36a39280ed64d7be`
+  (tree `42bb8156c9ff51610b2aef085d50e757c6abf4e7`; parents
+  `cb1758fec4ca358df7af62f1e7f5f0aedd30ddb6` and
+  `1f477a3771e942f3482c5eacb77787039c72e104`). Exact main CI run `29922721752`, job
+  `88931968979`, passed. Phase 7.2 now isolates `pull_request` validation in a read-only, exact-head,
+  immutable-action-pinned `PR CI` workflow while retaining the previous `CI` job unchanged for `main`
+  pushes. The existing package-owned `pnpm validate`, frozen lockfile, and bootstrap contract remain
+  unchanged. Exact-head Draft PR CI and independent Slice 7.2 QA are still required. This work does not
+  replace main/manual/release hardening, credential-gated live DataHub validation, Mac coverage,
+  deployment, release, submission, or any product gate.
 
 - Phase 6 Slice 6.3 is merged through PR #35 at exact main merge
   `aa853d7b1dd2fdbeca45d08766643ba18ca2aa53` (tree

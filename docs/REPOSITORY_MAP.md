@@ -1,25 +1,25 @@
 # Repository map
 
-Last verified: 2026-07-22 against the integrated Phase 6 tree and the Phase 7.1 tracked-file inventory.
+Last verified: 2026-07-22 against the integrated Phase 7.1 tree and the Phase 7.2 PR CI layout.
 
 ## Directories
 
-| Path                      | Responsibility                                              | Important entrypoints                                                         |
-| ------------------------- | ----------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `apps/web`                | React/Vite user interface                                   | `src/App.tsx`, `src/main.tsx`, `vite.config.ts`                               |
-| `apps/api`                | Fastify HTTP API                                            | `src/index.ts`                                                                |
-| `packages/shared-types`   | Zod schemas and shared types                                | `src/index.ts`                                                                |
-| `packages/datahub-client` | Provider-neutral contract plus fixture and DataHub adapters | `src/index.ts`                                                                |
-| `packages/agent-core`     | Bounded deterministic investigation orchestration           | `src/index.ts`                                                                |
-| `packages/evaluation`     | Canonical evaluation cases, runner, metrics, and reporters  | `src/index.ts`, `src/cli.ts`                                                  |
-| `fixtures`                | Deterministic metadata, incidents, and demo data            | `metadata/removed-schema-column.json`, `incidents/removed-schema-column.json` |
-| `tests/integration`       | Cross-package contract, safety, provider, and report tests  | `contracts.test.ts`, `incidents-api.test.ts`, `markdown-export.test.ts`       |
-| `tests/smoke`             | Primary health and build smoke tests                        | `health.test.ts`                                                              |
-| `tests/e2e`               | Browser flows                                               | `report-display.spec.mjs`                                                     |
-| `scripts`                 | Repository operations, worktree bootstrap, and smoke checks | `bootstrap-worktree.ps1`, `bootstrap-worktree.sh`, `smoke.mjs`                |
-| `docs`                    | Product, architecture, plan, memory, and release docs       | see list below                                                                |
-| `.github`                 | CI, release validation, and PR template                     | `workflows/ci.yml`                                                            |
-| `.codex`                  | Trusted project-scoped Codex settings without secrets       | `config.toml`                                                                 |
+| Path                      | Responsibility                                               | Important entrypoints                                                         |
+| ------------------------- | ------------------------------------------------------------ | ----------------------------------------------------------------------------- |
+| `apps/web`                | React/Vite user interface                                    | `src/App.tsx`, `src/main.tsx`, `vite.config.ts`                               |
+| `apps/api`                | Fastify HTTP API                                             | `src/index.ts`                                                                |
+| `packages/shared-types`   | Zod schemas and shared types                                 | `src/index.ts`                                                                |
+| `packages/datahub-client` | Provider-neutral contract plus fixture and DataHub adapters  | `src/index.ts`                                                                |
+| `packages/agent-core`     | Bounded deterministic investigation orchestration            | `src/index.ts`                                                                |
+| `packages/evaluation`     | Canonical evaluation cases, runner, metrics, and reporters   | `src/index.ts`, `src/cli.ts`                                                  |
+| `fixtures`                | Deterministic metadata, incidents, and demo data             | `metadata/removed-schema-column.json`, `incidents/removed-schema-column.json` |
+| `tests/integration`       | Cross-package contract, safety, provider, and report tests   | `contracts.test.ts`, `incidents-api.test.ts`, `markdown-export.test.ts`       |
+| `tests/smoke`             | Primary health and build smoke tests                         | `health.test.ts`                                                              |
+| `tests/e2e`               | Browser flows                                                | `report-display.spec.mjs`                                                     |
+| `scripts`                 | Repository operations, worktree bootstrap, and smoke checks  | `bootstrap-worktree.ps1`, `bootstrap-worktree.sh`, `smoke.mjs`                |
+| `docs`                    | Product, architecture, plan, memory, and release docs        | see list below                                                                |
+| `.github`                 | Isolated PR CI, main CI, release validation, and PR template | `workflows/pr-ci.yml`, `workflows/ci.yml`, `workflows/release.yml`            |
+| `.codex`                  | Trusted project-scoped Codex settings without secrets        | `config.toml`                                                                 |
 
 ## Root configuration
 
