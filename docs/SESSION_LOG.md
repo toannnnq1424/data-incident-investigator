@@ -3719,3 +3719,97 @@ conventional commit, normal-push `codex/phase-7-4-collaboration-templates`, open
 against unchanged current `main`, verify exact head/tree/parent/base/diff and OPEN/DRAFT/CLEAN state,
 then wait for that exact head's `PR CI` run and `validate` job to reach terminal SUCCESS without rerun.
 Do not mark Ready, merge, create a duplicate issue/PR, or start Slice 7.5+.
+
+## 2026-07-22 — Phase 7 Slice 7.5 SemVer policy and changelog
+
+### Objective
+
+Define the repository's truthful coordinated SemVer policy, create an evidence-based unreleased
+changelog, and document the later Phase 7.7 `v1.0.0-rc.1` and Phase 8 `v1.0.0` cut procedures from
+exact integrated Phase 7.4 main `dff1fb416610060f5e5fad2d9289605ab7de1781`, without performing a
+version bump, release, tag, publication, artifact, deployment, rollback, or product change.
+
+### Completed
+
+Fetched origin without prune and matched the assigned commit, tree
+`f1c640d7ee8a8d89e10387694979eedc5ebf0c74`, ordered parents
+`79430f6b5f323b5acab2e4dd834ada39dbd4efc5` and
+`53ed4b4806013a7436d8741d8b14402d8ec407b5`, `FETCH_HEAD`, `origin/main`, detached `HEAD`, and a clean
+worktree before creating `codex/phase-7-5-semver-changelog`.
+
+Audited the root and all six workspace manifests, workspace membership, internal links, lock
+importers, release-validation context, local tags, and authenticated GitHub tag/Release state. Added a
+coordinated product version policy and one Keep a Changelog-style `Unreleased` record curated from
+integrated product, reliability, security, and documentation evidence. Added explicit unperformed RC
+and final-release checklists and narrow contributor/status-document routing.
+
+### Files changed
+
+`CHANGELOG.md`, `CONTRIBUTING.md`, `docs/VERSIONING.md`, `docs/RELEASE_CHECKLIST.md`,
+`docs/REPOSITORY_MAP.md`, `docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md`, and this session log.
+No manifest, workspace YAML, lockfile, workflow, source, runtime, test, fixture, dependency, artifact,
+deployment, rollback, publish, tag, GitHub Release, or product-behavior file changed.
+
+### Decisions
+
+Version the monorepo as one product. The root manifest is the product version source of truth and all
+six private workspace manifests remain aligned with it for every release/pre-release cut; internal
+links continue to use `workspace:*`. Keep the current `0.1.0` values as an unreleased development
+baseline rather than preempting 7.7. Use `alpha.N`, `beta.N`, and `rc.N` pre-release identifiers,
+exactly one `v` prefix for immutable Git tags, and no build metadata or floating `latest` tag.
+
+Treat documented HTTP/schema/error, configuration/runtime/toolchain, fixture/demo, evaluation CLI,
+and Markdown report semantics as the compatibility surface. Keep every integrated change under
+`Unreleased` until an authorized release supplies an actual date and existing Git refs. Registry
+publication remains unauthorized while every package is private.
+
+### Validation performed
+
+- Tracked Windows bootstrap: Node `v24.14.0`, pnpm `11.9.0`, frozen 259-package graph, supply-chain
+  policy PASS. The known fallback-pnpm root-bin limitation affected only its final Prettier probe;
+  direct installed root Prettier passed all eight intended Markdown files.
+- Version/workspace audit: exactly seven private manifests, all valid/aligned `0.1.0`; exactly six
+  workspace directories, six non-root lock importers plus `.`, and only `workspace:*` internal links.
+- Authenticated in-app Browser and local Git: no GitHub Release, no GitHub/local tag, and no existing
+  release record to preserve or link.
+- Changelog/SemVer/reference audit: one `Unreleased` heading; Added/Changed/Fixed/Security categories;
+  zero released-version heading, release date, or comparison/reference link; `0.1.0`, `1.0.0-rc.1`,
+  and `1.0.0` parse as SemVer and are described with explicit current/deferred state.
+- Changed-path allowlist, direct Prettier, `git diff --check`, UTF-8 without BOM, LF/final-newline,
+  local-link, secret-signature, credential/sensitive-data, conflict-marker, and documentation
+  consistency audits: PASS.
+- Root/workspace manifests, workspace YAML, lockfile, and all three workflows remain byte-identical to
+  exact base. Direct process/listener/residue checks found no repository process or listener on ports
+  `3001`/`5173`; the generated bootstrap store was removed and only seven expected ignored
+  `node_modules` links remain.
+
+The first direct bootstrap invocation was blocked only by the host execution policy; the documented
+`-ExecutionPolicy Bypass` form ran. Its fallback pnpm then reproduced the known root Prettier
+resolution limitation after completing installation and the supply-chain check. The first audit
+harness had a PowerShell variable-delimiting parser error, and a later allowlist attempt intentionally
+excluded untracked files; corrected read-only harnesses passed and neither failure changed repository
+state.
+
+### Validation intentionally deferred
+
+Local lint, typecheck, tests, builds, smoke, full Level D, evaluation, browser E2E, Mac, live
+DataHub/model credentials, and publication/release validation were not run because executable inputs
+are unchanged or the work belongs to later phases. Every manifest/lock change, actual changelog
+release date/section, artifact, deployment, rollback, publish, tag, GitHub Release, Phase 7.6, Phase
+7.7 RC cut, Phase 8 final cut/submission, Ready state, and merge remain deferred.
+
+### Known issues
+
+The repository remains private and live DataHub smoke remains credential-gated by design. The Windows
+fallback pnpm cannot resolve the installed root Prettier shim during bootstrap, while the direct root
+binary works with the bootstrap-selected Node path. Neither issue changes version policy or blocks
+this documentation-only slice.
+
+### Exact next step
+
+Complete the final format/diff/secret/allowlist/identity/process audit, create exactly one additive
+conventional commit, normal-push `codex/phase-7-5-semver-changelog`, confirm current `main` is still
+`dff1fb416610060f5e5fad2d9289605ab7de1781`, open exactly one Draft PR against it through the
+authenticated in-app Browser, verify exact head/tree/parent/base/diff and OPEN/DRAFT/CLEAN or
+mergeability state, then wait for that exact head's `PR CI` run and `validate` job to reach terminal
+SUCCESS without rerun. Do not mark Ready, merge, create a duplicate PR, or start Phase 7.6+.

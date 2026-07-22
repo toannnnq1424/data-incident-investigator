@@ -2,6 +2,16 @@
 
 Last updated: 2026-07-22.
 
+- Phase 7.4 is integrated through normal merge `dff1fb416610060f5e5fad2d9289605ab7de1781`
+  (tree `f1c640d7ee8a8d89e10387694979eedc5ebf0c74`; parents
+  `79430f6b5f323b5acab2e4dd834ada39dbd4efc5` and
+  `53ed4b4806013a7436d8741d8b14402d8ec407b5`). At the Phase 7.5 base, the root and six private
+  workspace manifests are aligned at the unreleased `0.1.0` development baseline, workspace links use
+  `workspace:*`, the lockfile has the matching root plus six importers, and GitHub has no tag or
+  Release. Phase 7.5 defines the coordinated SemVer/changelog policy but performs no version bump,
+  release date, tag, publication, artifact, deployment, or rollback. The `1.0.0-rc.1` manifest update
+  and `v1.0.0-rc.1` cut remain deferred to 7.7; `1.0.0`/`v1.0.0` remain deferred to Phase 8.
+
 - Phase 7.2 is integrated through normal merge `f29f6f9d3fec4696a53902b1b94f496b2f0b26d6`
   (tree `58dd600adbb838ef2e01b1432948b209c4dd516a`; parents
   `636f0c4fe7d73958ce99ea9f36a39280ed64d7be` and
