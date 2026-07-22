@@ -63,7 +63,347 @@ function sectionIndexes(markdown: string, sections: readonly string[]) {
   return sections.map((section) => markdown.indexOf(`## ${section}`));
 }
 
+type CredentialBoundarySecurityCase = {
+  name: string;
+  question: string;
+  absent: readonly string[];
+  present: readonly string[];
+  presentCounts?: Readonly<Record<string, number>>;
+  credentialMarkers: number;
+  urlMarkers?: number;
+};
+
+const credentialBoundarySecurityCases = [
+  {
+    name: '01 quoted authorization scheme before a comma-safe suffix',
+    question: 'PRE Authorization: Bearer "alpha beta",SAFE POST mode=fixture',
+    absent: ['alpha', 'beta'],
+    present: ['PRE', 'SAFE', 'POST', 'mode=fixture'],
+    credentialMarkers: 1,
+  },
+  {
+    name: '02 quoted assignment and URL preserve comma-safe suffixes',
+    question: [
+      'Pre password="QuotedSecret42!",SafeAfter mode=fixture End',
+      'Pre https://user:password@example.com/path,SafeAfter status=healthy End',
+    ].join('\n'),
+    absent: ['QuotedSecret42', 'user:password@example.com'],
+    present: ['Pre', 'SafeAfter', 'mode=fixture', 'status=healthy', 'End'],
+    presentCounts: { Pre: 2, SafeAfter: 2, End: 2 },
+    credentialMarkers: 1,
+    urlMarkers: 1,
+  },
+  {
+    name: '03 authorization bearer assignment',
+    question: 'Keep03 Authorization: Bearer AuthBearer03! After03',
+    absent: ['AuthBearer03'],
+    present: ['Keep03', 'After03'],
+    credentialMarkers: 1,
+  },
+  {
+    name: '04 auth bearer assignment',
+    question: 'Keep04 auth=Bearer AuthBearer04! After04',
+    absent: ['AuthBearer04'],
+    present: ['Keep04', 'After04'],
+    credentialMarkers: 1,
+  },
+  {
+    name: '05 token bearer assignment',
+    question: 'Keep05 token=Bearer TokenBearer05! After05',
+    absent: ['TokenBearer05'],
+    present: ['Keep05', 'After05'],
+    credentialMarkers: 1,
+  },
+  {
+    name: '06 authorization basic assignment',
+    question: 'Keep06 Authorization: Basic AuthBasic06+/= After06',
+    absent: ['AuthBasic06'],
+    present: ['Keep06', 'After06'],
+    credentialMarkers: 1,
+  },
+  {
+    name: '07 auth basic assignment',
+    question: 'Keep07 auth=Basic AuthBasic07+/= After07',
+    absent: ['AuthBasic07'],
+    present: ['Keep07', 'After07'],
+    credentialMarkers: 1,
+  },
+  {
+    name: '08 token basic assignment',
+    question: 'Keep08 token=Basic TokenBasic08+/= After08',
+    absent: ['TokenBasic08'],
+    present: ['Keep08', 'After08'],
+    credentialMarkers: 1,
+  },
+  {
+    name: '09 case-insensitive authorization scheme',
+    question: 'Keep09 AUTHORIZATION: BEARER UpperSecret09! After09',
+    absent: ['UpperSecret09'],
+    present: ['Keep09', 'After09'],
+    credentialMarkers: 1,
+  },
+  {
+    name: '10 spaced authorization colon',
+    question: 'Keep10 Authorization : Bearer SpacedSecret10! After10',
+    absent: ['SpacedSecret10'],
+    present: ['Keep10', 'After10'],
+    credentialMarkers: 1,
+  },
+  {
+    name: '11 spaced auth equals',
+    question: 'Keep11 auth = Bearer SpacedSecret11! After11',
+    absent: ['SpacedSecret11'],
+    present: ['Keep11', 'After11'],
+    credentialMarkers: 1,
+  },
+  {
+    name: '12 token colon basic',
+    question: 'Keep12 token : Basic SpacedSecret12! After12',
+    absent: ['SpacedSecret12'],
+    present: ['Keep12', 'After12'],
+    credentialMarkers: 1,
+  },
+  {
+    name: '13 punctuation-bearing password',
+    question: 'Keep13 password=p@ssw0rd After13',
+    absent: ['p@ssw0rd'],
+    present: ['Keep13', 'After13'],
+    credentialMarkers: 1,
+  },
+  {
+    name: '14 underscore api key',
+    question: 'Keep14 api_key=ApiUnderscore14!XYZ After14',
+    absent: ['ApiUnderscore14', '!XYZ'],
+    present: ['Keep14', 'After14'],
+    credentialMarkers: 1,
+  },
+  {
+    name: '15 hyphen api key',
+    question: 'Keep15 api-key=ApiHyphen15!XYZ After15',
+    absent: ['ApiHyphen15', '!XYZ'],
+    present: ['Keep15', 'After15'],
+    credentialMarkers: 1,
+  },
+  {
+    name: '16 multiword api key',
+    question: 'Keep16 api key=ApiMultiword16!XYZ After16',
+    absent: ['ApiMultiword16', '!XYZ'],
+    present: ['Keep16', 'After16'],
+    credentialMarkers: 1,
+  },
+  {
+    name: '17 multiword access token',
+    question: 'Keep17 access token=AccessMultiword17!XYZ After17',
+    absent: ['AccessMultiword17', '!XYZ'],
+    present: ['Keep17', 'After17'],
+    credentialMarkers: 1,
+  },
+  {
+    name: '18 hyphen access token',
+    question: 'Keep18 access-token=AccessHyphen18!XYZ After18',
+    absent: ['AccessHyphen18', '!XYZ'],
+    present: ['Keep18', 'After18'],
+    credentialMarkers: 1,
+  },
+  {
+    name: '19 underscore access token',
+    question: 'Keep19 access_token=AccessUnderscore19!XYZ After19',
+    absent: ['AccessUnderscore19', '!XYZ'],
+    present: ['Keep19', 'After19'],
+    credentialMarkers: 1,
+  },
+  {
+    name: '20 generic authorization assignment',
+    question: 'Keep20 authorization=AuthorizationSecret20! After20',
+    absent: ['AuthorizationSecret20'],
+    present: ['Keep20', 'After20'],
+    credentialMarkers: 1,
+  },
+  {
+    name: '21 generic auth assignment',
+    question: 'Keep21 auth=AuthSecret21! After21',
+    absent: ['AuthSecret21'],
+    present: ['Keep21', 'After21'],
+    credentialMarkers: 1,
+  },
+  {
+    name: '22 generic token assignment',
+    question: 'Keep22 token=TokenSecret22! After22',
+    absent: ['TokenSecret22'],
+    present: ['Keep22', 'After22'],
+    credentialMarkers: 1,
+  },
+  {
+    name: '23 generic bearer assignment',
+    question: 'Keep23 bearer=BearerSecret23! After23',
+    absent: ['BearerSecret23'],
+    present: ['Keep23', 'After23'],
+    credentialMarkers: 1,
+  },
+  {
+    name: '24 generic secret assignment',
+    question: 'Keep24 secret=GenericSecret24! After24',
+    absent: ['GenericSecret24'],
+    present: ['Keep24', 'After24'],
+    credentialMarkers: 1,
+  },
+  {
+    name: '25 double-quoted assignment with whitespace',
+    question: 'Keep25 password="Double Quoted Secret25!" After25',
+    absent: ['Double Quoted Secret25'],
+    present: ['Keep25', 'After25'],
+    credentialMarkers: 1,
+  },
+  {
+    name: '26 single-quoted assignment with whitespace',
+    question: "Keep26 password='Single Quoted Secret26!' After26",
+    absent: ['Single Quoted Secret26'],
+    present: ['Keep26', 'After26'],
+    credentialMarkers: 1,
+  },
+  {
+    name: '27 double-quoted multiword key assignment',
+    question: 'Keep27 api key="Multiword Quoted Secret27!" After27',
+    absent: ['Multiword Quoted Secret27'],
+    present: ['Keep27', 'After27'],
+    credentialMarkers: 1,
+  },
+  {
+    name: '28 double-quoted authorization scheme with whitespace boundary',
+    question: 'Keep28 Authorization: Bearer "Scheme Quoted Secret28!" After28',
+    absent: ['Scheme Quoted Secret28'],
+    present: ['Keep28', 'After28'],
+    credentialMarkers: 1,
+  },
+  {
+    name: '29 single-quoted basic scheme with whitespace boundary',
+    question: "Keep29 Authorization: Basic 'Basic Quoted Secret29!' After29",
+    absent: ['Basic Quoted Secret29'],
+    present: ['Keep29', 'After29'],
+    credentialMarkers: 1,
+  },
+  {
+    name: '30 pipe-bearing value before whitespace field',
+    question: 'Keep30 password=p@ss|TAIL mode=fixture After30',
+    absent: ['p@ss|TAIL', '|TAIL'],
+    present: ['Keep30', 'mode=fixture', 'After30'],
+    credentialMarkers: 1,
+  },
+  {
+    name: '31 semicolon-bearing value before whitespace field',
+    question: 'Keep31 password=p@ss;TAIL status=healthy After31',
+    absent: ['p@ss;TAIL', ';TAIL'],
+    present: ['Keep31', 'status=healthy', 'After31'],
+    credentialMarkers: 1,
+  },
+  {
+    name: '32 comma-bearing value before whitespace field',
+    question: 'Keep32 password=p@ss,TAIL state=allowed After32',
+    absent: ['p@ss,TAIL', ',TAIL'],
+    present: ['Keep32', 'state=allowed', 'After32'],
+    credentialMarkers: 1,
+  },
+  {
+    name: '33 adjacent multiword api key after a pipe',
+    question: 'Keep33 password=p@ss|api key=AdjacentApi33! mode=fixture After33',
+    absent: ['p@ss', 'AdjacentApi33'],
+    present: ['Keep33', 'mode=fixture', 'After33'],
+    credentialMarkers: 2,
+  },
+  {
+    name: '34 adjacent multiword access token after a pipe',
+    question: 'Keep34 password=p@ss|access token=AdjacentAccess34! status=healthy After34',
+    absent: ['p@ss', 'AdjacentAccess34'],
+    present: ['Keep34', 'status=healthy', 'After34'],
+    credentialMarkers: 2,
+  },
+  {
+    name: '35 adjacent hyphen api key after a pipe',
+    question: 'Keep35 password=p@ss|api-key=AdjacentHyphen35! state=allowed After35',
+    absent: ['p@ss', 'AdjacentHyphen35'],
+    present: ['Keep35', 'state=allowed', 'After35'],
+    credentialMarkers: 2,
+  },
+  {
+    name: '36 adjacent underscore api key after a pipe',
+    question: 'Keep36 password=p@ss|api_key=AdjacentUnderscore36! next=kept After36',
+    absent: ['p@ss', 'AdjacentUnderscore36'],
+    present: ['Keep36', 'next=kept', 'After36'],
+    credentialMarkers: 2,
+  },
+  {
+    name: '37 newline terminates one assignment before the next',
+    question: 'Keep37 password=LineSecret37!\ntoken=NextLineSecret37! After37',
+    absent: ['LineSecret37', 'NextLineSecret37'],
+    present: ['Keep37', 'After37'],
+    credentialMarkers: 2,
+  },
+  {
+    name: '38 ordinary standalone bearer token',
+    question: 'Keep38 Bearer StandaloneToken38+/= After38',
+    absent: ['StandaloneToken38'],
+    present: ['Keep38', 'After38'],
+    credentialMarkers: 1,
+  },
+  {
+    name: '39 OpenAI-style token',
+    question: 'Keep39 sk-OpenAiToken39 After39',
+    absent: ['sk-OpenAiToken39'],
+    present: ['Keep39', 'After39'],
+    credentialMarkers: 1,
+  },
+  {
+    name: '40 classic GitHub token',
+    question: 'Keep40 ghp_GithubToken40 After40',
+    absent: ['ghp_GithubToken40'],
+    present: ['Keep40', 'After40'],
+    credentialMarkers: 1,
+  },
+  {
+    name: '41 fine-grained GitHub token',
+    question: 'Keep41 github_pat_GithubToken41 After41',
+    absent: ['github_pat_GithubToken41'],
+    present: ['Keep41', 'After41'],
+    credentialMarkers: 1,
+  },
+  {
+    name: '42 URL userinfo with whitespace boundary',
+    question: 'Keep42 https://user:password@example.com/path After42',
+    absent: ['user:password@example.com'],
+    present: ['Keep42', 'After42'],
+    credentialMarkers: 0,
+    urlMarkers: 1,
+  },
+  {
+    name: '43 URL query credential with whitespace boundary',
+    question: 'Keep43 https://example.com/path?token=UrlSecret43 After43',
+    absent: ['UrlSecret43', 'token='],
+    present: ['Keep43', 'After43'],
+    credentialMarkers: 0,
+    urlMarkers: 1,
+  },
+] satisfies readonly CredentialBoundarySecurityCase[];
+
 describe('deterministic Markdown incident export', () => {
+  it.each(credentialBoundarySecurityCases)(
+    'passes the finite credential boundary security table: $name',
+    async ({ question, absent, present, presentCounts, credentialMarkers, urlMarkers = 0 }) => {
+      const { terminal } = await canonicalCompleted();
+      const unsafe = clone(terminal);
+      unsafe.contextStage.intent.question = question;
+
+      const markdown = createIncidentMarkdownExport(unsafe).markdown;
+
+      absent.forEach((value) => expect(markdown).not.toContain(value));
+      present.forEach((value) => expect(markdown).toContain(value));
+      Object.entries(presentCounts ?? {}).forEach(([value, count]) =>
+        expect(markdown.split(value)).toHaveLength(count + 1),
+      );
+      expect(markdown.match(/\\\[redacted credential\\\]/gu) ?? []).toHaveLength(credentialMarkers);
+      expect(markdown.match(/\\\[redacted URL\\\]/gu) ?? []).toHaveLength(urlMarkers);
+    },
+  );
+
   it('serializes the complete canonical fixture to byte-identical UTF-8 with stable ordered content', async () => {
     const { terminal } = await canonicalCompleted();
     const first = createIncidentMarkdownExport(terminal);

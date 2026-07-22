@@ -3828,6 +3828,64 @@ Focused format/check passed in `3191ms`, affected lint in `1904ms`, shared-types
 and the exact two-file matrix passed 2/2 files and 24/24 tests in `2.69s` (`3558ms` command wall).
 Additive publication/new exact-head CI remain pending; no deferred gate was run.
 
+#### QA correction 5 — atomic quoted boundaries and URL suffix preservation
+
+Status: targeted correction planned on the existing Draft PR #40 after QA evaluated exact public HEAD
+`54137630c975dd08aa2081af7431b160a9c53275` (tree
+`a892c08a0c9b559616c6df0ca4beff1bafdbfe90`). Exact-head CI run `29884438220`, job `88811980391`,
+passed, but the finite sanitizer table remains blocked at 41/43. Local, remote, and the sole
+OPEN/Draft/CLEAN/MERGEABLE PR #40 head all match before correction; base remains `main` and history
+remains additive only.
+
+Objective: keep quoted credential values atomic through their matching quote, preserve safe punctuation
+and text after that quote, and stop unsafe-URL redaction before a comma-delimited safe suffix. Exact
+`Authorization: Bearer "alpha beta",SAFE`, `password="QuotedSecret42!",SafeAfter`, and
+`https://user:password@example.com/path,SafeAfter` reproducers must redact their secret or URL while
+retaining the safe suffix, following text/field, and newline.
+
+Minimum change and boundary decision:
+
+- `packages/shared-types/src/index.ts`: split the shared credential value/boundary fragments into an
+  explicitly quoted branch that ends at the matching quote and accepts safe punctuation after it, and
+  an unquoted branch that cannot start with a quote and retains the existing field-aware punctuation
+  boundary. Apply both branches in quoted-first order to authorization-scheme and generic assignment
+  redaction so an opening quote can never fall back to the unquoted matcher. Keep URL redaction first,
+  but exclude comma from the URL body so comma-delimited safe text is not consumed. Preserve the shared
+  authorization/key patterns and standalone token order.
+- `tests/integration/markdown-export.test.ts`: add a public-export finite 43-case table that pins the
+  exact three QA5 reproducers, all QA1-QA4 credential/scheme/separator variants, ordinary standalone
+  token and URL-userinfo cases, safe prefix/suffix/newline, and following `mode/status/state/next`
+  fields. Require every case to retain its safe sentinel and remove its unique unsafe sentinel.
+- Update only this plan, `docs/KNOWN_ISSUES.md`, and `docs/SESSION_LOG.md`. No API/UI/schema/version,
+  fixture, config, manifest, lockfile, dependency, provider/evaluation, build, browser, or smoke input
+  changes.
+
+Acceptance and exact validation:
+
+- Before the source fix, run
+  `pnpm exec vitest run tests/integration/markdown-export.test.ts -t "passes the finite credential boundary security table"`; it must reproduce exactly the quoted-scheme leak and the two safe-suffix losses.
+- After the targeted matcher correction, rerun that exact table to PASS 43/43. Run affected
+  format/check for the five source/test/doc paths, ESLint for shared-types and the Markdown test,
+  shared-types typecheck, and exactly one affected matrix:
+  `pnpm exec vitest run tests/integration/markdown-export.test.ts tests/integration/input-output-safety.test.ts`.
+- Audit `git diff --check`, exact paths/stat/patch, secrets/debug/conflicts/generated artifacts and
+  forbidden drift. Create one additive conventional commit without amend/rebase, normal-push the same
+  branch, verify only PR #40 remains OPEN/Draft/CLEAN/MERGEABLE against `main`, and wait for its new
+  exact-head CI run/job to terminal SUCCESS without merge.
+
+Deferred: parser/sanitizer redesign, new key/scheme taxonomy, renderer/API/UI changes, browser, build,
+smoke, full suite, Level D/checkpoint, Phase 7/8, release/deployment, Mac, providers, credentials,
+sharing/storage, and merge.
+
+Local QA5 result: the first `pnpm exec vitest` launcher stopped before collection because managed
+PowerShell lacked `node` on `PATH`; the direct verified bundled-Node invocation then reproduced exactly
+41/43 passing cases and the two expected QA5 failures in `3.10s` (`3671ms` command wall). After the
+quoted-first matcher split and comma-bounded URL correction, that exact selector passed 43/43 in
+`3.13s` (`3629ms` command wall). Focused Prettier write/check passed in `1074ms`/`1137ms`, affected
+ESLint in `2056ms`, shared-types typecheck in `1548ms`, and exactly one affected two-file matrix passed
+2/2 files and 67/67 tests in `3.87s` (`4419ms` command wall). Additive publication/new exact-head CI
+remain pending; no deferred gate was run.
+
 ## Phase 7 — GitHub, CI, and release
 
 Finalize branch/PR workflow, full CI, release validation, smoke tests, and merge readiness.

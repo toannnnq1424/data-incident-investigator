@@ -3264,3 +3264,69 @@ limitation đã biết.
 Format năm path, audit exact delta/secrets/generated junk/ancestry, tạo một additive conventional
 commit không amend/rebase, normal-push cùng branch, xác minh chỉ PR #40 vẫn OPEN/Draft/CLEAN/MERGEABLE,
 và chờ new exact-head CI terminal SUCCESS; không merge hoặc bắt đầu checkpoint/Phase 7.
+
+## 2026-07-22 — QA correction 5: atomic quoted boundaries and safe URL suffixes
+
+### Objective
+
+Sửa product/security blocker QA5 tại exact public HEAD
+`54137630c975dd08aa2081af7431b160a9c53275` (tree
+`a892c08a0c9b559616c6df0ca4beff1bafdbfe90`) của Draft PR #40, dù exact CI run `29884438220`, job
+`88811980391`, SUCCESS. Quoted Bearer/Basic credential phải được che tới matching quote mà không rơi
+xuống unquoted branch; comma-safe suffix sau quoted assignment và unsafe URL phải còn nguyên. Giữ
+scheme order, shared key patterns, QA1-QA4 và additive history.
+
+### Completed
+
+Đã xác minh local/remote/PR cùng exact `54137630…`, worktree sạch, PR #40 là PR duy nhất và vẫn
+OPEN/Draft/CLEAN/MERGEABLE, base `main`. Finite public-export table 43 case tái hiện đúng 41 PASS/2 FAIL:
+quoted scheme lộ `beta`, còn row kết hợp quoted assignment và URL mất cả hai `SafeAfter`.
+
+Production nay dùng quoted và unquoted credential matcher riêng cho cả authorization-scheme và generic
+assignment. Quoted branch chạy trước, kết thúc tại matching quote và chấp nhận safe punctuation ngay sau
+quote; unquoted branch cấm quote nên không thể fallback sau opening quote. URL-first order giữ nguyên,
+nhưng URL body dừng trước comma để không nuốt suffix. Exact 43-case table pin ba reproducer QA5, toàn bộ
+QA1-QA4 key/scheme/separator/TAIL cases, standalone tokens, URL-userinfo, prefix/suffix/newline và
+following fields.
+
+### Files changed
+
+Chỉ `packages/shared-types/src/index.ts`, `tests/integration/markdown-export.test.ts`,
+`docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md` và entry này. Không đổi API/UI/schema/version,
+fixture, config, manifest, lockfile, dependency, provider/evaluation source hoặc generated artifact.
+
+### Decisions
+
+Tách bốn matcher nhỏ và chia sẻ exact quoted/unquoted value/boundary fragments thay vì viết parser mới.
+Quoted boundary cho phép end/whitespace hoặc `; , |` nhưng không tiêu thụ punctuation; unquoted boundary
+vẫn chỉ coi punctuation là separator khi có following field assignment, nên punctuation thuộc secret
+không bị cắt sớm. URL chỉ thêm comma vào tập ký tự dừng; không mở rộng taxonomy hay đổi renderer.
+
+### Validation performed
+
+- `pnpm exec vitest` đầu tiên dừng trước collection vì managed shell không có `node` trên `PATH`; direct
+  verified bundled-Node recovery chạy đúng selector và pre-fix expected FAIL 2/43, PASS 41/43 trong
+  `3.10s` (`3671ms` command wall).
+- Exact post-fix selector PASS 43/43 trong `3.13s` (`3629ms` command wall), không còn secret leak hay
+  safe-suffix loss.
+- Focused Prettier write/check PASS `1074ms`/`1137ms`; affected ESLint PASS `2056ms`; shared-types
+  typecheck PASS `1548ms`.
+- Đúng một affected matrix PASS 2/2 files, 67/67 tests trong `3.87s` (`4419ms` command wall): 52
+  Markdown export tests và 15 input/output-safety tests.
+
+### Validation intentionally deferred
+
+Browser/download, builds, smoke, full suite, Level D/checkpoint, Phase 7/8, Mac, live credentials/
+provider/model network, release/deployment và merge không chạy lại vì inputs liên quan không đổi.
+
+### Known issues
+
+Public PR head `54137630…` vẫn chứa QA5 blocker cho tới khi additive correction commit được push. Managed
+Windows pnpm launcher tiếp tục cần verified bundled Node trong shell; đây là environment-only limitation
+đã biết, không phải product/CI blocker.
+
+### Exact next step
+
+Format năm path, audit exact delta/secrets/generated junk/ancestry, tạo một additive conventional commit
+không amend/rebase, normal-push cùng branch, xác minh chỉ PR #40 vẫn OPEN/Draft/CLEAN/MERGEABLE, và chờ
+new exact-head CI terminal SUCCESS; không merge hoặc bắt đầu checkpoint/Phase 7.

@@ -3,14 +3,14 @@
 Last updated: 2026-07-22.
 
 - Draft PR #40 carries the final approved Phase 6 optional Markdown export from exact main `601f361…`.
-  Its public HEAD `4bd4fb5…` and exact CI run `29883276289`, job `88808482832`, passed, but QA4
-  correctly blocked acceptance because generic assignment redaction removed `Authorization: Bearer`
-  before the token matcher ran, leaving the actual token visible; `auth=Bearer`, `token=Bearer`, and
-  `Authorization: Basic` had the same flaw. The targeted local correction atomically redacts exact
-  supported assignment scheme credentials before generic assignments while preserving URL-first,
-  standalone Bearer, quoted value, safe boundary, shared key, and all QA1-QA3 behavior. Pre-fix
-  reproduction, format/check, affected lint/typecheck, and the 2-file/24-test Markdown/security matrix
-  pass after the fix; additive commit, push, and new exact-head CI are pending on the same branch/PR.
+  Its public HEAD `54137630…` and exact CI run `29884438220`, job `88811980391`, passed, and the four
+  QA4 Authorization/Auth/Token Bearer/Basic cases are fixed. QA5 correctly blocked acceptance at 41/43
+  because a quoted scheme value could fall back to the unquoted matcher and leak its whitespace suffix,
+  while quoted assignment and URL matchers consumed comma-delimited safe text. The targeted local
+  correction uses separate quoted-first/unquoted matchers, forbids quote fallback, and bounds URLs at
+  commas while retaining scheme order and shared key patterns. Exact pre-fix 41/43 and post-fix 43/43,
+  format/check, affected lint/typecheck, and the single 2-file/67-test Markdown/security matrix are
+  recorded; additive commit, push, and new exact-head CI are pending on the same branch/PR.
   Sharing, storage, email/Slack/Jira/PDF, authentication, a checked-in sample, Phase 6 Level D/
   checkpoint, and Phases 7-8 remain out of scope.
 

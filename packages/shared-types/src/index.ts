@@ -4152,18 +4152,28 @@ export const INCIDENT_MARKDOWN_EXPORT_VERSION = 'incident-markdown-v1' as const;
 export const INCIDENT_MARKDOWN_EXPORT_MAX_FILENAME_LENGTH = 120;
 
 const markdownExportBidiControls = /[\u061c\u200e\u200f\u202a-\u202e\u2066-\u2069]/gu;
-const markdownExportUnsafeUrl = /\b(?:https?|ftp|file|javascript|data):[^\s"'<>]*/giu;
+const markdownExportUnsafeUrl = /\b(?:https?|ftp|file|javascript|data):[^\s,"'<>]*/giu;
 const markdownExportAuthorizationKeyPattern = String.raw`(?:auth(?:orization)?|token)`;
 const markdownExportCredentialKeyPattern = String.raw`(?:api[_ -]?key|access[_ -]?token|${markdownExportAuthorizationKeyPattern}|bearer|password|secret)`;
-const markdownExportCredentialValuePattern = String.raw`(?:"(?:\\.|[^"\\\r\n])*"|'(?:\\.|[^'\\\r\n])*'|[^\s]*?)`;
 const markdownExportCredentialFieldPattern = String.raw`(?:[a-z][a-z0-9_-]{0,31}|${markdownExportCredentialKeyPattern})`;
-const markdownExportCredentialBoundaryPattern = String.raw`(?=$|\s|[;,|](?=[ \t]*${markdownExportCredentialFieldPattern}[ \t]*(?:=|:)))`;
-const markdownExportAuthorizationCredential = new RegExp(
-  String.raw`\b${markdownExportAuthorizationKeyPattern}[ \t]*(?:=|:)[ \t]*(?:bearer|basic)[ \t]+${markdownExportCredentialValuePattern}${markdownExportCredentialBoundaryPattern}`,
+const markdownExportQuotedCredentialValuePattern = String.raw`(?:"(?:\\.|[^"\\\r\n])*"|'(?:\\.|[^'\\\r\n])*')`;
+const markdownExportUnquotedCredentialValuePattern = String.raw`[^\s"']*?`;
+const markdownExportQuotedCredentialBoundaryPattern = String.raw`(?=$|\s|[;,|])`;
+const markdownExportUnquotedCredentialBoundaryPattern = String.raw`(?=$|\s|[;,|](?=[ \t]*${markdownExportCredentialFieldPattern}[ \t]*(?:=|:)))`;
+const markdownExportQuotedAuthorizationCredential = new RegExp(
+  String.raw`\b${markdownExportAuthorizationKeyPattern}[ \t]*(?:=|:)[ \t]*(?:bearer|basic)[ \t]+${markdownExportQuotedCredentialValuePattern}${markdownExportQuotedCredentialBoundaryPattern}`,
   'giu',
 );
-const markdownExportCredential = new RegExp(
-  String.raw`\b${markdownExportCredentialKeyPattern}[ \t]*(?:=|:)[ \t]*${markdownExportCredentialValuePattern}${markdownExportCredentialBoundaryPattern}`,
+const markdownExportUnquotedAuthorizationCredential = new RegExp(
+  String.raw`\b${markdownExportAuthorizationKeyPattern}[ \t]*(?:=|:)[ \t]*(?:bearer|basic)[ \t]+${markdownExportUnquotedCredentialValuePattern}${markdownExportUnquotedCredentialBoundaryPattern}`,
+  'giu',
+);
+const markdownExportQuotedCredential = new RegExp(
+  String.raw`\b${markdownExportCredentialKeyPattern}[ \t]*(?:=|:)[ \t]*${markdownExportQuotedCredentialValuePattern}${markdownExportQuotedCredentialBoundaryPattern}`,
+  'giu',
+);
+const markdownExportUnquotedCredential = new RegExp(
+  String.raw`\b${markdownExportCredentialKeyPattern}[ \t]*(?:=|:)[ \t]*${markdownExportUnquotedCredentialValuePattern}${markdownExportUnquotedCredentialBoundaryPattern}`,
   'giu',
 );
 const markdownExportSecretToken =
@@ -4179,8 +4189,10 @@ function sanitizeMarkdownExportText(value: string) {
     value.normalize('NFKC').replace(markdownExportBidiControls, ''),
   )
     .replace(markdownExportUnsafeUrl, '[redacted URL]')
-    .replace(markdownExportAuthorizationCredential, '[redacted credential]')
-    .replace(markdownExportCredential, '[redacted credential]')
+    .replace(markdownExportQuotedAuthorizationCredential, '[redacted credential]')
+    .replace(markdownExportUnquotedAuthorizationCredential, '[redacted credential]')
+    .replace(markdownExportQuotedCredential, '[redacted credential]')
+    .replace(markdownExportUnquotedCredential, '[redacted credential]')
     .replace(markdownExportSecretToken, '[redacted credential]')
     .replace(markdownExportInternalHost, '[redacted internal host]')
     .replace(markdownExportStackLocation, '[redacted stack location]');
