@@ -4175,6 +4175,84 @@ Publication and independent QA remain separate: create one additive conventional
 the branch, open exactly one Draft PR against the still-current `main`, and require exact-head CI
 terminal SUCCESS. Do not merge or begin Slice 7.2.
 
+### Slice 7.2 — Pull request CI
+
+Status: locally complete on `codex/phase-7-2-pr-ci` from exact integrated Phase 7.1 checkpoint
+`636f0c4fe7d73958ce99ea9f36a39280ed64d7be` (tree
+`42bb8156c9ff51610b2aef085d50e757c6abf4e7`; parents
+`cb1758fec4ca358df7af62f1e7f5f0aedd30ddb6` and
+`1f477a3771e942f3482c5eacb77787039c72e104`). Exact main CI run `29922721752`, job
+`88931968979`, was verified successful before branch creation or any edit.
+
+Objective: give every `pull_request` an isolated, deterministic, least-privilege validation workflow
+that checks the exact untrusted PR head with a frozen workspace install and the repository-owned
+validation command, without changing product/runtime behavior or starting main/manual/release work.
+
+Minimum files:
+
+- `.github/workflows/pr-ci.yml` for the PR-only workflow, stable check, exact-head checkout,
+  deterministic toolchain/cache, bounded concurrency, timeouts, and least-privilege permissions.
+- `.github/workflows/ci.yml` only to remove its legacy `pull_request` trigger so the unchanged `main`
+  push gate remains single-purpose and PRs do not receive duplicate checks.
+- `docs/IMPLEMENTATION_PLAN.md`, `docs/REPOSITORY_MAP.md`, `docs/KNOWN_ISSUES.md`, and
+  `docs/SESSION_LOG.md` for the planned contract, workflow map, verified limitations, and handoff.
+- Root `package.json`, bootstrap scripts, workspace YAML, and lockfile only if the audit proves that the
+  existing exact pnpm/frozen-install/project-validation contract is insufficient; no speculative edit.
+
+Acceptance criteria:
+
+- `pull_request` uses one stable PR validation job, has no path filters, checks out the event's exact
+  head SHA without persisted credentials, and cancels only superseded runs for the same PR.
+- The workflow grants only read-only repository contents, uses no `pull_request_target`, secret,
+  credential, mutable PR text in a shell, write permission, or privileged fork/untrusted-PR behavior.
+- Node and pnpm are deterministic; dependencies use `pnpm install --frozen-lockfile`; any pnpm cache is
+  keyed from the root lockfile/workspace contract; validation invokes the project-tracked command with
+  named steps, visible failures, and bounded runtime.
+- Third-party actions are pinned to reviewed immutable commits, while the existing `main` push behavior
+  and `.github/workflows/release.yml` remain unchanged.
+- Static YAML/security/scope audits and the minimum local project-tracked checks pass; one additive
+  conventional commit is normal-pushed to exactly one Draft PR against current `main`, and its exact
+  head PR CI reaches terminal SUCCESS before handoff.
+
+Deferred: main/manual/release workflow hardening (Slice 7.3), templates/policy automation (7.4),
+SemVer/changelog/tag work (7.5), artifacts/deployment/rollback (7.6), full release/RC validation (7.7),
+Phase 8, Mac, product features, and live credential/provider/model validation.
+
+Exact targeted Windows validation:
+
+- changed-file Prettier plus `git diff --check`;
+- static YAML/event/permission/secret/action-pin/checkout/concurrency/cache/timeout/path-filter audit;
+- the existing project-tracked `pnpm validate` components required to prove the workflow command,
+  without browser/evaluation or an unchanged full Phase 6 Level D rerun;
+- exact base/head/diff/scope/generated-residue/process/port audit;
+- exact-head Draft PR workflow and job terminal SUCCESS on GitHub.
+
+Local Windows result (2026-07-22):
+
+- The pre-edit fetch and browser-backed GitHub check matched the assigned commit, tree, parents, and
+  successful main CI run/job exactly. The tracked bootstrap passed with Node `v24.14.0`, pnpm `11.9.0`,
+  the frozen 259-package graph, zero downloads, supply-chain policy verification, and Prettier `3.9.5`.
+- The legacy workflow already had read-only contents, frozen install, and project-owned validation, but
+  coupled PR and main triggers while using floating action majors, `ubuntu-latest`, floating Node 24,
+  merge-ref checkout, and no PR concurrency or timeout. PR behavior is now isolated in `PR CI`; the
+  original `CI` job is byte-for-byte unchanged apart from removing its duplicate `pull_request` event.
+- `PR CI` has no path/type filter and uses only `pull_request`; checks out the exact head repository/SHA
+  with no persisted credential; pins the Ubuntu image, Node `24.14.0`, pnpm `11.9.0`, and all three
+  actions to verified immutable upstream commits; keys the pnpm store from `pnpm-lock.yaml`; and runs
+  the frozen install plus stable `validate` job under a 20-minute timeout and per-PR cancellation.
+- Repository `pnpm format:check` and the focused static YAML/security audit passed. The audit proves no
+  `pull_request_target`, secret context, write permission, event expression in shell, path omission,
+  mutable action reference, release/package/lock/bootstrap change, or out-of-scope workflow edit. The
+  first audit-harness attempts exposed only PowerShell parser/sentinel/hash-method defects and changed
+  no repository file; the corrected invariant checks passed.
+- Local lint/typecheck/tests/build/smoke, evaluation, browser, and Level D were not repeated because no
+  executable product/package input changed. The exact-head PR run is the required Linux execution of
+  the unchanged project-owned `pnpm validate` gate.
+
+Publication and independent QA remain separate: finish the final diff/residue/process/port audit,
+create one additive conventional commit, normal-push, open exactly one Draft PR against unchanged
+`main`, and require that exact head's `PR CI` job to reach terminal SUCCESS. Do not merge or begin 7.3.
+
 ## Phase 8 — Submission
 
 Public repository, deployment URL, screenshots, video, Devpost copy, architecture explanation, known

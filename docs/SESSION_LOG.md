@@ -3471,3 +3471,79 @@ Slice 7.1 repository-hygiene blocker.
 After the one additive commit is normal-pushed, exactly one Draft PR is open against unchanged `main`,
 and that exact head reaches terminal CI SUCCESS, hand Slice 7.1 to independent QA. Do not merge, start
 Slice 7.2, alter release/tag/deployment/submission state, or delete/archive/hide/pin any branch or task.
+
+## 2026-07-22 — Phase 7 Slice 7.2 pull request CI
+
+### Objective
+
+Isolate and harden the repository's `pull_request` validation from exact integrated Phase 7.1 main
+`636f0c4fe7d73958ce99ea9f36a39280ed64d7be`, without changing product behavior or beginning
+main/manual/release workflow, template, SemVer, artifact, deployment, rollback, or release-validation
+work.
+
+### Completed
+
+Fetched origin without prune and matched the assigned main SHA, tree, parents, and successful main CI
+run `29922721752`/job `88931968979` before branch creation. Added the docs-first Slice 7.2 contract,
+then split PR validation into `PR CI` while leaving the existing `CI` job unchanged for main pushes
+apart from removal of its duplicate PR trigger.
+
+The PR-only workflow checks out the event's exact head repository/SHA with persisted credentials
+disabled, uses read-only contents permission and no secret, pins Ubuntu/Node/pnpm and three actions,
+keys the pnpm cache from the root lockfile, runs the frozen install and repository-owned `pnpm validate`,
+cancels only superseded runs for one PR, and applies a 20-minute timeout. It has no path/type filter,
+write permission, `pull_request_target`, privileged event, mutable PR field in a shell, or release
+workflow coupling.
+
+### Files changed
+
+`.github/workflows/pr-ci.yml`, `.github/workflows/ci.yml`, `docs/IMPLEMENTATION_PLAN.md`,
+`docs/REPOSITORY_MAP.md`, `docs/KNOWN_ISSUES.md`, and this session entry. No product source, test,
+fixture, package manifest, workspace YAML, lockfile, dependency, bootstrap, release workflow, template,
+release checklist, deployment, rollback, artifact, version, changelog, tag, or submission file changed.
+
+### Decisions
+
+Keep the stable job/check name `validate`. Preserve the main job exactly and move only the PR event to
+a dedicated workflow so future main/manual/release hardening remains Slice 7.3. Pin action SHAs to the
+currently verified upstream versions (`checkout` 6.1.0, `setup-node` 6.5.0, `pnpm/action-setup` 6.0.9)
+and pin PR Node to the locally verified `24.14.0`; retain pnpm `11.9.0` and the root lockfile contract.
+
+### Validation performed
+
+- Tracked Windows bootstrap: Node `v24.14.0`, pnpm `11.9.0`, frozen 259-package install, zero downloads,
+  supply-chain policy PASS, and Prettier `3.9.5` static check PASS.
+- Upstream immutable refs were read directly from the three official action repositories and match the
+  annotated workflow comments.
+- Repository-owned `pnpm format:check` PASS after formatting the changed repository-map table.
+- Focused static YAML/security/invariant audit PASS for trigger/filter, read-only permission, secret/
+  token/write absence, per-PR concurrency, stable job, runner/timeout, immutable actions, exact head,
+  disabled credential persistence, exact Node/pnpm, root lock cache input, frozen install, project
+  validation command, shell interpolation, unchanged release workflow, and unchanged package/lock/
+  bootstrap files.
+
+The audit harness itself initially had a PowerShell grouping parse error, then two false positives from
+an over-broad credential sentinel and a line-ending-sensitive hash pipeline. Those invocations changed
+no file. Each was classified as command/harness-only, and the corrected invariant audit passed without
+a workflow edit.
+
+### Validation intentionally deferred
+
+Local lint/typecheck/tests/build/smoke and the full Phase 6 Level D/evaluation/browser/E2E were not
+rerun because no product, package, dependency, or validation-command input changed. Exact-head Draft
+PR CI will execute the unchanged full `pnpm validate` command on the pinned Linux runner. Mac, live
+credentials/provider/model, main/manual/release workflow 7.3, templates 7.4, SemVer/tag 7.5,
+artifacts/deployment/rollback 7.6, full release/RC 7.7, Phase 8, and merge remain deferred.
+
+### Known issues
+
+GitHub CLI is not available on the Windows host; authenticated in-app browser access is the scoped
+fallback for private-repository PR creation and CI evidence. The repository remains private and live
+DataHub smoke remains credential-gated by design. Neither changes the PR CI implementation.
+
+### Exact next step
+
+Complete the final exact diff/secret/generated-residue/ancestry/process/port audit, create one additive
+conventional commit, normal-push `codex/phase-7-2-pr-ci`, open exactly one Draft PR against unchanged
+`main`, and wait for that exact head's `PR CI` run/job to reach terminal SUCCESS. Do not merge, mark
+Ready, start Slice 7.3+, or delete/archive/hide/pin any branch, PR, task, or conversation.
