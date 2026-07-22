@@ -1,0 +1,80 @@
+name: Documentation or support request
+description: Report an actionable documentation, setup, usage, or contributor-workflow gap
+title: '[Docs/Support]: '
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form when repository documentation or contributor guidance blocks a concrete task.
+
+        **Security:** Do not disclose a vulnerability here. Follow the [security policy](https://github.com/toannnnq1424/data-incident-investigator/security/policy) and contact the repository owner privately.
+
+        Do not paste `.env` files, credentials, authorization headers, private endpoints, raw provider output, or raw sensitive incident data. Prefer fixture-mode and sanitized examples.
+  - type: dropdown
+    id: request_type
+    attributes:
+      label: Request type
+      description: Select the route that best matches the gap.
+      options:
+        - Setup or quick start
+        - Contributor workflow
+        - Documentation correction or clarification
+        - API or runtime usage
+        - Fixture or DataHub usage
+        - Validation or test guidance
+        - Other project documentation or support
+    validations:
+      required: true
+  - type: input
+    id: location
+    attributes:
+      label: Relevant location
+      description: Name the repository file, heading, command, or public route involved.
+      placeholder: README.md > Quick start, CONTRIBUTING.md, pnpm smoke, or /ready
+    validations:
+      required: true
+  - type: textarea
+    id: attempted_path
+    attributes:
+      label: What you tried
+      description: List the documentation or commands you followed and the sanitized result.
+    validations:
+      required: true
+  - type: textarea
+    id: blocker_or_gap
+    attributes:
+      label: Current blocker or documentation gap
+      description: Explain what is incorrect, missing, ambiguous, or preventing progress.
+    validations:
+      required: true
+  - type: textarea
+    id: desired_correction
+    attributes:
+      label: Desired correction or answer
+      description: Describe the smallest documentation or guidance change that would resolve the request.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Relevant environment
+      description: Provide only the platform and tool versions needed to understand the request. Write "Not applicable" when none are relevant.
+      placeholder: Operating system, Node and pnpm versions, runtime mode, and commit SHA or release.
+    validations:
+      required: true
+  - type: textarea
+    id: validation_evidence
+    attributes:
+      label: Sanitized evidence
+      description: Add concise screenshots, command results, or redacted excerpts only when they clarify the gap.
+  - type: checkboxes
+    id: acknowledgements
+    attributes:
+      label: Before submitting
+      options:
+        - label: I checked the README, contributing guide, and existing issues for an answer.
+          required: true
+        - label: I removed secrets, credentials, private endpoints, raw provider payloads, and raw sensitive incident data.
+          required: true
+        - label: This request does not disclose a security vulnerability; I will use the private security process if it does.
+          required: true

@@ -1,0 +1,103 @@
+name: Bug report
+description: Report a reproducible defect in the product or contributor workflow
+title: '[Bug]: '
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve Data Incident Investigator.
+
+        **Security:** Do not disclose a vulnerability here. Follow the [security policy](https://github.com/toannnnq1424/data-incident-investigator/security/policy) and contact the repository owner privately.
+
+        **Data handling:** Never include secrets, credentials, authorization headers, private endpoints, raw provider payloads, or raw sensitive incident data. Use a minimal fixture or sanitized example.
+  - type: dropdown
+    id: affected_area
+    attributes:
+      label: Affected area
+      description: Select the area that best contains the defect.
+      options:
+        - Web interface
+        - API
+        - Fixture mode
+        - DataHub integration
+        - Investigation or report output
+        - Evaluation or test tooling
+        - Repository or contributor tooling
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: observed_behavior
+    attributes:
+      label: Observed behavior
+      description: Describe the failure and its visible impact using sanitized details.
+      placeholder: What happened? Include stable error or reason codes when available, but omit raw payloads and sensitive values.
+    validations:
+      required: true
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: Expected behavior
+      description: Describe the result you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Provide the smallest deterministic sequence that reproduces the defect.
+      placeholder: |
+        1. Start from commit or release …
+        2. Use fixture mode or a sanitized stand-in …
+        3. Run …
+        4. Observe …
+    validations:
+      required: true
+  - type: dropdown
+    id: runtime_mode
+    attributes:
+      label: Runtime mode
+      description: Select the mode used when the defect appeared.
+      options:
+        - Fixture
+        - DataHub
+        - Not applicable
+        - Unknown
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Provide only relevant versions and platform details; do not paste a full environment dump.
+      placeholder: Operating system, Node and pnpm versions, browser if relevant, and commit SHA or release.
+    validations:
+      required: true
+  - type: dropdown
+    id: regression
+    attributes:
+      label: Regression status
+      description: Did the same path work on an earlier revision?
+      options:
+        - 'Yes — include the last known working revision in evidence'
+        - 'No — this has never worked for me'
+        - Not sure
+    validations:
+      required: true
+  - type: textarea
+    id: validation_evidence
+    attributes:
+      label: Sanitized validation evidence
+      description: Add concise test names, command results, screenshots, or redacted log excerpts that support the report.
+      placeholder: Include only evidence safe for a public issue. Remove incident content, credentials, endpoints, provider payloads, and personal or customer data.
+  - type: checkboxes
+    id: acknowledgements
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing open and closed issues for the same defect.
+          required: true
+        - label: I removed secrets, credentials, authorization headers, private endpoints, raw provider payloads, and raw sensitive incident data.
+          required: true
+        - label: This report does not disclose a security vulnerability; I will use the private security process if it does.
+          required: true
