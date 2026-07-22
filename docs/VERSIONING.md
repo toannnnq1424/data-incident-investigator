@@ -93,7 +93,10 @@ Version changes happen only in an explicitly scoped release task from a clean, c
 4. Finalize the corresponding changelog section with the actual cut date and keep `Unreleased` for
    subsequent work.
 5. Run the separately scoped release validation against the exact release commit. Create and push the
-   matching immutable tag, then create the GitHub Release, only after every required gate succeeds.
+   matching immutable tag only after every required gate succeeds. For an RC cut, then create the
+   matching GitHub Release only as Draft, keep it Draft throughout the candidate phase, and do not
+   publish it. Publishing that Draft Release is deferred and requires a separately authorized later
+   gate; stable-release publication likewise requires its explicit final-release authorization.
 
 The applications and packages remain `private: true`; this process does not authorize `pnpm publish`
 or a registry publication.
@@ -106,7 +109,10 @@ creates no tag or release.
 Phase 7.7 is responsible for the first candidate cut. Its scoped operation must set all seven
 manifests to `1.0.0-rc.1`, perform the deterministic lockfile step above, release the curated
 changelog entries only with the actual cut date, run the full RC/fresh-clone and exact-commit gates,
-and create `v1.0.0-rc.1` only after success.
+and create and push immutable tag `v1.0.0-rc.1` only after success. It may then create the matching
+GitHub Release only as Draft and must keep it Draft throughout Phase 7.7. Phase 7.7 must not publish
+the RC Release; publication is deferred and requires separate later authorization and a publication
+gate.
 
 Phase 8 may cut `1.0.0` only after the candidate is accepted and final validation succeeds. It must
 repeat the coordinated manifest/lock/changelog procedure, record changes since the candidate

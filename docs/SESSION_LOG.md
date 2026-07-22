@@ -3813,3 +3813,77 @@ conventional commit, normal-push `codex/phase-7-5-semver-changelog`, confirm cur
 authenticated in-app Browser, verify exact head/tree/parent/base/diff and OPEN/DRAFT/CLEAN or
 mergeability state, then wait for that exact head's `PR CI` run and `validate` job to reach terminal
 SUCCESS without rerun. Do not mark Ready, merge, create a duplicate PR, or start Phase 7.6+.
+
+## 2026-07-23 — QA correction: Phase 7.7 RC Draft Release gate
+
+### Objective
+
+Correct the single independent-QA release-policy blocker on exact Phase 7.5 HEAD
+`654277839e4b0a0ee3f38cdd13d1903bac48517c`: make the later `v1.0.0-rc.1` GitHub Release Draft-only
+through Phase 7.7 and explicitly defer publication to a separately authorized later gate, without
+changing any current version, tag, release, executable input, or other SemVer/changelog rule.
+
+### Completed
+
+Reproduced the ambiguous pre-fix wording at `docs/RELEASE_CHECKLIST.md:33-34` and
+`docs/VERSIONING.md:95-96`. The checklist said to create the matching GitHub Release after gates, and
+the coordinated policy permitted Release creation, but neither required Draft state or prohibited
+Phase 7.7 publication.
+
+Updated the coordinated RC procedure, explicit Phase 7.7 policy, checklist, and directly referenced
+implementation-plan acceptance language. All now require the matching RC GitHub Release to be created
+only as Draft, kept Draft throughout Phase 7.7, and not published by that phase. Publication is
+deferred and requires separate later authorization plus a publication gate.
+
+### Files changed
+
+`docs/VERSIONING.md`, `docs/RELEASE_CHECKLIST.md`, `docs/IMPLEMENTATION_PLAN.md`, and this session log.
+No changelog, manifest, workspace YAML, lockfile, workflow, source, runtime, test, fixture, dependency,
+artifact, deployment, rollback, tag, GitHub Release, or product behavior changed.
+
+### Decisions
+
+Treat creating an RC GitHub Release record and publishing it as separate operations. Phase 7.7 may
+create the validated `v1.0.0-rc.1` tag and matching GitHub Release only as Draft after its gates pass;
+it owns neither publication nor authorization to publish. Preserve the existing Phase 8 final-release
+contract while requiring its explicit final-release authorization.
+
+### Validation performed
+
+- Exact before evidence: checklist lines 33-34 and versioning lines 95-96 reproduced the two ambiguous
+  create-Release instructions.
+- Exact after evidence: checklist requires “GitHub Release as Draft”, “Draft throughout Phase 7.7”,
+  and “Do not publish”; versioning requires “only as Draft”, “keep it Draft”, “must not publish”, and
+  separate later authorization/publication gate. Implementation-plan acceptance uses the same rule.
+- Old ambiguous phrases are absent. Existing root version ownership, aligned private packages,
+  pre-release identifiers, immutable-tag rule, changelog ownership, and final-release procedure remain
+  intact.
+- Direct Prettier and the focused wording/consistency, `git diff --check`, local-link,
+  UTF-8-without-BOM, LF/final-newline, secret-signature, conflict-marker, SemVer, and changelog checks
+  pass.
+- All seven manifests remain private and aligned at `0.1.0`; `CHANGELOG.md`, manifests, workspace YAML,
+  lockfile, and all three workflows remain byte-identical to exact starting HEAD. Local tags remain
+  absent, ports `3001`/`5173` are free, no repository process remains, and only the seven expected
+  ignored dependency links exist.
+
+### Validation intentionally deferred
+
+Full tests, build, smoke, Level D, evaluation, browser E2E, Mac, live credentials, every version or
+lockfile change, changelog release section/date, tag, Draft Release creation, publication, artifact,
+deployment, rollback, Phase 7.6, Phase 7.7 execution, Phase 8 execution, Ready state, and merge remain
+deferred. Executable inputs are unchanged.
+
+### Known issues
+
+The original PR description still records its first exact-head CI as pending because publication
+evidence is verified after the commit; the Draft PR check surface remains authoritative. The repository
+is private and live DataHub smoke remains credential-gated by design. Neither affects this docs-only
+policy correction.
+
+### Exact next step
+
+Run final four-path formatting/diff/wording/secret/identity/process validation, create one new additive
+conventional commit on `codex/phase-7-5-semver-changelog`, normal-push without amend/rebase/force to
+the existing Draft PR #46, verify the new exact head/tree/parents/full PR diff and OPEN/DRAFT/
+conflict-free state with no duplicate, then wait for that new head's `PR CI` / `validate` job to reach
+terminal SUCCESS without rerun. Do not mark Ready, merge, create another task/PR, or start 7.6.

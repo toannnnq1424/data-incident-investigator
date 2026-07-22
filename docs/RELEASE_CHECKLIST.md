@@ -31,7 +31,10 @@ Phase 7.5.
 - [ ] Complete the separately scoped Phase 7.7 full RC/fresh-clone gate and validate the exact release
       commit with the repository's manual release-validation workflow.
 - [ ] After all gates pass, create and normally push immutable tag `v1.0.0-rc.1`, create the matching
-      GitHub Release, and verify both resolve to the exact validated commit.
+      GitHub Release as Draft, verify both resolve to the exact validated commit, and keep the Release
+      Draft throughout Phase 7.7.
+- [ ] Do not publish the Draft RC Release in Phase 7.7; publication is deferred and requires separate
+      later authorization and a publication gate.
 
 ## Phase 8 — `v1.0.0` final (not performed)
 
