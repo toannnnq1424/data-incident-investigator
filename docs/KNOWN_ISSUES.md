@@ -3,14 +3,15 @@
 Last updated: 2026-07-22.
 
 - Draft PR #40 carries the final approved Phase 6 optional Markdown export from exact main `601f361…`.
-  Its public HEAD `35f460c…` and exact CI run `29880998722`, job `88801642396`, passed, but QA2
-  correctly blocked acceptance because the separator lookahead allowed spaces inside a field label:
-  `password=p@ss|TAIL mode=fixture` left `|TAIL` visible. The targeted local correction makes the label
-  one contiguous ASCII identifier, so `|`, `;`, and `,` remain credential punctuation until whitespace
-  while real adjacent assignments still delimit fields. Pre-fix reproduction, format/check, affected
-  lint/typecheck, and the 2-file/22-test Markdown/security matrix pass after the fix; additive commit,
-  push, and new exact-head CI are pending on the same branch/PR. Sharing, storage, email/Slack/Jira/PDF,
-  authentication, a checked-in sample, Phase 6 Level D/checkpoint, and Phases 7-8 remain out of scope.
+  Its public HEAD `c9e255d…` and exact CI run `29882336711`, job `88805664838`, passed, but QA3
+  correctly blocked acceptance because adjacent supported multiword keys diverged from the contiguous
+  separator-label matcher: `password=p@ss|api key=abcd!XYZ` could expose the `key=` suffix. The targeted
+  local correction shares one exact credential-key allowlist between the main matcher and lookahead;
+  only canonical `api key`/`access token` may contain a space, so arbitrary `TAIL mode` stays invalid.
+  Pre-fix reproduction, format/check, affected lint/typecheck, and the 2-file/23-test Markdown/security
+  matrix pass after the fix; additive commit, push, and new exact-head CI are pending on the same
+  branch/PR. Sharing, storage, email/Slack/Jira/PDF, authentication, a checked-in sample, Phase 6 Level
+  D/checkpoint, and Phases 7-8 remain out of scope.
 
 - Phase 6 Slice 6.3 is merged through PR #35 at exact main merge
   `aa853d7b1dd2fdbeca45d08766643ba18ca2aa53` (tree

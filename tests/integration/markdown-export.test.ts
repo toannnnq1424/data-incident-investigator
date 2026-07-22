@@ -388,6 +388,40 @@ describe('deterministic Markdown incident export', () => {
     expect(markdown).toContain('state=allowed');
   });
 
+  it('redacts allowlisted multiword credential fields after punctuation separators', async () => {
+    const { terminal } = await canonicalCompleted();
+    const unsafe = clone(terminal);
+    unsafe.contextStage.intent.question = [
+      'SAFE password=p@ss|api key=ApiSecret42!XYZ mode=fixture SAFE_AFTER',
+      'AccessSafe password=p@ss|access token=AccessSecret42!XYZ status=healthy AccessAfter',
+      'HyphenSafe password=p@ss|api-key=HyphenSecret42!XYZ state=allowed HyphenAfter',
+      'UnderscoreSafe password=p@ss|api_key=UnderscoreSecret42!XYZ next=kept UnderscoreAfter',
+      'SafeAfterNewline',
+    ].join('\n');
+
+    const markdown = createIncidentMarkdownExport(unsafe).markdown;
+
+    expect(markdown).not.toContain('ApiSecret42');
+    expect(markdown).not.toContain('AccessSecret42');
+    expect(markdown).not.toContain('HyphenSecret42');
+    expect(markdown).not.toContain('UnderscoreSecret42');
+    expect(markdown).not.toContain('!XYZ');
+    expect(markdown.match(/\\\[redacted credential\\\]/gu)).toHaveLength(8);
+    expect(markdown).toContain('SAFE');
+    expect(markdown).toContain('SAFE\\_AFTER');
+    expect(markdown).toContain('AccessSafe');
+    expect(markdown).toContain('AccessAfter');
+    expect(markdown).toContain('HyphenSafe');
+    expect(markdown).toContain('HyphenAfter');
+    expect(markdown).toContain('UnderscoreSafe');
+    expect(markdown).toContain('UnderscoreAfter');
+    expect(markdown).toContain('SafeAfterNewline');
+    expect(markdown).toContain('mode=fixture');
+    expect(markdown).toContain('status=healthy');
+    expect(markdown).toContain('state=allowed');
+    expect(markdown).toContain('next=kept');
+  });
+
   it('neutralizes Markdown, HTML, links, bidi, credentials, internal hosts, and unsafe filenames', async () => {
     const { terminal } = await canonicalCompleted();
     const unsafe = clone(terminal);

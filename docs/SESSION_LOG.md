@@ -3135,3 +3135,68 @@ limitation đã biết.
 Format năm path, audit exact delta/secrets/generated junk/ancestry, tạo một additive conventional
 commit không amend/rebase, normal-push cùng branch, xác minh chỉ PR #40 vẫn OPEN/Draft/CLEAN/MERGEABLE,
 và chờ new exact-head CI terminal SUCCESS; không merge hoặc bắt đầu checkpoint/Phase 7.
+
+## 2026-07-22 — QA correction 3: shared multiword credential keys
+
+### Objective
+
+Sửa product/security blocker QA3 tại exact public HEAD
+`c9e255d4d0a9b932b28251092cc2ae9662eee725` (tree
+`571f754eb39a6f4039715249390a4fa6fb7b015d`) của Draft PR #40, dù exact CI run `29882336711`, job
+`88805664838`, SUCCESS. Với `SAFE password=p@ss|api key=abcd!XYZ SAFE_AFTER`, cả hai credential phải
+được che; safe text/following field phải còn nguyên. Giữ đúng adjacent `api-key`/`api_key`, toàn bộ QA2
+boundaries, additive history và phạm vi phase hiện tại.
+
+### Completed
+
+Đã xác minh local/remote/PR cùng exact `c9e255d…`, worktree sạch, PR #40 là PR duy nhất và vẫn
+OPEN/Draft/CLEAN/MERGEABLE, base `main`. Pre-fix public-export regression tạo 7 thay vì 8 redaction
+markers: first matcher nuốt `|api`, rồi để suffix `key=...`; `access token` tình cờ được che tiếp vì
+`token=` tự khớp canonical key.
+
+Production nay có một `markdownExportCredentialKeyPattern` code-owned chứa đúng canonical allowlist.
+Main assignment matcher và separator lookahead cùng interpolate fragment này; generic label vẫn là token
+liền mạch không whitespace. Vì vậy chỉ exact supported `api key`/`access token` có thể chứa space, còn
+arbitrary `TAIL mode` không quay lại. Regression bao phủ multiword, hyphen, underscore, unique
+alphanumeric secret fragments, safe prefix/suffix/newline và following `mode/status/state/next` fields.
+
+### Files changed
+
+Chỉ `packages/shared-types/src/index.ts`, `tests/integration/markdown-export.test.ts`,
+`docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md` và entry này. Không đổi API/UI/schema/version,
+fixture, config, manifest, lockfile, dependency, provider/evaluation source hoặc generated artifact.
+
+### Decisions
+
+Chia sẻ exact regex fragment nhỏ nhất thay vì copy thêm multiword alternatives hoặc tạo parser mới.
+Fragment giữ nguyên canonical key semantics hiện hữu; separator vẫn cần một actual allowlisted key hoặc
+contiguous generic field label ngay trước `=`/`:`. Unique alphanumeric test secrets được pin riêng vì
+Markdown escaper có thể chèn backslash trước punctuation và che khuất một assertion suffix yếu.
+
+### Validation performed
+
+- Exact pre-fix reproducer expected FAIL 1/1 trong `1.17s` (`1752ms` command wall), 7/8 redaction
+  markers.
+- Exact post-fix targeted PASS 1/1 trong `1.08s` (`1657ms` command wall), đủ 8 markers và không còn
+  unique secret fragment/suffix.
+- Focused Prettier write/check PASS `2277ms`; affected ESLint PASS `1327ms`; shared-types typecheck PASS
+  `1313ms`.
+- Exact affected matrix PASS 2/2 files, 23/23 tests trong `1.88s` (`2469ms` command wall): 8 Markdown
+  export tests và 15 input/output-safety tests.
+
+### Validation intentionally deferred
+
+Browser/download, builds, smoke, full suite, Level D/checkpoint, Phase 7/8, Mac, live credentials/
+provider/model network, release/deployment và merge không chạy lại vì inputs liên quan không đổi.
+
+### Known issues
+
+Public PR head `c9e255d…` vẫn chứa QA3 blocker cho tới khi additive correction commit được push. Managed
+Windows esbuild junction tiếp tục cần approved bundled runtime cho Vitest; đây là environment-only
+limitation đã biết.
+
+### Exact next step
+
+Format năm path, audit exact delta/secrets/generated junk/ancestry, tạo một additive conventional
+commit không amend/rebase, normal-push cùng branch, xác minh chỉ PR #40 vẫn OPEN/Draft/CLEAN/MERGEABLE,
+và chờ new exact-head CI terminal SUCCESS; không merge hoặc bắt đầu checkpoint/Phase 7.

@@ -3717,6 +3717,61 @@ passed in `2371ms`, affected lint in `22359ms`, shared-types typecheck in `4441m
 two-file matrix passed 2/2 files and 22/22 tests in `1.84s` (`2410ms` command wall). Additive
 publication/new exact-head CI remain pending; no deferred gate was run.
 
+#### QA correction 3 — share allowlisted multiword credential keys
+
+Status: targeted correction planned on the existing Draft PR #40 after QA evaluated exact public HEAD
+`c9e255d4d0a9b932b28251092cc2ae9662eee725` (tree
+`571f754eb39a6f4039715249390a4fa6fb7b015d`). Exact-head CI run `29882336711`, job `88805664838`,
+passed, but product/security acceptance remains blocked. Local, remote, and the sole
+OPEN/Draft/CLEAN/MERGEABLE PR #40 head all match before correction; base remains `main` and history
+remains additive only.
+
+Objective: support the canonical multiword credential keys after punctuation separators without
+reintroducing arbitrary space-bearing labels. For
+`SAFE password=p@ss|api key=abcd!XYZ SAFE_AFTER`, redact both credential assignments and preserve safe
+text/following fields. Apply the same rule to `access token`; retain correct adjacent `api-key` and
+`api_key`, QA2 `|TAIL mode=`, `;TAIL status=`, `,TAIL state=`, and real `|state=` behavior.
+
+Minimum change and boundary decision:
+
+- `packages/shared-types/src/index.ts`: define one code-owned credential-key regex fragment equal to the
+  current canonical allowlist and interpolate it into both the main assignment matcher and the
+  separator field-label alternative. The generic field-label alternative stays contiguous; only exact
+  allowlisted keys such as `api key` and `access token` may contain the already supported single space.
+  No arbitrary `TAIL mode` label, parser, taxonomy, or renderer-version change is introduced.
+- `tests/integration/markdown-export.test.ts`: add one public-export regression for adjacent
+  `|api key=`, `|access token=`, `|api-key=`, and `|api_key=`. Assert all secrets/suffixes disappear,
+  expected redaction count is stable, safe prefix/suffix/newline and following `mode/status/state/next`
+  fields survive. Running the complete file also pins all QA1/QA2 boundaries.
+- Update only this plan, `docs/KNOWN_ISSUES.md`, and `docs/SESSION_LOG.md`. No API/UI/schema/version,
+  fixture, config, manifest, lockfile, dependency, build/browser, provider, or evaluation input changes.
+
+Acceptance and exact validation:
+
+- Before the source fix, run
+  `pnpm exec vitest run tests/integration/markdown-export.test.ts -t "redacts allowlisted multiword credential fields after punctuation separators"`; it must reproduce the leaked multiword-key suffixes.
+- After the shared-fragment correction, rerun that exact test to PASS. Run affected format/check for the
+  five source/test/doc paths, ESLint for shared-types and the Markdown test, shared-types typecheck, and
+  exactly
+  `pnpm exec vitest run tests/integration/markdown-export.test.ts tests/integration/input-output-safety.test.ts`.
+- Audit `git diff --check`, exact paths/stat/patch, secrets/debug/conflicts/generated artifacts and
+  forbidden drift. Create one additive conventional commit without amend/rebase, normal-push the same
+  branch, verify only PR #40 remains OPEN/Draft/CLEAN/MERGEABLE against `main`, and wait for its new
+  exact-head CI run/job to terminal SUCCESS without merge.
+
+Deferred: broader sanitizer/parser changes, new key taxonomy, renderer/API/UI changes, browser, build,
+smoke, full suite, Level D/checkpoint, Phase 7/8, release/deployment, Mac, providers, credentials,
+sharing/storage, and merge.
+
+Local QA3 result: the exact pre-fix test reproduced a missing adjacent credential redaction (7 markers
+instead of 8) in `1.17s` (`1752ms` command wall). A single shared canonical key fragment now drives
+both the main assignment matcher and the separator lookahead; the strengthened regression also checks
+unique alphanumeric secret fragments so Markdown escaping cannot mask a suffix leak. The same test
+passed 1/1 in `1.08s` (`1657ms` command wall). Focused format/check passed in `2277ms`, affected lint in
+`1327ms`, shared-types typecheck in `1313ms`, and the exact two-file matrix passed 2/2 files and 23/23
+tests in `1.88s` (`2469ms` command wall). Additive publication/new exact-head CI remain pending; no
+deferred gate was run.
+
 ## Phase 7 — GitHub, CI, and release
 
 Finalize branch/PR workflow, full CI, release validation, smoke tests, and merge readiness.
