@@ -4,10 +4,13 @@ This file records notable user-facing, operator-facing, security, reliability, a
 changes. It follows a Keep a Changelog-style structure and the repository's
 [versioning policy](docs/VERSIONING.md).
 
-No version has been released from this changelog yet. All integrated work remains under
-`Unreleased` until a separately authorized release cut supplies the version and actual release date.
+No Git tag or GitHub Release has been created from this changelog yet. The release-candidate metadata
+below is prepared for independent validation; tagging and creating a Draft GitHub Release remain
+separately authorized post-merge gates.
 
 ## [Unreleased]
+
+## [1.0.0-rc.1] - 2026-07-23
 
 ### Added
 

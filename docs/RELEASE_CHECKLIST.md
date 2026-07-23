@@ -36,22 +36,23 @@ Phase 7.5 or Phase 7.6.
 - [x] Confirm no artifact, tag, Release, package, or deployment was uploaded/published and no external
       environment was mutated.
 
-## Phase 7.7 — `v1.0.0-rc.1` candidate (not performed)
+## Phase 7.7 — `v1.0.0-rc.1` implementation candidate (in progress)
 
-- [ ] Record the exact clean current-`main` commit, tree, parent, and successful main CI evidence.
-- [ ] Confirm that no `v1.0.0-rc.1` tag or GitHub Release already exists.
-- [ ] Set the root and all six private workspace manifests to `1.0.0-rc.1` in one release change.
-- [ ] Run `pnpm install --lockfile-only` with pnpm `11.9.0`; commit the lockfile only if it changes,
+- [x] Record the exact clean current-`main` commit, tree, parent, and successful main CI evidence.
+- [x] Confirm that no `v1.0.0-rc.1` tag or GitHub Release already exists.
+- [x] Set the root and all six private workspace manifests to `1.0.0-rc.1` in one release change.
+- [x] Run `pnpm install --lockfile-only` with pnpm `11.9.0`; commit the lockfile only if it changes,
       then prove a frozen install.
-- [ ] Move the applicable `Unreleased` entries into a `1.0.0-rc.1` section with the actual cut date and
+- [x] Move the applicable `Unreleased` entries into a `1.0.0-rc.1` section with the actual cut date and
       leave a new `Unreleased` section; add links only after their Git refs exist.
-- [ ] Complete the separately scoped Phase 7.7 full RC/fresh-clone gate and validate the exact release
-      commit with the repository's manual release-validation workflow.
-- [ ] After all gates pass, create and normally push immutable tag `v1.0.0-rc.1`, create the matching
-      GitHub Release as Draft, verify both resolve to the exact validated commit, and keep the Release
-      Draft throughout Phase 7.7.
-- [ ] Do not publish the Draft RC Release in Phase 7.7; publication is deferred and requires separate
-      later authorization and a publication gate.
+- [ ] Complete the separately scoped Phase 7.7 full RC/fresh-clone gate, create one Draft pull request,
+      and require exact-head PR CI success before independent-QA handoff.
+- [ ] Keep the implementation Draft/unmerged and create no tag or GitHub Release. After independent QA
+      accepts and the change is merged, a separately authorized publication gate may create and
+      normally push immutable tag `v1.0.0-rc.1`, then create the matching GitHub Release as Draft and
+      verify both resolve to the exact validated commit.
+- [ ] Do not publish the Draft RC Release in the post-merge publication gate; publication is deferred
+      and requires separate later authorization.
 
 ## Phase 8 — `v1.0.0` final (not performed)
 

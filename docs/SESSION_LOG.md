@@ -4077,3 +4077,76 @@ passed frozen-install, fixture API health/readiness/incident smoke, and rollback
 artifact inspection exposes drift. Then clean exact generated/staging paths, normal-push the same
 branch, update only Draft PR #47, and wait for exact-new-head CI without rerun. Ready, merge, full
 validation, external publication/deployment, version/tag/Release, Phase 7.7, and Phase 8 stay deferred.
+
+## 2026-07-23 — Phase 7.7 `v1.0.0-rc.1` release candidate preparation
+
+### Objective
+
+Prepare the coordinated `1.0.0-rc.1` metadata change from exact integrated Phase 7.6 main, then run
+one canonical full Windows release-validation matrix and one isolated fresh-checkout verification.
+End with one exact-head-green Draft pull request for independent QA, without merging, tagging,
+creating or publishing a GitHub Release, uploading a release asset, or deploying externally.
+
+### Completed
+
+Fetched `origin/main` without tags and matched `HEAD`, `FETCH_HEAD`, and `origin/main` to
+`3a3d6792b1a32fedaac7aa7b17be5a5f64027931`. Its tree is
+`7c839aff2c464db11009d1bbd2ce2ba09d5ff7da`; ordered parents are
+`de9228262f34a3171377aeaadec5f6dd9cfa1f85` and
+`e1a889e156a6d650b69594457a8e23136a35095a`. Authenticated in-app GitHub inspection verified main CI
+run `30020364659`, job `89251175219`, succeeded for that exact merge. The repository has no tag or
+GitHub Release, and the target branch has no existing pull request.
+
+Created `codex/phase-7-7-release-candidate` from that exact main. Added the Phase 7.7 plan before the
+release edit. Set the root and all six private workspace manifests to `1.0.0-rc.1`, kept every
+internal dependency at `workspace:*`, preserved runtime/toolchain behavior, moved the curated
+`Unreleased` material to `1.0.0-rc.1 - 2026-07-23`, and left a clean `Unreleased` section without a
+premature comparison link. Clarified that this implementation and independent-QA handoff create no
+tag or GitHub Release; those are separately authorized post-merge publication gates.
+
+### Files changed
+
+The root and six workspace `package.json` manifests, `CHANGELOG.md`, `docs/VERSIONING.md`,
+`docs/RELEASE_CHECKLIST.md`, `docs/IMPLEMENTATION_PLAN.md`, and this session log. The lockfile bytes,
+dependencies, workspace membership, workflows, scripts, source, fixtures, tests, deployment runtime,
+and artifact contract remain unchanged.
+
+### Decisions
+
+Treat `1.0.0-rc.1` as one coordinated private-monorepo product version. Keep the RC metadata date
+truthful to candidate preparation while withholding Git refs/links until the tag exists. Follow the
+newer assigned safety gate over the earlier publication wording: implementation stops at a Draft PR
+ready for independent QA, and tag/Draft Release creation requires a later post-merge authorization.
+
+### Validation performed
+
+- Exact Node `v24.14.0` and pnpm `11.9.0` ran `pnpm install --lockfile-only`. The 309-entry
+  supply-chain policy passed, and the lockfile SHA-256 remained
+  `2e18dc0360a16e0ee095fd902a65ccbfc996796eaae1f276ffa75c63bc835331`, so the lockfile is correctly
+  absent from the diff.
+- The tracked Windows bootstrap selected Node `v24.14.0` and pnpm `11.9.0`; its frozen install
+  completed for all seven workspace projects with the resolution step skipped, 259 packages, and the
+  same 309-entry supply-chain policy. Its final `pnpm exec prettier` probe reproduced the documented
+  fallback-pnpm root-bin resolution limitation after install. Direct installed Prettier `3.9.5` then
+  passed all changed files; no dependency or repository workaround was made.
+- `git diff --check` passed. Full validation intentionally waits for the first clean RC metadata
+  commit because artifact provenance and the isolated exact-commit checkout require an immutable SHA.
+
+### Validation intentionally deferred
+
+The one full `pnpm validate`, evaluation, browser E2E, dependency audit, artifact build/verification,
+extracted deployment/rollback rehearsal, fresh-checkout gate, final residue/process/port audit, Draft
+PR, and exact-head PR CI remain pending. Mac and live DataHub remain unavailable or credential-gated.
+Tag, GitHub Release, publication, upload, external deployment, `1.0.0`, Phase 8, and product changes
+remain prohibited.
+
+### Known issues
+
+The Windows fallback-pnpm `pnpm exec` root-bin limitation remains an environment-only post-install
+issue; the direct installed binary is the documented recovery. No release blocker is currently known.
+
+### Exact next step
+
+Run the final metadata/version/changelog/secret/diff audit, create one additive conventional RC
+metadata commit, and run the one-time full Windows matrix on that clean exact commit. Classify any
+failure before the smallest correction and do not repeat unchanged green gates.

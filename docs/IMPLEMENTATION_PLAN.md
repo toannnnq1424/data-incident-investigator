@@ -4744,6 +4744,97 @@ Local Windows pre-commit result (2026-07-23):
   evaluation, browser E2E, fresh-clone, manual release workflow, Mac, and every external side effect
   remain intentionally deferred.
 
+### Slice 7.7 — `v1.0.0-rc.1` release candidate validation
+
+Status: implementation in progress on `codex/phase-7-7-release-candidate` from exact integrated
+Phase 7.6 main `3a3d6792b1a32fedaac7aa7b17be5a5f64027931` (tree
+`7c839aff2c464db11009d1bbd2ce2ba09d5ff7da`; ordered parents
+`de9228262f34a3171377aeaadec5f6dd9cfa1f85` and
+`e1a889e156a6d650b69594457a8e23136a35095a`). Main CI run `30020364659`, job
+`89251175219`, was verified successful before branch creation. Authenticated GitHub inspection and
+local Git inspection found no existing tag, GitHub Release, target branch pull request, or prior
+`codex/phase-7-7-release-candidate` pull request.
+
+Objective: prepare the smallest coordinated `1.0.0-rc.1` product metadata change, then run one
+canonical full Windows release-validation matrix and one isolated fresh-checkout verification. Produce
+an exact evidence handoff for independent QA without merging, tagging, creating a GitHub Release,
+publishing, uploading an asset, or mutating an external deployment.
+
+Minimum files:
+
+- The root and six private workspace `package.json` manifests for the aligned `1.0.0-rc.1` version.
+- `pnpm-lock.yaml` only if exact pnpm `11.9.0` records a deterministic change during the required
+  `pnpm install --lockfile-only` step.
+- `CHANGELOG.md` for a clean `Unreleased` section and the truthful `1.0.0-rc.1` entry dated at this
+  candidate preparation.
+- `docs/VERSIONING.md` and `docs/RELEASE_CHECKLIST.md` only to make the implementation/independent-QA/
+  post-merge publication boundary explicit and consistent with the assigned no-tag/no-Release gate.
+- `docs/IMPLEMENTATION_PLAN.md`, `docs/REPOSITORY_MAP.md`, `docs/KNOWN_ISSUES.md`, and
+  `docs/SESSION_LOG.md` for narrow durable RC state and exact validation evidence.
+- No product source, fixture, test, dependency, workflow, deployment behavior, or release-artifact
+  contract change unless a release gate proves a genuine blocker.
+
+Acceptance criteria:
+
+- All seven manifests remain private and align exactly at `1.0.0-rc.1`; internal dependencies remain
+  `workspace:*`; runtime behavior and the Node `>=24` / pnpm `11.9.0` contract remain unchanged.
+- Exact pnpm `11.9.0` performs the coordinated lockfile-only step, followed by a successful clean
+  frozen install. The lockfile is committed only if its bytes change.
+- Applicable curated `Unreleased` material moves without embellishment to
+  `1.0.0-rc.1 - 2026-07-23`; a new clean `Unreleased` section remains. No comparison link is added
+  before a tag exists, and no `1.0.0` release claim appears.
+- One full Windows release matrix runs on the final executable/metadata commit: exact toolchain and
+  frozen bootstrap; repository format/lint/all workspace typechecks/all discovered Vitest tests/all
+  builds/API+web smoke; deterministic seven-case evaluation and report review; one canonical browser
+  E2E; production dependency audit; one deterministic release artifact build plus standalone and
+  extracted verification; fixture `/health`, `/ready`, completed incident JSON, Markdown export,
+  evidence/confidence/blast-radius/remediation/audit/security assertions; and the documented local
+  immutable-artifact rollback rehearsal.
+- The artifact evidence records exact version, full commit/tree, filename, byte size, file count,
+  SHA-256/sidecar, required inventory, frozen dependency provenance, and forbidden secret/junk/source/
+  test/cache exclusions. Only task-owned ignored output and canonical `C:\tmp` staging paths are used.
+- One isolated exact-feature-commit checkout contains no copied credential or dependency state, runs
+  the tracked bootstrap from a clean dependency baseline, proves essential validation/evaluation/
+  browser/artifact gates, and is removed only after canonical/path/reparse and owned-process checks.
+- A gate failure is classified before editing. Only the failing gate and necessary final evidence may
+  be rerun after the smallest additive release-blocker correction; unchanged green gates are not
+  repeated.
+- One or more additive conventional commits are normal-pushed to exactly one Draft PR against the
+  unchanged exact main. The final PR identity/base/head/tree/parents/full diff and exact-head `PR CI`
+  run/job must be verified successful. The manual release workflow is dispatched at most once only if
+  current policy requires it; otherwise local full RC validation plus exact-head PR CI are the gates.
+- Implementation ends `READY FOR INDEPENDENT QA` but remains Draft, unmerged, untagged, unreleased,
+  unpublished, and externally undeployed. Tag and GitHub Release operations are post-merge publication
+  gates and are not authorized in this implementation task.
+
+Deferred: Mac; live DataHub smoke without separately supplied credentials; every tag and GitHub Release
+operation; RC publication; registry/CI artifact upload; public or production deployment; external
+environment mutation; telemetry; Devpost/submission work; `1.0.0`; Phase 8; and product features.
+
+Canonical Windows validation sequence:
+
+1. Record exact base/head/tree/parents, toolchain, clean status, tag/Release/duplicate-PR absence, and
+   task-owned process/port baseline.
+2. Run exact pnpm `11.9.0` lockfile-only coordination, compare lock bytes, then run the tracked Windows
+   bootstrap for the clean/frozen install and toolchain proof.
+3. On the final clean executable/metadata commit, run `pnpm validate` exactly once. If its wrapper
+   stops, retain completed green components and run only the not-yet-run or failed component after
+   classification.
+4. Build/run the deterministic evaluation once to a unique task-owned temporary directory and verify
+   the seven case counts, aggregate metrics, JSON/Markdown agreement, zero unsupported claims, and zero
+   model tokens.
+5. Run exactly one `pnpm test:e2e:report`; record dynamic ports, duration, Markdown download, full
+   fixture report seams, console/accessibility/overflow assertions, and owned cleanup.
+6. Run the production dependency audit and require zero known vulnerabilities.
+7. Build the release artifact exactly once from the clean commit, verify archive and extracted
+   directory identity/inventory, complete the documented production install plus fixture deployment/
+   rollback rehearsal, and remove only exact task-owned temporary state.
+8. Verify the same exact commit from an isolated clean checkout using the documented bootstrap and
+   essential release gates without copying credentials, auth state, `node_modules`, stores, or outputs.
+9. Append exact durable evidence, run changed-document/static/diff/secret/residue/process/port audits,
+   commit additively, normal-push, create one Draft PR in the authenticated in-app Browser, and require
+   exact-head PR CI success without rerun.
+
 ## Phase 8 — Submission
 
 Public repository, deployment URL, screenshots, video, Devpost copy, architecture explanation, known

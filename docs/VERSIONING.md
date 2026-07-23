@@ -92,11 +92,13 @@ Version changes happen only in an explicitly scoped release task from a clean, c
    inputs.
 4. Finalize the corresponding changelog section with the actual cut date and keep `Unreleased` for
    subsequent work.
-5. Run the separately scoped release validation against the exact release commit. Create and push the
-   matching immutable tag only after every required gate succeeds. For an RC cut, then create the
-   matching GitHub Release only as Draft, keep it Draft throughout the candidate phase, and do not
-   publish it. Publishing that Draft Release is deferred and requires a separately authorized later
-   gate; stable-release publication likewise requires its explicit final-release authorization.
+5. Run the separately scoped release validation against the exact release commit. The implementation
+   branch and Draft pull request stop after exact-head validation and independent-QA handoff: they do
+   not create a tag or GitHub Release. Only after independent QA accepts and the candidate change is
+   merged may a separately authorized publication gate create and push the matching immutable tag.
+   For an RC, that later gate may then create the matching GitHub Release only as Draft and must not
+   publish it. Publishing that Draft Release requires another separately authorized gate;
+   stable-release publication likewise requires its explicit final-release authorization.
 
 The applications and packages remain `private: true`; this process does not authorize `pnpm publish`
 or a registry publication.
@@ -106,13 +108,14 @@ or a registry publication.
 Phase 7.5 defines policy only. It leaves every manifest at `0.1.0`, leaves the lockfile unchanged, and
 creates no tag or release.
 
-Phase 7.7 is responsible for the first candidate cut. Its scoped operation must set all seven
-manifests to `1.0.0-rc.1`, perform the deterministic lockfile step above, release the curated
-changelog entries only with the actual cut date, run the full RC/fresh-clone and exact-commit gates,
-and create and push immutable tag `v1.0.0-rc.1` only after success. It may then create the matching
-GitHub Release only as Draft and must keep it Draft throughout Phase 7.7. Phase 7.7 must not publish
-the RC Release; publication is deferred and requires separate later authorization and a publication
-gate.
+Phase 7.7 is responsible for preparing the first candidate change. Its implementation operation must
+set all seven manifests to `1.0.0-rc.1`, perform the deterministic lockfile step above, move the
+curated changelog entries only with the actual candidate-preparation date, and run the full
+RC/fresh-clone and exact-commit gates. It ends with an independently reviewable Draft pull request and
+creates no tag or GitHub Release. After independent QA accepts and the change is merged, a separately
+authorized publication gate may create and push immutable tag `v1.0.0-rc.1`, then create the matching
+GitHub Release only as Draft. That gate must not publish the RC Release; publication remains deferred
+and requires separate later authorization.
 
 Phase 8 may cut `1.0.0` only after the candidate is accepted and final validation succeeds. It must
 repeat the coordinated manifest/lock/changelog procedure, record changes since the candidate
