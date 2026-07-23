@@ -15,7 +15,10 @@ Last updated: 2026-07-23.
   frozen-install verification but plain Node stopped before listening because its archived runtime
   workspace manifests still exported TypeScript source. The Phase 7.6 correction changes only archived
   manifest copies to export packaged compiled JavaScript/declarations; repository manifests, dev/test
-  behavior, runtime source, dependencies, and public contracts stay unchanged.
+  behavior, runtime source, dependencies, and public contracts stay unchanged. Independent Windows QA
+  then proved Git cleanliness did not cover ignored stale files in the five build-output roots consumed
+  by the artifact. The builder now preflights all five roots and removes only those exact canonical
+  in-repository directories before building; a link/reparse or path escape fails before any deletion.
 
 - Phase 7.4 is integrated through normal merge `dff1fb416610060f5e5fad2d9289605ab7de1781`
   (tree `f1c640d7ee8a8d89e10387694979eedc5ebf0c74`; parents

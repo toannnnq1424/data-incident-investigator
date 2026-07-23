@@ -4046,3 +4046,34 @@ generated/staging/store paths. If all local gates pass, normal-push the same bra
 PR against unchanged main, and wait for exact-head CI without rerun. Full validation, evaluation,
 browser E2E, fresh clone, live credentials, Mac, RC/version/tag/Release/publish/deploy, 7.7, Phase 8,
 Ready, and merge remain deferred.
+
+## 2026-07-23 — Independent QA correction: ignored stale release outputs
+
+### Evidence and bounded correction
+
+Independent Windows QA at exact HEAD `13f8d9b48591315452489d5e7de740cf2a04f69f` proved the clean
+Git gate does not see ignored `dist` files. The release builder previously ran each package build
+without first removing obsolete output, then accepted every allowed JavaScript file found in the five
+artifact-consumed roots. An ignored stale JavaScript file could therefore become normal manifested
+content and change an otherwise valid archive for the same commit and toolchain.
+
+The correction exports one canonical list of those five roots, preflights every target before deleting
+any target, requires exact canonical in-repository real directories, rejects links/reparse targets and
+path escapes, and recursively removes only those exact roots before the single release build. The
+artifact selection is derived from the same root list. Focused tests seed stale files in every consumed
+root, prove all five roots are removed while unrelated output and a user file remain, and prove a linked
+final root aborts before the first safe root or external target is touched.
+
+### Scope and next gate
+
+Only `scripts/build-release-artifact.mjs`, `tests/release-artifact.contract.mjs`, the deployment/
+release checklist/map/plan/known-issue documentation, and this entry change. Runtime source, package
+manifests, workspace/lock inputs, dependencies, workflows, versions, fixtures, and public contracts
+remain unchanged. After focused syntax/format/lint/tests and one additive commit, seed one uniquely
+named ignored sentinel in an exact consumed root and run the release build once under Node `24.14.0`.
+The sentinel must be absent from the rebuilt tree, manifest, and archive before standalone and
+extracted-directory verification. Because runtime-manifest behavior is unchanged, reuse the already
+passed frozen-install, fixture API health/readiness/incident smoke, and rollback-start evidence unless
+artifact inspection exposes drift. Then clean exact generated/staging paths, normal-push the same
+branch, update only Draft PR #47, and wait for exact-new-head CI without rerun. Ready, merge, full
+validation, external publication/deployment, version/tag/Release, Phase 7.7, and Phase 8 stay deferred.

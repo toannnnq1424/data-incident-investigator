@@ -83,8 +83,10 @@ fixture implementation, and the DataHub GraphQL implementation for health, searc
 changes. `packages/agent-core/src/index.ts` runs deterministic evidence-linked investigations through
 that adapter.
 
-Development and tests intentionally resolve those workspace exports to source. The release builder
-keeps the repository manifests unchanged but packages each runtime workspace's compiled
+Development and tests intentionally resolve those workspace exports to source. Before building, the
+release builder preflights and removes only the five exact artifact-consumed output roots, rejecting
+links/reparse targets and noncanonical or out-of-repository resolution before any deletion. It keeps
+the repository manifests unchanged but packages each runtime workspace's compiled
 `dist/index.js`/`dist/index.d.ts` and deterministically rewrites only its archived manifest copy to
 those compiled targets. The standalone verifier requires that artifact-only boundary.
 

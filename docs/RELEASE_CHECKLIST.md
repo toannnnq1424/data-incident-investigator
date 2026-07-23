@@ -23,6 +23,9 @@ Phase 7.5 or Phase 7.6.
 
 - [x] Build the clean exact commit once with `pnpm release:artifact`; retain the exact archive name,
       full commit/tree, file count, archive SHA-256, and sidecar.
+- [x] Before the release build, preflight and clean only all five exact artifact-consumed output roots;
+      fail before partial cleanup for any link/reparse or path escape, and cover stale ignored output
+      plus unrelated-output preservation with focused regression tests.
 - [x] Verify the archive before extraction and the extracted directory afterward against a separately
       approved full commit and version; confirm exact contents and forbidden-path exclusions.
 - [x] Prove the archived runtime manifests resolve packaged compiled JavaScript, then prove a frozen

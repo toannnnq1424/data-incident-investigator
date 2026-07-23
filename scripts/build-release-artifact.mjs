@@ -1,8 +1,18 @@
 import { execFileSync, spawnSync } from 'node:child_process';
 import { constants } from 'node:fs';
-import { access, mkdir, readFile, readdir, stat, writeFile } from 'node:fs/promises';
+import {
+  access,
+  lstat,
+  mkdir,
+  readFile,
+  readdir,
+  realpath,
+  rm,
+  stat,
+  writeFile,
+} from 'node:fs/promises';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { gzipSync } from 'node:zlib';
 
 import { isSafeReleasePath, sha256 } from './verify-release-artifact.mjs';
@@ -49,22 +59,26 @@ const staticFiles = [
   'fixtures/metadata/removed-schema-column.json',
   'scripts/verify-release-artifact.mjs',
 ];
-const directorySelections = [
-  { directory: 'apps/api/dist', include: (filePath) => filePath.endsWith('.js') },
-  { directory: 'apps/web/dist', include: () => true },
-  {
-    directory: 'packages/agent-core/dist',
-    include: (filePath) => filePath.endsWith('/index.js') || filePath.endsWith('/index.d.ts'),
-  },
-  {
-    directory: 'packages/datahub-client/dist',
-    include: (filePath) => filePath.endsWith('/index.js') || filePath.endsWith('/index.d.ts'),
-  },
-  {
-    directory: 'packages/shared-types/dist',
-    include: (filePath) => filePath.endsWith('/index.js') || filePath.endsWith('/index.d.ts'),
-  },
-];
+export const releaseBuildOutputRoots = Object.freeze([
+  'apps/api/dist',
+  'apps/web/dist',
+  'packages/agent-core/dist',
+  'packages/datahub-client/dist',
+  'packages/shared-types/dist',
+]);
+const runtimeFileInclude = (filePath) =>
+  filePath.endsWith('/index.js') || filePath.endsWith('/index.d.ts');
+const buildOutputIncludes = new Map([
+  ['apps/api/dist', (filePath) => filePath.endsWith('.js')],
+  ['apps/web/dist', () => true],
+  ['packages/agent-core/dist', runtimeFileInclude],
+  ['packages/datahub-client/dist', runtimeFileInclude],
+  ['packages/shared-types/dist', runtimeFileInclude],
+]);
+const directorySelections = releaseBuildOutputRoots.map((directory) => ({
+  directory,
+  include: buildOutputIncludes.get(directory),
+}));
 
 function fail(message) {
   throw new Error(`Release artifact build failed: ${message}`);
@@ -72,6 +86,68 @@ function fail(message) {
 
 function assert(condition, message) {
   if (!condition) fail(message);
+}
+
+function comparablePath(value) {
+  const normalized = path.normalize(value);
+  return process.platform === 'win32' ? normalized.toLowerCase() : normalized;
+}
+
+async function lstatIfPresent(absolutePath) {
+  try {
+    return await lstat(absolutePath);
+  } catch (error) {
+    if (error && typeof error === 'object' && error.code === 'ENOENT') return undefined;
+    throw error;
+  }
+}
+
+export async function cleanReleaseBuildOutputs(root = repositoryRoot) {
+  const resolvedRoot = path.resolve(root);
+  const canonicalRoot = await realpath(resolvedRoot);
+  assert(
+    comparablePath(canonicalRoot) === comparablePath(resolvedRoot),
+    'repository root must be a canonical, non-linked directory',
+  );
+  assert(
+    buildOutputIncludes.size === releaseBuildOutputRoots.length &&
+      directorySelections.every(({ include }) => typeof include === 'function'),
+    'release build output roots and artifact selections are inconsistent',
+  );
+
+  const existingTargets = [];
+  for (const relativeRoot of releaseBuildOutputRoots) {
+    const absoluteTarget = path.resolve(resolvedRoot, ...relativeRoot.split('/'));
+    const expectedRelative = relativeRoot.split('/').join(path.sep);
+    assert(
+      path.relative(resolvedRoot, absoluteTarget) === expectedRelative,
+      `${relativeRoot} does not resolve to its exact repository path`,
+    );
+
+    const targetStat = await lstatIfPresent(absoluteTarget);
+    if (!targetStat) continue;
+    assert(
+      targetStat.isDirectory() && !targetStat.isSymbolicLink(),
+      `${relativeRoot} must be a real directory, not a link or reparse target`,
+    );
+
+    const canonicalTarget = await realpath(absoluteTarget);
+    const expectedCanonicalTarget = path.resolve(canonicalRoot, ...relativeRoot.split('/'));
+    assert(
+      comparablePath(canonicalTarget) === comparablePath(absoluteTarget) &&
+        comparablePath(canonicalTarget) === comparablePath(expectedCanonicalTarget),
+      `${relativeRoot} must remain canonical and inside the repository`,
+    );
+    existingTargets.push({ absoluteTarget, relativeRoot });
+  }
+
+  for (const { absoluteTarget, relativeRoot } of existingTargets) {
+    await rm(absoluteTarget, { force: false, recursive: true });
+    assert(
+      !(await lstatIfPresent(absoluteTarget)),
+      `${relativeRoot} still exists after exact release-output cleanup`,
+    );
+  }
 }
 
 function git(...arguments_) {
@@ -259,6 +335,9 @@ async function main() {
   await ensureAbsent(artifactRelativePath);
   await ensureAbsent(sidecarRelativePath);
 
+  console.log('Cleaning exact release build output roots');
+  await cleanReleaseBuildOutputs();
+
   console.log('Building release inputs with VITE_API_BASE_URL=/api');
   pnpmCommand(['build']);
 
@@ -385,7 +464,10 @@ async function main() {
   );
 }
 
-main().catch((error) => {
-  console.error(error instanceof Error ? error.message : 'Release artifact build failed.');
-  process.exitCode = 1;
-});
+const entryUrl = process.argv[1] ? pathToFileURL(path.resolve(process.argv[1])).href : undefined;
+if (entryUrl === import.meta.url) {
+  main().catch((error) => {
+    console.error(error instanceof Error ? error.message : 'Release artifact build failed.');
+    process.exitCode = 1;
+  });
+}

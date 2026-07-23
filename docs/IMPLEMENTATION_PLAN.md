@@ -4616,7 +4616,9 @@ Local Windows result (2026-07-23):
 ### Slice 7.6 — Release artifacts, deployment readiness, and rollback
 
 Status: the first additive commit `38e21bffa32e89c0728bcc7b30a6e42591f01266` exposed a local
-artifact-runtime blocker; the artifact-only compiled-JavaScript correction is in targeted validation on
+artifact-runtime blocker, and independent QA of its compiled-JavaScript correction at
+`13f8d9b48591315452489d5e7de740cf2a04f69f` exposed ignored stale build output as a deterministic-
+artifact blocker. The exact-root prebuild cleanup correction is in targeted validation on
 `codex/phase-7-6-artifacts-deployment-rollback` from exact integrated Phase 7.5 main
 `de9228262f34a3171377aeaadec5f6dd9cfa1f85` (tree
 `228979f1ddd292ff9b974c830775d70ba168168e`; parents
@@ -4654,6 +4656,9 @@ Acceptance criteria:
   `data-incident-investigator-v<manifest-version>-<12-character-commit>.tar.gz` and its `.sha256`
   sidecar under an ignored output directory. Archive paths, order, modes, ownership, timestamps, gzip
   metadata, JSON formatting, and file selection are deterministic.
+- Before that build, the builder preflights every artifact-consumed output root and removes only those
+  exact roots. Any link/reparse, noncanonical path, or out-of-repository resolution aborts before any
+  root is deleted; ignored stale JavaScript cannot survive into collection.
 - The archive contains only the built API/web output; each runtime workspace's compiled
   `dist/index.js`, declaration, and artifact-specific manifest exporting those compiled files; API/web
   manifests; the canonical metadata and incident fixtures; root manifest/workspace/lock inputs; blank
@@ -4695,11 +4700,13 @@ Phase 7.7, Phase 8, and every product feature or runtime-behavior change.
 Exact targeted Windows validation:
 
 - direct Prettier/ESLint or Node syntax checks for changed scripts/config, JSON parsing, and focused
-  artifact-builder/verifier negative-path checks that prove compiled runtime files are allowed and
-  runtime source is rejected without producing an artifact;
+  artifact-builder/verifier negative-path checks that prove compiled runtime files are allowed,
+  runtime source is rejected, all five consumed output roots are cleaned, unrelated output is
+  preserved, and linked roots fail closed before partial cleanup, without producing an artifact;
 - after the single final commit, run `pnpm release:artifact` once (it performs exactly one pinned
-  `pnpm build`) and `pnpm release:verify -- --artifact <exact archive>` once; compare the exact archive
-  name, sidecar,
+  `pnpm build`) with a uniquely named ignored stale sentinel seeded in one consumed root; prove it is
+  removed and absent from the manifest/archive, then run
+  `pnpm release:verify -- --artifact <exact archive>` once; compare the exact archive name, sidecar,
   manifest, sorted contents, sizes, checksums, provenance, required files, and forbidden signatures;
 - extract once to a fresh `C:\tmp` directory, verify the extracted directory, run one
   `pnpm install --prod --frozen-lockfile --ignore-scripts`, start only the extracted API on a dynamic

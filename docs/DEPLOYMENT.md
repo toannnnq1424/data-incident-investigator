@@ -19,8 +19,12 @@ From a clean exact Git commit, run:
 pnpm release:artifact
 ```
 
-The command checks the exact build toolchain, aligns all seven private manifest versions, runs the
-repository build once with `VITE_API_BASE_URL=/api`, and writes these ignored local outputs:
+The command checks the exact build toolchain and aligns all seven private manifest versions. Before
+the build, it preflights and removes only the five artifact-consumed output roots:
+`apps/api/dist`, `apps/web/dist`, `packages/agent-core/dist`, `packages/datahub-client/dist`, and
+`packages/shared-types/dist`. All roots are validated before any removal; a link, reparse target,
+noncanonical path, or out-of-repository resolution aborts without partial cleanup. It then runs the
+repository build once with `VITE_API_BASE_URL=/api` and writes these ignored local outputs:
 
 ```text
 outputs/release/data-incident-investigator-v<VERSION>-<COMMIT12>.tar.gz
