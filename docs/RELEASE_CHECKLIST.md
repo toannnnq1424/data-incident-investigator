@@ -45,8 +45,9 @@ Phase 7.5 or Phase 7.6.
       then prove a frozen install.
 - [x] Move the applicable `Unreleased` entries into a `1.0.0-rc.1` section with the actual cut date and
       leave a new `Unreleased` section; add links only after their Git refs exist.
-- [ ] Complete the separately scoped Phase 7.7 full RC/fresh-clone gate, create one Draft pull request,
-      and require exact-head PR CI success before independent-QA handoff.
+- [x] Complete the separately scoped Phase 7.7 full RC/fresh-checkout gate against the exact release
+      commit.
+- [ ] Create one Draft pull request and require exact-head PR CI success before independent-QA handoff.
 - [ ] Keep the implementation Draft/unmerged and create no tag or GitHub Release. After independent QA
       accepts and the change is merged, a separately authorized publication gate may create and
       normally push immutable tag `v1.0.0-rc.1`, then create the matching GitHub Release as Draft and

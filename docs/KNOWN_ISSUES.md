@@ -2,23 +2,19 @@
 
 Last updated: 2026-07-23.
 
-- Phase 7.5 is integrated through normal merge `de9228262f34a3171377aeaadec5f6dd9cfa1f85`
-  (tree `228979f1ddd292ff9b974c830775d70ba168168e`; parents
-  `dff1fb416610060f5e5fad2d9289605ab7de1781` and
-  `d2eed3e9c40e07c97d962a5de477c866d9dca82c`). Main CI run `29945647951`, job
-  `89010231061`, passed for that exact commit. Phase 7.6 defines a generic Node-host artifact and local
-  fixture deployment/rollback rehearsal only. The repository still has no Docker/cloud/public
-  deployment, persistent incident state, database/migration restore, or previously released immutable
-  artifact; therefore a real cross-version rollback target cannot exist until a later approved release
-  retains one. The web artifact requires an operator-supplied same-origin `/api` reverse proxy.
-  The first local artifact at commit `38e21bffa32e89c0728bcc7b30a6e42591f01266` passed integrity and
-  frozen-install verification but plain Node stopped before listening because its archived runtime
-  workspace manifests still exported TypeScript source. The Phase 7.6 correction changes only archived
-  manifest copies to export packaged compiled JavaScript/declarations; repository manifests, dev/test
-  behavior, runtime source, dependencies, and public contracts stay unchanged. Independent Windows QA
-  then proved Git cleanliness did not cover ignored stale files in the five build-output roots consumed
-  by the artifact. The builder now preflights all five roots and removes only those exact canonical
-  in-repository directories before building; a link/reparse or path escape fails before any deletion.
+- Phase 7.6 is integrated through normal merge `3a3d6792b1a32fedaac7aa7b17be5a5f64027931`
+  (tree `7c839aff2c464db11009d1bbd2ce2ba09d5ff7da`; parents
+  `de9228262f34a3171377aeaadec5f6dd9cfa1f85` and
+  `e1a889e156a6d650b69594457a8e23136a35095a`). Main CI run `30020364659`, job
+  `89251175219`, passed for that exact commit. Phase 7.7 local Windows release validation passed on
+  executable/metadata commit `90f07b7171520767d6f30f8c8a6146de5e129a73`: 7/7 private manifests
+  align at `1.0.0-rc.1`, the lockfile is byte-identical, 37 files/345 tests and all builds/smoke passed,
+  the seven-case evaluation completed without failures or unsupported claims, browser E2E passed, the
+  production audit found zero known vulnerabilities, and the 29-file artifact plus fresh-checkout and
+  extracted fixture rehearsal verified. Draft PR/exact-head CI and independent QA remain pending; no
+  tag or GitHub Release exists. The repository still has no Docker/cloud/public deployment, persistent
+  incident state, database/migration restore, or distinct released rollback artifact; the web artifact
+  still requires an operator-supplied same-origin `/api` reverse proxy.
 
 - Phase 7.4 is integrated through normal merge `dff1fb416610060f5e5fad2d9289605ab7de1781`
   (tree `f1c640d7ee8a8d89e10387694979eedc5ebf0c74`; parents

@@ -4104,12 +4104,18 @@ internal dependency at `workspace:*`, preserved runtime/toolchain behavior, move
 premature comparison link. Clarified that this implementation and independent-QA handoff create no
 tag or GitHub Release; those are separately authorized post-merge publication gates.
 
+Created additive metadata commit `90f07b7171520767d6f30f8c8a6146de5e129a73` with tree
+`595aa5723047f7bfc8f72d6f4fdb7a19079a8eee` and exact main as its sole parent. The complete Windows
+RC matrix, artifact deployment/rollback rehearsal, fresh-checkout subset, cleanup, and final
+process/port checks passed for that immutable release commit without a product correction.
+
 ### Files changed
 
 The root and six workspace `package.json` manifests, `CHANGELOG.md`, `docs/VERSIONING.md`,
-`docs/RELEASE_CHECKLIST.md`, `docs/IMPLEMENTATION_PLAN.md`, and this session log. The lockfile bytes,
-dependencies, workspace membership, workflows, scripts, source, fixtures, tests, deployment runtime,
-and artifact contract remain unchanged.
+`docs/RELEASE_CHECKLIST.md`, `docs/IMPLEMENTATION_PLAN.md`, `docs/REPOSITORY_MAP.md`,
+`docs/KNOWN_ISSUES.md`, and this session log. The lockfile bytes, dependencies, workspace membership,
+workflows, scripts, source, fixtures, tests, deployment runtime, and artifact contract remain
+unchanged.
 
 ### Decisions
 
@@ -4129,24 +4135,57 @@ ready for independent QA, and tag/Draft Release creation requires a later post-m
   same 309-entry supply-chain policy. Its final `pnpm exec prettier` probe reproduced the documented
   fallback-pnpm root-bin resolution limitation after install. Direct installed Prettier `3.9.5` then
   passed all changed files; no dependency or repository workaround was made.
-- `git diff --check` passed. Full validation intentionally waits for the first clean RC metadata
-  commit because artifact provenance and the isolated exact-commit checkout require an immutable SHA.
+- One `pnpm validate` passed format, lint, and six workspace typechecks before sandboxed esbuild
+  stopped Vitest prior to collection. The scoped recovery passed 37/37 files and 345/345 tests; the
+  not-yet-run build passed six projects/109 web modules, then smoke passed the built API/web plus exact
+  fixture health/readiness. No green gate was repeated.
+- One deterministic evaluation completed 7/7 cases and failed 0, with all retrieval/hypothesis/
+  evidence/reference-support rates at `1.000000`, unsupported claims `0/18`, 168 ms fixture latency,
+  26 tool calls, and zero tokens. JSON SHA-256 was
+  `f8ae4481d03301a852abfb1a574c29b90927b002ef2c738cfdf72332f496316b`; Markdown SHA-256 was
+  `f9ed8fac3873c5290f777b91500e15de02f2674df91f93e3111abcacd1f0c6a5`.
+- Exactly one browser E2E passed in `6257 ms` on API/web ports `64182`/`64183`, covering the complete
+  fixture flow, Markdown download, confidence, blast radius, remediation, audit trail, security-safe
+  presentation, accessibility/overflow, and owned cleanup. Production dependency audit reported no
+  known vulnerabilities.
+- The one release build produced the verified 29-file, 284,364-byte
+  `data-incident-investigator-v1.0.0-rc.1-90f07b717152.tar.gz` with SHA-256
+  `2dbd977b6f10d7554051cd4acbfeddd843bda3cd33acee4b651fb9a5dd0f0d1b`. Its manifest records the exact
+  commit/tree/toolchain/version/lockfile and only the required compiled runtime, web/API, fixture,
+  manifests, license, config, verifier, and operator docs.
+- Standalone/archive/directory verification, a 53-package frozen production install with scripts
+  disabled, and the local immutable-artifact rehearsal passed. The final API smoke on port `62784`
+  returned exact health/readiness, completed one incident with 4 evidence items, one `81% high`
+  hypothesis, two blast-radius impacts, two `not_executed` recommendations, 11 audit events, a
+  15,540-byte JSON response, and a 9,219-byte Markdown export. The PID exited and port rebind passed.
+- A credential-free `--no-hardlinks` local clone checked out the exact commit detached. Its clean
+  bootstrap installed 259 packages, 4 focused files/73 tests passed, 5 artifact contract tests passed,
+  the fresh verifier accepted the same exact artifact, and tracked status remained clean. Canonical
+  preflight then removed the fresh clone, evaluation reports, artifact/sidecar, output directory, and
+  rollback staging. Final probes found zero task-owned Node processes and zero selected/default
+  listeners.
 
 ### Validation intentionally deferred
 
-The one full `pnpm validate`, evaluation, browser E2E, dependency audit, artifact build/verification,
-extracted deployment/rollback rehearsal, fresh-checkout gate, final residue/process/port audit, Draft
-PR, and exact-head PR CI remain pending. Mac and live DataHub remain unavailable or credential-gated.
-Tag, GitHub Release, publication, upload, external deployment, `1.0.0`, Phase 8, and product changes
-remain prohibited.
+Draft PR publication and its exact-head PR CI remain pending. The manual release-validation workflow
+is intentionally not dispatched: local full RC validation plus exact-head PR CI are the current
+implementation gates, and the workflow has no artifact or publication behavior. Mac and live DataHub
+remain unavailable or credential-gated. Tag, GitHub Release, publication, upload, external deployment,
+`1.0.0`, Phase 8, and product changes remain prohibited.
 
 ### Known issues
 
-The Windows fallback-pnpm `pnpm exec` root-bin limitation remains an environment-only post-install
-issue; the direct installed binary is the documented recovery. No release blocker is currently known.
+Product/test/repository failures were zero. Classified recoveries were environment/validation-harness
+only: the known fallback-pnpm root-bin limitation after a successful first bootstrap; managed-worktree
+ancestor access for esbuild; sandbox denial before evaluation output creation; an unsupported
+post-evaluation PowerShell inspection option; two smoke assertions corrected to the already tested
+remediation/escaped-Markdown contracts; and a final read-only WMI probe quoting/access correction. No
+tracked executable input changed and no release blocker remains.
 
 ### Exact next step
 
-Run the final metadata/version/changelog/secret/diff audit, create one additive conventional RC
-metadata commit, and run the one-time full Windows matrix on that clean exact commit. Classify any
-failure before the smallest correction and do not repeat unchanged green gates.
+Format and audit the final docs-only evidence, commit it additively, confirm unchanged exact
+`origin/main`, normal-push the branch, create exactly one Draft PR against `main` through the
+authenticated in-app Browser, verify exact base/head/tree/parents/full diff and Draft state, then wait
+for that exact head's `PR CI` run/job to succeed without rerun. Do not merge, tag, create a Release,
+publish, upload, deploy, or begin Phase 8.

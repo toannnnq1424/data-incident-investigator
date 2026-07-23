@@ -1,7 +1,8 @@
 # Repository map
 
-Last verified: 2026-07-23 against exact integrated Phase 7.5 main and the Slice 7.6 release-artifact,
-deployment, and rollback layout.
+Last verified: 2026-07-23 against exact Phase 7.7 validated executable/metadata commit
+`90f07b7171520767d6f30f8c8a6146de5e129a73`. The repository layout is unchanged from integrated
+Phase 7.6; the root and six private workspace manifests now align at candidate version `1.0.0-rc.1`.
 
 ## Directories
 

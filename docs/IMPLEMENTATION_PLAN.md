@@ -4746,8 +4746,12 @@ Local Windows pre-commit result (2026-07-23):
 
 ### Slice 7.7 — `v1.0.0-rc.1` release candidate validation
 
-Status: implementation in progress on `codex/phase-7-7-release-candidate` from exact integrated
-Phase 7.6 main `3a3d6792b1a32fedaac7aa7b17be5a5f64027931` (tree
+Status: local Windows RC and fresh-checkout gates passed on release metadata commit
+`90f07b7171520767d6f30f8c8a6146de5e129a73` (tree
+`595aa5723047f7bfc8f72d6f4fdb7a19079a8eee`; parent
+`3a3d6792b1a32fedaac7aa7b17be5a5f64027931`) on
+`codex/phase-7-7-release-candidate` from exact integrated Phase 7.6 main
+`3a3d6792b1a32fedaac7aa7b17be5a5f64027931` (tree
 `7c839aff2c464db11009d1bbd2ce2ba09d5ff7da`; ordered parents
 `de9228262f34a3171377aeaadec5f6dd9cfa1f85` and
 `e1a889e156a6d650b69594457a8e23136a35095a`). Main CI run `30020364659`, job
@@ -4834,6 +4838,60 @@ Canonical Windows validation sequence:
 9. Append exact durable evidence, run changed-document/static/diff/secret/residue/process/port audits,
    commit additively, normal-push, create one Draft PR in the authenticated in-app Browser, and require
    exact-head PR CI success without rerun.
+
+Local Windows result (2026-07-23):
+
+- All seven private manifests align at `1.0.0-rc.1`; internal dependencies remain `workspace:*`.
+  Exact Node `24.14.0`/pnpm `11.9.0` lockfile-only coordination passed the 309-entry supply-chain
+  policy and kept `pnpm-lock.yaml` byte-identical at SHA-256
+  `2e18dc0360a16e0ee095fd902a65ccbfc996796eaae1f276ffa75c63bc835331`. The frozen bootstrap installed
+  259 packages with the resolution step skipped.
+- The one canonical `pnpm validate` invocation passed format, lint, and all six workspace typechecks,
+  then stopped before test collection when sandboxed esbuild could not read managed-worktree ancestor
+  metadata. One scoped test recovery passed 37/37 files and 345/345 tests; the not-yet-run build passed
+  all six projects with 109 web modules, and smoke passed the built API/web plus exact fixture
+  `/health` and `/ready`. Already-green gates were not repeated and no repository correction was made.
+- The deterministic evaluation ran once: 7 completed, 0 failed; retrieval precision/recall, top-1,
+  top-3, evidence precision/recall, and reference support were all `1.000000`; unsupported claims were
+  `0/18`; fixture telemetry was 168 ms total, 26 tool calls, and zero model tokens. The JSON was 64,639
+  bytes/SHA-256 `f8ae4481d03301a852abfb1a574c29b90927b002ef2c738cfdf72332f496316b`;
+  Markdown was 2,474 bytes/SHA-256
+  `f9ed8fac3873c5290f777b91500e15de02f2674df91f93e3111abcacd1f0c6a5`.
+- Exactly one browser E2E selected API `127.0.0.1:64182` and web `127.0.0.1:64183`, passed in
+  `6257 ms` (`12506 ms` wall), and covered the canonical metadata/search/lineage/change flow,
+  processing/completion, real Markdown download, confidence, blast radius, remediation, audit trail,
+  resolved evidence, accessibility, responsive overflow, clean console, and owned cleanup. Production
+  `pnpm audit --prod --audit-level=low` reported no known vulnerabilities.
+- The release artifact built once from the clean exact commit and verified as
+  `data-incident-investigator-v1.0.0-rc.1-90f07b717152.tar.gz`: 284,364 bytes, 29 files, SHA-256
+  `2dbd977b6f10d7554051cd4acbfeddd843bda3cd33acee4b651fb9a5dd0f0d1b`, full source tree above, exact
+  toolchain, included frozen-lockfile inventory, compiled runtime exports, and no secret/source-map/
+  runtime-source/test/cache/log/junk path. The sidecar matched exactly.
+- Standalone and extracted-directory verification passed. The extracted production install used 53
+  packages with scripts disabled and lock resolution skipped. The final classified smoke recovery
+  used dynamic port `62784` and returned exact health/readiness, a completed UUID incident with 4
+  evidence items, one `81% high` hypothesis, complete two-impact blast radius, two `not_executed`
+  recommendations, 11 ordered audit events, a 15,540-byte JSON retrieval, and a 9,219-byte Markdown
+  export. The exact PID exited, port rebind passed, and local staging was removed. A distinct prior
+  release still does not exist, so the rehearsal proves mechanics rather than cross-version rollback.
+- A local `--no-hardlinks` isolated clone checked out the exact release commit detached and contained
+  no copied credential/auth/dependency/output state. Its clean tracked bootstrap passed with 259
+  packages; 4 essential test files/73 tests, 5 artifact contract tests, exact artifact verification,
+  and final tracked-status checks passed. The clone, evaluation reports, local archive/sidecar, release
+  output directory, and rollback staging were removed after canonical/reparse/process/port checks.
+  Final probes found zero task-owned Node processes and zero listeners on all selected/default ports.
+- Product/test/repository failures: zero. Classified recoveries were environment or validation-harness
+  only: fallback-pnpm root-bin resolution after the successful first bootstrap; sandboxed esbuild
+  ancestor access; sandbox denial before evaluation output creation; a post-evaluation PowerShell
+  inspection option mismatch; two smoke assertions corrected to the existing remediation and escaped
+  Markdown contracts; and one final process-probe quoting/access correction. None changed a tracked
+  executable input or reran the full matrix.
+
+Remaining implementation handoff: commit this docs-only evidence additively, confirm unchanged
+`origin/main`, normal-push once, create exactly one Draft PR, verify its exact identity/full diff, and
+require the final docs-only head's `PR CI` success. Do not dispatch the manual release workflow: the
+one local full matrix plus exact-head PR CI satisfy current implementation policy, and the workflow
+would add no artifact/publication evidence. Do not merge, tag, create a Release, publish, or deploy.
 
 ## Phase 8 — Submission
 
