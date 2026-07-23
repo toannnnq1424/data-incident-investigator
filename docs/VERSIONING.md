@@ -94,10 +94,20 @@ Version changes happen only in an explicitly scoped release task from a clean, c
    subsequent work.
 5. Run the separately scoped release validation against the exact release commit. The implementation
    branch and Draft pull request stop after exact-head validation and independent-QA handoff: they do
-   not create a tag or GitHub Release. Only after independent QA accepts and the candidate change is
-   merged may a separately authorized publication gate create and push the matching immutable tag.
-   For an RC, that later gate may then create the matching GitHub Release only as Draft and must not
-   publish it. Publishing that Draft Release requires another separately authorized gate;
+   not create a tag or GitHub Release. Only after independent QA records PASS may the existing Draft
+   pull request be marked Ready and merged using a normal merge commit; squash and rebase merges do not
+   satisfy this release gate. Immediately record the exact merge SHA, tree, and ordered parents,
+   confirm fetched `origin/main` resolves to that exact merge SHA, and require the exact merge commit's
+   main CI run and job to finish SUCCESS. Only then may a separately authorized publication gate create
+   and push the matching immutable tag exactly at that recorded normal-merge SHA. The tag must not
+   target the validated artifact commit, the feature head, or any later evolving head.
+6. Before creating an RC GitHub Release, verify the immutable tag resolves exactly to the recorded
+   normal-merge SHA. Create the matching GitHub Release only as Draft, with its selected tag/target
+   resolving to that same SHA. The Phase 7.7 Draft Release must contain zero assets, remain Draft, and
+   never be published by Phase 7.7. A local evidence artifact keeps only its own recorded build
+   provenance; it must not be described as tag-built or merge-built and must not be uploaded or
+   attached. Registry publication, CI artifact upload, and public or external deployment are not
+   authorized. Publishing the zero-asset Draft Release requires another separately authorized gate;
    stable-release publication likewise requires its explicit final-release authorization.
 
 The applications and packages remain `private: true`; this process does not authorize `pnpm publish`
@@ -112,10 +122,18 @@ Phase 7.7 is responsible for preparing the first candidate change. Its implement
 set all seven manifests to `1.0.0-rc.1`, perform the deterministic lockfile step above, move the
 curated changelog entries only with the actual candidate-preparation date, and run the full
 RC/fresh-clone and exact-commit gates. It ends with an independently reviewable Draft pull request and
-creates no tag or GitHub Release. After independent QA accepts and the change is merged, a separately
-authorized publication gate may create and push immutable tag `v1.0.0-rc.1`, then create the matching
-GitHub Release only as Draft. That gate must not publish the RC Release; publication remains deferred
-and requires separate later authorization.
+creates no tag or GitHub Release. After independent QA records PASS, the existing pull request may be
+marked Ready and normal-merged. Record that exact merge SHA/tree/ordered parents, prove fetched
+`origin/main` and exact main CI SUCCESS for it, then a separately authorized publication gate may
+create and push immutable tag `v1.0.0-rc.1` exactly at that merge SHA. The tag must not target local
+artifact commit `90f07b7171520767d6f30f8c8a6146de5e129a73`, feature head
+`d6bc8b3ec9c8db8167b26f14ddc7f2d8520dfcd7`, or an evolving later head. Verify both the tag and the
+matching Draft GitHub Release target resolve exactly to the recorded merge SHA. The already-cleaned
+29-file artifact is evidence built at commit `90f07b7171520767d6f30f8c8a6146de5e129a73` with its own
+provenance only; it is not tag-built or merge-built and must not be uploaded or attached. The matching
+GitHub Release must have zero assets, remain Draft, and never be published by Phase 7.7. Registry/CI
+artifact upload and public/external deployment remain prohibited; publication requires separate later
+authorization.
 
 Phase 8 may cut `1.0.0` only after the candidate is accepted and final validation succeeds. It must
 repeat the coordinated manifest/lock/changelog procedure, record changes since the candidate

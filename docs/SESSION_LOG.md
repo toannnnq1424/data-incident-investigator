@@ -4189,3 +4189,77 @@ Format and audit the final docs-only evidence, commit it additively, confirm unc
 authenticated in-app Browser, verify exact base/head/tree/parents/full diff and Draft state, then wait
 for that exact head's `PR CI` run/job to succeed without rerun. Do not merge, tag, create a Release,
 publish, upload, deploy, or begin Phase 8.
+
+## 2026-07-23 — Phase 7.7 QA correction: exact RC publication identity
+
+### Objective
+
+Resolve the sole P1 blocker from independent Windows QA task
+`019f8401-5db4-7bd3-b4df-f8ff379d07dc`: the later tag/Draft Release gate did not distinguish the
+future normal-merge commit from local artifact commit
+`90f07b7171520767d6f30f8c8a6146de5e129a73`, QA-failed feature head
+`d6bc8b3ec9c8db8167b26f14ddc7f2d8520dfcd7`, or a later evolving head. Preserve every accepted
+implementation/full-matrix/artifact/fresh-checkout gate and change only the release-publication
+wording.
+
+### Completed
+
+Reconfirmed clean local and remote branch head
+`d6bc8b3ec9c8db8167b26f14ddc7f2d8520dfcd7` (tree
+`c5bd0922a718da2014295c5e325711b44d1b7017`; parent
+`90f07b7171520767d6f30f8c8a6146de5e129a73`) and unchanged exact `origin/main`
+`3a3d6792b1a32fedaac7aa7b17be5a5f64027931`.
+
+Defined one authoritative post-merge order: independent QA PASS; mark the existing Draft PR Ready;
+normal merge only; record the exact merge SHA/tree/ordered parents; prove fetched `origin/main` and
+exact main CI SUCCESS for that merge; then, only under separate authorization, create/push immutable
+tag `v1.0.0-rc.1` exactly at the normal-merge SHA and require the Draft GitHub Release tag/target to
+resolve to the same SHA. Explicitly prohibited targeting artifact commit `90f07b7`, feature head
+`d6bc8b3`, or a later head.
+
+Bound the already-cleaned 29-file artifact only to its recorded build provenance at
+`90f07b7171520767d6f30f8c8a6146de5e129a73`. It is neither tag-built nor merge-built and cannot be
+uploaded or attached. Required the Phase 7.7 GitHub Release to have zero assets, remain Draft, and
+never be published; registry publication, CI/release asset upload, and public/external deployment
+remain prohibited.
+
+### Files changed
+
+`docs/VERSIONING.md`, `docs/RELEASE_CHECKLIST.md`, `docs/IMPLEMENTATION_PLAN.md`, and this session log
+only. README, product/source/test/fixture/workflow files, manifests, lockfile, dependencies, changelog,
+version, artifact inputs, and deployment behavior remain unchanged.
+
+### Decisions
+
+“Exact validated commit” for publication means only the future normal-merge commit after independent
+QA PASS and exact main CI SUCCESS. Validation artifacts retain their own immutable provenance and do
+not inherit provenance from a future tag or merge.
+
+### Validation performed
+
+Canonical Node `24.14.0` ran installed Prettier `3.9.5` successfully across all four changed docs.
+Focused ordered-policy assertions found every required normal-merge identity, exact tag/Release
+resolution, artifact-provenance, zero-asset, Draft-only, no-publish/no-upload/no-deploy clause in the
+authoritative two policy docs; the ambiguous Phase 7.7 phrase “exact validated commit” is absent. The
+four paths were exactly allowlisted and passed UTF-8 without BOM, LF-only/final-newline, relative-link,
+added-line secret, conflict-marker, and `git diff --check` validation. Executable and release-artifact
+input drift were both zero files.
+
+### Validation intentionally deferred
+
+The accepted full suite, builds, artifact build/verify/install/API rehearsal, evaluation, browser E2E,
+fresh checkout, and manual release workflow are not rerun for this docs-only delta. Mac, live
+credentials, Ready/merge, post-merge main CI, tag, Release, asset, publication, deployment, `1.0.0`,
+Phase 8, and product work remain deferred.
+
+### Known issues
+
+No product, test, artifact, or repository blocker remains after this wording correction. Independent
+QA recheck and the exact-new-head PR CI are still required before acceptance.
+
+### Exact next step
+
+Run final focused four-document formatting/encoding/wording/link/diff/secret/path/drift validation,
+create one additive conventional docs commit, normal-push the same branch, update only Draft PR #48,
+and wait for exact-new-head PR CI SUCCESS without rerun. Keep the PR Draft and do not merge, tag,
+create a Release, attach an asset, publish, or deploy.

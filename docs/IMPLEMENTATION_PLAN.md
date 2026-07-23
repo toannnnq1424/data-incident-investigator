@@ -4893,6 +4893,75 @@ require the final docs-only head's `PR CI` success. Do not dispatch the manual r
 one local full matrix plus exact-head PR CI satisfy current implementation policy, and the workflow
 would add no artifact/publication evidence. Do not merge, tag, create a Release, publish, or deploy.
 
+#### QA correction — exact post-merge RC publication identity
+
+Status: focused docs correction implemented and locally validated from exact QA-failed Draft PR head
+`d6bc8b3ec9c8db8167b26f14ddc7f2d8520dfcd7` (tree
+`c5bd0922a718da2014295c5e325711b44d1b7017`; parent
+`90f07b7171520767d6f30f8c8a6146de5e129a73`) against unchanged exact base
+`3a3d6792b1a32fedaac7aa7b17be5a5f64027931`. Independent Windows QA accepted every
+implementation, validation, artifact, fresh-checkout, PR, and exact-head CI gate except one P1
+documentation ambiguity: the later publication gate does not yet define whether “exact validated
+commit” means the artifact commit, feature head, or future normal-merge commit.
+
+Objective: close only that publication-identity ambiguity. Require independent QA acceptance before a
+normal merge; record and verify the resulting exact merge commit, tree, ordered parents,
+`origin/main`, and exact main CI success; and require both immutable tag `v1.0.0-rc.1` and the Draft
+GitHub Release target to resolve exactly to that merge SHA. Keep the already-cleaned artifact evidence
+truthfully bound only to commit `90f07b7171520767d6f30f8c8a6146de5e129a73`, prohibit attaching it,
+and require the Phase 7.7 Draft Release to contain zero assets and remain unpublished.
+
+Minimum files:
+
+- `docs/VERSIONING.md` for the authoritative post-merge/tag/Release identity and zero-asset policy.
+- `docs/RELEASE_CHECKLIST.md` for the ordered operator assertions.
+- This plan and `docs/SESSION_LOG.md` for narrow persistent correction state.
+- No README, product/source/test/fixture/workflow, manifest, lockfile, dependency, changelog, version,
+  artifact, or deployment input.
+
+Acceptance criteria:
+
+- Publication order is unambiguous: independent QA PASS; mark the existing PR Ready; normal merge
+  only; record exact merge SHA/tree/ordered parents; confirm `origin/main` at that exact merge and
+  exact main CI SUCCESS; only then create/push the immutable RC tag exactly at the merge SHA.
+- The tag and Draft GitHub Release target/tag must both resolve exactly to the recorded normal-merge
+  SHA, never artifact commit `90f07b7171520767d6f30f8c8a6146de5e129a73`, feature head
+  `d6bc8b3ec9c8db8167b26f14ddc7f2d8520dfcd7`, or a later evolving head.
+- The prior 29-file artifact remains historical local evidence built at its own recorded commit/tree;
+  it is not tag-built or merge-built and must not be uploaded or attached. The Phase 7.7 GitHub
+  Release has zero assets, remains Draft, and is never published by Phase 7.7. Registry publication,
+  CI artifact upload, and public/external deployment remain prohibited.
+- Focused validation covers Prettier for exactly the four changed docs, link/wording consistency,
+  `git diff --check`, UTF-8/LF/final-newline, secret/conflict/path allowlist, explicit policy
+  assertions, and proof that executable/artifact inputs are unchanged. Prior full-matrix, artifact,
+  evaluation, browser E2E, and fresh-checkout evidence is reused without rerun.
+- Create one additive conventional docs commit, normal-push the same branch, update only existing
+  Draft PR #48, and require its exact-new-head PR CI run/job to finish SUCCESS without rerun. Do not
+  mark Ready, merge, tag, create a Release, attach an asset, publish, deploy, or begin Phase 8.
+
+Validation commands:
+
+- Project-local Prettier `--check` for the four allowed Markdown paths.
+- Focused PowerShell assertions over the exact required/prohibited publication language and
+  pre/post hashes for all executable/artifact input paths.
+- `git diff --check`, encoding/newline checks, secret/conflict-marker scan, changed-path allowlist,
+  full diff review, and exact-new-head PR CI.
+
+Focused local result (2026-07-23):
+
+- Canonical Node `24.14.0` ran installed Prettier `3.9.5` successfully across all four changed docs.
+- Exact ordered-policy assertions passed for independent QA, Ready, normal merge, merge
+  SHA/tree/ordered parents, fetched `origin/main`, exact main CI SUCCESS, exact tag target, matching
+  Draft Release target, zero assets, artifact-only provenance, Draft-only state, and no
+  publish/upload/deploy behavior. The ambiguous Phase 7.7 phrase “exact validated commit” is absent.
+- All four changed paths matched the allowlist and passed UTF-8 without BOM, LF-only/final-newline,
+  relative-link, added-line secret, conflict-marker, and `git diff --check` validation. Executable
+  input drift and release-artifact input drift were both zero files.
+
+Deferred: every already accepted full release gate; Mac; live credentials; mark-Ready/merge;
+post-merge main CI execution; tag/Release creation; assets; publication; registry/CI upload; public or
+external deployment; `1.0.0`; Phase 8; and product work.
+
 ## Phase 8 — Submission
 
 Public repository, deployment URL, screenshots, video, Devpost copy, architecture explanation, known
