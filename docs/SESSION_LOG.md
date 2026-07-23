@@ -3909,9 +3909,10 @@ commit.
 
 Added a clean-commit artifact builder and standalone strict verifier. One tracked command pins Node
 `24.14.0`, pnpm `11.9.0`, and web API base `/api`; runs one build; packages only the built API/web,
-current runtime workspace sources/manifests, canonical fixture assets, lock/workspace/config/license,
-and operator documents; and emits a deterministic version-plus-commit gzip/ustar archive and SHA-256
-sidecar under ignored output. The canonical internal manifest owns full commit/tree, toolchain,
+compiled runtime workspace outputs with artifact-specific manifests, canonical fixture assets,
+lock/workspace/config/license, and operator documents; and emits a deterministic
+version-plus-commit gzip/ustar archive and SHA-256 sidecar under ignored output. The canonical internal
+manifest owns full commit/tree, toolchain,
 host/mode/state contract, lockfile inventory, and sorted file sizes/hashes. Verification rejects unsafe
 paths, links, duplicates, noncanonical ordering/metadata/JSON, unapproved or missing files, secret/cache/
 test/log/map paths, mismatched identity/content/sidecar, more than 500 files, archives over 25 MiB, and
@@ -3942,8 +3943,9 @@ published artifact, or external deployment changes.
 Support only the target evidenced by the repository: a generic Node 24 host, with local fixture as the
 credential-free rehearsal. Keep the host's static server, TLS, service manager, and reverse proxy as
 explicit operator prerequisites instead of inventing a container or cloud platform. Pin release builds
-to the exact CI Node/pnpm toolchain and package current runtime workspace source because their existing
-exports resolve `src/index.ts`; changing those exports would alter established build/test behavior.
+to the exact CI Node/pnpm toolchain. Preserve the repository's established source exports for dev/test
+behavior while deterministically rewriting only the archived runtime manifest copies to packaged
+compiled JavaScript/declarations.
 
 Use the included frozen lockfile plus exact runtime package manifests as the dependency inventory; do
 not claim an unsupported generated SBOM. Keep workflows byte-identical because local tracked commands
@@ -3999,3 +4001,48 @@ After all local gates pass, normal-push the branch, create exactly one Draft PR 
 conflict-free state with no duplicate, and wait for its exact-head `PR CI` / `validate` terminal SUCCESS
 without rerun. Do not mark Ready, merge, bump a version, tag, create/publish a Release, upload an
 artifact, deploy externally, dispatch release validation, or start 7.7.
+
+## 2026-07-23 — QA correction: Phase 7.6 artifact runtime exports
+
+### Objective
+
+Fix only the proven release-artifact runtime seam after the first clean artifact could install but
+could not start under the supported plain-Node host contract. Preserve repository exports, product
+behavior, dependencies, lockfile, public contracts, and every external system.
+
+### Evidence and correction
+
+The immutable first artifact
+`data-incident-investigator-v0.1.0-38e21bffa32e.tar.gz` had SHA-256
+`11f50fb84c92723e3aefb4359b01ef5bacf209774552d663f45dac55f5ad6d5a`, verified and completed a
+frozen production install. Its one absolute-entrypoint start used Node `24.14.0`, fixture mode, and
+`127.0.0.1:65182`; PID `10320` exited code `1` before listening with
+`ERR_UNSUPPORTED_TYPESCRIPT_SYNTAX` at the `packages/agent-core/src/index.ts` constructor parameter
+property. Teardown proved the PID absent, zero listeners, and successful port rebind.
+
+The built API imports the three workspace package names, their repository manifests export
+`src/index.ts`, and all three packages already produce `dist/index.js` plus `dist/index.d.ts`. The
+smallest correction therefore packages only those compiled runtime outputs and writes deterministic
+artifact-specific copies of the three manifests that export the compiled files. The strict verifier
+requires those exact targets and rejects runtime source paths. Repository package manifests and
+runtime/product source stay unchanged.
+
+### Files changed
+
+Only `scripts/build-release-artifact.mjs`, `scripts/verify-release-artifact.mjs`,
+`tests/release-artifact.contract.mjs`, `docs/DEPLOYMENT.md`, `docs/IMPLEMENTATION_PLAN.md`,
+`docs/KNOWN_ISSUES.md`, `docs/RELEASE_CHECKLIST.md`, `docs/REPOSITORY_MAP.md`, and this entry. No
+manifest, workspace YAML, lockfile, dependency, workflow, runtime/product source, fixture, version,
+tag, Release, publish, deployment, or external environment changes.
+
+### Validation boundary and exact next step
+
+Run only syntax, focused ESLint/Prettier, the artifact contract test, diff/allowlist/EOL/secret checks,
+then create one additive commit after `38e21bffa32e89c0728bcc7b30a6e42591f01266`. From that clean commit,
+build the artifact exactly once, verify/archive/extract/install it, and make exactly one absolute
+compiled-entrypoint fixture start for health/readiness/removed-schema-column smoke. Rehearse local
+immutable-artifact rollback, stop the exact owned process, rebind its port, and remove only verified
+generated/staging/store paths. If all local gates pass, normal-push the same branch, create one Draft
+PR against unchanged main, and wait for exact-head CI without rerun. Full validation, evaluation,
+browser E2E, fresh clone, live credentials, Mac, RC/version/tag/Release/publish/deploy, 7.7, Phase 8,
+Ready, and merge remain deferred.

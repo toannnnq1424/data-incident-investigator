@@ -32,16 +32,18 @@ The deterministic archive contains one equivalently named root directory. Its
 frozen lockfile inventory, and the size and SHA-256 of every other file. The bundle contains:
 
 - built `apps/api/dist/*.js` and the complete `apps/web/dist`;
-- the API/web manifests and the three runtime workspace manifests plus current `src` files required
-  by their package exports;
+- the API/web manifests and each runtime workspace's compiled `dist/index.js` plus declaration file;
+  the archived copies of the three runtime workspace manifests point only to those compiled files;
 - the canonical removed-schema-column metadata and incident fixtures;
 - root `package.json`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`, blank `.env.example`, and `LICENSE`;
 - this deployment runbook, the rollback/security/known-issue documents, `README.md`, and the standalone
   artifact verifier.
 
 It intentionally excludes `.env`, credentials, `node_modules`, pnpm stores, caches, tests, coverage,
-logs, source maps, evaluation/dev-only source, the prompt-injection test fixture, and unrelated repo
-files. `pnpm-lock.yaml` plus the included package manifests is the dependency inventory; no separately
+logs, source maps, all runtime/evaluation/dev source, the prompt-injection test fixture, and unrelated
+repo files. The builder does not change repository package exports: it deterministically rewrites only
+the three archived runtime manifest copies from `src/index.ts` to `dist/index.js`/`dist/index.d.ts`.
+`pnpm-lock.yaml` plus the included package manifests is the dependency inventory; no separately
 generated SBOM is claimed.
 
 Verify the archive before extraction, supplying the approved full commit and version from release

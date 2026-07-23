@@ -25,8 +25,9 @@ Phase 7.5 or Phase 7.6.
       full commit/tree, file count, archive SHA-256, and sidecar.
 - [x] Verify the archive before extraction and the extracted directory afterward against a separately
       approved full commit and version; confirm exact contents and forbidden-path exclusions.
-- [x] Prove a frozen production install plus fixture API `/health`, `/ready`, and bounded incident
-      smoke from the extracted artifact on a dynamic loopback port.
+- [x] Prove the archived runtime manifests resolve packaged compiled JavaScript, then prove a frozen
+      production install plus fixture API `/health`, `/ready`, and bounded incident smoke from the
+      extracted artifact on a dynamic loopback port without a TypeScript loader.
 - [x] Rehearse immutable-artifact selection, staging, validation, and teardown locally. Record that no
       distinct prior release exists yet, so cross-version rollback remains unproven.
 - [x] Confirm no artifact, tag, Release, package, or deployment was uploaded/published and no external

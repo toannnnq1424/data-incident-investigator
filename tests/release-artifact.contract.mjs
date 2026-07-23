@@ -2,7 +2,11 @@ import assert from 'node:assert/strict';
 import { Buffer } from 'node:buffer';
 import test from 'node:test';
 
-import { isSafeReleasePath, parseReleaseArchive } from '../scripts/verify-release-artifact.mjs';
+import {
+  isAllowedPayloadPath,
+  isSafeReleasePath,
+  parseReleaseArchive,
+} from '../scripts/verify-release-artifact.mjs';
 
 test('release paths allow only canonical non-secret payload locations', () => {
   const safePaths = ['.env.example', 'apps/api/dist/index.js', 'docs/ROLLBACK.md'];
@@ -21,6 +25,14 @@ test('release paths allow only canonical non-secret payload locations', () => {
 
   assert.equal(safePaths.every(isSafeReleasePath), true);
   assert.equal(unsafePaths.some(isSafeReleasePath), false);
+});
+
+test('release payload allows compiled runtime workspaces and excludes their source', () => {
+  for (const packageName of ['agent-core', 'datahub-client', 'shared-types']) {
+    assert.equal(isAllowedPayloadPath(`packages/${packageName}/dist/index.js`), true);
+    assert.equal(isAllowedPayloadPath(`packages/${packageName}/dist/index.d.ts`), true);
+    assert.equal(isAllowedPayloadPath(`packages/${packageName}/src/index.ts`), false);
+  }
 });
 
 test('release archive parser rejects a non-gzip payload', () => {

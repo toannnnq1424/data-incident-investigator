@@ -43,12 +43,15 @@ const requiredStaticFiles = [
   'docs/SECURITY.md',
   'fixtures/incidents/removed-schema-column.json',
   'fixtures/metadata/removed-schema-column.json',
+  'packages/agent-core/dist/index.d.ts',
+  'packages/agent-core/dist/index.js',
   'packages/agent-core/package.json',
-  'packages/agent-core/src/index.ts',
+  'packages/datahub-client/dist/index.d.ts',
+  'packages/datahub-client/dist/index.js',
   'packages/datahub-client/package.json',
-  'packages/datahub-client/src/index.ts',
+  'packages/shared-types/dist/index.d.ts',
+  'packages/shared-types/dist/index.js',
   'packages/shared-types/package.json',
-  'packages/shared-types/src/index.ts',
   'scripts/verify-release-artifact.mjs',
 ];
 const exactDependencyManifests = [
@@ -59,6 +62,11 @@ const exactDependencyManifests = [
   'packages/datahub-client/package.json',
   'packages/shared-types/package.json',
 ].sort();
+const runtimePackageManifestPaths = new Set([
+  'packages/agent-core/package.json',
+  'packages/datahub-client/package.json',
+  'packages/shared-types/package.json',
+]);
 
 function fail(message) {
   throw new Error(`Release artifact verification failed: ${message}`);
@@ -100,15 +108,11 @@ export function isSafeReleasePath(value) {
   });
 }
 
-function isAllowedPayloadPath(filePath) {
+export function isAllowedPayloadPath(filePath) {
   if (requiredStaticFiles.includes(filePath)) return true;
   if (filePath.startsWith('apps/api/dist/')) return filePath.endsWith('.js');
   if (filePath.startsWith('apps/web/dist/')) return true;
-  return [
-    'packages/agent-core/src/',
-    'packages/datahub-client/src/',
-    'packages/shared-types/src/',
-  ].some((prefix) => filePath.startsWith(prefix) && filePath.endsWith('.ts'));
+  return false;
 }
 
 function readTarString(header, offset, length) {
@@ -393,6 +397,18 @@ function validateReleaseFiles(files, manifest, context) {
       packageManifest.version === manifest.product.version,
       `dependency manifest version differs: ${manifestPath}`,
     );
+    if (runtimePackageManifestPaths.has(manifestPath)) {
+      exactKeys(packageManifest.exports, ['.'], `${manifestPath} exports`);
+      exactKeys(packageManifest.exports['.'], ['import', 'types'], `${manifestPath} root export`);
+      assert(
+        packageManifest.exports['.'].import === './dist/index.js',
+        `runtime import does not resolve compiled JavaScript: ${manifestPath}`,
+      );
+      assert(
+        packageManifest.exports['.'].types === './dist/index.d.ts',
+        `runtime types do not resolve compiled declarations: ${manifestPath}`,
+      );
+    }
   }
 }
 

@@ -83,6 +83,11 @@ fixture implementation, and the DataHub GraphQL implementation for health, searc
 changes. `packages/agent-core/src/index.ts` runs deterministic evidence-linked investigations through
 that adapter.
 
+Development and tests intentionally resolve those workspace exports to source. The release builder
+keeps the repository manifests unchanged but packages each runtime workspace's compiled
+`dist/index.js`/`dist/index.d.ts` and deterministically rewrites only its archived manifest copy to
+those compiled targets. The standalone verifier requires that artifact-only boundary.
+
 The web uses the same shared incident schemas as the API. In development, Vite proxies browser calls
 from `/api/*` to the Fastify service and removes the `/api` prefix.
 

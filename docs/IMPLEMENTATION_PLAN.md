@@ -4615,7 +4615,8 @@ Local Windows result (2026-07-23):
 
 ### Slice 7.6 — Release artifacts, deployment readiness, and rollback
 
-Status: pre-commit implementation and static validation complete on
+Status: the first additive commit `38e21bffa32e89c0728bcc7b30a6e42591f01266` exposed a local
+artifact-runtime blocker; the artifact-only compiled-JavaScript correction is in targeted validation on
 `codex/phase-7-6-artifacts-deployment-rollback` from exact integrated Phase 7.5 main
 `de9228262f34a3171377aeaadec5f6dd9cfa1f85` (tree
 `228979f1ddd292ff9b974c830775d70ba168168e`; parents
@@ -4653,12 +4654,13 @@ Acceptance criteria:
   `data-incident-investigator-v<manifest-version>-<12-character-commit>.tar.gz` and its `.sha256`
   sidecar under an ignored output directory. Archive paths, order, modes, ownership, timestamps, gzip
   metadata, JSON formatting, and file selection are deterministic.
-- The archive contains only the built API/web output; the three runtime workspace manifests and source
-  needed by their current exports; API/web manifests; the canonical metadata and incident fixtures;
-  root manifest/workspace/lock
-  inputs; blank `.env.example`; license; deployment, rollback, security, and known-issue guidance; and
-  the standalone verifier. It excludes `.env`, credentials, `node_modules`, stores, caches, tests,
-  coverage, logs, source maps, evaluation/dev-only source, and unrelated repository files.
+- The archive contains only the built API/web output; each runtime workspace's compiled
+  `dist/index.js`, declaration, and artifact-specific manifest exporting those compiled files; API/web
+  manifests; the canonical metadata and incident fixtures; root manifest/workspace/lock inputs; blank
+  `.env.example`; license; deployment, rollback, security, and known-issue guidance; and the standalone
+  verifier. It excludes `.env`, credentials, `node_modules`, stores, caches, tests, coverage, logs,
+  source maps, runtime/evaluation/dev source, and unrelated repository files. Repository package
+  manifests and their established source exports remain byte-identical.
 - `RELEASE-MANIFEST.json` records schema version, product/version, full source commit and tree, required
   Node/pnpm versions, supported target/mode, dependency-inventory ownership by the included frozen
   lockfile and workspace manifests, and every other archive file's normalized path, byte size, and
@@ -4677,6 +4679,9 @@ Acceptance criteria:
   sidecar, extracts into `C:\tmp`, proves exact manifest contents and exclusions, performs one frozen
   production install, fixture `/health` + `/ready` + bounded smoke, and a local immutable-artifact
   rollback rehearsal. Generated outputs, stores, staging directories, and owned processes are removed.
+- The extracted production API must resolve all three runtime workspace imports to compiled JavaScript.
+  Plain Node must start the absolute `apps/api/dist/index.js` entrypoint exactly once without a
+  TypeScript loader or Node strip-only fallback.
 - Changed-file format/static/schema/security checks, `git diff --check`, allowlist, UTF-8/LF,
   secret/conflict/residue/process/port audits, workflow immutability/audit, and exact identity/ancestry
   pass. One additive conventional commit is normally pushed to exactly one Draft PR against unchanged
@@ -4690,7 +4695,8 @@ Phase 7.7, Phase 8, and every product feature or runtime-behavior change.
 Exact targeted Windows validation:
 
 - direct Prettier/ESLint or Node syntax checks for changed scripts/config, JSON parsing, and focused
-  artifact-builder/verifier negative-path checks that do not package an artifact;
+  artifact-builder/verifier negative-path checks that prove compiled runtime files are allowed and
+  runtime source is rejected without producing an artifact;
 - after the single final commit, run `pnpm release:artifact` once (it performs exactly one pinned
   `pnpm build`) and `pnpm release:verify -- --artifact <exact archive>` once; compare the exact archive
   name, sidecar,

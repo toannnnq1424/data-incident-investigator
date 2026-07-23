@@ -24,6 +24,11 @@ const packageManifestPaths = [
 const includedDependencyManifests = packageManifestPaths.filter(
   (manifestPath) => manifestPath !== 'packages/evaluation/package.json',
 );
+const runtimePackageManifestPaths = new Set([
+  'packages/agent-core/package.json',
+  'packages/datahub-client/package.json',
+  'packages/shared-types/package.json',
+]);
 const staticFiles = [
   '.env.example',
   'LICENSE',
@@ -47,9 +52,18 @@ const staticFiles = [
 const directorySelections = [
   { directory: 'apps/api/dist', include: (filePath) => filePath.endsWith('.js') },
   { directory: 'apps/web/dist', include: () => true },
-  { directory: 'packages/agent-core/src', include: (filePath) => filePath.endsWith('.ts') },
-  { directory: 'packages/datahub-client/src', include: (filePath) => filePath.endsWith('.ts') },
-  { directory: 'packages/shared-types/src', include: (filePath) => filePath.endsWith('.ts') },
+  {
+    directory: 'packages/agent-core/dist',
+    include: (filePath) => filePath.endsWith('/index.js') || filePath.endsWith('/index.d.ts'),
+  },
+  {
+    directory: 'packages/datahub-client/dist',
+    include: (filePath) => filePath.endsWith('/index.js') || filePath.endsWith('/index.d.ts'),
+  },
+  {
+    directory: 'packages/shared-types/dist',
+    include: (filePath) => filePath.endsWith('/index.js') || filePath.endsWith('/index.d.ts'),
+  },
 ];
 
 function fail(message) {
@@ -126,6 +140,29 @@ async function collectFiles(relativeDirectory, include) {
 
   await walk(relativeDirectory);
   return collected;
+}
+
+function createRuntimePackageManifest(manifestPath, manifest) {
+  const packageExport = manifest.exports?.['.'];
+  assert(
+    packageExport?.types === './src/index.ts' && packageExport?.import === './src/index.ts',
+    `${manifestPath} source export contract changed unexpectedly`,
+  );
+  assert(
+    JSON.stringify(Object.keys(manifest.exports).sort()) === JSON.stringify(['.']),
+    `${manifestPath} exports are not canonical`,
+  );
+  assert(
+    JSON.stringify(Object.keys(packageExport).sort()) === JSON.stringify(['import', 'types']),
+    `${manifestPath} root export is not canonical`,
+  );
+
+  const artifactManifest = structuredClone(manifest);
+  artifactManifest.exports['.'] = {
+    types: './dist/index.d.ts',
+    import: './dist/index.js',
+  };
+  return Buffer.from(`${JSON.stringify(artifactManifest, null, 2)}\n`, 'utf8');
 }
 
 function writeAscii(buffer, value, offset, length, label) {
@@ -250,10 +287,33 @@ async function main() {
     !sortedPaths.some((filePath) => filePath.endsWith('.map')),
     'source maps must not be packaged',
   );
+  for (const runtimePackageDirectory of [
+    'packages/agent-core',
+    'packages/datahub-client',
+    'packages/shared-types',
+  ]) {
+    assert(
+      sortedPaths.includes(`${runtimePackageDirectory}/dist/index.js`) &&
+        sortedPaths.includes(`${runtimePackageDirectory}/dist/index.d.ts`),
+      `${runtimePackageDirectory} compiled runtime is missing from selection`,
+    );
+    assert(
+      !sortedPaths.some((filePath) => filePath.startsWith(`${runtimePackageDirectory}/src/`)),
+      `${runtimePackageDirectory} source must not be packaged`,
+    );
+  }
 
+  const manifestsByPath = new Map(
+    manifests.map(({ manifestPath, value }) => [manifestPath, value]),
+  );
   const files = new Map();
   for (const relativePath of sortedPaths) {
-    files.set(relativePath, await readFile(path.join(repositoryRoot, ...relativePath.split('/'))));
+    files.set(
+      relativePath,
+      runtimePackageManifestPaths.has(relativePath)
+        ? createRuntimePackageManifest(relativePath, manifestsByPath.get(relativePath))
+        : await readFile(path.join(repositoryRoot, ...relativePath.split('/'))),
+    );
   }
   const lockfile = files.get('pnpm-lock.yaml');
   assert(lockfile, 'pnpm-lock.yaml is missing from selection');
