@@ -1,8 +1,9 @@
 # Repository map
 
-Last verified: 2026-07-23 against exact Phase 7.7 validated executable/metadata commit
-`90f07b7171520767d6f30f8c8a6146de5e129a73`. The repository layout is unchanged from integrated
-Phase 7.6; the root and six private workspace manifests now align at candidate version `1.0.0-rc.1`.
+Last verified: 2026-07-24 against exact integrated Phase 7.7 `main`
+`c4e33f7af3707f604d35b1220a18e4e83f491be3` (tree
+`ffa4276315f8dd788f12b2780cee9bc13365ebbc`). The repository layout is unchanged; the root and six
+private workspace manifests align at candidate version `1.0.0-rc.1`.
 
 ## Directories
 
@@ -103,7 +104,8 @@ Execution and quality: `IMPLEMENTATION_PLAN.md`, `TEST_STRATEGY.md`, `SECURITY.m
 `ROLLBACK.md`, `DECISIONS.md`, `LOCAL_ENVIRONMENT.md`, `KNOWN_ISSUES.md`, `SESSION_LOG.md`,
 `VERSIONING.md`.
 
-Submission: `DEMO_SCRIPT.md`, `DEVPOST_SUBMISSION.md`, `RELEASE_CHECKLIST.md`.
+Submission: `DEVPOST_REQUIREMENTS.md`, `DEMO_SCRIPT.md`, `DEVPOST_SUBMISSION.md`,
+`RELEASE_CHECKLIST.md`.
 
 ## Rescan triggers
 

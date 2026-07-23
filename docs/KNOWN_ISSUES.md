@@ -1,20 +1,25 @@
 # Known issues
 
-Last updated: 2026-07-23.
+Last updated: 2026-07-24.
 
-- Phase 7.6 is integrated through normal merge `3a3d6792b1a32fedaac7aa7b17be5a5f64027931`
-  (tree `7c839aff2c464db11009d1bbd2ce2ba09d5ff7da`; parents
-  `de9228262f34a3171377aeaadec5f6dd9cfa1f85` and
-  `e1a889e156a6d650b69594457a8e23136a35095a`). Main CI run `30020364659`, job
-  `89251175219`, passed for that exact commit. Phase 7.7 local Windows release validation passed on
-  executable/metadata commit `90f07b7171520767d6f30f8c8a6146de5e129a73`: 7/7 private manifests
-  align at `1.0.0-rc.1`, the lockfile is byte-identical, 37 files/345 tests and all builds/smoke passed,
-  the seven-case evaluation completed without failures or unsupported claims, browser E2E passed, the
-  production audit found zero known vulnerabilities, and the 29-file artifact plus fresh-checkout and
-  extracted fixture rehearsal verified. Draft PR/exact-head CI and independent QA remain pending; no
-  tag or GitHub Release exists. The repository still has no Docker/cloud/public deployment, persistent
-  incident state, database/migration restore, or distinct released rollback artifact; the web artifact
-  still requires an operator-supplied same-origin `/api` reverse proxy.
+- Phase 7.7 is integrated through normal merge `c4e33f7af3707f604d35b1220a18e4e83f491be3`
+  (tree `ffa4276315f8dd788f12b2780cee9bc13365ebbc`; parents
+  `3a3d6792b1a32fedaac7aa7b17be5a5f64027931` and
+  `8cbfe1646b8afda45b4547be73f787ba004c38ad`). Main CI run `30029013969`, job
+  `89280632707`, passed. Immutable annotated tag `v1.0.0-rc.1` resolves to that exact merge. The
+  matching GitHub Release remains Draft and unpublished with no user-uploaded assets; GitHub shows
+  only its two automatic source-code archives. The historical 29-file evidence artifact remains
+  local-only at commit `90f07b7171520767d6f30f8c8a6146de5e129a73`; it is not tag-built,
+  merge-built, or attached.
+
+- Phase 8.1 official-source intake found submission blockers that the RC does not yet satisfy: the app
+  must use open-source DataHub with at least one of MCP Server, Agent Context Kit, DataHub Skills, or
+  Analytics Agent; the submission repository must be public and Apache-2.0 licensed; and the entry
+  needs a judge-testable Project URL/path, required public functioning-project video, final
+  form/disclosures, and entrant eligibility/registration. The deadline is
+  2026-08-10 17:00 EDT / 2026-08-10 21:00 UTC / 2026-08-11 04:00 ICT. See
+  [`DEVPOST_REQUIREMENTS.md`](DEVPOST_REQUIREMENTS.md). Phase 8.1 does not change source, licence,
+  visibility, deployment, credentials, registration, submission, tag, or Release.
 
 - Phase 7.4 is integrated through normal merge `dff1fb416610060f5e5fad2d9289605ab7de1781`
   (tree `f1c640d7ee8a8d89e10387694979eedc5ebf0c74`; parents
@@ -288,11 +293,14 @@ Last updated: 2026-07-23.
   `submit -> processing -> completed -> full evidence display` in `32.400s`, with real evidence
   references and clean-console assertions. Post-run probes found zero listeners and zero
   launcher-related process leaks.
-- The GitHub repository is private during development and must become public before submission.
+- The GitHub repository is private. Official Rules require the submitted source repository to be
+  public and Apache-2.0 licensed, but visibility/licence changes remain separate authorized gates
+  after secret/history and legal review.
 - Slice 1.2 stores incident lifecycle and completed reports only in API process memory. Restarting the
   API removes existing incident IDs; durable persistence remains deferred.
-- Fixture mode currently contains only the canonical removed-schema-column scenario. Additional
-  canonical scenarios and generic scenario selection remain deferred.
+- The UI exposes seven guided presets, but only `removed-schema-column` has the rich checked-in
+  incident/metadata fixture pair and canonical browser E2E. The other six are guided form inputs and
+  deterministic evaluation cases, not additional rich E2E metadata fixtures.
 - Slice 2.4 adds bounded recent metadata facts from search results or lineage nodes through
   deterministic fixtures and DataHub GraphQL `getTimeline`. The official DataHub timeline input has no
   time-range, count, page-token, or cursor field and the resolver caps results at 100 transactions, so
@@ -301,7 +309,9 @@ Last updated: 2026-07-23.
   an empty result. Live DataHub-backed incident orchestration, impact analysis, change-to-incident
   correlation, ownership enrichment, schema diff, model reasoning, evaluation CLI, broader
   cross-browser automation, and public deployment remain deferred. A live DataHub smoke is
-  credential-gated and is not required for fixture and local fake-provider validation.
+  credential-gated and is not required for the existing fixture/local fake-provider validation, but
+  Devpost compliance separately requires a working named DataHub integration and judge-verifiable
+  evidence before submission.
 - Stitch MCP configuration is tracked without a key. A rotated `STITCH_API_KEY` must be set in the Codex
   process environment on each machine, then Codex must reload the trusted project.
 - Stitch tools are not expected in the current task because project-scoped MCP configuration loads when
