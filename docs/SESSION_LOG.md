@@ -4263,3 +4263,99 @@ Run final focused four-document formatting/encoding/wording/link/diff/secret/pat
 create one additive conventional docs commit, normal-push the same branch, update only Draft PR #48,
 and wait for exact-new-head PR CI SUCCESS without rerun. Keep the PR Draft and do not merge, tag,
 create a Release, attach an asset, publish, or deploy.
+
+## 2026-07-24 — Phase 8.1 Devpost/DataHub requirements intake
+
+### Objective
+
+Establish a dated, cited requirements baseline from the complete official DataHub Devpost Overview,
+Rules, and Resources pages, using the linked official Dates page and only the incorporated Devpost
+Terms sections needed for content/access obligations. Map every explicit rule to exact current
+repository evidence, status, owner, and next action without implementing Phase 8.2 or mutating any
+submission/publication surface.
+
+### Starting identity
+
+Fetched `origin/main` without pruning and confirmed `HEAD`, `FETCH_HEAD`, and `origin/main` at exact
+normal merge `c4e33f7af3707f604d35b1220a18e4e83f491be3`, tree
+`ffa4276315f8dd788f12b2780cee9bc13365ebbc`, ordered parents
+`3a3d6792b1a32fedaac7aa7b17be5a5f64027931` then
+`8cbfe1646b8afda45b4547be73f787ba004c38ad`. Main CI run `30029013969`, job `89280632707`,
+succeeded. Annotated tag `v1.0.0-rc.1` dereferences to the same exact merge; its matching GitHub
+Release remains Draft and unpublished with no user-uploaded assets. GitHub displays only its two
+automatic source-code archives.
+
+Created additive branch `codex/phase-8-1-devpost-requirements` from that exact clean main only after
+the identity gate passed.
+
+### Completed research and decisions
+
+Official research coverage completed at 2026-07-24 00:50:45 ICT / 2026-07-23 17:50:45 UTC. The
+submission deadline is 2026-08-10 17:00 EDT / 2026-08-10 21:00 UTC /
+2026-08-11 04:00 ICT. Judging ends 2026-08-31 17:00 EDT / 2026-09-01 04:00 ICT.
+
+Recorded the full eligibility/work-window, integration, source/licence/IP/data, form/access, video,
+judging, prize/resource, conduct/disqualification, and winner-verification requirements in
+`DEVPOST_REQUIREMENTS.md`. Explicit rules, inference, recommendation, and unknown form details are
+separate. The 37-row matrix uses only PASS/PARTIAL/OPEN/NOT REQUIRED and assigns every row an owner
+phase plus exact next action.
+
+Key conclusions:
+
+- DataHub is mandatory, and the working app must use the open-source platform plus at least one of MCP
+  Server, Agent Context Kit, DataHub Skills, or Analytics Agent. The current bounded direct GraphQL
+  adapter does not meet that literal named-integration rule.
+- A public source repository and visible Apache 2.0 licence are mandatory. The current repository is
+  private and MIT-licensed; both are open later gates, and neither changed in Phase 8.1.
+- A testable Project URL/path and a publicly visible functioning-project video below three judged
+  minutes are mandatory. A public live deployment, separate binary upload, DataHub Cloud, model/LLM
+  call, OpenAI key, and particular cloud provider are not stated requirements.
+- Correct product evidence now distinguishes deterministic fixture algorithms from variable live
+  DataHub inputs, seven guided presets from the one rich `removed-schema-column` checked-in E2E
+  fixture, the zero-model-call RC, exact `GET /incidents/:incidentId/report.md`, and the generic Node
+  24 host's same-origin `/api` proxy requirement.
+
+### Files changed
+
+`docs/DEVPOST_REQUIREMENTS.md`, `docs/IMPLEMENTATION_PLAN.md`, `docs/REPOSITORY_MAP.md`,
+`docs/RELEASE_CHECKLIST.md`, `docs/KNOWN_ISSUES.md`, and this session log only.
+
+README, source/runtime, tests, fixtures, workflows, packages/workspaces, lockfile, dependencies,
+version, changelog, licence, release artifact inputs, and deployment behavior are unchanged.
+
+### Validation performed
+
+- In-app Browser coverage assertions confirmed all overview, submission, prize, judging, eligibility,
+  project, Terms, documentation, sample-data, community/support, schedule, and winner sections across
+  the five official pages.
+- Citation assertions found every direct official URL and the dated source register. All 11 local
+  Markdown links resolve.
+- Claim assertions matched the exact starting commit/tree/ordered parents, first-commit work-window
+  timestamp, seven shared presets, rich fixture pair, current MIT licence, direct Markdown endpoint,
+  absence of a named DataHub integration in executable paths, zero-model statement, Node deployment
+  boundary, and exact 18-day/3:09:15 deadline delta at access.
+- Prettier 3.9.5 formatted and checked all six changed Markdown files. `git diff --check`, exact
+  changed-path allowlist, strict UTF-8 without BOM, LF-only/final-newline, all 11 relative links,
+  secret-like value, conflict-marker, and zero executable-path drift assertions passed. Full staged
+  diff review remains the final local gate before commit.
+- The first attempted `pnpm exec prettier` unexpectedly invoked the repository bootstrap because
+  dependencies were absent, completed the tracked lockfile/supply-chain install path, then failed at
+  the Windows `prettier` shim. It changed no tracked file, manifest, lockfile, dependency declaration,
+  or product behavior. No further install, full test, build, evaluation, smoke, browser E2E, or
+  artifact workflow is run for this docs-only slice; formatting uses the installed Prettier entrypoint
+  directly.
+
+### Forbidden-mutation audit
+
+No tag, Release, release asset, registry, repository visibility, licence, deployment, credential,
+external account, registration, consent, Devpost submission, uploaded media, `v1.0.0`, source, test,
+fixture, workflow, package, workspace, lockfile, version, or changelog mutation was performed. The RC
+tag/Release were inspected read-only and remain immutable/Draft with no user-uploaded asset.
+
+### Exact next step
+
+Complete the final bounded six-document gate, create additive docs commit(s), reconfirm unchanged
+`origin/main`, push normally, create exactly one Draft PR against `main` through the signed-in in-app
+Browser, verify unique OPEN/DRAFT/conflict-free state and exact base/head/tree/parent/full diff, and
+wait for exact-head PR CI SUCCESS. Do not merge or perform any deferred Phase 8.2/submission/release
+action.

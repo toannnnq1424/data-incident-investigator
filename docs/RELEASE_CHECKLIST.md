@@ -1,8 +1,8 @@
 # Release checklist
 
-This checklist is governed by [`VERSIONING.md`](VERSIONING.md). The candidate and final-release items
-below are instructions for their later scoped phases; no version, date, tag, or release is created by
-Phase 7.5 or Phase 7.6.
+This checklist is governed by [`VERSIONING.md`](VERSIONING.md). Phase 7.7 completed the immutable
+`v1.0.0-rc.1` tag and no-user-uploaded-asset Draft Release gates; the final-release and Devpost
+actions below remain separately scoped.
 
 ## Repository
 
@@ -36,7 +36,7 @@ Phase 7.5 or Phase 7.6.
 - [x] Confirm no artifact, tag, Release, package, or deployment was uploaded/published and no external
       environment was mutated.
 
-## Phase 7.7 — `v1.0.0-rc.1` implementation candidate (in progress)
+## Phase 7.7 — `v1.0.0-rc.1` implementation candidate (complete)
 
 - [x] Record the exact clean current-`main` commit, tree, parent, and successful main CI evidence.
 - [x] Confirm that no `v1.0.0-rc.1` tag or GitHub Release already exists.
@@ -48,24 +48,52 @@ Phase 7.5 or Phase 7.6.
 - [x] Complete the separately scoped Phase 7.7 full RC/fresh-checkout gate against the exact release
       commit.
 - [x] Create one Draft pull request and require exact-head PR CI success before independent-QA handoff.
-- [ ] Require independent QA PASS first; only then mark the existing pull request Ready and merge it
+- [x] Require independent QA PASS first; only then mark the existing pull request Ready and merge it
       using a normal merge commit, never squash or rebase. Record the exact merge SHA, tree, and ordered
-      parents.
-- [ ] Fetch and confirm `origin/main` resolves exactly to that recorded normal-merge SHA, then require
-      the exact merge commit's main CI run and job to finish SUCCESS before any tag or Release action.
-- [ ] In a separately authorized publication gate, create and push immutable tag `v1.0.0-rc.1`
+      parents: merge `c4e33f7af3707f604d35b1220a18e4e83f491be3`, tree
+      `ffa4276315f8dd788f12b2780cee9bc13365ebbc`, parents
+      `3a3d6792b1a32fedaac7aa7b17be5a5f64027931` then
+      `8cbfe1646b8afda45b4547be73f787ba004c38ad`.
+- [x] Fetch and confirm `origin/main` resolves exactly to that recorded normal-merge SHA, then require
+      the exact merge commit's main CI run `30029013969`, job `89280632707`, to finish SUCCESS before
+      any tag or Release action.
+- [x] In a separately authorized publication gate, create and push immutable tag `v1.0.0-rc.1`
       exactly at the recorded normal-merge SHA, not at artifact commit
       `90f07b7171520767d6f30f8c8a6146de5e129a73`, feature head
       `d6bc8b3ec9c8db8167b26f14ddc7f2d8520dfcd7`, or a later evolving head. Verify the tag resolves
       exactly to the merge SHA.
-- [ ] Create the matching GitHub Release only as Draft and verify its selected tag/target resolves to
-      the same recorded merge SHA. The Phase 7.7 Draft Release must contain zero assets. The
-      already-cleaned 29-file evidence artifact was built only at
+- [x] Create the matching GitHub Release only as Draft and verify its selected tag/target resolves to
+      the same recorded merge SHA. The Phase 7.7 Draft Release has no user-uploaded assets; the two
+      displayed source archives are GitHub-generated. The already-cleaned 29-file evidence artifact
+      was built only at
       `90f07b7171520767d6f30f8c8a6146de5e129a73` with its own provenance. It is not tag-built or
       merge-built. It must not be uploaded or attached.
-- [ ] The zero-asset RC Release must remain Draft and never be published in Phase 7.7. Do not publish
-      to a registry, upload a CI/release asset, or perform a public/external deployment; every such
-      action remains deferred and requires separate authorization.
+- [x] The no-user-uploaded-asset RC Release remains Draft and was not published in Phase 7.7. Do not
+      publish to a registry, upload a CI/release asset, or perform a public/external deployment; every
+      such action remains deferred and requires separate authorization.
+
+## Phase 8.1 — Devpost requirements baseline
+
+- [x] Read and cite the complete official Overview, Rules, and Resources pages, plus the official Dates
+      page and only the incorporated Terms sections needed to resolve content/access obligations.
+- [x] Record the exact submission/judging schedule in ET, UTC, and Asia/Bangkok with source access
+      timestamps and deadline risk.
+- [x] Record eligibility, new-work/disclosure, DataHub integration, Apache 2.0/public source, Project
+      URL/access, video, judging, prize/resource, IP/data, disqualification, and winner obligations.
+- [x] Separate explicit requirements, inferences, recommendations, and unknown form details.
+- [x] Map every explicit rule to exact repository status, owner phase, and next action in
+      [`DEVPOST_REQUIREMENTS.md`](DEVPOST_REQUIREMENTS.md).
+- [ ] Phase 8.2 implements and verifies at least one named DataHub integration; direct GraphQL alone
+      is not treated as compliant.
+- [ ] A legal/owner gate resolves Apache 2.0 against the current MIT licence.
+- [ ] A separately authorized publication gate reviews history/secrets and changes repository
+      visibility from Private to Public only when submission-ready.
+- [ ] An entrant gate verifies eligibility, team/representative mode, registration, live form fields,
+      disclosures, consent, and final submission receipt.
+- [ ] A judge-access gate supplies a free testable Project URL/path through
+      2026-08-31 17:00 EDT / 2026-09-01 04:00 ICT.
+- [ ] A media gate supplies a publicly visible functioning-project video below three minutes on an
+      accepted host, with rights and English/translation checks.
 
 ## Phase 8 — `v1.0.0` final (not performed)
 

@@ -4964,5 +4964,61 @@ external deployment; `1.0.0`; Phase 8; and product work.
 
 ## Phase 8 — Submission
 
-Public repository, deployment URL, screenshots, video, Devpost copy, architecture explanation, known
-limitations, rehearsal, release tag, and checklist completion.
+Public repository, judge-accessible project URL, screenshots, video, Devpost copy, architecture
+explanation, known limitations, rehearsal, final release tag, and checklist completion.
+
+### Phase 8.1 — Devpost/DataHub requirements intake
+
+Status: official-source research and local compliance mapping complete on 2026-07-24 from exact
+integrated Phase 7.7 `main` `c4e33f7af3707f604d35b1220a18e4e83f491be3` (tree
+`ffa4276315f8dd788f12b2780cee9bc13365ebbc`; ordered parents
+`3a3d6792b1a32fedaac7aa7b17be5a5f64027931` then
+`8cbfe1646b8afda45b4547be73f787ba004c38ad`). Docs-only implementation, Draft PR, and exact-head CI
+remain the terminal gates for this slice.
+
+Objective: read the complete official Overview, Rules, and Resources pages plus their official Dates
+and incorporated Terms details; preserve an access-dated cited baseline; distinguish explicit rules,
+inferences, recommendations, and unknowns; and map every explicit rule to exact current repository
+evidence and a concrete owner/action.
+
+Minimum files:
+
+- `docs/DEVPOST_REQUIREMENTS.md` as the authoritative dated requirements baseline and compliance
+  matrix.
+- This plan, `docs/REPOSITORY_MAP.md`, `docs/RELEASE_CHECKLIST.md`, `docs/KNOWN_ISSUES.md`, and
+  `docs/SESSION_LOG.md` for narrow persistent-state/index updates.
+- No README, source/runtime/test/fixture/workflow, package/workspace/lock, version, changelog, licence,
+  artifact, or deployment behavior.
+
+Accepted research conclusions:
+
+- Submission closes **2026-08-10 17:00 EDT / 2026-08-10 21:00 UTC / 2026-08-11 04:00 ICT**.
+- A working application must use the open-source DataHub platform plus at least one of MCP Server,
+  Agent Context Kit, DataHub Skills, or Analytics Agent. The current direct GraphQL adapter alone does
+  not satisfy that literal condition.
+- A public source repository and visible Apache 2.0 licence are mandatory. The current private,
+  MIT-licensed repository therefore remains open and must not change visibility/licence in this slice.
+- A testable Project URL/access path and public functioning-project video under three judged minutes
+  are mandatory. A public live deployment, DataHub Cloud, model/LLM call, OpenAI key, particular cloud,
+  and separate binary upload are not stated requirements.
+- Fixture algorithms are deterministic; live DataHub inputs may vary. The UI has seven guided presets,
+  but only `removed-schema-column` has the rich checked-in incident/metadata pair and browser E2E.
+  The RC makes zero model calls; its exact direct Markdown endpoint is
+  `GET /incidents/:incidentId/report.md`; generic Node 24 deployment needs a same-origin `/api` proxy.
+
+Acceptance criteria:
+
+- Complete-source coverage and direct official citations carry the 2026-07-24 access checkpoint.
+- Deadline, eligibility, work window, licensing/IP/data, submission fields/access, video, judging,
+  prizes/resources, disqualification, verification, and unknowns are recorded without guessing.
+- The compliance matrix uses only PASS/PARTIAL/OPEN/NOT REQUIRED and gives each row an owner and exact
+  next action.
+- Bounded validation covers full-page coverage, links/citations, Markdown/Prettier,
+  `git diff --check`, changed-path allowlist, UTF-8/LF/final newline, secret/credential/conflict scan,
+  and claim consistency against exact starting `main`.
+- Create additive docs commit(s), push normally, create exactly one Draft PR against current `main`,
+  and require exact-head PR CI SUCCESS. Do not merge.
+
+Deferred: all Phase 8.2 product/integration work; entrant eligibility/registration/consent; legal
+licence action; repository visibility; Devpost form/submission; credentials; video or asset upload;
+judge-access deployment; `v1.0.0`; and every tag, Release, publication, or merge mutation.
