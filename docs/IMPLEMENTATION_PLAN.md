@@ -4613,6 +4613,137 @@ Local Windows result (2026-07-23):
   create one new additive commit without history rewriting, normal-push the existing branch, retain
   Draft PR #46, and require its new exact-head `PR CI` / `validate` SUCCESS without rerun.
 
+### Slice 7.6 — Release artifacts, deployment readiness, and rollback
+
+Status: the first additive commit `38e21bffa32e89c0728bcc7b30a6e42591f01266` exposed a local
+artifact-runtime blocker, and independent QA of its compiled-JavaScript correction at
+`13f8d9b48591315452489d5e7de740cf2a04f69f` exposed ignored stale build output as a deterministic-
+artifact blocker. The exact-root prebuild cleanup correction is in targeted validation on
+`codex/phase-7-6-artifacts-deployment-rollback` from exact integrated Phase 7.5 main
+`de9228262f34a3171377aeaadec5f6dd9cfa1f85` (tree
+`228979f1ddd292ff9b974c830775d70ba168168e`; parents
+`dff1fb416610060f5e5fad2d9289605ab7de1781` and
+`d2eed3e9c40e07c97d962a5de477c866d9dca82c`). Main CI run `29945647951`, job
+`89010231061`, completed successfully for that exact commit.
+
+Objective: define and rehearse the smallest deterministic release-artifact, supported Node-host
+deployment, and bounded rollback contract needed by Phase 7.7. Preserve the fixture flow and current
+runtime behavior; do not claim container, cloud, public-hosted, registry, or persistent-state support
+that the repository does not have.
+
+Minimum files:
+
+- `scripts/build-release-artifact.mjs` and `scripts/verify-release-artifact.mjs` for a clean-commit,
+  version-and-commit-named deterministic archive, provenance/file manifest, SHA-256 sidecar, safe
+  inspection/extraction verification, and explicit release contents.
+- `tests/release-artifact.contract.mjs` for the verifier's traversal, secret/cache/junk path boundary and
+  malformed-archive rejection without producing an artifact.
+- Root `package.json` for the two tracked artifact commands only; manifests, workspace membership,
+  lockfile resolutions, dependencies, bootstrap, build behavior, and product runtime remain unchanged.
+- `docs/DEPLOYMENT.md` and new `docs/ROLLBACK.md` for the evidenced Node 24/pnpm host target, local
+  fixture rehearsal, configuration, ports, same-origin web proxy requirement, probes, startup,
+  shutdown, observability, state caveats, immutable prior-artifact selection, restore validation, and
+  abort/escalation conditions.
+- `README.md`, `CHANGELOG.md`, `docs/RELEASE_CHECKLIST.md`, `docs/REPOSITORY_MAP.md`,
+  `docs/KNOWN_ISSUES.md`, this plan, and `docs/SESSION_LOG.md` for operator routing and durable status.
+- `.github/workflows/` remains unchanged unless a concrete Phase 7.7 blocker is proven. Phase 7.6
+  neither uploads nor publishes an artifact and never mutates a tag, GitHub Release, deployment, or
+  external environment.
+
+Acceptance criteria:
+
+- From a clean exact commit, one tracked command performs exactly one pinned build and creates exactly
+  `data-incident-investigator-v<manifest-version>-<12-character-commit>.tar.gz` and its `.sha256`
+  sidecar under an ignored output directory. Archive paths, order, modes, ownership, timestamps, gzip
+  metadata, JSON formatting, and file selection are deterministic.
+- Before that build, the builder preflights every artifact-consumed output root and removes only those
+  exact roots. Any link/reparse, noncanonical path, or out-of-repository resolution aborts before any
+  root is deleted; ignored stale JavaScript cannot survive into collection.
+- The archive contains only the built API/web output; each runtime workspace's compiled
+  `dist/index.js`, declaration, and artifact-specific manifest exporting those compiled files; API/web
+  manifests; the canonical metadata and incident fixtures; root manifest/workspace/lock inputs; blank
+  `.env.example`; license; deployment, rollback, security, and known-issue guidance; and the standalone
+  verifier. It excludes `.env`, credentials, `node_modules`, stores, caches, tests, coverage, logs,
+  source maps, runtime/evaluation/dev source, and unrelated repository files. Repository package
+  manifests and their established source exports remain byte-identical.
+- `RELEASE-MANIFEST.json` records schema version, product/version, full source commit and tree, required
+  Node/pnpm versions, supported target/mode, dependency-inventory ownership by the included frozen
+  lockfile and workspace manifests, and every other archive file's normalized path, byte size, and
+  SHA-256. The verifier rejects a bad sidecar, unsafe/non-canonical archive member, unexpected or
+  missing file, duplicate, link, checksum, size, provenance, version, or naming mismatch.
+- Deployment documentation distinguishes the credential-free local fixture rehearsal from a supported
+  generic Node host. It records prerequisites, all effective runtime/build-time variables, API/web
+  ports, same-origin `/api/*` reverse proxy with prefix stripping, `/health` and `/ready`, process-local
+  state/no migrations, startup/shutdown, sanitized stdout/stderr observability, DataHub credential
+  caveats, and the absence of supported Docker/cloud/public deployment configuration.
+- Rollback documentation requires a separately retained immutable last-known-good archive plus
+  sidecar, validates provenance/checksum before extraction, stages rather than overwrites, switches
+  only after health/readiness/smoke, retains the failed release for diagnosis, and calls out incident
+  loss, external DataHub non-mutation, no database restore, and explicit abort/escalation conditions.
+- Windows validation builds/packages the final clean commit exactly once, verifies the archive and
+  sidecar, extracts into `C:\tmp`, proves exact manifest contents and exclusions, performs one frozen
+  production install, fixture `/health` + `/ready` + bounded smoke, and a local immutable-artifact
+  rollback rehearsal. Generated outputs, stores, staging directories, and owned processes are removed.
+- The extracted production API must resolve all three runtime workspace imports to compiled JavaScript.
+  Plain Node must start the absolute `apps/api/dist/index.js` entrypoint exactly once without a
+  TypeScript loader or Node strip-only fallback.
+- Changed-file format/static/schema/security checks, `git diff --check`, allowlist, UTF-8/LF,
+  secret/conflict/residue/process/port audits, workflow immutability/audit, and exact identity/ancestry
+  pass. One additive conventional commit is normally pushed to exactly one Draft PR against unchanged
+  `main`; its exact-head `PR CI` / `validate` job reaches terminal SUCCESS without rerun.
+
+Deferred: the `1.0.0-rc.1` version/changelog cut, full release/RC/fresh-clone validation, manual release
+workflow dispatch, tag, Draft GitHub Release, publication, registry or CI artifact upload, container or
+cloud support, public deployment, persistent storage/migration work, live DataHub credentials, Mac,
+Phase 7.7, Phase 8, and every product feature or runtime-behavior change.
+
+Exact targeted Windows validation:
+
+- direct Prettier/ESLint or Node syntax checks for changed scripts/config, JSON parsing, and focused
+  artifact-builder/verifier negative-path checks that prove compiled runtime files are allowed,
+  runtime source is rejected, all five consumed output roots are cleaned, unrelated output is
+  preserved, and linked roots fail closed before partial cleanup, without producing an artifact;
+- after the single final commit, run `pnpm release:artifact` once (it performs exactly one pinned
+  `pnpm build`) with a uniquely named ignored stale sentinel seeded in one consumed root; prove it is
+  removed and absent from the manifest/archive, then run
+  `pnpm release:verify -- --artifact <exact archive>` once; compare the exact archive name, sidecar,
+  manifest, sorted contents, sizes, checksums, provenance, required files, and forbidden signatures;
+- extract once to a fresh `C:\tmp` directory, verify the extracted directory, run one
+  `pnpm install --prod --frozen-lockfile --ignore-scripts`, start only the extracted API on a dynamic
+  loopback port, require exact fixture `/health` and `/ready`, perform one bounded fixture smoke, then
+  stop the owned process and rehearse immutable artifact selection/staging/restoration locally;
+- parse/render the changed deployment and rollback contracts, audit unchanged workflow permissions,
+  action pins, interpolation, concurrency, timeouts, cache/frozen install, and no upload/publish/deploy;
+- finish with changed-path/secret/conflict/EOL/UTF-8/residue/process/port audits plus exact
+  base/head/tree/parent/diff/ancestry, Draft PR state, no duplicate, and terminal exact-head CI proof.
+  Do not run full local validation, evaluation, browser E2E, fresh-clone, manual release validation, or
+  any external deployment.
+
+Local Windows pre-commit result (2026-07-23):
+
+- No-prune fetch matched assigned `HEAD`, `FETCH_HEAD`, and `origin/main`; commit, tree, ordered
+  parents, clean detached state, and both parent ancestries were exact. Authenticated GitHub inspection
+  proved main CI run `29945647951` / job `89010231061` succeeded and logged the exact resolved commit.
+- Bootstrap selected Node `v24.14.0` and pnpm `11.9.0`, installed the frozen 259-package graph, and
+  passed the 309-entry supply-chain policy. Its final root-Prettier shim probe reproduced the known
+  Windows fallback limitation; the direct installed Prettier binary is green.
+- Node syntax, focused ESLint, changed-file Prettier, and the two traversal/secret-path/malformed-gzip
+  contract tests pass. The builder's dirty-worktree guard fails closed before build/package and leaves
+  no output. The first two inline negative-test harnesses stopped only because Windows removed quoted
+  JavaScript literals; the tracked Node test replaces that nonportable harness.
+- The 13-path pre-session allowlist, `git diff --check`, UTF-8 without BOM, LF/final-newline,
+  local-link, conflict-marker, blank-credential, secret-signature, and no-artifact-residue audits pass.
+  All seven manifests remain private/aligned `0.1.0`; workspace manifests, workspace YAML, lockfile,
+  bootstrap scripts, dependencies, runtime source, and all three workflows remain unchanged.
+- Workflow audit retains read-only permission, exact action SHAs, exact checkout without persisted
+  credentials, fixed runner/Node/pnpm, root-lock cache, frozen install, concurrency, timeout, validated
+  input handling, and zero upload/publish/release/tag/deploy step. No workflow change is needed.
+- The single clean-commit release build/package, archive and extraction verification, production
+  install, fixture health/readiness/smoke, local rollback rehearsal, cleanup, additive commit/push,
+  Draft PR, and exact-head CI remain the exact post-commit/publication sequence. Full validation,
+  evaluation, browser E2E, fresh-clone, manual release workflow, Mac, and every external side effect
+  remain intentionally deferred.
+
 ## Phase 8 — Submission
 
 Public repository, deployment URL, screenshots, video, Devpost copy, architecture explanation, known

@@ -19,6 +19,8 @@
     "test:e2e:report": "node tests/e2e/report-display.spec.mjs",
     "test:watch": "vitest",
     "build": "pnpm -r --if-present build",
+    "release:artifact": "node scripts/build-release-artifact.mjs",
+    "release:verify": "node scripts/verify-release-artifact.mjs",
     "smoke": "node scripts/smoke.mjs",
     "validate": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm smoke"
   },
