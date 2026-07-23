@@ -4307,9 +4307,11 @@ Key conclusions:
   adapter does not meet that literal named-integration rule.
 - A public source repository and visible Apache 2.0 licence are mandatory. The current repository is
   private and MIT-licensed; both are open later gates, and neither changed in Phase 8.1.
-- A testable Project URL/path and a publicly visible functioning-project video below three judged
-  minutes are mandatory. A public live deployment, separate binary upload, DataHub Cloud, model/LLM
-  call, OpenAI key, and particular cloud provider are not stated requirements.
+- A testable Project URL/path and a publicly visible functioning-project video are mandatory. The
+  Rules say the video should be below three minutes and that judges need not watch beyond minute three;
+  below 3:00 is an official recommendation and risk-reduction/judging-attention gate, not a separately
+  worded hard eligibility maximum. A public live deployment, separate binary upload, DataHub Cloud,
+  model/LLM call, OpenAI key, and particular cloud provider are not stated requirements.
 - Correct product evidence now distinguishes deterministic fixture algorithms from variable live
   DataHub inputs, seven guided presets from the one rich `removed-schema-column` checked-in E2E
   fixture, the zero-model-call RC, exact `GET /incidents/:incidentId/report.md`, and the generic Node
@@ -4359,3 +4361,81 @@ Complete the final bounded six-document gate, create additive docs commit(s), re
 Browser, verify unique OPEN/DRAFT/conflict-free state and exact base/head/tree/parent/full diff, and
 wait for exact-head PR CI SUCCESS. Do not merge or perform any deferred Phase 8.2/submission/release
 action.
+
+## 2026-07-24 — Phase 8.1 independent QA correction
+
+### Objective
+
+Correct only the three blockers reported by independent QA on existing branch
+`codex/phase-8-1-devpost-requirements` and Draft PR #49: C04 status/counts, video timing nuance, and
+determinism scope.
+
+### Completed
+
+- Changed C04 from `PASS` to `PARTIAL` because repository commit timing does not attest to all work,
+  off-repository work, or contributor work; an explicit entrant/contributor attestation remains
+  required.
+- Corrected the 37-row compliance-matrix totals to
+  `0 PASS / 10 PARTIAL / 19 OPEN / 8 NOT REQUIRED` without changing any other row's status.
+- Clarified that a public functioning-project video is mandatory, while below 3:00 is the Rules'
+  recommendation and a risk-reduction/judging-attention boundary, not a separately worded hard
+  eligibility maximum.
+- Qualified C29, C33, and related current-state claims: fixture mode and deterministic algorithms
+  given fixed inputs are deterministic; live DataHub inputs/provider state can vary.
+
+### Files changed
+
+- `README.md`
+- `docs/DEVPOST_REQUIREMENTS.md`
+- `docs/IMPLEMENTATION_PLAN.md`
+- `docs/RELEASE_CHECKLIST.md`
+- `docs/SESSION_LOG.md`
+
+### Decisions
+
+- Kept all compliance statuses other than C04 unchanged.
+- Retained a below-3:00 video as an internal submission risk-reduction gate without presenting it as a
+  hard eligibility maximum.
+- Did not repeat the earlier accidental Prettier shim/bootstrap path; this correction uses only the
+  repository's already-present local Prettier executable and performs no installation.
+
+### Validation performed
+
+- Matrix assertions found exactly 37 rows and
+  `0 PASS / 10 PARTIAL / 19 OPEN / 8 NOT REQUIRED`; C04 `PASS` → `PARTIAL` is the
+  only status delta.
+- Exact wording assertions found the complete-work attestation requirement, mandatory public
+  functioning-project video, recommendation/risk-reduction/judging-attention treatment of the
+  three-minute mark, fixture/fixed-input determinism, and variable live DataHub inputs/provider state.
+  Forbidden mandatory-sub-three-minute and unqualified RC/live determinism scans passed across README
+  and all six Phase 8.1 documents.
+- The repository's local Prettier entrypoint checked the five affected documents. All 15 local
+  Markdown links resolve, 103 external references parse, the three direct official source URLs and
+  dated access citations remain present, and `git diff --check` passed.
+- The correction allowlist contains five documentation files; the full PR allowlist contains those
+  plus `docs/KNOWN_ISSUES.md` and `docs/REPOSITORY_MAP.md`, with no executable, manifest, lockfile,
+  workflow, source, fixture, package, workspace, version, or changelog drift. Strict UTF-8 without BOM,
+  LF-only/final-newline, secret-like added-value, and conflict-marker checks passed.
+- Claims were rechecked against exact starting head/tree/parent and repository metadata: seven shared
+  presets, the rich `removed-schema-column` fixture pair and E2E, the direct Markdown endpoint, Node
+  `>=24` same-origin `/api` boundary, absent executable `OPENAI_API_KEY`, and unchanged MIT licence.
+- Correction/full-diff review, push, official in-app Browser PR verification, and exact-new-head CI
+  remain pending terminal gates.
+
+### Validation intentionally deferred
+
+- Install, full tests, build, eval, browser E2E, artifact workflow, and unchanged green checks remain
+  intentionally unrun because this is a docs-only correction.
+
+### Known issues
+
+- The same competition blockers remain open after this wording correction: explicit work-window
+  attestation, qualifying category choice, public repository decision, live DataHub integration,
+  public testable Project URL/access path, public functioning-project video, submission materials,
+  consents, and final verification.
+
+### Exact next step
+
+Run the bounded documentation checks, create one additive commit, push normally to the same branch,
+update Draft PR #49, and wait for exact-new-head PR CI success without rerun. Keep the PR Draft and
+unmerged.

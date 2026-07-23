@@ -92,8 +92,10 @@ actions below remain separately scoped.
       disclosures, consent, and final submission receipt.
 - [ ] A judge-access gate supplies a free testable Project URL/path through
       2026-08-31 17:00 EDT / 2026-09-01 04:00 ICT.
-- [ ] A media gate supplies a publicly visible functioning-project video below three minutes on an
-      accepted host, with rights and English/translation checks.
+- [ ] A media gate supplies a publicly visible functioning-project video on an accepted host, with
+      rights and English/translation checks; the script targets below 3:00 because the Rules recommend
+      it and judges need not watch beyond minute three, not because it is a separately worded hard
+      eligibility maximum.
 
 ## Phase 8 — `v1.0.0` final (not performed)
 
@@ -119,7 +121,8 @@ actions below remain separately scoped.
 
 - [ ] Devpost copy contains only verified claims.
 - [ ] Architecture diagram and DataHub/Codex explanations are complete.
-- [ ] Video follows the sub-three-minute demo script.
+- [ ] Video publicly shows the functioning project and follows the sub-three-minute target because it
+      is the official recommendation and judging-attention/risk-reduction gate.
 - [ ] Screenshots cover input, progress, root cause, evidence, lineage, and actions.
 - [ ] Repository URL, deployment URL, video URL, limitations, and roadmap are present.
 - [ ] Final release commit and tag are pushed.

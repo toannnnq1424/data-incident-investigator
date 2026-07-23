@@ -83,8 +83,9 @@ conditions.
 - `APP_MODE=datahub`: real metadata mode using `DATAHUB_GMS_URL` and `DATAHUB_TOKEN`; live validation
   requires an authorized DataHub instance.
 
-The current investigation path is deterministic and makes zero model calls, so `OPENAI_API_KEY` is not
-required for either the fixture demo or the validated Phase 6 workflow.
+The fixture-mode investigation path and its algorithms given fixed inputs are deterministic. Live
+DataHub inputs and provider state can vary. The current implementation makes zero model calls, so
+`OPENAI_API_KEY` is not required for either the fixture demo or the validated Phase 6 workflow.
 
 The optional Stitch MCP configuration is stored without credentials in `.codex/config.toml`. Set
 `STITCH_API_KEY` in the local Codex process environment when using Stitch during frontend design.

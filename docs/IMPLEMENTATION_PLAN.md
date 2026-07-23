@@ -4998,9 +4998,12 @@ Accepted research conclusions:
   not satisfy that literal condition.
 - A public source repository and visible Apache 2.0 licence are mandatory. The current private,
   MIT-licensed repository therefore remains open and must not change visibility/licence in this slice.
-- A testable Project URL/access path and public functioning-project video under three judged minutes
-  are mandatory. A public live deployment, DataHub Cloud, model/LLM call, OpenAI key, particular cloud,
-  and separate binary upload are not stated requirements.
+- A testable Project URL/access path and public functioning-project video are mandatory. The Rules say
+  the video should be under three minutes and that judges need not watch beyond minute three; the
+  sub-three-minute target is therefore an official recommendation and
+  risk-reduction/judging-attention gate, not a separately worded hard eligibility requirement. A
+  public live deployment, DataHub Cloud, model/LLM call, OpenAI key, particular cloud, and separate
+  binary upload are not stated requirements.
 - Fixture algorithms are deterministic; live DataHub inputs may vary. The UI has seven guided presets,
   but only `removed-schema-column` has the rich checked-in incident/metadata pair and browser E2E.
   The RC makes zero model calls; its exact direct Markdown endpoint is
@@ -5022,3 +5025,57 @@ Acceptance criteria:
 Deferred: all Phase 8.2 product/integration work; entrant eligibility/registration/consent; legal
 licence action; repository visibility; Devpost form/submission; credentials; video or asset upload;
 judge-access deployment; `v1.0.0`; and every tag, Release, publication, or merge mutation.
+
+#### Independent QA correction — work-window status, video timing, and determinism
+
+Status: in progress after independent QA returned `FAIL / DO NOT MERGE` on exact head
+`97dfcb912fbfad8e50eb308838e98d1169c0106d`, tree
+`b594e4ea8f565cd98ac36c93090c1f6571da233c`, parent/base
+`c4e33f7af3707f604d35b1220a18e4e83f491be3`. The superseded exact-head PR CI run
+`30032653805`, job `89292734583`, was `SUCCESS`.
+
+Objective:
+
+- Correct only the three independent-QA blockers in the existing Phase 8.1 documentation and Draft PR
+  #49.
+
+Minimum affected files:
+
+- `README.md`
+- `docs/DEVPOST_REQUIREMENTS.md`
+- `docs/IMPLEMENTATION_PLAN.md`
+- `docs/RELEASE_CHECKLIST.md`
+- `docs/SESSION_LOG.md`
+
+Acceptance:
+
+- C04 is `PARTIAL`, pending explicit entrant/contributor attestation for all work, including
+  off-repository work, and the unchanged 37-row matrix totals are
+  `0 PASS / 10 PARTIAL / 19 OPEN / 8 NOT REQUIRED`.
+- The documentation states that the public functioning-project video is mandatory, while below 3:00
+  is the Rules' recommendation, risk-reduction target, and stated judging-attention boundary—not a
+  separately worded hard eligibility maximum.
+- C29, C33, and related current-state wording limit determinism to fixture mode and deterministic
+  algorithms given fixed inputs; live DataHub inputs/provider state may vary.
+- Focused documentation validation passes without install, full tests, build, eval, browser E2E, or
+  artifact workflow.
+- One additive docs-only commit is pushed normally to the existing branch and Draft PR #49;
+  exact-new-head PR CI succeeds without rerun, and the PR remains `OPEN`/`DRAFT`/conflict-free and
+  unmerged.
+
+Deferred:
+
+- Any product, source, runtime, workflow, fixture, package, lockfile, licence, repository-visibility,
+  integration, deployment, submission, tag, Release, or asset change.
+
+Validation plan:
+
+- Assert the exact corrected lines, 37 matrix rows and
+  `0 PASS / 10 PARTIAL / 19 OPEN / 8 NOT REQUIRED` totals, with only C04 changing status.
+- Check for residual mandatory sub-three-minute overclaims and unqualified RC/live determinism
+  language.
+- Run local Prettier only for the affected documentation, citation/link checks,
+  `git diff --check`, changed-path allowlist, UTF-8/LF/final-newline checks, and
+  secret/credential/conflict scans.
+- Review the correction diff and full PR diff, then confirm the exact Git/PR/CI identities through Git
+  and the official in-app Browser.
