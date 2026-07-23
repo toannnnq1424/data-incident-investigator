@@ -34,10 +34,12 @@ timeout/AbortSignal. The hard shared provider caps remain authoritative. There i
 fan-out, LLM, Stitch call, fallback seed, causal statement, hypothesis, score, evidence-chain synthesis,
 or remediation in this stage.
 
-The API composes fixture or DataHub health/search/lineage/recent-change providers behind the same
-agent-core interface. A provider failure becomes a safe failed context stage while the canonical
-legacy fixture report can still complete for compatibility. Logs contain incident ID, mode, bounded
-counts, and normalized error code only; incident question and symptom text are not logged.
+The API composes fixture, direct DataHub GraphQL, or DataHub MCP Server providers behind the same
+agent-core interface. MCP mode uses only official read-only `search` and `get_lineage`; because the
+current official server has no recent-changes tool, context records
+`recent_changes_unsupported` with zero inferred change evidence. A provider failure becomes a safe
+failed context stage and never changes modes. Logs contain incident ID, mode, bounded counts, and
+normalized error code only; incident question and symptom text are not logged.
 
 ## Slice 3.2 suspicious-change boundary
 
@@ -281,6 +283,11 @@ creating a false ready state. The current deterministic investigation has no mod
 provider, so model is explicitly `not_required` and no `OPENAI_API_KEY` read or availability claim
 occurs. An explicitly composed future model-health dependency becomes required and uses the same bounded
 normalized status seam, but this slice adds no model client, routing, retry, or network probe.
+
+DataHub MCP readiness performs only initialize and bounded read-only tool discovery through the
+selected Streamable HTTP adapter. The ordered checks are `datahub_mcp`, then model `not_required`; it
+does not require fixture runtime assets because the MCP adapter is also the report runner's metadata
+source. Missing/invalid URL or auth settings fail startup rather than silently selecting fixture mode.
 
 Any required non-ready check makes `/ready` HTTP `503` while `/health` remains HTTP `200`. Readiness
 logs contain only mode and allowlisted reason codes. Neither endpoint contains endpoint/token/header,

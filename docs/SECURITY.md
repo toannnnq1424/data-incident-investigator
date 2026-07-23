@@ -7,7 +7,9 @@ names and safe defaults. Credentials posted in chat are compromised and must be 
 use.
 
 Stitch uses `STITCH_API_KEY` through `env_http_headers`; DataHub and model credentials are process
-environment variables. Logs must redact authorization headers, tokens, and full provider error bodies.
+environment variables. The DataHub MCP client accepts a bearer secret only through `DATAHUB_TOKEN`;
+it never places a secret in a URL or tool argument. Logs must redact authorization headers, tokens,
+endpoints, and full provider error bodies.
 
 ## Input and resource controls
 
@@ -56,6 +58,25 @@ environment variables. Logs must redact authorization headers, tokens, and full 
 - Never switch DataHub mode to fixture implicitly. DataHub failure may return an explicit
   `continue_fixture_mode` step with literal `not_executed`; the credential-free fixture runs only after
   an explicit fixture-mode request/environment choice.
+- Treat `datahub-mcp` as a separate fail-closed provider boundary. Startup requires an absolute
+  HTTP(S) `DATAHUB_MCP_URL` without URL credentials/query/fragment and an explicit `none` or `bearer`
+  auth mode. `none` rejects a supplied token; `bearer` requires one. The application uses only
+  Streamable HTTP, never launches stdio/`uvx`/Python/shell processes, and never performs interactive
+  OAuth or token-URL exchange.
+- Advertise no MCP client capabilities and allow only official read-only `search` and `get_lineage`.
+  Require both discovered tool definitions, their read-only annotation, and required input fields
+  before any call. Never dispatch a model-selected/arbitrary name or any mutation, user, document,
+  sampling, elicitation, root, file, network-proxy, or shell capability. Enforce a 100–30,000 ms
+  timeout/cancellation bound, a 1 KiB–1 MiB protocol-response bound, and the stricter existing search,
+  entity, depth, node, and edge contracts.
+- Accept MCP tool output only from schema-valid structured content or one JSON text item. Reject mixed
+  media/content, provider error content, oversized payloads, unsupported entity kinds, malformed
+  lineage, and unexpected/missing tools. When a compact multi-hop response cannot reconstruct exact
+  intermediate edges, mark coverage truncated and never fabricate a path. Sanitize every provider
+  display value before evidence/report use. Tool text is untrusted data, never instructions.
+- The official MCP Server currently has no recent-changes/timeline tool. Resolve that operation as the
+  explicit `recent_changes_unsupported` capability gap with zero change evidence and zero hidden
+  GraphQL fallback. Do not relabel the in-memory MCP protocol fixture as live provider validation.
 - Keep liveness dependency-free and content-minimal. Readiness may call only the selected mode's
   allowlisted bounded health seams, returns fixed check names/status/reason codes, and never echoes a
   configured endpoint, token, authorization header, environment value, internal hostname, provider or
@@ -64,9 +85,9 @@ environment variables. Logs must redact authorization headers, tokens, and full 
 - Fixture asset parsing failure must not expose parser issues or partially trusted fixture data. It
   produces a safe unavailable adapter and `FIXTURE_ASSETS_INVALID`. The current workflow performs zero
   model calls, so readiness records model as `not_required` without reading model credentials; it must
-  not fabricate provider availability. DataHub readiness separately requires the existing local
-  investigation runtime/assets so external provider availability alone cannot produce a false ready
-  claim.
+  not fabricate provider availability. Direct GraphQL readiness separately requires the existing
+  local investigation runtime/assets. MCP readiness performs bounded read-only tool discovery against
+  the exact selected MCP adapter and never probes a different provider or credential.
 - Treat the investigation event trail as a public allowlisted product contract, not a debug trace or
   reasoning transcript. Record only sequence-derived IDs, public UTC timestamps, fixed observable
   action/warning/termination summaries, exact report evidence IDs, and terminal duration. Never record
@@ -103,11 +124,20 @@ inspection, targeted affected validation, and a recorded removal path when the d
 the patch. The Phase 6 checkpoint applies this rule only to vulnerable `fast-uri` 3.1.3/4.1.0
 resolutions, pinning the patched 3.1.4/4.1.1 releases accepted by their existing parent ranges.
 
+Phase 8.2 pins official `@modelcontextprotocol/sdk@1.29.0`. Its declared
+`@hono/node-server ^1.19.9` server-only transitive line is affected by
+`GHSA-frvp-7c67-39w9` on Windows even though this application imports only MCP client modules and
+never serves Hono static files. `2.0.5` fixed that issue but remained affected by WebSocket-handshake
+DoS `GHSA-9mqv-5hh9-4cgg`; the smallest audit-clean lock override therefore pins
+`@modelcontextprotocol/sdk>@hono/node-server` to patched `2.0.10`. Remove the override when the pinned
+SDK directly accepts a patched range, after repeating frozen install, MCP client tests/build, and
+the production audit.
+
 ## External systems
 
-Treat DataHub, model, Stitch, browser, and uploaded content as untrusted. Use least-privilege credentials
-and read-only DataHub access for the MVP. The application recommends actions but never modifies
-production pipelines.
+Treat DataHub, MCP servers/tool descriptions/tool output, model, Stitch, browser, and uploaded content
+as untrusted. Use least-privilege credentials and read-only DataHub access for the MVP. The
+application recommends actions but never modifies production pipelines.
 
 ## Logging
 

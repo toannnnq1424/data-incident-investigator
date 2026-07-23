@@ -7,22 +7,22 @@ private workspace manifests align at candidate version `1.0.0-rc.1`.
 
 ## Directories
 
-| Path                      | Responsibility                                                  | Important entrypoints                                                                              |
-| ------------------------- | --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `apps/web`                | React/Vite user interface                                       | `src/App.tsx`, `src/main.tsx`, `vite.config.ts`                                                    |
-| `apps/api`                | Fastify HTTP API                                                | `src/index.ts`                                                                                     |
-| `packages/shared-types`   | Zod schemas and shared types                                    | `src/index.ts`                                                                                     |
-| `packages/datahub-client` | Provider-neutral contract plus fixture and DataHub adapters     | `src/index.ts`                                                                                     |
-| `packages/agent-core`     | Bounded deterministic investigation orchestration               | `src/index.ts`                                                                                     |
-| `packages/evaluation`     | Canonical evaluation cases, runner, metrics, and reporters      | `src/index.ts`, `src/cli.ts`                                                                       |
-| `fixtures`                | Deterministic metadata, incidents, and demo data                | `metadata/removed-schema-column.json`, `incidents/removed-schema-column.json`                      |
-| `tests/integration`       | Cross-package contract, safety, provider, and report tests      | `contracts.test.ts`, `incidents-api.test.ts`, `markdown-export.test.ts`                            |
-| `tests/smoke`             | Primary health and build smoke tests                            | `health.test.ts`                                                                                   |
-| `tests/e2e`               | Browser flows                                                   | `report-display.spec.mjs`                                                                          |
-| `scripts`                 | Bootstrap, smoke, and deterministic release-artifact operations | `bootstrap-worktree.ps1`, `smoke.mjs`, `build-release-artifact.mjs`, `verify-release-artifact.mjs` |
-| `docs`                    | Product, architecture, plan, memory, and release docs           | see list below                                                                                     |
-| `.github`                 | Collaboration intake plus scoped repository validation          | `ISSUE_TEMPLATE/`, `pull_request_template.md`, `workflows/`                                        |
-| `.codex`                  | Trusted project-scoped Codex settings without secrets           | `config.toml`                                                                                      |
+| Path                      | Responsibility                                                    | Important entrypoints                                                                              |
+| ------------------------- | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `apps/web`                | React/Vite user interface                                         | `src/App.tsx`, `src/main.tsx`, `vite.config.ts`                                                    |
+| `apps/api`                | Fastify HTTP API                                                  | `src/index.ts`                                                                                     |
+| `packages/shared-types`   | Zod schemas and shared types                                      | `src/index.ts`                                                                                     |
+| `packages/datahub-client` | Provider-neutral contract plus fixture, GraphQL, and MCP adapters | `src/index.ts`, `src/datahub-mcp.ts`                                                               |
+| `packages/agent-core`     | Bounded deterministic investigation orchestration                 | `src/index.ts`                                                                                     |
+| `packages/evaluation`     | Canonical evaluation cases, runner, metrics, and reporters        | `src/index.ts`, `src/cli.ts`                                                                       |
+| `fixtures`                | Deterministic metadata, incidents, and demo data                  | `metadata/removed-schema-column.json`, `incidents/removed-schema-column.json`                      |
+| `tests/integration`       | Cross-package contract, safety, provider, and report tests        | `contracts.test.ts`, `incidents-api.test.ts`, `markdown-export.test.ts`                            |
+| `tests/smoke`             | Primary health and build smoke tests                              | `health.test.ts`                                                                                   |
+| `tests/e2e`               | Browser flows                                                     | `report-display.spec.mjs`                                                                          |
+| `scripts`                 | Bootstrap, smoke, and deterministic release-artifact operations   | `bootstrap-worktree.ps1`, `smoke.mjs`, `build-release-artifact.mjs`, `verify-release-artifact.mjs` |
+| `docs`                    | Product, architecture, plan, memory, and release docs             | see list below                                                                                     |
+| `.github`                 | Collaboration intake plus scoped repository validation            | `ISSUE_TEMPLATE/`, `pull_request_template.md`, `workflows/`                                        |
+| `.codex`                  | Trusted project-scoped Codex settings without secrets             | `config.toml`                                                                                      |
 
 ## Root configuration
 
@@ -82,15 +82,19 @@ private workspace manifests align at candidate version `1.0.0-rc.1`.
 responses, stable API error, entity, evidence, hypothesis, and report schemas.
 `packages/datahub-client/src/index.ts` defines the provider-neutral `MetadataAdapter`, its bounded
 fixture implementation, and the DataHub GraphQL implementation for health, search, lineage, and recent
-changes. `packages/agent-core/src/index.ts` runs deterministic evidence-linked investigations through
-that adapter.
+changes. `packages/datahub-client/src/datahub-mcp.ts` adds the explicit Streamable HTTP DataHub MCP
+Server provider: fixed read-only `search`/`get_lineage`, strict protocol/metadata contracts, bounded
+timeouts/bytes/entities/lineage, and an explicit unsupported recent-changes capability.
+`packages/agent-core/src/index.ts` runs deterministic evidence-linked investigations through the
+selected adapter without a model call.
 
 Development and tests intentionally resolve those workspace exports to source. Before building, the
 release builder preflights and removes only the five exact artifact-consumed output roots, rejecting
 links/reparse targets and noncanonical or out-of-repository resolution before any deletion. It keeps
-the repository manifests unchanged but packages each runtime workspace's compiled
-`dist/index.js`/`dist/index.d.ts` and deterministically rewrites only its archived manifest copy to
-those compiled targets. The standalone verifier requires that artifact-only boundary.
+the repository manifests unchanged but packages each runtime workspace's compiled `dist` modules and
+declarations, with `dist/index.js`/`dist/index.d.ts` as its archived export, and deterministically
+rewrites only its archived manifest copy to those export targets. The standalone verifier requires
+that artifact-only boundary.
 
 The web uses the same shared incident schemas as the API. In development, Vite proxies browser calls
 from `/api/*` to the Fastify service and removes the `/api` prefix.

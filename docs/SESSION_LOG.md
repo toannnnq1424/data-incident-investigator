@@ -4439,3 +4439,87 @@ determinism scope.
 Run the bounded documentation checks, create one additive commit, push normally to the same branch,
 update Draft PR #49, and wait for exact-new-head PR CI success without rerun. Keep the PR Draft and
 unmerged.
+
+## 2026-07-24 — Phase 8.2 bounded DataHub MCP Server integration
+
+### Mục tiêu và exact start
+
+Đóng đúng blocker tích hợp được Devpost nêu tên bằng provider DataHub MCP Server nhỏ nhất nhưng có
+thật, audit được, không thêm LLM/model/OpenAI key và không phá fixture/default hay DataHub GraphQL.
+Exact starting `origin/main` là `8144fb19a6daf2670c4143b005b5e1aea25c138a`, tree
+`aaa53c1708020d85bee8dc4bfe09a437778ecbac`, ordered parents
+`c4e33f7af3707f604d35b1220a18e4e83f491be3` rồi
+`2bb064e1a265ffc1dde5a0fc2ace3508dd8b60e3`; main CI run `30036851491`, job
+`89306847293`, là `SUCCESS`. Branch là `codex/phase-8-2-datahub-mcp-integration`.
+
+### Official-source gate và quyết định
+
+Official in-app Browser checkpoint là **2026-07-24 02:27:32 ICT /
+2026-07-23 19:27:32 UTC**. Devpost Rules/Resources vẫn yêu cầu open-source DataHub cộng ít nhất một
+named integration và liên kết official `acryldata/mcp-server-datahub`. Official DataHub guide/server
+source xác nhận managed Cloud dùng Streamable HTTP/Bearer hoặc OAuth; open-source server hỗ trợ
+`stdio|sse|http`; current read-only tools có `search` và `get_lineage` nhưng không có
+recent-changes/timeline. Official MCP SDK catalog/v1 client guide khuyến nghị TypeScript
+`StreamableHTTPClientTransport`; implementation pin exact `@modelcontextprotocol/sdk@1.29.0`.
+
+Chọn duy nhất operator-provided Streamable HTTP để cùng dùng được server open-source chạy riêng với
+`--transport http` hoặc managed Cloud endpoint. Không spawn shell/Python/`uvx`, không SSE/stdio,
+interactive OAuth/token URL, không arbitrary tool dispatch. MCP client advertise zero capabilities,
+require tool discovery/read-only annotations/input properties, và allowlist đúng `search`,
+`get_lineage`. Recent changes trả capability `unsupported` và không hidden GraphQL fallback.
+
+### Implementation/config/security
+
+- Thêm explicit `APP_MODE=datahub-mcp`; unknown mode hoặc MCP config thiếu/sai fail startup, không
+  fallback. `DATAHUB_MCP_URL` chỉ nhận absolute HTTP(S) không URL credential/query/fragment;
+  `DATAHUB_MCP_AUTH_MODE=none|bearer` là bắt buộc; bearer dùng secret-only `DATAHUB_TOKEN`, còn none
+  reject token để tránh cấu hình mơ hồ.
+- Bounded MCP adapter dùng timeout/cancellation 100–30,000 ms, protocol response 1 KiB–1 MiB, shared
+  search/entity/depth/node/edge caps, Zod response validation, sanitized error/status, sanitized
+  external display text, exact direct-edge mapping, và truncated coverage khi compact multi-hop
+  response không chứng minh được intermediate path.
+- API readiness MCP chỉ thực hiện initialize/tool discovery và trả `datahub_mcp` + model
+  `not_required`. Investigation context, detector, runner và report giữ explicit
+  `recent_changes_unsupported`, provider-labelled evidence, resolved evidence IDs, deterministic
+  orchestration, zero retry và zero model call.
+- Protocol fixture chạy official SDK client qua deterministic in-memory JSON-RPC transport tại đúng
+  boundary. Product slice đi intake → MCP search → MCP lineage → context → evidence/hypothesis/report;
+  execution ghi 8 logical tool calls, protocol `tools/call` chỉ có
+  `search,get_lineage,search,get_lineage`, metadata/lineage evidence resolve, model không required.
+- Production graph pin SDK exact. `pnpm audit --prod` phát hiện hai advisory moderate liên tiếp trên
+  server-only `@hono/node-server`; scoped workspace override cuối pin patched `2.0.10`. Frozen lock
+  policy và audit cuối đều sạch; remove override khi pinned SDK chấp nhận patched range.
+
+### Validation đã thực hiện
+
+- Tracked Windows bootstrap PASS Node `24.14.0`, pnpm `11.9.0`; sau dependency change,
+  `pnpm install --frozen-lockfile` PASS và supply-chain lock policy PASS.
+- Targeted ESLint PASS cho sáu source/test path; typecheck PASS cho shared-types, datahub-client,
+  agent-core và API.
+- Final targeted Vitest PASS **16 files / 169 tests**: MCP config/auth/discovery/call/error/timeout/
+  response-size/readiness/product slice; shared contracts; fixture/GraphQL health/search/lineage/
+  recent changes; context/detector/scorer/runner/incidents/readiness regressions.
+- Production build PASS cho bốn affected workspaces. Provider-mode `/health`,
+  `/metadata/health`, `/ready` và incident lifecycle smoke PASS trong product vertical-slice test.
+- `pnpm audit --prod` cuối: **No known vulnerabilities found**. Resolved production graph là
+  `@modelcontextprotocol/sdk@1.29.0` → `@hono/node-server@2.0.10`.
+- Compliance matrix có đúng 37 rows và
+  `0 PASS / 12 PARTIAL / 17 OPEN / 8 NOT REQUIRED`; C06/C28 là `PARTIAL`, không overclaim live.
+- Environment presence-only check xác nhận cả `DATAHUB_MCP_URL` và `DATAHUB_TOKEN` đều absent. Vì
+  không có service/credential hợp lệ, live DataHub MCP smoke được ghi **BLOCKED/SKIPPED**, không prompt
+  hoặc tạo credential và không gọi protocol fixture là live.
+
+### Validation intentionally deferred
+
+UI/provider selector không đổi nên browser E2E, deterministic evaluation và full Phase 7/release
+matrix không chạy lại. Live DataHub MCP, clean judge-access validation, Mac, release artifact,
+external deployment và public demo vẫn deferred.
+
+### Forbidden-mutation audit và exact next step
+
+Không đổi licence, repository visibility, `v1.0.0`, tag/Release/Draft Release asset, deployment,
+Devpost form/video/submission, credential, DataHub Cloud provisioning hay production metadata. Không
+mutation/remediation/model/LLM/OpenAI call. Tiếp theo: format/diff/secret/residue audit cuối; tạo một
+additive conventional commit; normal push; dùng signed-in official in-app Browser tạo đúng một Draft
+PR base current `main`; verify exact base/head/tree/parent/full diff, unique OPEN/DRAFT/conflict-free
+state và exact-head PR CI SUCCESS. Không merge.

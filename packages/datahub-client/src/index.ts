@@ -1621,3 +1621,5 @@ export function createDataHubLineageClient(config: DataHubLineageClientConfig) {
 export function createDataHubRecentChangesClient(config: DataHubRecentChangesClientConfig) {
   return new DataHubRecentChangesClient(config);
 }
+
+export * from './datahub-mcp.js';

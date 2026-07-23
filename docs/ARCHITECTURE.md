@@ -12,7 +12,8 @@ flowchart LR
   A --> C["Agent core"]
   C --> M["MetadataAdapter"]
   M --> F["Fixture adapter"]
-  M --> D["DataHub adapter"]
+  M --> D["DataHub GraphQL adapter"]
+  M --> P["DataHub MCP Server adapter"]
   C --> S["Shared Zod schemas"]
   E["Evaluation runner"] --> C
   E --> X["Incident fixtures"]
@@ -38,6 +39,9 @@ depend on apps. Evaluation depends on public internal contracts, not UI renderin
 
 - Fixture: seeded metadata, lineage, and changes; stable for tests and demos.
 - DataHub: HTTP/GraphQL client translates DataHub responses into internal types.
+- DataHub MCP Server: official TypeScript SDK v1 uses an operator-provided Streamable HTTP endpoint,
+  discovers/calls only read-only `search` and `get_lineage`, and reports recent changes as an explicit
+  unsupported capability.
 
 Switching adapters must not change investigation business logic or API output.
 
@@ -55,9 +59,11 @@ runtime dependency is stored.
 
 ## Trust boundaries
 
-User input, provider responses, and model output are untrusted. Validate at the API boundary and again
-before rendering a final report. Credentials stay in process environment and provider-specific logs are
-sanitized. External design tools such as Stitch assist design only and are not production dependencies.
+User input, provider responses, MCP tool definitions/output, and model output are untrusted. Validate
+at the protocol/adapter/API boundaries and again before rendering a final report. Credentials stay in
+process environment and provider-specific logs are sanitized. The MCP application path starts no
+server/shell process and has no arbitrary tool-dispatch seam. External design tools such as Stitch
+assist design only and are not production dependencies.
 Blast-radius paths and IDs come only from schema-validated lineage plus existing scored
 hypothesis/evidence references. Provider labels are normalized as untrusted display text; status copy
 and coverage reasons are code-owned and contain no raw metadata or model prose.

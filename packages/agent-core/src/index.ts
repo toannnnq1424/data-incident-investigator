@@ -650,7 +650,13 @@ export class DeterministicIncidentContextGatherer implements IncidentContextGath
       }
     }
 
-    if (recentChanges.every((response) => response.changes.length === 0)) {
+    if (recentChanges.some((response) => response.capability === 'unsupported')) {
+      addMissingInformation(missingInformation, {
+        code: 'recent_changes_unsupported',
+        message:
+          'The selected metadata provider does not expose a recent-changes capability; no change evidence was inferred.',
+      });
+    } else if (recentChanges.every((response) => response.changes.length === 0)) {
       addMissingInformation(missingInformation, {
         code: 'recent_changes_not_found',
         message: 'No recent metadata changes were returned for the bounded context entities.',
@@ -773,7 +779,15 @@ export class DeterministicSuspiciousChangeDetector implements SuspiciousChangeDe
         response.changes.map((change) => [change.id, change] as const),
       ),
     );
-    if (changesById.size === 0) {
+    if (
+      parsedContext.facts.recentChanges.some((response) => response.capability === 'unsupported')
+    ) {
+      addSuspiciousChangeMissingInformation(missingInformation, {
+        code: 'recent_changes_unsupported',
+        message:
+          'The selected metadata provider does not expose recent-change facts for deterministic detection.',
+      });
+    } else if (changesById.size === 0) {
       addSuspiciousChangeMissingInformation(missingInformation, {
         code: 'recent_changes_not_found',
         message: 'No recent metadata change facts were available for deterministic detection.',
@@ -1131,6 +1145,7 @@ function candidateScoreFactors(
           'symptom_not_supplied',
           'lineage_not_found',
           'lineage_truncated',
+          'recent_changes_unsupported',
           'recent_changes_truncated',
         ].includes(code),
       ),
@@ -2000,6 +2015,7 @@ export interface InvestigationContext {
   incidentId: string;
   metadata: MetadataAdapter;
   limits: InvestigationLimits;
+  mode?: MetadataSourceMode;
   executionBudget?: InvestigationExecutionBudget;
 }
 
@@ -2091,7 +2107,7 @@ export class DeterministicInvestigationRunner implements InvestigationRunner {
                   'duration_limit_reached',
                   context.executionBudget.snapshot('duration_limit_reached'),
                 )
-              : new Error('The fixture investigation exceeded its duration limit.'),
+              : new Error('The metadata investigation exceeded its duration limit.'),
           ),
         timeoutMs,
       );
@@ -2111,6 +2127,7 @@ export class DeterministicInvestigationRunner implements InvestigationRunner {
     context: InvestigationContext,
   ): Promise<InvestigationDraftReport> {
     const { metadata, limits } = context;
+    const sourceLabel = context.mode === 'datahub-mcp' ? 'DataHub MCP Server' : 'Fixture';
     context.executionBudget?.recordToolCall();
     await metadata.healthCheck();
 
@@ -2122,7 +2139,7 @@ export class DeterministicInvestigationRunner implements InvestigationRunner {
     });
     const seed = candidates[0];
     if (!seed) {
-      throw new Error('The fixture did not return an investigation seed.');
+      throw new Error('The metadata provider did not return an investigation seed.');
     }
 
     context.executionBudget?.recordToolCall();
@@ -2150,19 +2167,19 @@ export class DeterministicInvestigationRunner implements InvestigationRunner {
       {
         id: 'metadata-seed',
         category: 'metadata',
-        statement: `Fixture metadata identifies ${lineage.seed.name} as the investigation seed.`,
+        statement: `${sourceLabel} metadata identifies ${lineage.seed.name} as the investigation seed.`,
         sourceEntity: lineage.seed,
       },
       ...lineage.upstream.map((entity, index) => ({
         id: `lineage-upstream-${index + 1}`,
         category: 'lineage' as const,
-        statement: `Fixture lineage shows ${entity.name} upstream of ${lineage.seed.name}.`,
+        statement: `${sourceLabel} lineage shows ${entity.name} upstream of ${lineage.seed.name}.`,
         sourceEntity: entity,
       })),
       ...lineage.downstream.map((entity, index) => ({
         id: `lineage-downstream-${index + 1}`,
         category: 'lineage' as const,
-        statement: `Fixture lineage shows ${entity.name} downstream of ${lineage.seed.name}.`,
+        statement: `${sourceLabel} lineage shows ${entity.name} downstream of ${lineage.seed.name}.`,
         sourceEntity: entity,
       })),
       ...changes.map((change) => ({
@@ -2181,7 +2198,7 @@ export class DeterministicInvestigationRunner implements InvestigationRunner {
       : ['metadata-seed'];
     const hypothesisSummary = leadingChange
       ? `Plausible contributor: the recent ${leadingChange.category} change on ${leadingChange.entity.name} may have contributed to the reported incident.`
-      : `Available fixture metadata is insufficient to identify a plausible recent-change contributor for ${lineage.seed.name}.`;
+      : `Available ${sourceLabel} metadata is insufficient to identify a plausible recent-change contributor for ${lineage.seed.name}.`;
 
     return InvestigationDraftReportSchema.parse({
       incidentId: context.incidentId,
@@ -2206,9 +2223,14 @@ export class DeterministicInvestigationRunner implements InvestigationRunner {
             `Confirm the schema contract for ${leadingChange.entity.name} and restore or intentionally replace the removed field.`,
           ]
         : [`Inspect runtime records for ${lineage.seed.name} before changing production data.`],
-      assumptions: ['The canonical fixture snapshot represents the incident investigation window.'],
+      assumptions:
+        context.mode === 'datahub-mcp'
+          ? ['The DataHub MCP Server response represents the provider state at investigation time.']
+          : ['The canonical fixture snapshot represents the incident investigation window.'],
       missingInformation: [
-        'Runtime query logs and production pipeline execution records are not included in this bounded fixture.',
+        context.mode === 'datahub-mcp'
+          ? 'The official DataHub MCP Server does not expose recent metadata changes; runtime query logs and production execution records were not inferred.'
+          : 'Runtime query logs and production pipeline execution records are not included in this bounded fixture.',
       ],
     });
   }

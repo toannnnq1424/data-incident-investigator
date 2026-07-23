@@ -3,9 +3,10 @@
 ## Supported target and current boundary
 
 The supported release target is a generic Node.js host with Node `24` or newer and pnpm `11.9.0`.
-The release artifact itself is built with Node `24.14.0` and pnpm `11.9.0`. Fixture mode is the only
-credential-free deployment and demo path. DataHub mode uses the same host layout but is ready only
-when an authorized DataHub endpoint and read-only token pass the existing bounded readiness check.
+The release artifact itself is built with Node `24.14.0` and pnpm `11.9.0`. Fixture mode is the
+credential-free deployment and demo path. Direct GraphQL and DataHub MCP Server modes use the same
+host layout but are ready only when their selected authorized, read-only external dependency passes
+the bounded readiness check.
 
 The repository has no supported Docker image, Compose file, Kubernetes manifest, cloud-provider
 configuration, public URL, TLS termination, or managed persistent store. Do not infer those targets
@@ -92,9 +93,12 @@ place a real secret in the artifact.
 
 | Variable                                                                                          | Phase 7.6 behavior                                                                                       |
 | ------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| `APP_MODE`                                                                                        | API runtime; `fixture` (default) or `datahub`.                                                           |
+| `APP_MODE`                                                                                        | API runtime; `fixture` (default), direct GraphQL `datahub`, or `datahub-mcp`.                            |
 | `API_HOST` / `API_PORT`                                                                           | API listen address/port; defaults `127.0.0.1:3001`. Keep loopback behind a same-host proxy.              |
 | `DATAHUB_GMS_URL` / `DATAHUB_TOKEN`                                                               | API runtime; required only for `datahub`. Use an authorized read-only token.                             |
+| `DATAHUB_MCP_URL` / `DATAHUB_MCP_AUTH_MODE`                                                       | Required for `datahub-mcp`; exact Streamable HTTP URL plus explicit `none` or `bearer`.                  |
+| `DATAHUB_TOKEN` in MCP mode                                                                       | Required only when MCP auth mode is `bearer`; keep it blank when auth mode is `none`.                    |
+| `DATAHUB_MCP_TIMEOUT_MS` / `DATAHUB_MCP_MAX_RESPONSE_BYTES`                                       | MCP request bound (100–30,000 ms) and parsed protocol-response bound (1,024–1,048,576 bytes).            |
 | `MAX_AGENT_STEPS`, `MAX_TOOL_CALLS`, `MAX_LINEAGE_DEPTH`, `MAX_ENTITIES_PER_QUERY`, `MAX_RETRIES` | Validated API runtime bounds; safe defaults are in `.env.example`.                                       |
 | `AGENT_TIMEOUT_SECONDS`, `MAX_MODEL_OUTPUT_BYTES`                                                 | Validated total deadline and output bound.                                                               |
 | `MAX_REQUEST_BODY_BYTES`, `RATE_LIMIT_WINDOW_SECONDS`, `RATE_LIMIT_MAX_REQUESTS`                  | Validated process-local ingress limits.                                                                  |
@@ -104,7 +108,44 @@ place a real secret in the artifact.
 | `OPENAI_API_KEY`                                                                                  | Not read by the current deterministic investigation path; no model call is made.                         |
 | `STITCH_API_KEY`                                                                                  | Developer-tool-only and never a release runtime variable.                                                |
 
-Invalid numeric limits fail API startup. Do not log or print DataHub values while diagnosing startup.
+Invalid modes, MCP URLs/auth combinations, and numeric limits fail API startup. An MCP URL must be
+absolute HTTP(S) and contain no username, password, query, or fragment. Do not log or print DataHub
+values while diagnosing startup.
+
+## DataHub MCP Server setup
+
+The selected production path is the official MCP SDK v1 `StreamableHTTPClientTransport`. Supply one
+endpoint that already exists; the application does not execute `uvx`, Python, a shell, or another
+server process.
+
+- For the official open-source server with DataHub Core or Cloud, the operator separately configures
+  its documented `DATAHUB_GMS_URL`/`DATAHUB_GMS_TOKEN`, starts
+  `mcp-server-datahub --transport http`, and places that server's exact published Streamable HTTP URL
+  in this application's `DATAHUB_MCP_URL`. Use `DATAHUB_MCP_AUTH_MODE=none` only across a trusted
+  loopback or otherwise protected local boundary.
+- For managed DataHub Cloud, use the documented
+  `https://<tenant>.acryl.io/integrations/ai/mcp/` endpoint, set auth mode `bearer`, and inject an
+  authorized PAT or service-account token only as `DATAHUB_TOKEN`.
+
+Interactive OAuth/Dynamic Client Registration, the universal OAuth endpoint, token URLs, SSE, stdio,
+and server process management are deliberately outside this unattended Node service. They must not be
+silently substituted. The MCP client advertises no server capabilities, requires the discovered
+`search` and `get_lineage` tools to be marked read-only, and calls only those names. It rejects
+non-JSON/mixed content, oversized or schema-invalid output, unexpected/missing tools, and requests
+outside the existing entity/lineage/deadline bounds.
+
+The official MCP server currently exposes no recent-changes/timeline tool. MCP investigations return
+an explicit `recent_changes_unsupported` gap and never route that operation through direct GraphQL or
+claim MCP change evidence. The in-memory protocol fixture validates the integration without
+credentials:
+
+```powershell
+pnpm exec vitest run tests\integration\datahub-mcp.test.ts
+```
+
+A live smoke additionally requires an already-authorized Core/Cloud service and the matching endpoint
+and auth environment. Confirm `GET /ready` reports `datahub_mcp: ready`, submit a sanitized test
+incident, and verify its evidence before routing traffic. Do not call a protocol fixture a live smoke.
 
 ## Web and API topology
 
@@ -129,9 +170,10 @@ port/URL belongs to the operator's static host. The archive does not include or 
 Use these probes before routing traffic:
 
 - `GET /health`: process liveness only; requires HTTP `200` and exact body `{"status":"ok"}`.
-- `GET /ready`: traffic readiness. Fixture requires HTTP `200` with `fixture_assets: ready`. DataHub
-  may return sanitized HTTP `503` reason codes when its external dependency or local investigation
-  runtime is not ready. The model remains `not_required` in the current deterministic flow.
+- `GET /ready`: traffic readiness. Fixture requires HTTP `200` with `fixture_assets: ready`. Direct
+  GraphQL mode checks `datahub` plus the local investigation runtime. MCP mode checks `datahub_mcp`
+  through read-only tool discovery. Either external mode may return sanitized HTTP `503` reason
+  codes. The model remains `not_required` in every current deterministic flow.
 
 For fixture mode, submit the `request` object from
 `fixtures/incidents/removed-schema-column.json` to `POST /incidents`, retain the returned UUID, and
@@ -155,5 +197,6 @@ Do not kill by a broad process name or port.
 
 Incident records and reports live only in API process memory. Restart, deploy, or rollback discards
 all active/completed incident IDs. There is no database, migration, persistent upload, queue, or
-server-side Markdown report store to back up or restore. DataHub access is read-only and the product
-never mutates provider state. See [`ROLLBACK.md`](ROLLBACK.md) before replacing an active release.
+server-side Markdown report store to back up or restore. DataHub access is read-only; the MCP
+allowlist excludes every mutation, user, document, shell, and model operation, and the product never
+mutates provider state. See [`ROLLBACK.md`](ROLLBACK.md) before replacing an active release.

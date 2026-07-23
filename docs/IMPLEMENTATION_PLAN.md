@@ -5079,3 +5079,74 @@ Validation plan:
   secret/credential/conflict scans.
 - Review the correction diff and full PR diff, then confirm the exact Git/PR/CI identities through Git
   and the official in-app Browser.
+
+### Phase 8.2 — bounded DataHub MCP Server integration
+
+Status: implementation in progress from exact `origin/main`
+`8144fb19a6daf2670c4143b005b5e1aea25c138a` (tree
+`aaa53c1708020d85bee8dc4bfe09a437778ecbac`; ordered parents
+`c4e33f7af3707f604d35b1220a18e4e83f491be3` then
+`2bb064e1a265ffc1dde5a0fc2ace3508dd8b60e3`). Exact main CI run
+`30036851491`, job `89306847293`, was `SUCCESS`.
+
+Objective: close only the named-integration blocker with an explicit
+`APP_MODE=datahub-mcp` provider. Preserve credential-free fixture mode as the default and the existing
+direct GraphQL `APP_MODE=datahub` path. The MCP path remains deterministic and makes zero model calls.
+
+Official-source checkpoint: accessed **2026-07-24 02:27:32 ICT /
+2026-07-23 19:27:32 UTC**.
+
+- [Devpost Resources](https://datahub.devpost.com/resources) names the official
+  [DataHub MCP Server repository](https://github.com/acryldata/mcp-server-datahub);
+  [Devpost Rules](https://datahub.devpost.com/rules) requires a working app using open-source
+  DataHub with at least one named integration.
+- The official [DataHub MCP guide](https://docs.datahub.com/docs/features/feature-guides/mcp) documents
+  managed Cloud Streamable HTTP with Bearer PAT/OAuth and the separately run open-source server for
+  DataHub Core or Cloud. The current server
+  [entry point](https://github.com/acryldata/mcp-server-datahub/blob/main/src/mcp_server_datahub/__main__.py)
+  supports `stdio`, `sse`, and `http`; this slice selects operator-provided Streamable HTTP so the
+  application never launches a shell or Python process.
+- Current official tools include
+  [`search`](https://github.com/acryldata/mcp-server-datahub/blob/main/src/mcp_server_datahub/tools/search.py)
+  and
+  [`get_lineage`](https://github.com/acryldata/mcp-server-datahub/blob/main/src/mcp_server_datahub/tools/lineage.py).
+  No current official recent-changes/timeline tool is exposed, so that capability must be reported as
+  unsupported rather than emulated.
+- The official [MCP SDK catalog](https://modelcontextprotocol.io/docs/sdk) lists the TypeScript SDK as
+  Tier 1. The production-supported
+  [v1 client guide](https://github.com/modelcontextprotocol/typescript-sdk/blob/v1.x/docs/client.md)
+  recommends Streamable HTTP for remote servers; use exact `@modelcontextprotocol/sdk@1.29.0`.
+
+Minimum implementation:
+
+- Extend shared provider/readiness contracts only for `datahub-mcp` and an explicit unsupported
+  recent-changes capability.
+- Add a bounded SDK client and `MetadataAdapter` in `datahub-client`, with a fixed read-only allowlist
+  of `search` and `get_lineage`, strict response validation, timeout/cancellation, response-size and
+  entity/lineage caps, sanitized failures, and no arbitrary tool execution.
+- Wire startup validation and provider-neutral investigation reporting through `agent-core` and the
+  API. `DATAHUB_MCP_URL` selects the absolute Streamable HTTP endpoint;
+  `DATAHUB_MCP_AUTH_MODE=none|bearer` is explicit; Bearer mode reuses secret-only `DATAHUB_TOKEN`.
+  Invalid or incomplete MCP configuration fails startup without fixture fallback.
+- Add an official-SDK in-memory protocol fixture and a product vertical-slice test covering intake,
+  exact MCP tool calls, evidence/hypothesis/report output, and zero model calls. Preserve affected
+  fixture and GraphQL tests.
+- Update `.env.example`, README, security/deployment/release/current-state docs, repository map, and
+  compliance evidence without claiming a live credentialed validation.
+
+Acceptance and threat model:
+
+- Only absolute HTTP(S) endpoints without URL credentials, query, or fragment are accepted. Tokens
+  come only from the environment and never enter logs, docs, fixtures, tool arguments, or user-safe
+  errors. Unattended token-URL exchange and interactive OAuth browser state are out of scope.
+- The client advertises no server capabilities, discovers and calls only the two fixed read-only
+  tools, never invokes mutation/user/document/shell/model functionality, and enforces bounded
+  request time, result bytes, search results, lineage depth, and lineage entities.
+- Targeted formatting, lint, typecheck, unit/contract/integration/vertical-slice tests, affected
+  production builds, provider readiness smoke, frozen-lock consistency, dependency audit, secret/log
+  scan, and residue/process/path review pass. Existing relevant fixture/GraphQL coverage stays green.
+- Live DataHub MCP smoke is run only when a valid service and credential are already available; if
+  absent, record it as blocked and leave Devpost named-integration compliance `PARTIAL`.
+- Additive commit(s), normal push, exactly one conflict-free Draft PR against current `main`, and
+  exact-head PR CI success are required. Do not merge, tag, publish, deploy, provision credentials, or
+  mutate the existing RC/Draft Release.

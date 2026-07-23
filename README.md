@@ -5,16 +5,17 @@ revenue drop today?” with metadata, lineage, recent-change evidence, ranked ro
 and recommended actions.
 
 The project is built as vertical slices. A deterministic fixture mode supports credential-free local
-use and repeatable demos, while the DataHub mode implements the same internal metadata adapter contract
-for health, search, lineage, and recent-change evidence.
+use and repeatable demos. The same internal metadata adapter contract now has direct DataHub GraphQL
+and bounded DataHub MCP Server provider modes.
 
 ## Current status
 
-Phase 6 is integrated on `main`. The fixture workflow runs end to end from guided incident intake to a
+The fixture workflow runs end to end from guided incident intake to a
 schema-validated report with evidence-linked hypotheses, confidence factors, remediation guidance,
 bounded blast radius, an observable activity trail, and a sanitized Markdown download. DataHub-backed
-metadata retrieval is implemented; its live smoke remains credential-gated. Phase 7 repository and
-release-readiness work is in progress without adding product behavior.
+metadata retrieval is available through the existing direct GraphQL path or an explicit DataHub MCP
+Server path. The MCP protocol fixture and product vertical slice are validated locally; a live
+credentialed DataHub MCP smoke remains blocked until an authorized service is available.
 
 ## Stack
 
@@ -22,6 +23,7 @@ release-readiness work is in progress without adding product behavior.
 - React and Vite for `apps/web`
 - Fastify for `apps/api`
 - Zod contracts in `packages/shared-types`
+- Official MCP TypeScript SDK v1 for the bounded DataHub MCP Server client
 - Vitest, ESLint, Prettier, and TypeScript validation
 - GitHub Actions on Node.js 24
 
@@ -82,10 +84,27 @@ conditions.
 - `APP_MODE=fixture`: deterministic local/demo mode with no DataHub or model credentials.
 - `APP_MODE=datahub`: real metadata mode using `DATAHUB_GMS_URL` and `DATAHUB_TOKEN`; live validation
   requires an authorized DataHub instance.
+- `APP_MODE=datahub-mcp`: DataHub MCP Server over an operator-provided Streamable HTTP endpoint in
+  `DATAHUB_MCP_URL`. Set `DATAHUB_MCP_AUTH_MODE=none` only for a trusted local server, or `bearer`
+  with `DATAHUB_TOKEN` for managed DataHub Cloud or another authorized bearer-protected endpoint.
+  Startup rejects missing/invalid MCP settings and never falls back to fixtures.
 
 The fixture-mode investigation path and its algorithms given fixed inputs are deterministic. Live
-DataHub inputs and provider state can vary. The current implementation makes zero model calls, so
-`OPENAI_API_KEY` is not required for either the fixture demo or the validated Phase 6 workflow.
+DataHub inputs and provider state can vary. All three modes use deterministic orchestration and make
+zero model calls, so `OPENAI_API_KEY` is not required.
+
+The MCP provider discovers and calls only the official read-only `search` and `get_lineage` tools.
+The current official server exposes no recent-changes/timeline tool, so reports identify that
+capability as unsupported and do not infer change evidence. The application never starts the
+open-source Python server itself: an operator may run it separately with `--transport http`, or use
+the managed Cloud Streamable HTTP endpoint. See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for exact
+configuration, bounds, supported/unsupported capabilities, and live-smoke prerequisites.
+
+Run the deterministic MCP protocol and product slice without credentials:
+
+```bash
+pnpm exec vitest run tests/integration/datahub-mcp.test.ts
+```
 
 The optional Stitch MCP configuration is stored without credentials in `.codex/config.toml`. Set
 `STITCH_API_KEY` in the local Codex process environment when using Stitch during frontend design.

@@ -3,7 +3,9 @@
 ## Principles
 
 Tests prove contracts and user-visible slices without repeatedly spending time on unrelated suites.
-Fixture mode makes incident behavior deterministic; DataHub smoke tests are credential-gated.
+Fixture mode makes incident behavior deterministic. The DataHub MCP suite uses the real official SDK
+client against a deterministic in-memory JSON-RPC transport and is protocol/integration evidence, not
+a live DataHub smoke. Direct GraphQL and MCP live smokes remain credential/service-gated.
 
 ## Validation levels
 
@@ -30,7 +32,9 @@ before merge, release, or submission.
 
 - Schema and pure logic: package-local or `tests/integration` where contracts cross packages.
 - API routes: Fastify injection without binding a port.
-- Adapter behavior: shared contract suite executed against fixture and DataHub adapters.
+- Adapter behavior: shared contract suite executed against fixture and direct DataHub adapters; MCP
+  tests additionally assert initialize/tool discovery, exact `search`/`get_lineage` calls, timeout,
+  response-size/config bounds, unsupported recent changes, and one API product vertical slice.
 - User flows: `tests/e2e`; Slice 1.3 starts this with `pnpm test:e2e:report` for the canonical
   fixture report display. On a new machine, run `pnpm exec playwright install chromium` once before the
   browser flow.
@@ -162,5 +166,6 @@ report; generated output is not committed.
 
 ## Release validation
 
-Clean install, full static checks, all tests, production build, artifact smoke, evaluation, deployed health,
-fixture-backed e2e, and one real DataHub smoke only when credentials are available.
+Clean install, full static checks, all tests, production build, artifact smoke, evaluation, deployed
+health, fixture-backed e2e, and one real selected DataHub provider smoke only when its authorized
+service and credentials are available. Never substitute the MCP protocol fixture for the live gate.

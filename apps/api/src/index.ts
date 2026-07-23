@@ -25,9 +25,12 @@ import {
 import {
   createDataHubHealthClient,
   createDataHubLineageClient,
+  createDataHubMcpMetadataAdapter,
   createDataHubRecentChangesClient,
   createDataHubSearchClient,
   createFixtureMetadataAdapter,
+  dataHubMcpConfigFromEnvironment,
+  DataHubMcpConfigurationError,
   MetadataProviderError,
   type MetadataAdapter,
   type MetadataHealthProvider,
@@ -468,8 +471,14 @@ function safeValidationIssues(issues: ReadonlyArray<{ path: PropertyKey[] }>) {
 }
 
 function metadataMode(value: string | undefined): MetadataSourceMode {
+  if (!value?.trim()) {
+    return 'fixture';
+  }
   const parsedMode = MetadataSourceModeSchema.safeParse(value);
-  return parsedMode.success ? parsedMode.data : 'fixture';
+  if (!parsedMode.success) {
+    throw new RuntimeConfigurationError('APP_MODE', 'must select fixture, datahub, or datahub-mcp');
+  }
+  return parsedMode.data;
 }
 
 function unavailableMetadataHealth(mode: MetadataSourceMode): MetadataHealthResponse {
@@ -479,7 +488,9 @@ function unavailableMetadataHealth(mode: MetadataSourceMode): MetadataHealthResp
     message:
       mode === 'datahub'
         ? 'DataHub metadata is unavailable. Check the service and network connection.'
-        : 'Fixture metadata is unavailable. Restart the application and try again.',
+        : mode === 'datahub-mcp'
+          ? 'DataHub MCP Server is unavailable. Check the service and network connection.'
+          : 'Fixture metadata is unavailable. Restart the application and try again.',
   });
 }
 
@@ -493,6 +504,14 @@ const dataHubReadinessReasons = {
   unavailable: 'DATAHUB_UNAVAILABLE',
   timeout: 'DATAHUB_TIMEOUT',
   invalid_response: 'DATAHUB_INVALID_RESPONSE',
+} as const satisfies Record<Exclude<MetadataHealthStatus, 'ready'>, ReadinessReasonCode>;
+
+const dataHubMcpReadinessReasons = {
+  unconfigured: 'DATAHUB_MCP_CONFIG_MISSING',
+  unauthorized: 'DATAHUB_MCP_UNAUTHORIZED',
+  unavailable: 'DATAHUB_MCP_UNAVAILABLE',
+  timeout: 'DATAHUB_MCP_TIMEOUT',
+  invalid_response: 'DATAHUB_MCP_INVALID_RESPONSE',
 } as const satisfies Record<Exclude<MetadataHealthStatus, 'ready'>, ReadinessReasonCode>;
 
 const modelReadinessReasons = {
@@ -547,7 +566,7 @@ async function probeHealthStatus(
 }
 
 function dependencyReadinessCheck(
-  name: 'datahub' | 'model',
+  name: 'datahub' | 'datahub_mcp' | 'model',
   status: MetadataHealthStatus,
 ): ReadinessCheck {
   if (status === 'ready') {
@@ -557,7 +576,11 @@ function dependencyReadinessCheck(
     name,
     status: 'not_ready',
     reasonCode:
-      name === 'datahub' ? dataHubReadinessReasons[status] : modelReadinessReasons[status],
+      name === 'datahub'
+        ? dataHubReadinessReasons[status]
+        : name === 'datahub_mcp'
+          ? dataHubMcpReadinessReasons[status]
+          : modelReadinessReasons[status],
   };
 }
 
@@ -1019,10 +1042,28 @@ export function buildServer(options: BuildServerOptions = {}) {
     );
   });
   const mode = options.mode ?? metadataMode(environment.APP_MODE);
-  const metadata = options.metadata ?? createFixtureMetadataAdapter();
+  let metadata = options.metadata;
+  if (!metadata) {
+    if (mode === 'datahub-mcp') {
+      try {
+        metadata = createDataHubMcpMetadataAdapter(dataHubMcpConfigFromEnvironment(environment));
+      } catch (error) {
+        if (error instanceof DataHubMcpConfigurationError) {
+          throw new RuntimeConfigurationError(
+            error.variableName,
+            'must use a supported DataHub MCP value',
+          );
+        }
+        throw error;
+      }
+    } else {
+      metadata = createFixtureMetadataAdapter();
+    }
+  }
+  const adapterBackedProvider = mode === 'fixture' || mode === 'datahub-mcp';
   const metadataHealth =
     options.metadataHealth ??
-    (mode === 'fixture'
+    (adapterBackedProvider
       ? metadata
       : createDataHubHealthClient({
           gmsUrl: environment.DATAHUB_GMS_URL,
@@ -1031,7 +1072,7 @@ export function buildServer(options: BuildServerOptions = {}) {
   const modelHealth = options.modelHealth;
   const metadataSearch =
     options.metadataSearch ??
-    (mode === 'fixture'
+    (adapterBackedProvider
       ? metadata
       : createDataHubSearchClient({
           gmsUrl: environment.DATAHUB_GMS_URL,
@@ -1039,7 +1080,7 @@ export function buildServer(options: BuildServerOptions = {}) {
         }));
   const metadataLineage =
     options.metadataLineage ??
-    (mode === 'fixture'
+    (adapterBackedProvider
       ? metadata
       : createDataHubLineageClient({
           gmsUrl: environment.DATAHUB_GMS_URL,
@@ -1047,7 +1088,7 @@ export function buildServer(options: BuildServerOptions = {}) {
         }));
   const metadataRecentChanges =
     options.metadataRecentChanges ??
-    (mode === 'fixture'
+    (adapterBackedProvider
       ? metadata
       : createDataHubRecentChangesClient({
           gmsUrl: environment.DATAHUB_GMS_URL,
@@ -1108,6 +1149,18 @@ export function buildServer(options: BuildServerOptions = {}) {
               status: 'not_ready',
               reasonCode: 'FIXTURE_ASSETS_INVALID',
             },
+      ]);
+    } else if (mode === 'datahub-mcp') {
+      const dataHubMcpStatus = await probeHealthStatus(metadataHealth, readinessTimeoutMs);
+      const modelCheck: ReadinessCheck = modelHealth
+        ? dependencyReadinessCheck(
+            'model',
+            await probeHealthStatus(modelHealth, readinessTimeoutMs),
+          )
+        : { name: 'model', status: 'not_required', reasonCode: 'MODEL_NOT_REQUIRED' };
+      response = readinessResponse('datahub-mcp', [
+        dependencyReadinessCheck('datahub_mcp', dataHubMcpStatus),
+        modelCheck,
       ]);
     } else {
       const dataHubStatusPromise = probeHealthStatus(metadataHealth, readinessTimeoutMs);
@@ -1561,7 +1614,7 @@ export function buildServer(options: BuildServerOptions = {}) {
                 warnings.unshift(investigationWarning('partial_evidence'));
                 nextSteps.unshift(investigationNextStep('review_partial_evidence'));
               }
-              if (mode === 'datahub') {
+              if (mode !== 'fixture') {
                 nextSteps.push(investigationNextStep('continue_fixture_mode'));
               }
               storeDegradedIncident({
@@ -1624,7 +1677,7 @@ export function buildServer(options: BuildServerOptions = {}) {
               investigationNextStep('provide_entity_candidate'),
               investigationNextStep('add_incident_context'),
             ];
-            if (mode === 'datahub') {
+            if (mode !== 'fixture') {
               nextSteps.push(investigationNextStep('continue_fixture_mode'));
             }
             storeDegradedIncident({
@@ -1649,6 +1702,7 @@ export function buildServer(options: BuildServerOptions = {}) {
                 incidentId: response.incidentId,
                 metadata,
                 limits,
+                ...(mode === 'datahub-mcp' ? { mode } : {}),
                 executionBudget,
               });
             } catch (error: unknown) {
@@ -1666,7 +1720,7 @@ export function buildServer(options: BuildServerOptions = {}) {
                   investigationNextStep('review_partial_evidence'),
                   investigationNextStep('review_provider_availability'),
                 ];
-                if (mode === 'datahub') {
+                if (mode !== 'fixture') {
                   nextSteps.push(investigationNextStep('continue_fixture_mode'));
                 }
                 storeDegradedIncident({
@@ -1705,7 +1759,7 @@ export function buildServer(options: BuildServerOptions = {}) {
             hypothesisScoringStage = unavailableHypothesisScoring('SCORING_INVALID');
             remediationStage = unavailableRemediationPlanning('SCORING_UNAVAILABLE');
             const nextSteps = [investigationNextStep('review_partial_evidence')];
-            if (mode === 'datahub') {
+            if (mode !== 'fixture') {
               nextSteps.push(investigationNextStep('continue_fixture_mode'));
             }
             storeDegradedIncident({
@@ -1875,7 +1929,7 @@ export function buildServer(options: BuildServerOptions = {}) {
               retries: execution.retries,
               terminationReason: execution.terminationReason,
             },
-            'Fixture investigation completed',
+            'Investigation completed',
           );
         } catch (error: unknown) {
           const terminationError = terminationErrorFrom(error);
@@ -1911,7 +1965,7 @@ export function buildServer(options: BuildServerOptions = {}) {
               if (providerTimedOut) {
                 warnings.push(investigationWarning('external_dependency_failed'));
                 nextSteps.push(investigationNextStep('review_provider_availability'));
-                if (mode === 'datahub') {
+                if (mode !== 'fixture') {
                   nextSteps.push(investigationNextStep('continue_fixture_mode'));
                 }
               }
@@ -1960,7 +2014,7 @@ export function buildServer(options: BuildServerOptions = {}) {
               incidentId: response.incidentId,
               errorType: error instanceof Error ? error.name : 'UnknownError',
             },
-            'Fixture investigation failed',
+            'Investigation failed',
           );
         }
       })();
