@@ -123,6 +123,25 @@ unavailable after Public visibility, stop and obtain separate authorization to e
 vulnerability reporting or document another actionable private channel before calling the transition
 complete.
 
+### Sanitized owner operational disposition
+
+The repository owner explicitly and independently approved the Private-to-Public transition on
+2026-07-25. For this operational gate, that authorization records the owner's acceptance that the
+following retained surfaces will become publicly visible and may be forked, copied, or cached:
+
+- reachable commit identity metadata, including the category-only count of four machine-local
+  `.local` author/committer metadata records;
+- all 47 branches retained after the task branch push, the 43 closed pull-request conversations plus
+  current Draft PR #53, and 2 open/7 closed issues;
+- all 124 Actions runs present at the disposition checkpoint and their histories/logs, plus subsequent
+  same-PR runs, the RC tag, Draft Release metadata, repository activity, and linked public surfaces.
+
+The bounded review and sanitized sample found no credential, account secret, private endpoint, or
+private key in those reviewed surfaces. This is an operational disposition based on the explicit
+owner authorization, not legal advice, an identity claim, or proof that all history is exhaustively
+risk-free. The records are retained: this transition performs no history rewrite, branch or
+conversation deletion, archive, or hide action.
+
 ### Exact visibility effects and rollback/escalation boundary
 
 Stage 1 opened only the read-only confirmation flow and stopped before the next acknowledgement. The
@@ -143,31 +162,41 @@ Rollback cannot retract already cloned, forked, cached, or copied material. If p
 verification finds a credible secret or unsafe exposure, stop every further publication action, do
 not delete branches/conversations or rewrite history, and escalate to the repository owner/security
 review. Credential rotation/revocation, a Public-to-Private rollback, or history remediation each
-requires a separately scoped decision based on the confirmed finding.
+requires a separately scoped decision based on the confirmed finding. The owner accepts this residual
+irreversibility as a consequence of the already-authorized transition: changing visibility back to
+Private later is containment/escalation only and cannot erase or recall clones, forks, caches, or
+copies.
 
 ### Post-QA mutation and evidence gate
 
-Visibility may change only after independent QA approves this Draft PR and the controller sends an
-explicit post-QA continuation in this same task. Immediately before mutation, re-fetch and require the
-same exact current `main`, successful exact-main CI, `Private` UI state, and unchanged exposure
-baseline; otherwise stop.
+This correction turn performs no visibility mutation. The exact terminal sequence is:
 
-After the single UI visibility mutation, collect all of the following before declaring success:
-
-1. GitHub UI says `Public` for the exact owner/repository, default `main`, and exact expected commit.
-2. A credential-free, unauthenticated HTTPS read/clone probe reaches the repository without invoking
-   a credential helper or persisting a clone.
-3. The tag, Draft Release status/text/assets, 2 open/7 closed issues, Actions history/log visibility,
-   and Apache-2.0 detection remain truthful.
-4. All 46 pre-existing branches remain alongside the pushed task branch, and all 43 pre-existing
-   closed PR conversations remain alongside the current Draft PR; no branch or conversation is
-   deleted.
-5. Pages/deployment/About metadata remain unchanged unless a later separately authorized task changes
-   them.
-6. The private vulnerability-reporting route works for a public reporter or the transition stops for
-   the separately authorized reporting-channel correction described above.
-7. Add only an evidence documentation commit, normal-push it, obtain exact-new-head PR CI `SUCCESS`,
-   and return the existing Draft PR for new independent QA. Do not merge it in the mutation task.
+1. The same independent QA task returns Stage 1 `PASS / EXECUTE`.
+2. The controller sends an explicit post-QA continuation to this same implementation task.
+3. Immediately before mutation, the implementation task re-fetches and requires exact current `main`
+   `36d4205806597ae14b7306c74e1527c284202023`, successful exact-main CI, `Private` UI state, and the
+   unchanged exposure baseline; otherwise it stops.
+4. The same implementation task changes only GitHub visibility from Private to Public.
+5. It verifies authenticated and unauthenticated GitHub surfaces, UI `Public`, default `main`, the
+   exact baseline main commit and detected Apache-2.0, plus credential-free HTTPS read/clone without
+   invoking a credential helper or persisting a clone.
+6. It verifies all 47 branches, 43 closed PR conversations plus current Draft PR #53, 2 open/7 closed
+   issues, Actions histories/logs including the 124-run disposition checkpoint and subsequent
+   correction/evidence runs, the RC tag, Draft Release status/text/assets, and unchanged
+   Pages/deployment/About state. It also verifies an actionable private vulnerability-reporting route
+   for a public reporter or stops for separately authorized correction.
+7. It adds only an evidence documentation commit on this same branch, normal-pushes it to this same
+   Draft PR, and obtains exact-new-head PR CI `SUCCESS`.
+8. The mutation/evidence continuation does not mark the PR Ready and does not merge. It returns the
+   same Draft PR to the same independent QA task for narrow QA2.
+9. The same QA task must return QA2 `PASS / MERGE`.
+10. Only after an explicit post-QA2 publication continuation does this same implementation task mark
+    PR #53 Ready and perform a normal merge commit; squash, rebase, force-push, branch deletion, and
+    conversation archival/hiding remain prohibited.
+11. It fetches and verifies the exact merge SHA, tree, ordered parents, `origin/main`, and default
+    branch `main` all resolve to that normal merge, then requires exact merge-head main CI `SUCCESS`.
+12. It finally verifies the repository remains `Public` and the task branch and PR conversation remain
+    retained.
 
 Artifact publication/distribution, tag/Release mutation, deployment, submission, live credential
 entry, and every other repository setting remain outside this gate.

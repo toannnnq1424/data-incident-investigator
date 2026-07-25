@@ -5653,10 +5653,12 @@ Acceptance criteria:
   escalation gate, not permission to change another setting now.
 - Keep C09 `PASS`, C10 `OPEN`, C11 and Phase 8.2 `PARTIAL`. Keep artifact publication/distribution
   `BLOCKED`.
-- Define post-QA mutation evidence: UI Public state, unauthenticated credential-free read/clone,
-  default branch/exact commit/license, tag/Draft Release/issues/Actions visibility, exact branch/PR
-  conversation retention, unchanged About/Pages/deployment, actionable private reporting, one
-  additive evidence commit, exact-new-head PR CI `SUCCESS`, and new independent QA before merge.
+- Define the complete terminal sequence: same-QA Stage 1 `PASS / EXECUTE`; explicit same-task
+  continuation; Public-only mutation; authenticated/unauthenticated verification; additive evidence
+  commit on the same branch/PR; exact-new-head PR CI `SUCCESS`; same-QA narrow QA2 `PASS / MERGE`;
+  explicit post-QA2 publication continuation; mark Ready; normal merge commit; exact
+  merge/tree/ordered-parent and `origin/main` verification; exact merge-head main CI `SUCCESS`; final
+  Public and branch/conversation-retention verification.
 - Run changed-doc Prettier, local-link, UTF-8/LF/final-newline/no-BOM, diff-check, exact allowlist,
   status/count wording, targeted secret/path/link/history-sensitive and tracked-junk checks,
   manifest/license/lock invariants, and task-owned process/port cleanup. Do not run full tests, build,
@@ -5688,3 +5690,67 @@ Deferred: visibility mutation until explicit post-QA continuation; post-mutation
 docs commit; any private-vulnerability-reporting setting change; branch protection/ruleset; bundled
 output attribution and all artifact publication/distribution; full validation; live DataHub;
 deployment; tag/Release; submission; version; merge; and every other external mutation.
+
+#### Independent QA correction — owner disposition and terminal publication sequence
+
+Status: independent QA returned `FAIL / DO NOT CHANGE VISIBILITY` on exact prior head
+`b1c01495702454e678069db49e7285bb693dfd4a`, tree
+`a9fbf32acb428a13180ff9da29fc10b277cb1ce0`, parent/base/main
+`36d4205806597ae14b7306c74e1527c284202023`; prior PR CI run `30173923283`, job
+`89719520753`, was `SUCCESS`. GitHub remains `Private`; Draft PR #53 remains open and unmerged.
+
+Objective: close only the two process/documentation blockers without changing visibility. Record the
+sanitized owner disposition for retained public-exposure surfaces and replace the incomplete
+post-mutation handoff with the complete QA2, Ready, normal-merge, exact-main-CI, and final-Public
+sequence.
+
+Minimum files:
+
+- `docs/PUBLIC_SOURCE_APACHE_READINESS.md` for the authoritative disposition, irreversibility
+  boundary, current 47-branch/124-Actions state, and exact terminal sequence.
+- `docs/RELEASE_CHECKLIST.md` for the same ordered executable checklist.
+- This plan and `docs/SESSION_LOG.md` for durable QA correction state.
+- Draft PR #53 body for exact correction identities, blocker closure, sequence, and new CI.
+- No README, SECURITY, DEVPOST, known-issue, runtime, source, test, fixture, workflow, manifest, lock,
+  version, tag, Release, deployment, artifact, submission, visibility, or repository-setting change.
+
+Acceptance criteria:
+
+- Record only the sanitized category/count disposition: the repository owner independently approved
+  Public visibility and accepts exposure of reachable identity metadata, including four `.local`
+  metadata records, all 47 retained branches, 43 closed PR conversations plus Draft PR #53, 2 open/7
+  closed issues, 124 Actions runs/history/logs, tag/Draft Release metadata, activity, and linked
+  surfaces. Never print personal emails or raw `.local` values.
+- State that the bounded review/sample found no credential, account secret, private endpoint, or
+  private key, while explicitly avoiding exhaustive-history or legal claims. Retain all records; do
+  not rewrite, delete, archive, or hide.
+- State that a later Public-to-Private change cannot recall forks, clones, caches, or copies. The owner
+  accepts this residual irreversibility; rollback is containment/escalation, not erasure.
+- Require the exact sequence: same-QA Stage 1 `PASS / EXECUTE`; same-task Public-only mutation;
+  authenticated/unauthenticated public verification; same-branch/PR evidence commit; exact-new-head
+  PR CI; same-QA narrow QA2 `PASS / MERGE`; explicit post-QA2 publication continuation; mark Ready;
+  normal merge commit only; exact merge/tree/ordered-parent plus `origin/main`/default-main equality;
+  exact merge-head main CI; final Public and branch/conversation retention.
+- The mutation/evidence continuation must not mark Ready or merge. No squash, rebase, force-push,
+  branch deletion, or conversation archive/hide.
+- Preserve `PRE-MUTATION`, repository `Private`, C09 `PASS`, C10 `OPEN`, C11 and Phase 8.2 `PARTIAL`,
+  37-row totals, Apache/manifest/lock invariants, and artifact publication/distribution `BLOCKED`.
+- Run only four-doc Prettier, links, strict UTF-8/LF/final newline/no BOM, exact allowlist,
+  stale-sequence/disposition scans, added-line private-data/secret scan, compliance-status/totals
+  checks, and `git diff --check`. Reuse prior green product gates.
+- Create one additive conventional correction commit, normal-push the same branch, update only Draft
+  PR #53, require exact-new-head PR CI `SUCCESS`, and return it Draft/unmerged for the same QA
+  re-review while the repository remains Private.
+
+Correction-start evidence:
+
+- Local and remote branch heads exactly match prior head
+  `b1c01495702454e678069db49e7285bb693dfd4a`; `origin/main` remains exact
+  `36d4205806597ae14b7306c74e1527c284202023`.
+- Signed-in GitHub shows `Private`, default `main` at `36d4205`, 47 branches, Draft PR #53 with one
+  successful check, and 124 Actions runs. No visibility or repository setting changed.
+
+Deferred: every visibility mutation and public probe until Stage 1 QA `PASS / EXECUTE`; every merge
+action until QA2 `PASS / MERGE` plus explicit publication continuation; artifact
+publication/distribution; private-reporting setting changes; full tests/build/E2E/live DataHub;
+version/tag/Release/deployment/submission; and all other external mutations.

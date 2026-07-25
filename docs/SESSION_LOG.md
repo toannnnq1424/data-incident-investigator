@@ -4991,3 +4991,84 @@ Finish bounded validation and full diff review; create one additive conventional
 normally; create exactly one Draft PR against current `main`; require exact PR-head `PR CI` terminal
 `SUCCESS`; keep the Draft PR unmerged and GitHub Private; return
 `READY FOR INDEPENDENT QA / PUBLIC MUTATION NOT YET EXECUTED`.
+
+## 2026-07-26 — Phase 8.4B Stage 1 independent-QA process correction
+
+### Objective
+
+Close the two independent-QA documentation/process blockers on the same branch and Draft PR #53:
+record the sanitized owner disposition for retained public-exposure surfaces and complete the
+terminal publication sequence through QA2, Ready, normal merge, exact-main CI, and final Public
+verification. Keep GitHub Private and perform no visibility mutation in this correction.
+
+### Completed
+
+- Reconfirmed exact prior branch head `b1c01495702454e678069db49e7285bb693dfd4a`, tree
+  `a9fbf32acb428a13180ff9da29fc10b277cb1ce0`, parent/base/main
+  `36d4205806597ae14b7306c74e1527c284202023`, and prior PR CI run `30173923283`, job
+  `89719520753`, `SUCCESS`. Signed-in GitHub still showed `Private`, default `main` at the exact
+  baseline, Draft PR #53 with one successful check, 47 branches, and 124 Actions runs.
+- Recorded the explicit owner disposition without personal identity values: the independently
+  approved Public transition accepts exposure of reachable identity metadata, including the
+  category-only four `.local` metadata records, all retained branches and PR conversations, issues,
+  Actions histories/logs, tag/Draft Release metadata, activity, and linked surfaces.
+- Preserved the bounded evidence boundary: no credential, account secret, private endpoint, or
+  private key was found in the reviewed sample, but this is neither legal advice nor an exhaustive
+  guarantee. All records remain retained; no rewrite, deletion, archive, or hide action is authorized.
+- Made the residual consequence explicit: a later Private change cannot recall forks, clones, caches,
+  or copies. The owner accepts that irreversibility; rollback is containment/escalation, not erasure.
+- Replaced the sequence that ended at QA2 handoff with the complete ordered gate:
+  same-QA Stage 1 `PASS / EXECUTE`; same-task Public-only mutation; authenticated/unauthenticated
+  verification; same-branch/PR evidence commit and exact-new-head PR CI; same-QA QA2
+  `PASS / MERGE`; explicit post-QA2 publication continuation; mark Ready; normal merge commit; exact
+  merge/tree/ordered-parent and `origin/main`/default-main verification; exact merge-head main CI;
+  final Public and branch/conversation-retention verification.
+
+### Files changed
+
+`docs/PUBLIC_SOURCE_APACHE_READINESS.md`, `docs/RELEASE_CHECKLIST.md`,
+`docs/IMPLEMENTATION_PLAN.md`, and this session log only. The authoritative disposition and sequence
+claims exist only in those four directly named QA-correction documents; no other Stage 1 packet file
+requires a consistency edit.
+
+### Decisions
+
+This is an operational disposition based on the repository owner's explicit independent Public
+authorization, not legal advice, an identity attestation, or a technical-reversibility claim. The
+mutation/evidence continuation may not mark PR #53 Ready or merge. Only the post-QA2 publication
+continuation may mark Ready and create a normal merge commit. Squash, rebase, force-push, branch
+deletion, and conversation archive/hide remain prohibited.
+
+Repository visibility remains `Private`; C09 remains `PASS`, C10 `OPEN`, C11 and Phase 8.2
+`PARTIAL`; the 37-row compliance totals remain `1 PASS / 12 PARTIAL / 16 OPEN / 8 NOT REQUIRED`;
+artifact publication/distribution remains `BLOCKED`.
+
+### Validation performed
+
+Exactly four authorized docs changed. Offline Prettier `3.9.5`, local Markdown links, strict
+UTF-8/LF/final newline/no BOM, exact changed-path allowlist, owner-disposition/count wording,
+complete ordered terminal-sequence assertions, absence of stale QA2-ending wording, added-line
+secret/private-data/conflict/debug scans, preserved compliance totals/statuses, and
+`git diff --check` pass. Prior product, test, build, licence, manifest, lock, and artifact-boundary
+greens are reused unchanged. Commit, push, PR-body correction, exact-new-head identities, and new PR
+CI remain terminal steps.
+
+### Validation intentionally deferred
+
+No dependency install, full test, build, evaluation, browser E2E, live DataHub smoke, artifact
+operation, version, tag, Release, deployment, submission, visibility mutation, Ready transition, or
+merge is run.
+
+### Known issues
+
+Stage 1 still requires the same independent QA task to return `PASS / EXECUTE`. The public private-
+vulnerability-reporting route remains a post-mutation verification gate. The exact bundled-output
+attribution inventory remains incomplete, so artifact publication/distribution stays blocked.
+
+### Exact next step
+
+Finish the focused four-doc validation and full correction-diff review; create one additive
+conventional correction commit; normal-push the same branch; update only Draft PR #53 body with exact
+new identities, correction diff, both blocker closures, and complete terminal sequence; require
+exact-new-head PR CI `SUCCESS`; keep GitHub Private and return
+`READY FOR SAME QA RE-REVIEW / PUBLIC NOT YET EXECUTED`.

@@ -170,19 +170,37 @@ actions below remain separately scoped.
 - [x] Record exact read-only metadata: 46 branches, 0 open/43 closed PRs, 2 open/7 closed issues, 123
       Actions runs, one RC tag, one unpublished zero-uploaded-asset Draft Release, no Pages/deployment,
       blank About website/topics, no branch protection/ruleset, and automatic head deletion off.
+- [x] After the task branch push and Draft PR #53 creation, reconfirm `Private`, exact main, 47 retained
+      branches, 1 open/43 closed PRs, and 124 Actions runs.
 - [x] Record the exact GitHub UI Public effects and bounded rollback/escalation boundary without
       acknowledging or executing the mutation.
+- [x] Record the sanitized owner disposition: the independently approved Public transition accepts
+      exposure of category-only commit identity metadata (including four `.local` records), retained
+      branches/conversations/issues, the 124-run Actions checkpoint plus subsequent same-PR
+      histories/logs, tag/Draft Release metadata, activity, and linked surfaces. Retain all records;
+      perform no rewrite/delete/archive/hide. A later Private change is containment only and cannot
+      recall forks, clones, caches, or copies.
 - [x] Record that no Code of Conduct exists without inventing a blocker, and that the private
       vulnerability-reporting route is currently unavailable while Private.
-- [ ] Require independent QA and explicit post-QA continuation in the same task before visibility
-      mutation. Keep C10 `OPEN`, C11 and Phase 8.2 `PARTIAL`, repository `Private`, and artifact
-      publication/distribution `BLOCKED`.
-- [ ] After mutation, verify UI `Public`, unauthenticated read/clone, exact main/default branch/license,
-      tag/Release/issues/Actions visibility, all 46 pre-existing branches plus the task branch, all 43
-      pre-existing closed PR conversations plus the current Draft PR, unchanged Pages/deployment/About,
-      and actionable private vulnerability reporting.
-- [ ] Add the post-mutation evidence commit, normal-push it, require exact-head PR CI `SUCCESS`, and
-      return the same Draft PR for new independent QA without merging.
+- [ ] Require the same independent QA task to return Stage 1 `PASS / EXECUTE`, then require explicit
+      same-task continuation before visibility mutation. Until then keep C10 `OPEN`, C11 and Phase 8.2
+      `PARTIAL`, repository `Private`, and artifact publication/distribution `BLOCKED`.
+- [ ] In the same implementation task, re-fetch the exact Private baseline and change only visibility
+      to Public.
+- [ ] Verify authenticated and unauthenticated `Public` surfaces, exact default-main baseline commit,
+      Apache-2.0, credential-free read/clone, all 47 branches, 43 closed conversations plus Draft PR
+      #53, 2 open/7 closed issues, the 124-run Actions disposition checkpoint plus subsequent
+      correction/evidence histories/logs, tag/Draft Release, unchanged Pages/deployment/About, and
+      actionable private vulnerability reporting.
+- [ ] Add only the post-mutation evidence docs commit on this branch/PR, normal-push it, and require
+      exact-new-head PR CI `SUCCESS`; do not mark Ready or merge in the mutation/evidence continuation.
+- [ ] Return the same Draft PR to the same QA task for narrow QA2 and require `PASS / MERGE`.
+- [ ] Only after explicit post-QA2 publication continuation, mark PR #53 Ready and create a normal
+      merge commit; never squash, rebase, force-push, delete the branch, or archive/hide the
+      conversation.
+- [ ] Verify exact merge SHA/tree/ordered parents, `origin/main`, and default `main` equal that merge;
+      require exact merge-head main CI `SUCCESS`; finally confirm the repository remains `Public` and
+      the task branch/conversation remain retained.
 
 ## Phase 8 — `v1.0.0` final (not performed)
 
