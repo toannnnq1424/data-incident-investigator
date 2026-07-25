@@ -8,7 +8,8 @@ actions below remain separately scoped.
 
 - [ ] GitHub repository is public and default branch is protected as appropriate.
 - [x] README setup works from a clean dependency baseline through the tracked frozen bootstrap.
-- [ ] License, contributing guide, architecture, and known limitations are current.
+- [ ] Apache-2.0 licence, contributing guide, architecture, and known limitations are integrated on
+      `main`; Phase 8.4A is currently a Draft-branch transition pending QA/merge/main CI.
 - [x] No secrets, local files, debug output, or generated junk are tracked.
 
 ## Validation
@@ -88,7 +89,9 @@ actions below remain separately scoped.
       is not called a live validation.
 - [ ] Validate the exact MCP path against an authorized live DataHub Core/Cloud service and preserve a
       judge-accessible endpoint/auth plan; named-integration compliance remains `PARTIAL` until then.
-- [ ] A legal/owner gate resolves Apache 2.0 against the current MIT licence.
+- [x] The user explicitly authorized Apache-2.0 on 2026-07-25 and Phase 8.4A implements the
+      coordinated change on a Draft branch; main integration and detected-license verification remain
+      pending.
 - [ ] A separately authorized publication gate reviews history/secrets and changes repository
       visibility from Private to Public only when submission-ready.
 - [ ] An entrant gate verifies eligibility, team/representative mode, registration, live form fields,
@@ -117,13 +120,37 @@ actions below remain separately scoped.
       attribution/NOTICE decision, official Apache/GitHub references, residual blockers, and two
       independent approvals in
       [`PUBLIC_SOURCE_APACHE_READINESS.md`](PUBLIC_SOURCE_APACHE_READINESS.md).
-- [ ] An authorized human explicitly approves the project relicense from MIT to Apache-2.0 after
-      ownership/contributor authority and dependency licence/notice evidence are resolved.
-- [ ] An authorized human separately approves changing GitHub visibility from Private to Public
-      after all branch/history/issue/PR/Actions/Release metadata surfaces are reviewed.
-- [ ] Implement the coordinated licence/metadata/packaging/docs change only after the first approval.
+- [x] The user explicitly approved the project relicense from MIT to Apache-2.0 on 2026-07-25.
+- [x] The user separately approved changing GitHub visibility from Private to Public on 2026-07-25;
+      that approval is reserved for Phase 8.4B and is not consumed by Phase 8.4A or ordinary merge.
+- [x] Implement the coordinated licence/metadata/docs change on a Draft branch after the first
+      approval; no project NOTICE is added because dependencies are not bundled and no upstream NOTICE
+      material was found.
 - [ ] Change visibility only after the second approval; re-verify detectable licence, branch
       controls, public clone/setup, Actions exposure, release state, and judge access afterward.
+
+## Phase 8.4A — authorized Apache-2.0 implementation (Draft transition)
+
+- [x] Start from exact fetched Phase 8.3 main
+      `a13448fb3e25885410a10f3c8e5efdea6b6b5429`, tree
+      `25e661474e888b18252f331844aa066831276f89`, ordered parents
+      `7f05888ce7266f51b5028f5ac5ddacd3a91a11aa` then
+      `843a8fe2782abe38c7651f7d34c79b0716823543`; exact main CI run `30165738417`, job
+      `89698326756`, is `SUCCESS`.
+- [x] Reconfirm signed-in GitHub state is `Private`; do not press or change visibility.
+- [x] Record sanitized 128-commit author/committer provenance counts without personal emails or legal
+      overclaim.
+- [x] Replace `LICENSE` with the unmodified canonical UTF-8/LF Apache License 2.0 text and exact
+      SHA-256 `cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30`.
+- [x] Set exact SPDX `Apache-2.0` in root plus six workspace manifests while keeping every version at
+      `1.0.0-rc.1` and every package `private: true`.
+- [x] Keep `pnpm-lock.yaml` byte-identical at SHA-256
+      `e36baa3fe1899c4f58cc66eeeaea279601e5be271690b6fa215273740e4ac107`.
+- [x] Record the conservative no-NOTICE decision and the continuing
+      `abstract-logging@2.0.1`/future-bundling caveat.
+- [ ] Require independent QA, normal merge, exact-main CI success, and GitHub Apache-2.0 detection
+      before changing C09 from `OPEN`.
+- [ ] Keep C10 Public `OPEN`, C11 `PARTIAL`, and Phase 8.2 `PARTIAL`; execute no Phase 8.4B action.
 
 ## Phase 8 — `v1.0.0` final (not performed)
 

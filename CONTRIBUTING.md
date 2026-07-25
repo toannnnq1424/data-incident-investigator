@@ -44,6 +44,14 @@ mode, minimal examples, and sanitized evidence.
 Use `feat:`, `fix:`, `test:`, `docs:`, `refactor:`, `chore:`, or `ci:`. Do not commit secrets,
 generated build output, local `.env` files, or credentials copied from chats.
 
+## Contribution licensing
+
+The project is licensed under the [Apache License 2.0](LICENSE). Unless a contributor explicitly
+states otherwise or a separate agreement applies, an intentional contribution submitted for
+inclusion in this project is provided under the Apache License 2.0 terms described in section 5.
+Contributors must have the right to submit their work and must preserve applicable third-party
+copyright, patent, trademark, attribution, and NOTICE material.
+
 ## Versioning and changelog
 
 Follow [`docs/VERSIONING.md`](docs/VERSIONING.md). Record notable user, operator, security,

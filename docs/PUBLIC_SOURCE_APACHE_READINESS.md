@@ -1,17 +1,56 @@
 # Public-source and Apache-2.0 readiness decision packet
 
-Status: `READY FOR INDEPENDENT QA`; neither decision in this packet is authorized.
+Status: `PHASE 8.4A IMPLEMENTED LOCALLY`; Draft PR QA, merge, and exact-main CI are pending.
 
 This document prepares two independent decisions for Data Incident Investigator:
 
 1. whether the project may be relicensed from MIT to Apache-2.0; and
 2. whether the GitHub repository may be changed from Private to Public.
 
-It is an engineering and review record, not legal advice. This slice did not change repository
-visibility, `LICENSE`, package/workspace license metadata, README license claims, GitHub About
-metadata, tags, Releases, release assets, deployment, credentials, or submission state. Ordinary
-GitHub permission, approval of this Draft PR, or approval of one decision below does not grant the
-other decision.
+The user explicitly approved both decisions independently on 2026-07-25. Phase 8.4A consumes only the
+first approval. It replaces the project licence and metadata on a Draft branch while keeping the
+repository Private. The second approval is reserved for Phase 8.4B only after independent QA, normal
+merge, and exact-main CI success for this change. Ordinary merge does not authorize or perform the
+visibility mutation.
+
+This is an engineering and review record, not legal advice. Phase 8.4A does not change GitHub
+visibility or About metadata, tags, Releases, release assets, deployment, credentials, submission
+state, runtime, dependencies, or versions.
+
+## Phase 8.4A authorized implementation
+
+The implementation starts from fetched `origin/main`
+`a13448fb3e25885410a10f3c8e5efdea6b6b5429`, tree
+`25e661474e888b18252f331844aa066831276f89`, with ordered parents
+`7f05888ce7266f51b5028f5ac5ddacd3a91a11aa` then
+`843a8fe2782abe38c7651f7d34c79b0716823543`. Exact main CI run `30165738417`, job
+`89698326756`, is `SUCCESS`. The signed-in in-app Browser reconfirmed the repository is `Private`
+before mutation.
+
+Reachable `origin/main` provenance contains 128 commits. To avoid exposing personal email data, only
+non-reversible SHA-256 prefixes and counts are recorded:
+
+| Metadata surface             | Sanitized fingerprint counts                                                               |
+| ---------------------------- | ------------------------------------------------------------------------------------------ |
+| Author display name          | `sha256:554336d2fb45b9ee` ×2; `sha256:d6a0370f5fd054d1` ×42; `sha256:ed7cb49c10821476` ×84 |
+| Author email                 | `sha256:1878a199025ee7c6` ×126; `sha256:6ea35c6bf9a0eb3c` ×2                               |
+| Committer email              | `sha256:1878a199025ee7c6` ×84; `sha256:3c205d8fc749f729` ×42; `sha256:6ea35c6bf9a0eb3c` ×2 |
+| Cryptographic signature flag | 128 commits report no Git signature                                                        |
+
+The shared author-email fingerprint spans two display-name fingerprints, while the two local
+author/committer records use the third display-name and email fingerprints. This supports provenance
+review but does not prove that labels are the same legal person, establish title, or substitute for
+legal review. The user's explicit authorization is recorded as the operative project-owner decision
+for this implementation; no broader legal conclusion is claimed.
+
+Phase 8.4A replaces `LICENSE` with the unmodified canonical Apache License 2.0 text, sets exact SPDX
+`Apache-2.0` in all seven private manifests, and updates direct project-license claims and contributor
+terms. Versions remain `1.0.0-rc.1`; `private: true`, dependencies, workspace membership, and
+`pnpm-lock.yaml` remain unchanged.
+
+The prior MIT file stated `Copyright (c) 2026 toannnnq1424`. That exact historical notice remains in
+reachable Git history and is retained here as migration provenance. It is not inserted into the
+unmodified canonical licence text or used to invent a project NOTICE.
 
 ## Audited baseline and method
 
@@ -294,7 +333,7 @@ The official signed-in in-app Browser showed the following repository state at
 
 | Surface                      | Current state                                                                                                                | Required pre-public review                                                                            |
 | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| Visibility/license detection | `Private`; GitHub detects MIT; README says MIT                                                                               | Do not change until both the public decision and any license-text coordination are explicit           |
+| Visibility/license detection | `Private`; GitHub main detects MIT before the Phase 8.4A branch is merged                                                    | Keep Private; verify Apache-2.0 detection on integrated main before the separate Phase 8.4B action    |
 | Branches                     | 44 branches across three branch-list pages                                                                                   | Review branch names and all branch-only content                                                       |
 | Tags                         | one tag, `v1.0.0-rc.1`, target `c4e33f7af3707f604d35b1220a18e4e83f491be3`                                                    | Review tag metadata and target content                                                                |
 | Releases/assets              | one unpublished Draft `v1.0.0-rc.1` at the same target; 0 uploaded assets; UI lists GitHub-generated source zip/tar archives | Confirm Draft behavior and all release text before visibility change; do not publish                  |
@@ -316,53 +355,53 @@ identities, repository About metadata, and repository-linked external resources.
 
 ## Apache-2.0 migration impact map
 
-No item in this section is applied by this slice. A later authorized migration must be coordinated as
-one reviewable change so the legal text, package metadata, documentation, packaged artifact, and
-GitHub detection cannot disagree.
+Phase 8.4A applies the authorized source-level migration as one reviewable change. Integration and
+GitHub detection remain pending.
 
-| Future target                                                                       | Coordinated action after authorization                                                                                                                                    |
-| ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `LICENSE`                                                                           | Replace MIT text with the unmodified Apache License 2.0 text only after relicensing authority is established; preserve the current ownership/provenance record separately |
-| root `package.json`                                                                 | Change the current `MIT` license metadata to `Apache-2.0`                                                                                                                 |
-| six workspace `package.json` files                                                  | Decide and apply consistent explicit `Apache-2.0` metadata; all six currently omit the field                                                                              |
-| `README.md`                                                                         | Replace the explicit MIT claim and re-check any badge/About/detected-license presentation                                                                                 |
-| `docs/REPOSITORY_MAP.md`                                                            | Update the root-license description and document any new attribution file                                                                                                 |
-| `docs/DEVPOST_REQUIREMENTS.md`, `docs/KNOWN_ISSUES.md`, `docs/RELEASE_CHECKLIST.md` | Close gates only after the actual authorized changes and evidence exist                                                                                                   |
-| `docs/DEPLOYMENT.md`                                                                | Update the documented artifact contents if a `NOTICE` or attribution file is required                                                                                     |
-| `docs/VERSIONING.md` and `CHANGELOG.md`                                             | Record the coordinated licensing change and release boundary without changing the current RC during preparation                                                           |
-| `CONTRIBUTING.md`                                                                   | Record the selected contributor-rights attestation mechanism for future contributions                                                                                     |
-| source files                                                                        | Decide whether project-owned files need standardized copyright/license headers; never overwrite retained upstream notices                                                 |
-| `scripts/build-release-artifact.mjs`                                                | Add any required `NOTICE`/attribution file to the deterministic static-file allowlist                                                                                     |
-| `scripts/verify-release-artifact.mjs` and related release tests                     | Require and verify the same attribution file and its deterministic provenance                                                                                             |
-| release artifact and sidecar                                                        | Rebuild only after the authorized source commit; verify that license/notice contents match the commit                                                                     |
-| GitHub repository metadata                                                          | Verify detectable license/About text after merge; visibility remains a separate action                                                                                    |
-| `pnpm-lock.yaml`                                                                    | Expect no license-only graph change, but prove and review the actual future diff rather than assuming it                                                                  |
+| Target                                                                              | Phase 8.4A treatment                                                                                            |
+| ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `LICENSE`                                                                           | Replaced with byte-verified unmodified canonical Apache License 2.0 text                                        |
+| root plus six workspace `package.json` files                                        | Exact SPDX `Apache-2.0`; versions and `private: true` unchanged                                                 |
+| `README.md`                                                                         | Apache-2.0 badge, text, and relative link                                                                       |
+| `docs/REPOSITORY_MAP.md`                                                            | Apache-2.0 root-license and manifest state                                                                      |
+| `docs/DEVPOST_REQUIREMENTS.md`, `docs/KNOWN_ISSUES.md`, `docs/RELEASE_CHECKLIST.md` | Draft transition recorded without claiming main integration                                                     |
+| `docs/DEPLOYMENT.md`                                                                | Unchanged because the artifact already includes `LICENSE` and no `NOTICE` is justified                          |
+| `docs/VERSIONING.md` and `CHANGELOG.md`                                             | Relicense boundary recorded without changing the current RC                                                     |
+| `CONTRIBUTING.md`                                                                   | Apache-2.0 section 5 default submission terms and retained third-party notice duty                              |
+| source files                                                                        | No mass headers added; existing provenance/notices are preserved                                                |
+| release artifact builder/verifier/tests                                             | Unchanged because `LICENSE` is already mandatory and no attribution file is added                               |
+| release artifact and sidecar                                                        | Not rebuilt; future release validation must package the exact integrated Apache `LICENSE`                       |
+| GitHub repository metadata                                                          | Verify detected Apache-2.0 on integrated main; visibility remains a separate Phase 8.4B action                  |
+| `pnpm-lock.yaml`                                                                    | Required to remain byte-identical at SHA-256 `e36baa3fe1899c4f58cc66eeeaea279601e5be271690b6fa215273740e4ac107` |
 
 ### NOTICE, attribution, and provenance decision
 
-The repository currently has `LICENSE` but no `NOTICE` or third-party attribution file in the current
-tree or reachable path history. Apache-2.0 section 4 requires distributions to carry the license and
-retain applicable copyright, patent, trademark, and attribution notices. If the distributed work
-contains a `NOTICE`, relevant notices must be propagated in a readable place; informational NOTICE
-content does not modify the license.
+The project has no `NOTICE` or third-party attribution file in the current tree or reachable path
+history. Apache-2.0 section 4 requires distributions to carry the license and retain applicable
+copyright, patent, trademark, and attribution notices. Section 4(d) applies when the distributed Work
+already includes NOTICE material; informational NOTICE content does not modify the license.
 
-Before migration, review the exact declared-license distribution and 137 available legal files,
-resolve the missing `abstract-logging@2.0.1` legal file, and determine whether project or upstream
-notices must be preserved. The absence of package NOTICE files is evidence, not a conclusion about
-obligations. If a `NOTICE` is required, keep it concise and traceable to the specific upstream
-obligations; do not copy unrelated license text indiscriminately. Preserve the current project
-copyright and commit provenance when replacing the MIT license text. The ASF application guide is
-useful implementation guidance, but ASF-specific source-header and NOTICE conventions are not
-automatically a legal mandate for this non-ASF project.
+Phase 8.4A does not add a project `NOTICE`. The exact frozen graph contains 0 dependency NOTICE files,
+and neither the source repository nor its deterministic release artifact vendors or bundles
+`node_modules`; the artifact carries manifests and lockfile and performs a separate production
+install. Adding an invented holder, year, or generic dependency list would not create reliable
+attribution evidence. The existing artifact already requires `LICENSE`, so its allowlist needs no
+change.
+
+This decision does not erase the missing `abstract-logging@2.0.1` legal file or turn declared
+metadata into legal approval. C11 remains `PARTIAL`. Before any future vendoring, dependency bundling,
+binary distribution, or inclusion of a package with NOTICE material, review the exact distributed
+files and package-specific obligations and add only traceable required notices. Preserve every
+upstream copyright, patent, trademark, attribution, and licence record; never delete vendored
+provenance to simplify packaging.
 
 ### Relicensing authority is separate from dependency compatibility
 
 Apache-2.0 defines the licensor as the copyright owner or an entity authorized by that owner. Git
-history, repository admin permission, a merged PR, and the current MIT grant do not by themselves
-prove that the operator may relicense every project-owned contribution. Before approval, identify the
-copyright owner(s), determine whether every entrant/contributor granted sufficient rights, and record
-an owner/contributor attestation or other counsel-approved basis. The machine-local author metadata
-identified above is a provenance-review prompt, not proof of ownership or consent.
+history, repository admin permission, a merged PR, and the prior MIT grant do not by themselves prove
+that the operator may relicense every project-owned contribution. Phase 8.4A records the user's
+explicit 2026-07-25 project-owner authorization together with sanitized provenance counts. It does
+not independently verify legal identity or title and is not legal advice.
 
 Separately, every production dependency must have compatible license and notice handling. Resolving
 dependency compatibility does not establish the right to relicense project-owned code, and owner
@@ -370,39 +409,32 @@ authority does not resolve dependency obligations.
 
 ## Independent human decision checklist
 
-The recommended state is `HOLD` for both decisions until the residual blockers below are resolved.
-When ready, an authorized human must make each decision separately and explicitly:
+- [x] **Authorize Apache-2.0 project relicense.** Explicitly approved by the user on 2026-07-25 and
+      consumed only by Phase 8.4A.
+- [x] **Authorize GitHub repository Public visibility.** Explicitly approved independently by the
+      user on 2026-07-25; reserved and not consumed by Phase 8.4A.
 
-- [ ] **Authorize Apache-2.0 project relicense.** I confirm documented project-owner and
-      entrant/contributor authority, reviewed the exact production dependency license/NOTICE inventory,
-      accept the coordinated migration impact map, and explicitly authorize changing the project from MIT
-      to Apache-2.0 in a separate implementation change.
-- [ ] **Authorize GitHub repository Public visibility.** I reviewed branch-only content, commit
-      metadata, issues, PRs, Actions logs/artifacts/caches/attestations, tag/Release metadata, About links,
-      and GitHub's visibility consequences, and explicitly authorize changing this repository from
-      Private to Public as a separate owner action.
-
-Neither box is checked by this packet. Approval of one box does not check the other. This Draft PR
-must remain Draft and unmerged for independent QA and cannot be interpreted as either authorization.
+The approvals are independent. This Draft PR must remain Draft and unmerged for independent QA.
+Merging it does not press the visibility control or authorize any other external mutation.
 
 ## Residual blockers and next evidence
 
-1. All 138 external production package-version nodes have declared-license metadata, and 137 have a
-   legal file, but those declarations have not received legal compatibility/obligation review.
-   `abstract-logging@2.0.1` lacks a legal file, and 0 observed package NOTICE files does not resolve
-   attribution/NOTICE obligations.
-2. Project ownership and entrant/contributor relicensing authority have not been attested.
-3. The four machine-local commit-email records require a repository-owner provenance/privacy review.
-4. The 44 branches, 41 closed PRs, 9 issues, 117 Actions runs and related artifacts/metadata, one tag,
-   one Draft Release, commit identities, and linked external resources require manual exposure review.
-5. GitHub visibility is still Private, project license is still MIT, and compliance gates C09 and C10
-   must remain `OPEN`.
-6. Phase 8.2 remains `PARTIAL` pending live/judge DataHub credentials and validation; this packet does
+1. The Apache change is only on a Draft branch. Independent QA, normal merge, exact-main CI success,
+   and GitHub detected-license verification are still required before the Apache compliance row may
+   leave `OPEN`.
+2. All 138 external production package-version nodes have declared-license metadata, and 137 have a
+   legal file. `abstract-logging@2.0.1` lacks a legal file. This does not block the current
+   non-vendoring source relicense, but C11 stays `PARTIAL` and future bundled distribution requires a
+   new package-specific review.
+3. GitHub visibility remains `Private`. The separately approved Public transition is reserved for
+   Phase 8.4B; it is not performed by this branch, its merge, or ordinary repository permission.
+4. Phase 8.2 remains `PARTIAL` pending live/judge DataHub credentials and validation; this packet does
    not change that independent readiness condition.
 
 ## Primary official references
 
-Accessed 2026-07-25 22:00 ICT (2026-07-25 15:00 UTC):
+GitHub sources were accessed 2026-07-25 22:00 ICT (2026-07-25 15:00 UTC). The canonical Apache text
+and NOTICE condition were rechecked 2026-07-25 23:54 ICT (2026-07-25 16:54 UTC):
 
 - [GitHub: Setting repository visibility](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/managing-repository-settings/setting-repository-visibility)
 - [GitHub: Adding a license to a repository](https://docs.github.com/en/communities/setting-up-your-project-for-healthy-contributions/adding-a-license-to-a-repository)

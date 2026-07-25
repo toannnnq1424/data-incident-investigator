@@ -10,6 +10,12 @@ separately authorized post-merge gates.
 
 ## [Unreleased]
 
+### Changed
+
+- Relicensed the project from MIT to Apache-2.0 across the canonical license text, all seven private
+  workspace manifests, contributor guidance, and repository documentation. Repository visibility
+  remains Private pending the separately authorized publication gate.
+
 ## [1.0.0-rc.1] - 2026-07-23
 
 ### Added

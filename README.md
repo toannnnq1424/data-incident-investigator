@@ -1,5 +1,7 @@
 # Data Incident Investigator
 
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+
 Data Incident Investigator is an AI-assisted workflow for answering questions such as “Why did
 revenue drop today?” with metadata, lineage, recent-change evidence, ranked root-cause hypotheses,
 and recommended actions.
@@ -123,4 +125,4 @@ Before work, read `CODEX.md`, `docs/PRODUCT_SPEC.md`, `docs/REPOSITORY_MAP.md`,
 
 GitHub: https://github.com/toannnnq1424/data-incident-investigator
 
-Licensed under the MIT License.
+Licensed under the [Apache License 2.0](LICENSE).
