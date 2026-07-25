@@ -1,6 +1,20 @@
 # Known issues
 
-Last updated: 2026-07-24.
+Last updated: 2026-07-25.
+
+- Phase 8.3 prepares but does not authorize the two independent Apache-2.0 and Public-visibility
+  decisions. The bounded exact-main audit found no credible credential/private key in 123 current
+  tracked files or 728 unique reachable-history blobs. Four machine-local commit-email metadata
+  records still require provenance/privacy review. The signed-in read-only GitHub inventory confirms
+  Private visibility, 44 branches, one immutable RC tag, one unpublished Draft Release with no
+  uploaded assets, 0 open/41 closed PRs, 2 open/7 closed issues, and 117 Actions runs; all
+  public-facing metadata surfaces require an owner review. The root plus six-workspace production
+  closure contains 138 external package-version nodes, including
+  `@modelcontextprotocol/sdk@1.29.0`, but the lockfile has no licence fields and no installed package
+  metadata exists. Apache-2.0 compatibility and NOTICE/attribution duties therefore remain
+  unresolved. C09 and C10 stay `OPEN`; C11 and Phase 8.2 stay `PARTIAL`. See
+  [`PUBLIC_SOURCE_APACHE_READINESS.md`](PUBLIC_SOURCE_APACHE_READINESS.md). No licence, manifest,
+  README, visibility, tag, Release, deployment, credential, or submission state changed.
 
 - Phase 8.2 adds an explicit bounded `datahub-mcp` provider on exact starting `main`
   `8144fb19a6daf2670c4143b005b5e1aea25c138a`. It uses the official TypeScript SDK v1 over an

@@ -4610,3 +4610,62 @@ No source re-browse, dependency/config/live-smoke/UI/evaluation/full-suite actio
 remains `PARTIAL`. Next: finish narrow static/cleanup audits, additive commit and normal push to the
 same branch, update Draft PR #50, and require exact-new-head CI success while keeping it Draft and
 unmerged.
+
+## 2026-07-25 — Phase 8.3 public-source and Apache-2.0 readiness preparation
+
+### Exact baseline and non-authorization boundary
+
+Started from fetched `origin/main` `7f05888ce7266f51b5028f5ac5ddacd3a91a11aa`, tree
+`063fc69dcde037dd3ec99bce671561d8fc26d235`, ordered parents
+`8144fb19a6daf2670c4143b005b5e1aea25c138a` then
+`aa8d120205fdc35298b9ef36c7dd36b38b23e342`. Exact main CI run `30161661962`, job
+`89687850631`, was `SUCCESS`. Created only
+`codex/phase-8-3-public-source-readiness` from that base. This slice prepares evidence only; it does
+not authorize or change the MIT licence, GitHub Private visibility, manifests, README, tags, Releases,
+deployment, credentials, or Devpost submission.
+
+### Sanitized public-source audit
+
+- Exact-main inventory: 123 tracked files, 0 untracked/ignored, 2,286,253 current blob bytes, no blob
+  above 1 MiB; 127 reachable commits, 119 local refs, 728 unique historical blobs/36,184,914 bytes,
+  and no historical blob above 1 MiB.
+- No current/history binary, archive, executable, media, LFS pointer, submodule/symlink mode,
+  `.gitmodules`, worktree reparse point, generated/junk root, unsafe-log match, or tracked environment
+  value file exists.
+- Bounded credential/private-key/endpoint/PII/machine-path detectors found no credible credential or
+  private key. Synthetic Bearer/redaction/internal-endpoint/email test inputs were retained and
+  recorded only by class/path/first commit/date and non-reversible fingerprint. Four machine-local
+  commit-email metadata records remain an owner provenance/privacy review item. The mandatory stop
+  condition was not triggered; no rewrite, purge, rotation, deletion, or remediation occurred.
+
+### Dependency/licence and GitHub exposure evidence
+
+- Root plus six-workspace production closure resolves from manifests/lock to exactly 138 external
+  package-version nodes/132 names. `@modelcontextprotocol/sdk@1.29.0` is included. The workspace has
+  no `node_modules`, the lock has no licence fields, and read-only pnpm licence listing lacks its local
+  package index; no install/network fallback was used. All 138 license, Apache-2.0 compatibility, and
+  NOTICE/attribution conclusions remain `UNKNOWN`/`UNRESOLVED`, not legal approval.
+- Official signed-in in-app Browser read-only review at 2026-07-25 22:00 ICT confirms Private, 44
+  branches, one `v1.0.0-rc.1` tag, one unpublished Draft RC Release with zero uploaded assets, 0
+  open/41 closed PRs, 2 open/7 closed issues, and 117 Actions runs. Actions secret values were not
+  inspected. Primary GitHub and Apache sources were accessed directly and timestamped in the packet.
+- Manual exposure review, project-owner/contributor authority attestation, exact dependency
+  licence/notice evidence, and two separate human approvals remain blockers. C09/C10 remain `OPEN`;
+  C11 and Phase 8.2 remain `PARTIAL`.
+
+### Documentation and local validation
+
+Added [`PUBLIC_SOURCE_APACHE_READINESS.md`](PUBLIC_SOURCE_APACHE_READINESS.md) with the exact sanitized
+audit, full 138-node closure, read-only GitHub inventory, official citations, coordinated migration
+impact/NOTICE/provenance map, residual blockers, and two unchecked independent decisions. Updated
+only the implementation plan, repository map, Devpost matrix, known issues, release checklist, and
+this log. `SECURITY.md` did not change because no new durable security control was established.
+
+Prettier 3.9.5 passes the seven documentation paths. Changed-path allowlist, strict UTF-8/LF/final
+newline, `git diff --check`, 37 compliance rows with unchanged
+`0 PASS / 12 PARTIAL / 17 OPEN / 8 NOT REQUIRED`, exact sorted 138-node closure, two unchecked
+decisions, local links, high-confidence added-secret patterns, conflict markers, and generated residue
+checks pass. No relevant listener on ports 3000/4173/5173/8080 exists and no service was launched.
+Full tests/build/evaluation/browser E2E/live DataHub smoke were intentionally not run. Next: one
+additive conventional commit, normal push, exactly one Draft PR base current `main`, exact-head
+`PR CI`/`validate` success, and final identity/cleanup verification. Keep Draft and unmerged.

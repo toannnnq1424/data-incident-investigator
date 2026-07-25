@@ -100,6 +100,30 @@ actions below remain separately scoped.
       it and judges need not watch beyond minute three, not because it is a separately worded hard
       eligibility maximum.
 
+## Phase 8.3 — public-source and Apache-2.0 decision preparation
+
+- [x] Audit the exact current tree and all locally reachable Git history with bounded, read-only
+      detectors; record only sanitized classes, paths, dates/commits, and non-reversible fingerprints.
+- [x] Confirm that no credible credential/private key triggered the publication stop condition;
+      retain the machine-local commit-email metadata as a manual provenance/privacy review item.
+- [x] Inventory the root plus six-workspace production closure from manifests/lock/local metadata
+      without install or network scanning: 138 external package-version nodes, all with licence,
+      Apache-2.0 compatibility, and NOTICE obligations unresolved under the allowed evidence.
+- [x] Inventory GitHub exposure read-only in the official signed-in in-app Browser: Private, 44
+      branches, one RC tag, one no-uploaded-asset Draft Release, 0 open/41 closed PRs, 2 open/7 closed
+      issues, and 117 Actions runs.
+- [x] Record the coordinated migration impact, ownership/contributor-attestation boundary,
+      attribution/NOTICE decision, official Apache/GitHub references, residual blockers, and two
+      independent approvals in
+      [`PUBLIC_SOURCE_APACHE_READINESS.md`](PUBLIC_SOURCE_APACHE_READINESS.md).
+- [ ] An authorized human explicitly approves the project relicense from MIT to Apache-2.0 after
+      ownership/contributor authority and dependency licence/notice evidence are resolved.
+- [ ] An authorized human separately approves changing GitHub visibility from Private to Public
+      after all branch/history/issue/PR/Actions/Release metadata surfaces are reviewed.
+- [ ] Implement the coordinated licence/metadata/packaging/docs change only after the first approval.
+- [ ] Change visibility only after the second approval; re-verify detectable licence, branch
+      controls, public clone/setup, Actions exposure, release state, and judge access afterward.
+
 ## Phase 8 — `v1.0.0` final (not performed)
 
 - [ ] Confirm the accepted candidate, final scope, clean current `main`, and absence of an existing
