@@ -650,7 +650,13 @@ export class DeterministicIncidentContextGatherer implements IncidentContextGath
       }
     }
 
-    if (recentChanges.every((response) => response.changes.length === 0)) {
+    if (recentChanges.some((response) => response.capability === 'unsupported')) {
+      addMissingInformation(missingInformation, {
+        code: 'recent_changes_unsupported',
+        message:
+          'The selected metadata provider does not expose a recent-changes capability; no change evidence was inferred.',
+      });
+    } else if (recentChanges.every((response) => response.changes.length === 0)) {
       addMissingInformation(missingInformation, {
         code: 'recent_changes_not_found',
         message: 'No recent metadata changes were returned for the bounded context entities.',
@@ -773,7 +779,15 @@ export class DeterministicSuspiciousChangeDetector implements SuspiciousChangeDe
         response.changes.map((change) => [change.id, change] as const),
       ),
     );
-    if (changesById.size === 0) {
+    if (
+      parsedContext.facts.recentChanges.some((response) => response.capability === 'unsupported')
+    ) {
+      addSuspiciousChangeMissingInformation(missingInformation, {
+        code: 'recent_changes_unsupported',
+        message:
+          'The selected metadata provider does not expose recent-change facts for deterministic detection.',
+      });
+    } else if (changesById.size === 0) {
       addSuspiciousChangeMissingInformation(missingInformation, {
         code: 'recent_changes_not_found',
         message: 'No recent metadata change facts were available for deterministic detection.',
@@ -1131,6 +1145,7 @@ function candidateScoreFactors(
           'symptom_not_supplied',
           'lineage_not_found',
           'lineage_truncated',
+          'recent_changes_unsupported',
           'recent_changes_truncated',
         ].includes(code),
       ),
@@ -2000,7 +2015,9 @@ export interface InvestigationContext {
   incidentId: string;
   metadata: MetadataAdapter;
   limits: InvestigationLimits;
+  mode?: MetadataSourceMode;
   executionBudget?: InvestigationExecutionBudget;
+  signal?: AbortSignal;
 }
 
 export interface InvestigationRunner {
@@ -2065,6 +2082,18 @@ function validateLimits(limits: InvestigationLimits) {
   }
 }
 
+function investigationAbortError(signal: AbortSignal) {
+  return signal.reason instanceof InvestigationLimitError
+    ? signal.reason
+    : new MetadataProviderError('timeout');
+}
+
+function assertInvestigationActive(signal: AbortSignal) {
+  if (signal.aborted) {
+    throw investigationAbortError(signal);
+  }
+}
+
 export class DeterministicInvestigationRunner implements InvestigationRunner {
   async investigate(
     request: IncidentRequest,
@@ -2081,27 +2110,39 @@ export class DeterministicInvestigationRunner implements InvestigationRunner {
       context.limits.timeoutMs,
       context.executionBudget?.remainingDurationMs() ?? context.limits.timeoutMs,
     );
+    const controller = new AbortController();
+    const abortFromContext = () => controller.abort(context.signal?.reason);
+    if (context.signal?.aborted) {
+      abortFromContext();
+    } else {
+      context.signal?.addEventListener('abort', abortFromContext, { once: true });
+    }
     let timeout: ReturnType<typeof setTimeout> | undefined;
     const timeoutPromise = new Promise<never>((_, reject) => {
-      timeout = setTimeout(
-        () =>
-          reject(
-            context.executionBudget
-              ? new InvestigationLimitError(
-                  'duration_limit_reached',
-                  context.executionBudget.snapshot('duration_limit_reached'),
-                )
-              : new Error('The fixture investigation exceeded its duration limit.'),
-          ),
-        timeoutMs,
-      );
+      timeout = setTimeout(() => {
+        const error = context.executionBudget
+          ? new InvestigationLimitError(
+              'duration_limit_reached',
+              context.executionBudget.snapshot('duration_limit_reached'),
+            )
+          : new Error('The metadata investigation exceeded its duration limit.');
+        controller.abort(error);
+        reject(error);
+      }, timeoutMs);
     });
 
     try {
-      return await Promise.race([this.runInvestigation(request, context), timeoutPromise]);
+      return await Promise.race([
+        this.runInvestigation(request, context, controller.signal),
+        timeoutPromise,
+      ]);
     } finally {
       if (timeout) {
         clearTimeout(timeout);
+      }
+      context.signal?.removeEventListener('abort', abortFromContext);
+      if (!controller.signal.aborted) {
+        controller.abort();
       }
     }
   }
@@ -2109,28 +2150,37 @@ export class DeterministicInvestigationRunner implements InvestigationRunner {
   private async runInvestigation(
     request: IncidentRequest,
     context: InvestigationContext,
+    signal: AbortSignal,
   ): Promise<InvestigationDraftReport> {
     const { metadata, limits } = context;
+    const sourceLabel = context.mode === 'datahub-mcp' ? 'DataHub MCP Server' : 'Fixture';
+    assertInvestigationActive(signal);
     context.executionBudget?.recordToolCall();
-    await metadata.healthCheck();
+    await metadata.healthCheck({ signal });
 
+    assertInvestigationActive(signal);
     context.executionBudget?.recordToolCall();
     const candidates = await metadata.searchEntities({
       query: request.entityHint ?? request.question,
       limit: limits.entityCount,
       fallbackToDefault: true,
+      signal,
     });
+    assertInvestigationActive(signal);
     const seed = candidates[0];
     if (!seed) {
-      throw new Error('The fixture did not return an investigation seed.');
+      throw new Error('The metadata provider did not return an investigation seed.');
     }
 
+    assertInvestigationActive(signal);
     context.executionBudget?.recordToolCall();
     const lineage = await metadata.getLineage(
       seed,
       limits.lineageDepth,
       Math.max(0, limits.entityCount - 1),
+      { signal },
     );
+    assertInvestigationActive(signal);
     const entities = [
       ...new Map(
         [lineage.seed, ...lineage.upstream, ...lineage.downstream].map(
@@ -2138,31 +2188,35 @@ export class DeterministicInvestigationRunner implements InvestigationRunner {
         ),
       ).values(),
     ];
+    assertInvestigationActive(signal);
     context.executionBudget?.recordLineageEntities(entities.map((entity) => entity.urn));
+    assertInvestigationActive(signal);
     context.executionBudget?.recordToolCall();
     const changes = await metadata.getRecentChanges(
       entities,
       recentChangeBoundary(request.occurredAt),
       limits.recentChangeCount,
+      { signal },
     );
+    assertInvestigationActive(signal);
 
     const evidence: Evidence[] = [
       {
         id: 'metadata-seed',
         category: 'metadata',
-        statement: `Fixture metadata identifies ${lineage.seed.name} as the investigation seed.`,
+        statement: `${sourceLabel} metadata identifies ${lineage.seed.name} as the investigation seed.`,
         sourceEntity: lineage.seed,
       },
       ...lineage.upstream.map((entity, index) => ({
         id: `lineage-upstream-${index + 1}`,
         category: 'lineage' as const,
-        statement: `Fixture lineage shows ${entity.name} upstream of ${lineage.seed.name}.`,
+        statement: `${sourceLabel} lineage shows ${entity.name} upstream of ${lineage.seed.name}.`,
         sourceEntity: entity,
       })),
       ...lineage.downstream.map((entity, index) => ({
         id: `lineage-downstream-${index + 1}`,
         category: 'lineage' as const,
-        statement: `Fixture lineage shows ${entity.name} downstream of ${lineage.seed.name}.`,
+        statement: `${sourceLabel} lineage shows ${entity.name} downstream of ${lineage.seed.name}.`,
         sourceEntity: entity,
       })),
       ...changes.map((change) => ({
@@ -2181,9 +2235,9 @@ export class DeterministicInvestigationRunner implements InvestigationRunner {
       : ['metadata-seed'];
     const hypothesisSummary = leadingChange
       ? `Plausible contributor: the recent ${leadingChange.category} change on ${leadingChange.entity.name} may have contributed to the reported incident.`
-      : `Available fixture metadata is insufficient to identify a plausible recent-change contributor for ${lineage.seed.name}.`;
+      : `Available ${sourceLabel} metadata is insufficient to identify a plausible recent-change contributor for ${lineage.seed.name}.`;
 
-    return InvestigationDraftReportSchema.parse({
+    const report = InvestigationDraftReportSchema.parse({
       incidentId: context.incidentId,
       summary: `The strongest evidence-backed inference is: ${hypothesisSummary}`,
       entities,
@@ -2206,10 +2260,17 @@ export class DeterministicInvestigationRunner implements InvestigationRunner {
             `Confirm the schema contract for ${leadingChange.entity.name} and restore or intentionally replace the removed field.`,
           ]
         : [`Inspect runtime records for ${lineage.seed.name} before changing production data.`],
-      assumptions: ['The canonical fixture snapshot represents the incident investigation window.'],
+      assumptions:
+        context.mode === 'datahub-mcp'
+          ? ['The DataHub MCP Server response represents the provider state at investigation time.']
+          : ['The canonical fixture snapshot represents the incident investigation window.'],
       missingInformation: [
-        'Runtime query logs and production pipeline execution records are not included in this bounded fixture.',
+        context.mode === 'datahub-mcp'
+          ? 'The official DataHub MCP Server does not expose recent metadata changes; runtime query logs and production execution records were not inferred.'
+          : 'Runtime query logs and production pipeline execution records are not included in this bounded fixture.',
       ],
     });
+    assertInvestigationActive(signal);
+    return report;
   }
 }

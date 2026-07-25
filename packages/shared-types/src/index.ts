@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const MetadataSourceModeSchema = z.enum(['fixture', 'datahub']);
+export const MetadataSourceModeSchema = z.enum(['fixture', 'datahub', 'datahub-mcp']);
 
 export const HealthResponseSchema = z
   .object({
@@ -12,6 +12,7 @@ export const ReadinessStatusSchema = z.enum(['ready', 'not_ready']);
 export const ReadinessCheckNameSchema = z.enum([
   'fixture_assets',
   'datahub',
+  'datahub_mcp',
   'investigation_runtime',
   'model',
 ]);
@@ -23,6 +24,11 @@ export const ReadinessReasonCodeSchema = z.enum([
   'DATAHUB_UNAVAILABLE',
   'DATAHUB_TIMEOUT',
   'DATAHUB_INVALID_RESPONSE',
+  'DATAHUB_MCP_CONFIG_MISSING',
+  'DATAHUB_MCP_UNAUTHORIZED',
+  'DATAHUB_MCP_UNAVAILABLE',
+  'DATAHUB_MCP_TIMEOUT',
+  'DATAHUB_MCP_INVALID_RESPONSE',
   'INVESTIGATION_RUNTIME_INVALID',
   'MODEL_NOT_REQUIRED',
   'MODEL_CONFIG_MISSING',
@@ -40,6 +46,13 @@ const readinessReasonCodesByCheck = {
     'DATAHUB_UNAVAILABLE',
     'DATAHUB_TIMEOUT',
     'DATAHUB_INVALID_RESPONSE',
+  ],
+  datahub_mcp: [
+    'DATAHUB_MCP_CONFIG_MISSING',
+    'DATAHUB_MCP_UNAUTHORIZED',
+    'DATAHUB_MCP_UNAVAILABLE',
+    'DATAHUB_MCP_TIMEOUT',
+    'DATAHUB_MCP_INVALID_RESPONSE',
   ],
   investigation_runtime: ['INVESTIGATION_RUNTIME_INVALID'],
   model: [
@@ -120,7 +133,9 @@ export const ReadinessResponseSchema = z
     const expectedNames =
       response.mode === 'fixture'
         ? (['fixture_assets'] as const)
-        : (['datahub', 'investigation_runtime', 'model'] as const);
+        : response.mode === 'datahub-mcp'
+          ? (['datahub_mcp', 'model'] as const)
+          : (['datahub', 'investigation_runtime', 'model'] as const);
     const actualNames = response.checks.map((check) => check.name);
     if (
       actualNames.length !== expectedNames.length ||
@@ -672,6 +687,7 @@ export const MetadataRecentChangesResponseSchema = z
     limit: z.number().int().min(1).max(METADATA_RECENT_CHANGES_MAX_LIMIT),
     returnedCount: z.number().int().min(0).max(METADATA_RECENT_CHANGES_MAX_LIMIT),
     truncated: z.boolean(),
+    capability: z.literal('unsupported').optional(),
     changes: z.array(MetadataRecentChangeSchema).max(METADATA_RECENT_CHANGES_MAX_LIMIT),
   })
   .strict()
@@ -690,6 +706,16 @@ export const MetadataRecentChangesResponseSchema = z
         code: 'custom',
         message: 'Returned count does not match recent changes.',
         path: ['returnedCount'],
+      });
+    }
+    if (
+      response.capability === 'unsupported' &&
+      (response.returnedCount !== 0 || response.truncated || response.changes.length !== 0)
+    ) {
+      context.addIssue({
+        code: 'custom',
+        message: 'An unsupported recent-changes capability cannot return provider evidence.',
+        path: ['capability'],
       });
     }
     if (response.changes.length > response.limit) {
@@ -928,6 +954,7 @@ export const IncidentContextMissingInformationCodeSchema = z.enum([
   'lineage_not_found',
   'lineage_truncated',
   'recent_changes_not_found',
+  'recent_changes_unsupported',
   'recent_changes_truncated',
 ]);
 
@@ -1225,6 +1252,7 @@ export const SuspiciousChangeMissingInformationCodeSchema = z.enum([
   'incident_time_not_supplied',
   'symptom_not_supplied',
   'recent_changes_not_found',
+  'recent_changes_unsupported',
   'no_matching_signals',
   'context_changes_truncated',
   'candidate_limit_reached',

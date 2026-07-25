@@ -101,9 +101,9 @@ probe and remains HTTP `200` when readiness dependencies fail.
 
 The readiness endpoint evaluates only dependencies required by the selected operating mode and returns
 `ReadinessResponseSchema`. Ready is HTTP `200`; not-ready is HTTP `503`. The response contains only a
-stable overall status, `fixture|datahub` mode, and an ordered allowlisted check list. It never returns a
-configured value, URL, token, authorization header, provider/model message or body, internal hostname,
-exception, stack, uptime, or retry history.
+stable overall status, `fixture|datahub|datahub-mcp` mode, and an ordered allowlisted check list. It
+never returns a configured value, URL, token, authorization header, provider/model message or body,
+internal hostname, exception, stack, uptime, or retry history.
 
 Fixture ready response `200`:
 
@@ -140,27 +140,53 @@ Current DataHub ready response `200`:
 
 DataHub readiness reuses the existing `MetadataHealthProvider` `/config` probe and its bounded
 two-second timeout/AbortSignal; the readiness route adds the same outer bound and no retry. The local
-`investigation_runtime` check validates the deterministic report runtime/assets that the existing live
-flow still requires, without a network call. The current deterministic investigation performs zero model
-calls, so production composition explicitly marks model as `not_required`, does not read
-`OPENAI_API_KEY`, and makes no model-availability claim. If a real model-health dependency is explicitly
-composed later, it becomes required and uses the model reason codes below; Slice 6.4 does not add a model
-client or provider network call.
+`investigation_runtime` check validates the report runtime/assets that the existing live flow still
+requires, without a network call. Current code-owned orchestration performs zero model calls, so
+production composition explicitly marks model as `not_required`, does not read `OPENAI_API_KEY`, and
+makes no model-availability claim. If a real model-health dependency is explicitly composed later, it
+becomes required and uses the model reason codes below; Slice 6.4 does not add a model client or
+provider network call.
+
+DataHub MCP ready response `200`:
+
+```json
+{
+  "status": "ready",
+  "mode": "datahub-mcp",
+  "checks": [
+    { "name": "datahub_mcp", "status": "ready" },
+    {
+      "name": "model",
+      "status": "not_required",
+      "reasonCode": "MODEL_NOT_REQUIRED"
+    }
+  ]
+}
+```
+
+MCP readiness connects only to the configured Streamable HTTP endpoint and validates bounded
+`tools/list` output. Official `search` and `get_lineage` must each appear exactly once, declare
+`readOnlyHint: true`, expose an object input schema, require string `query`/`urn`, and declare
+compatible types for every argument the client sends: integer `num_results`/`offset`, boolean
+`upstream`, and integer `max_hops`/`max_results`. Unrelated tools are ignored and remain uncallable.
+Readiness invokes no tool, GraphQL side channel, fixture, model, mutation, shell, or fallback.
 
 Stable non-ready reasons are:
 
-| Check                   | Reason codes                                                                                                           |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `fixture_assets`        | `FIXTURE_ASSETS_INVALID`                                                                                               |
-| `datahub`               | `DATAHUB_CONFIG_MISSING`, `DATAHUB_UNAUTHORIZED`, `DATAHUB_UNAVAILABLE`, `DATAHUB_TIMEOUT`, `DATAHUB_INVALID_RESPONSE` |
-| `investigation_runtime` | `INVESTIGATION_RUNTIME_INVALID`                                                                                        |
-| `model`                 | `MODEL_CONFIG_MISSING`, `MODEL_UNAUTHORIZED`, `MODEL_UNAVAILABLE`, `MODEL_TIMEOUT`, `MODEL_INVALID_RESPONSE`           |
+| Check                   | Reason codes                                                                                                                               |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `fixture_assets`        | `FIXTURE_ASSETS_INVALID`                                                                                                                   |
+| `datahub`               | `DATAHUB_CONFIG_MISSING`, `DATAHUB_UNAUTHORIZED`, `DATAHUB_UNAVAILABLE`, `DATAHUB_TIMEOUT`, `DATAHUB_INVALID_RESPONSE`                     |
+| `datahub_mcp`           | `DATAHUB_MCP_CONFIG_MISSING`, `DATAHUB_MCP_UNAUTHORIZED`, `DATAHUB_MCP_UNAVAILABLE`, `DATAHUB_MCP_TIMEOUT`, `DATAHUB_MCP_INVALID_RESPONSE` |
+| `investigation_runtime` | `INVESTIGATION_RUNTIME_INVALID`                                                                                                            |
+| `model`                 | `MODEL_CONFIG_MISSING`, `MODEL_UNAUTHORIZED`, `MODEL_UNAVAILABLE`, `MODEL_TIMEOUT`, `MODEL_INVALID_RESPONSE`                               |
 
 `MODEL_NOT_REQUIRED` is allowed only with model status `not_required`. A ready check has no reason.
 Overall `not_ready` is required when any required check is not ready. Fixture checks are exactly
-`fixture_assets`; DataHub checks are exactly `datahub`, `investigation_runtime`, then `model`, so the
-schema/status/body remain stable. A failure changes readiness only: it does not change `/health`, start
-an investigation, retry, switch to fixture mode, or claim successful DataHub/model work.
+`fixture_assets`; direct GraphQL checks are `datahub`, `investigation_runtime`, then `model`; MCP
+checks are `datahub_mcp`, then `model`. A failure changes readiness only: it does not change
+`/health`, start an investigation, retry, switch to fixture mode, or claim successful
+DataHub/model work.
 
 ### `GET /metadata/health`
 
@@ -203,6 +229,15 @@ DataHub mode probes `GET /config` relative to `DATAHUB_GMS_URL` through the data
 using `DATAHUB_TOKEN` as a Bearer token and a two-second default timeout. Fixture mode constructs no
 DataHub client and does not read either DataHub environment variable. Provider failures are logged
 only with normalized mode/status fields.
+
+`datahub-mcp` health instead performs MCP initialize plus bounded `tools/list` discovery through the
+configured Streamable HTTP endpoint. It returns the same normalized status vocabulary and
+provider-safe message, never a URL/tool description/body. Missing or invalid MCP configuration fails
+API startup, so there is no runtime fixture fallback. Bearer auth accepts only HTTPS. The provider
+rejects an over-limit declared body before reading, incrementally counts actual JSON/SSE bytes when a
+length is missing or inaccurate, cancels on the first byte over the configured cap, and caps the
+parsed protocol object again. Malformed search/lineage tool payload schemas map to
+`invalid_response`.
 
 ### `POST /metadata/search`
 
@@ -426,6 +461,11 @@ use the existing safe metadata mapping:
 | `unavailable`      | 503  | `METADATA_UNAVAILABLE`      |
 | `timeout`          | 504  | `METADATA_TIMEOUT`          |
 | `invalid_response` | 502  | `METADATA_INVALID_RESPONSE` |
+
+In `datahub-mcp` mode the current official server has no recent-changes/timeline tool. The same
+response contract returns `capability: "unsupported"`, `returnedCount: 0`, `truncated: false`, and
+`changes: []`. Incident context records `recent_changes_unsupported`; it does not call a hidden tool,
+route to GraphQL, or reinterpret the gap as live change evidence.
 
 Fixture mode uses the fixed fixture snapshot time, returns multiple categories with deterministic
 same-timestamp ordering/dedup, and never reads `DATAHUB_GMS_URL`, `DATAHUB_TOKEN`, Stitch, an LLM, or

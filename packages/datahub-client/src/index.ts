@@ -85,17 +85,27 @@ export interface LineageResult {
   truncated: boolean;
 }
 
+export interface MetadataOperationOptions {
+  signal?: AbortSignal;
+}
+
 export interface MetadataAdapter
   extends
     MetadataHealthProvider,
     MetadataSearchProvider,
     MetadataLineageProvider,
     MetadataRecentChangesProvider {
-  getLineage(entity: EntityRef, depth: number, entityLimit: number): Promise<LineageResult>;
+  getLineage(
+    entity: EntityRef,
+    depth: number,
+    entityLimit: number,
+    options?: MetadataOperationOptions,
+  ): Promise<LineageResult>;
   getRecentChanges(
     entities: EntityRef[],
     since: string,
     changeLimit: number,
+    options?: MetadataOperationOptions,
   ): Promise<MetadataChange[]>;
 }
 
@@ -1320,7 +1330,10 @@ export class FixtureMetadataAdapter implements MetadataAdapter {
     );
   }
 
-  async healthCheck(): Promise<MetadataHealthResult> {
+  async healthCheck(options: MetadataHealthCheckOptions = {}): Promise<MetadataHealthResult> {
+    if (options.signal?.aborted) {
+      throw new MetadataProviderError('timeout');
+    }
     if (!this.entitiesByUrn.has(this.fixture.defaultSeedUrn)) {
       throw new Error('Fixture metadata is unavailable.');
     }
@@ -1331,6 +1344,9 @@ export class FixtureMetadataAdapter implements MetadataAdapter {
   async searchEntities(
     options: MetadataEntitySearchOptions,
   ): Promise<MetadataEntitySearchResult[]> {
+    if (options.signal?.aborted) {
+      throw new MetadataProviderError('timeout');
+    }
     const resultLimit = boundedInteger(options.limit);
     if (resultLimit === 0) {
       return [];
@@ -1366,6 +1382,9 @@ export class FixtureMetadataAdapter implements MetadataAdapter {
           ? [fallbackEntity]
           : [];
 
+    if (options.signal?.aborted) {
+      throw new MetadataProviderError('timeout');
+    }
     return normalizeSearchResults(candidates, resultLimit);
   }
 
@@ -1442,7 +1461,15 @@ export class FixtureMetadataAdapter implements MetadataAdapter {
     return normalizedLineageResponse(request, nodesByUrn, edgesByKey, truncated);
   }
 
-  async getLineage(entity: EntityRef, depth: number, entityLimit: number): Promise<LineageResult> {
+  async getLineage(
+    entity: EntityRef,
+    depth: number,
+    entityLimit: number,
+    options: MetadataOperationOptions = {},
+  ): Promise<LineageResult> {
+    if (options.signal?.aborted) {
+      throw new MetadataProviderError('timeout');
+    }
     const seed = this.entitiesByUrn.get(entity.urn);
     if (!seed) {
       throw new Error('The requested entity does not exist in the fixture.');
@@ -1450,11 +1477,14 @@ export class FixtureMetadataAdapter implements MetadataAdapter {
 
     const lineageDepth = boundedInteger(depth);
     const resultLimit = boundedInteger(entityLimit);
-    const allUpstream = this.collectLineage(seed.urn, lineageDepth, 'upstream');
-    const allDownstream = this.collectLineage(seed.urn, lineageDepth, 'downstream');
+    const allUpstream = this.collectLineage(seed.urn, lineageDepth, 'upstream', options.signal);
+    const allDownstream = this.collectLineage(seed.urn, lineageDepth, 'downstream', options.signal);
     const upstream = allUpstream.slice(0, resultLimit);
     const downstream = allDownstream.slice(0, Math.max(0, resultLimit - upstream.length));
 
+    if (options.signal?.aborted) {
+      throw new MetadataProviderError('timeout');
+    }
     return {
       seed,
       upstream,
@@ -1498,14 +1528,18 @@ export class FixtureMetadataAdapter implements MetadataAdapter {
     entities: EntityRef[],
     since: string,
     changeLimit: number,
+    options: MetadataOperationOptions = {},
   ): Promise<MetadataChange[]> {
+    if (options.signal?.aborted) {
+      throw new MetadataProviderError('timeout');
+    }
     const sinceTimestamp = Date.parse(since);
     if (Number.isNaN(sinceTimestamp)) {
       throw new Error('The recent-change boundary must be an ISO timestamp.');
     }
 
     const entityUrns = new Set(entities.map((entity) => entity.urn));
-    return this.fixture.changes
+    const changes = this.fixture.changes
       .filter(
         (change) =>
           entityUrns.has(change.entityUrn) && Date.parse(change.observedAt) >= sinceTimestamp,
@@ -1522,21 +1556,32 @@ export class FixtureMetadataAdapter implements MetadataAdapter {
         observedAt: change.observedAt,
         summary: change.summary,
       }));
+    if (options.signal?.aborted) {
+      throw new MetadataProviderError('timeout');
+    }
+    return changes;
   }
 
   private collectLineage(
     seedUrn: string,
     depth: number,
     direction: 'upstream' | 'downstream',
+    signal?: AbortSignal,
   ): EntityRef[] {
     const visited = new Set([seedUrn]);
     const collected: EntityRef[] = [];
     let frontier = [seedUrn];
 
     for (let currentDepth = 0; currentDepth < depth && frontier.length > 0; currentDepth += 1) {
+      if (signal?.aborted) {
+        throw new MetadataProviderError('timeout');
+      }
       const nextFrontier: string[] = [];
 
       for (const currentUrn of frontier) {
+        if (signal?.aborted) {
+          throw new MetadataProviderError('timeout');
+        }
         const adjacentUrns = this.fixture.lineage
           .filter((edge) =>
             direction === 'upstream'
@@ -1621,3 +1666,5 @@ export function createDataHubLineageClient(config: DataHubLineageClientConfig) {
 export function createDataHubRecentChangesClient(config: DataHubRecentChangesClientConfig) {
   return new DataHubRecentChangesClient(config);
 }
+
+export * from './datahub-mcp.js';

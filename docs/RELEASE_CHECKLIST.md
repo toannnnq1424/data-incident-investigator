@@ -83,8 +83,11 @@ actions below remain separately scoped.
 - [x] Separate explicit requirements, inferences, recommendations, and unknown form details.
 - [x] Map every explicit rule to exact repository status, owner phase, and next action in
       [`DEVPOST_REQUIREMENTS.md`](DEVPOST_REQUIREMENTS.md).
-- [ ] Phase 8.2 implements and verifies at least one named DataHub integration; direct GraphQL alone
-      is not treated as compliant.
+- [x] Phase 8.2 implements the named DataHub MCP Server integration and verifies its bounded protocol
+      fixture/product vertical slice; direct GraphQL alone is not treated as compliant and the fixture
+      is not called a live validation.
+- [ ] Validate the exact MCP path against an authorized live DataHub Core/Cloud service and preserve a
+      judge-accessible endpoint/auth plan; named-integration compliance remains `PARTIAL` until then.
 - [ ] A legal/owner gate resolves Apache 2.0 against the current MIT licence.
 - [ ] A separately authorized publication gate reviews history/secrets and changes repository
       visibility from Private to Public only when submission-ready.
