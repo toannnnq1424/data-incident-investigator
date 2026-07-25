@@ -124,8 +124,8 @@ actions below remain separately scoped.
 - [x] The user separately approved changing GitHub visibility from Private to Public on 2026-07-25;
       that approval is reserved for Phase 8.4B and is not consumed by Phase 8.4A or ordinary merge.
 - [x] Implement the coordinated licence/metadata/docs change on a Draft branch after the first
-      approval; no project NOTICE is added because dependencies are not bundled and no upstream NOTICE
-      material was found.
+      approval; do not invent a generic project NOTICE or claim the distributed bundle has no
+      third-party runtime code.
 - [ ] Change visibility only after the second approval; re-verify detectable licence, branch
       controls, public clone/setup, Actions exposure, release state, and judge access afterward.
 
@@ -146,8 +146,12 @@ actions below remain separately scoped.
       `1.0.0-rc.1` and every package `private: true`.
 - [x] Keep `pnpm-lock.yaml` byte-identical at SHA-256
       `e36baa3fe1899c4f58cc66eeeaea279601e5be271690b6fa215273740e4ac107`.
-- [x] Record the conservative no-NOTICE decision and the continuing
-      `abstract-logging@2.0.1`/future-bundling caveat.
+- [x] Correct the attribution boundary: the archive omits the `node_modules` directory but includes
+      complete `apps/web/dist` with bundled third-party runtime code; 0 dependency NOTICE files does
+      not settle MIT/ISC/BSD notice obligations.
+- [ ] Before publishing or distributing a release artifact, determine packages actually embedded in
+      the exact web output, capture required copyright/permission notices with upstream provenance,
+      and add a third-party attribution file plus builder/verifier/test enforcement only if justified.
 - [ ] Require independent QA, normal merge, exact-main CI success, and GitHub Apache-2.0 detection
       before changing C09 from `OPEN`.
 - [ ] Keep C10 Public `OPEN`, C11 `PARTIAL`, and Phase 8.2 `PARTIAL`; execute no Phase 8.4B action.

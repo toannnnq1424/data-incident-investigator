@@ -1,6 +1,6 @@
 # Known issues
 
-Last updated: 2026-07-25.
+Last updated: 2026-07-26.
 
 - Phase 8.4A consumes only the user's explicit 2026-07-25 Apache-2.0 relicense authorization. On this
   Draft branch, the canonical Apache text, all seven private manifest SPDX fields, README,
@@ -12,12 +12,18 @@ Last updated: 2026-07-25.
 
   The reused frozen production graph remains 138 external package-version nodes/132 names/7
   importers, with declared licenses 122 MIT, 10 ISC, 5 BSD-3-Clause, and 1 BSD-2-Clause; 137 legal
-  files; 0 NOTICE files; and a missing legal file for declared-MIT `abstract-logging@2.0.1`. No
-  project NOTICE is added because the source/release artifact does not vendor or bundle dependencies
-  and no upstream NOTICE material was found. This does not resolve every package-specific legal
-  obligation: any future vendoring or bundled distribution requires a new attribution review. Git
-  provenance is recorded only by sanitized counts/fingerprints and is not claimed as legal proof.
-  See [`PUBLIC_SOURCE_APACHE_READINESS.md`](PUBLIC_SOURCE_APACHE_READINESS.md).
+  files; 0 NOTICE files; and a missing legal file for declared-MIT `abstract-logging@2.0.1`. No generic
+  project NOTICE is added, but 0 dependency NOTICE files does not settle the attribution obligations
+  for bundled MIT/ISC/BSD code. The archive does not copy the `node_modules` directory; it does copy
+  complete `apps/web/dist`, whose Vite application bundle includes third-party runtime code. React
+  and ReactDOM resolve to `19.2.7`, are imported by the web entry, are not externalized by Vite
+  configuration, and have MIT legal files in the frozen evidence. The exact embedded-package and
+  required-notice inventory remains incomplete. Source relicensing may proceed, but publishing or
+  distributing the release artifact is blocked until the exact bundled-output attribution audit
+  captures required notices with provenance and, if justified, adds an enforced third-party
+  attribution file. Git provenance is recorded only by sanitized counts/fingerprints and is not
+  claimed as legal proof. See
+  [`PUBLIC_SOURCE_APACHE_READINESS.md`](PUBLIC_SOURCE_APACHE_READINESS.md).
 
 - Phase 8.2 is integrated as `aa8d120205fdc35298b9ef36c7dd36b38b23e342` through main merge
   `7f05888ce7266f51b5028f5ac5ddacd3a91a11aa`; exact main CI run `30161661962`, job

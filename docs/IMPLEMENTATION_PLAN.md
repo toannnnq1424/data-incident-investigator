@@ -5493,11 +5493,13 @@ Preflight conclusions:
   NOTICE files; `abstract-logging@2.0.1` declares MIT without a legal file; MCP SDK `1.29.0`
   declares MIT and has `LICENSE`; lock SHA-256
   `e36baa3fe1899c4f58cc66eeeaea279601e5be271690b6fa215273740e4ac107`.
-- No project `NOTICE` will be added. Apache-2.0 section 4(d) is conditional on a distributed work
-  already containing NOTICE material; no dependency NOTICE was found, and this repository/release
-  artifact does not vendor or bundle `node_modules`. The missing `abstract-logging` legal file stays
-  a C11 `PARTIAL` caveat. Any future vendoring, dependency bundling, binary distribution, or new
-  upstream NOTICE requires a new package-specific attribution review before distribution.
+- No generic project `NOTICE` will be added. Apache-2.0 section 4(d) is conditional on a distributed
+  work already containing NOTICE material, but 0 dependency NOTICE files does not settle MIT/ISC/BSD
+  notice obligations. The release archive omits the `node_modules` directory yet includes complete
+  `apps/web/dist` with bundled third-party runtime code. The missing `abstract-logging` legal file and
+  the incomplete exact bundled-output attribution inventory keep C11 `PARTIAL`; artifact
+  publication/distribution is blocked until that inventory and any justified attribution-file
+  enforcement are complete.
 
 Acceptance criteria:
 
@@ -5525,8 +5527,8 @@ Local implementation result:
   metadata makes each workspace manifest byte-match its main baseline. The lock has seven exact
   importers and remains byte-identical at the frozen hash.
 - Offline Prettier `3.9.5` writes/checks all 18 changed Markdown/JSON files. The exact 19-path
-  allowlist, local Markdown links, strict UTF-8/LF/final newline, README licence badge/link, no-NOTICE
-  decision, C09/C10 `OPEN`, C11/Phase 8.2 `PARTIAL`, unchanged compliance totals
+  allowlist, local Markdown links, strict UTF-8/LF/final newline, README licence badge/link, then-current
+  NOTICE decision, C09/C10 `OPEN`, C11/Phase 8.2 `PARTIAL`, unchanged compliance totals
   `0 PASS / 12 PARTIAL / 17 OPEN / 8 NOT REQUIRED`, added-line secret/conflict/debug scans, binary/
   generated residue, and `git diff --check` all pass.
 - One formatter-version probe mistakenly invoked pnpm's automatic install behavior in the empty
@@ -5539,6 +5541,61 @@ Local implementation result:
   package-manager process.
 
 Deferred: Phase 8.4B visibility mutation; GitHub About/detected-license verification on integrated
-main; independent legal review; the missing dependency legal file; any future third-party
-attribution bundle; version/tag/Release/artifact/deployment/credential/submission changes; live
-DataHub and judge-access validation.
+main; independent legal review; the missing dependency legal file; exact bundled-output attribution
+inventory and any justified artifact attribution-file enforcement; version/tag/Release/deployment/
+credential/submission changes; live DataHub and judge-access validation. Release artifact
+publication/distribution is blocked until the attribution gate passes.
+
+#### Phase 8.4A targeted QA correction — bundled-output attribution
+
+Status: targeted additive correction started on the same branch and Draft PR #52 from prior exact
+head `12690111be1d687cf96a8da48036621d40e9c1e6`, tree
+`aa4a93562f15eb711465592120ebd5c3d7abff36`, parent/base
+`a13448fb3e25885410a10f3c8e5efdea6b6b5429`. Prior exact-head CI run `30166901286`, job
+`89701378087`, was `SUCCESS`; independent QA still returned `FAIL / DO NOT MERGE` for one high
+attribution blocker.
+
+Objective: correct the false inference that excluding the `node_modules` directory means the release
+artifact contains no bundled dependencies. Preserve the authorized source relicense and all prior
+passing evidence while blocking artifact publication/distribution pending an exact bundled-output
+attribution audit.
+
+Evidence:
+
+- `apps/web/package.json` runs `vite build` and declares React/ReactDOM runtime dependencies;
+  `apps/web/src/main.tsx` imports both, and `apps/web/vite.config.ts` does not externalize them.
+- The official Vite production-build guide describes the default output as an application bundle.
+  `scripts/build-release-artifact.mjs` selects every file in `apps/web/dist`, and
+  `docs/DEPLOYMENT.md` describes that directory as complete archive content.
+- The lock resolves React/ReactDOM `19.2.7`; the reused frozen graph has their MIT legal files. This
+  verifies an attribution-review requirement, not the complete set of packages embedded in the exact
+  bundle.
+
+Acceptance:
+
+- Change exactly the six affected docs and the existing Draft PR body; do not modify LICENSE,
+  manifests, README, runtime/source/tests/fixtures/workflows/dependencies/version/lock, packaging,
+  deployment, tag/Release, credentials, submission, or visibility.
+- State that the source relicense may proceed independently, but artifact publication/distribution is
+  blocked until the exact embedded packages and required notices are mapped to upstream legal files
+  with provenance. Add an attribution file and builder/verifier/test enforcement only if that future
+  evidence justifies it; do not invent a NOTICE, holder, year, or complete inventory now.
+- Keep C09/C10 `OPEN`, C11 and Phase 8.2 `PARTIAL`, the 37-row totals unchanged, the PR Draft and
+  unmerged, and the repository Private.
+- Run docs-only Prettier, link/encoding/newline/stale-premise/status/totals/secret/conflict/debug/
+  diff/allowlist/residue/process/listener checks. Do not install, rebuild, or run tests.
+- Create one additive conventional commit, push normally to the same branch, update only Draft PR
+  #52, and require exact-new-head `PR CI`/`validate` terminal `SUCCESS`.
+
+Local correction result:
+
+- Exactly the six authorized docs changed. Stale-premise scans return zero matches, and the corrected
+  release-artifact block is present across readiness, known issues, compliance, checklist, plan, and
+  session state.
+- Offline Prettier `3.9.5`, local links, strict UTF-8/LF/final newline/no BOM, 37-row compliance
+  parsing with unchanged `0 PASS / 12 PARTIAL / 17 OPEN / 8 NOT REQUIRED`, C09/C10 `OPEN`, C11 and
+  Phase 8.2 `PARTIAL`, added-line secret/conflict/debug scans, and `git diff --check` pass.
+- Canonical `LICENSE` and `pnpm-lock.yaml` retain their exact hashes. No `node_modules`, `.pnpm-store`,
+  or current `apps/web/dist` was created; no relevant 3000/3001/4173/5173/8080 listener or
+  package-manager/Vite process exists. No install, rebuild, test, evaluation, E2E, live smoke, or
+  artifact command ran.

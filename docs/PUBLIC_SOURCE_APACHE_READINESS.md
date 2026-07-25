@@ -365,12 +365,12 @@ GitHub detection remain pending.
 | `README.md`                                                                         | Apache-2.0 badge, text, and relative link                                                                       |
 | `docs/REPOSITORY_MAP.md`                                                            | Apache-2.0 root-license and manifest state                                                                      |
 | `docs/DEVPOST_REQUIREMENTS.md`, `docs/KNOWN_ISSUES.md`, `docs/RELEASE_CHECKLIST.md` | Draft transition recorded without claiming main integration                                                     |
-| `docs/DEPLOYMENT.md`                                                                | Unchanged because the artifact already includes `LICENSE` and no `NOTICE` is justified                          |
+| `docs/DEPLOYMENT.md`                                                                | Unchanged in this docs-only correction; its contract already says the archive includes complete `apps/web/dist` |
 | `docs/VERSIONING.md` and `CHANGELOG.md`                                             | Relicense boundary recorded without changing the current RC                                                     |
 | `CONTRIBUTING.md`                                                                   | Apache-2.0 section 5 default submission terms and retained third-party notice duty                              |
 | source files                                                                        | No mass headers added; existing provenance/notices are preserved                                                |
-| release artifact builder/verifier/tests                                             | Unchanged because `LICENSE` is already mandatory and no attribution file is added                               |
-| release artifact and sidecar                                                        | Not rebuilt; future release validation must package the exact integrated Apache `LICENSE`                       |
+| release artifact builder/verifier/tests                                             | Unchanged now; update only after the bundled-output audit identifies traceable required attributions            |
+| release artifact and sidecar                                                        | Not rebuilt; publication/distribution is blocked until the bundled-output attribution gate passes               |
 | GitHub repository metadata                                                          | Verify detected Apache-2.0 on integrated main; visibility remains a separate Phase 8.4B action                  |
 | `pnpm-lock.yaml`                                                                    | Required to remain byte-identical at SHA-256 `e36baa3fe1899c4f58cc66eeeaea279601e5be271690b6fa215273740e4ac107` |
 
@@ -381,19 +381,29 @@ history. Apache-2.0 section 4 requires distributions to carry the license and re
 copyright, patent, trademark, and attribution notices. Section 4(d) applies when the distributed Work
 already includes NOTICE material; informational NOTICE content does not modify the license.
 
-Phase 8.4A does not add a project `NOTICE`. The exact frozen graph contains 0 dependency NOTICE files,
-and neither the source repository nor its deterministic release artifact vendors or bundles
-`node_modules`; the artifact carries manifests and lockfile and performs a separate production
-install. Adding an invented holder, year, or generic dependency list would not create reliable
-attribution evidence. The existing artifact already requires `LICENSE`, so its allowlist needs no
-change.
+Phase 8.4A does not add a generic project `NOTICE`. The exact frozen graph contains 0 dependency
+NOTICE files, but that fact does not settle MIT, ISC, or BSD copyright/permission-notice obligations
+for code embedded in a distributed bundle. The release archive does not copy the `node_modules`
+directory, yet it does include complete `apps/web/dist`. The web package runs `vite build`, its entry
+imports React and ReactDOM, and its Vite configuration does not externalize them. The
+[official Vite production-build guide](https://vite.dev/guide/build) states that the default build
+produces an application bundle for static hosting. `pnpm-lock.yaml` resolves React and ReactDOM
+`19.2.7`; the frozen legal-file evidence records MIT legal files for both. These facts establish an
+attribution-review boundary, not a complete inventory of packages actually embedded in the exact
+output.
 
-This decision does not erase the missing `abstract-logging@2.0.1` legal file or turn declared
-metadata into legal approval. C11 remains `PARTIAL`. Before any future vendoring, dependency bundling,
-binary distribution, or inclusion of a package with NOTICE material, review the exact distributed
-files and package-specific obligations and add only traceable required notices. Preserve every
-upstream copyright, patent, trademark, attribution, and licence record; never delete vendored
-provenance to simplify packaging.
+The authorized source relicense to Apache-2.0 can proceed independently. Release artifact
+publication or distribution is `BLOCKED` until a scoped audit determines which packages are actually
+embedded in the exact `apps/web/dist`, maps every applicable copyright and permission notice to its
+upstream legal file with provenance, and decides whether a traceable third-party attribution file is
+required. Only after that evidence exists should the artifact builder, verifier, and tests be updated
+to include and enforce such a file. Adding an invented holder, year, generic dependency list, or
+unverified `NOTICE` now would not satisfy that gate.
+
+This correction does not erase the missing `abstract-logging@2.0.1` legal file or turn declared
+metadata into legal approval. C11 remains `PARTIAL`. Preserve every upstream copyright, patent,
+trademark, attribution, and licence record; never delete bundled or vendored provenance to simplify
+packaging.
 
 ### Relicensing authority is separate from dependency compatibility
 
@@ -423,9 +433,10 @@ Merging it does not press the visibility control or authorize any other external
    and GitHub detected-license verification are still required before the Apache compliance row may
    leave `OPEN`.
 2. All 138 external production package-version nodes have declared-license metadata, and 137 have a
-   legal file. `abstract-logging@2.0.1` lacks a legal file. This does not block the current
-   non-vendoring source relicense, but C11 stays `PARTIAL` and future bundled distribution requires a
-   new package-specific review.
+   legal file. `abstract-logging@2.0.1` lacks a legal file. This does not block the current source
+   relicense, but C11 stays `PARTIAL`. The release archive already includes bundled third-party
+   runtime code in `apps/web/dist`; publication/distribution is blocked until the exact bundled-output
+   attribution audit and any justified artifact attribution-file enforcement are complete.
 3. GitHub visibility remains `Private`. The separately approved Public transition is reserved for
    Phase 8.4B; it is not performed by this branch, its merge, or ordinary repository permission.
 4. Phase 8.2 remains `PARTIAL` pending live/judge DataHub credentials and validation; this packet does
@@ -441,3 +452,4 @@ and NOTICE condition were rechecked 2026-07-25 23:54 ICT (2026-07-25 16:54 UTC):
 - [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0)
 - [Apache Software Foundation: Applying the Apache license, version 2.0](https://www.apache.org/legal/apply-license.html)
 - [Apache Software Foundation: Third-party license policy](https://www.apache.org/legal/resolved.html)
+- [Vite: Building for Production](https://vite.dev/guide/build)
