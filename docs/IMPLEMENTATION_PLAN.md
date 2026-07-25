@@ -5825,3 +5825,46 @@ Deferred: exact evidence-commit identities and PR CI until commit/push; same-QA 
 action until QA2 `PASS / MERGE` plus explicit publication continuation; private-reporting setting
 change; artifact publication/distribution; full tests/build/E2E/live DataHub; version/tag/Release/
 deployment/submission; and all other external mutations.
+
+#### QA2 security correction — actionable private reporting
+
+Status: same-QA QA2 returned `FAIL / DO NOT MERGE` because private vulnerability reporting remained
+disabled and the packet named no actionable external private route. Standing authorization permits
+only this security control and its evidence correction. The accepted pre-fix head is
+`ae22580f13130bd4ddd7f0d8a846c3b7c102965a`, tree
+`b228a6d2b0dd4ff7657dc21183344765e731d9c8`; exact CI run `30176584471`, job `89726241001`, is
+`SUCCESS`; base/main remains `36d4205806597ae14b7306c74e1527c284202023`.
+
+Objective: enable only GitHub Private vulnerability reporting, expose one canonical private-report
+route in the security policy and issue chooser, correct only current disabled/follow-up claims, then
+normal-push one additive commit and require exact-new-head PR CI while PR #53 remains Draft/unmerged.
+
+Minimum files: `docs/SECURITY.md`, `.github/ISSUE_TEMPLATE/config.yml`, the three existing public
+issue forms whose security warning named an unspecified private owner contact,
+`docs/PUBLIC_SOURCE_APACHE_READINESS.md`, `docs/DEVPOST_REQUIREMENTS.md`, `docs/KNOWN_ISSUES.md`,
+`docs/RELEASE_CHECKLIST.md`, this plan, `docs/SESSION_LOG.md`, and Draft PR #53 body. `README.md`,
+`CONTRIBUTING.md`, and the PR template remain truthful through their canonical security-policy links.
+
+Acceptance and evidence:
+
+- Preflight preserved `Public`, default/main `36d4205806597ae14b7306c74e1527c284202023`, 47 branches, 1
+  open/43 closed PRs, 2 open/7 closed issues, 126 Actions runs, one RC tag, the unpublished Draft
+  Release with zero user-uploaded assets, and exact accepted branch/PR/CI state.
+- At 2026-07-26 05:22 ICT (2026-07-25 22:22 UTC), the official signed-in Browser enabled exactly
+  Private vulnerability reporting. Settings saved and now shows `Disable private vulnerability
+reporting`; Security overview shows `Private vulnerability reporting • Enabled`.
+- Unsigned `/security` returns `200` and exposes `Report a vulnerability`; unsigned
+  `/security/advisories/new` redirects to GitHub sign-in. Official GitHub guidance says an enabled
+  public repository lets users submit private reports. No non-maintainer account is used, anonymous
+  reporting is not claimed, and a public issue is not a fallback.
+- Parse and validate the issue YAML, require exactly one canonical contact link, run focused
+  Markdown/Prettier/local-link/UTF-8/LF/final-newline/diff/allowlist/stale-route/secret scans, preserve
+  exact 37-row totals `2 PASS / 12 PARTIAL / 15 OPEN / 8 NOT REQUIRED`, and recheck LICENSE, seven
+  manifests, and lockfile by hash/invariant only.
+- Do not change runtime/source/tests/fixtures/workflows/manifests/lock/version/tag/Release/deployment/
+  artifact/submission/visibility or any other GitHub setting. Artifact publication/distribution stays
+  `BLOCKED`; C09/C10 stay `PASS`; C11 and Phase 8.2 stay `PARTIAL`.
+
+Deferred: Ready/merge until same-QA QA2 re-review returns `PASS / MERGE` and an explicit publication
+continuation; every other GitHub setting; full tests/build/E2E/live DataHub; artifact publication or
+distribution; version/tag/Release/deployment/submission.

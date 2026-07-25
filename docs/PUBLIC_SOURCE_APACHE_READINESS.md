@@ -210,22 +210,22 @@ The repository owner completed the authorized visibility change manually outside
 agent did not repeat or reverse the mutation. At 2026-07-26 04:48 ICT (2026-07-25 21:48 UTC), the
 official signed-in in-app Browser and independent unsigned reads established this post-mutation state:
 
-| Surface                     | Exact post-mutation evidence                                                                                                                                                                          |
-| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Identity/default/visibility | `toannnnq1424/data-incident-investigator`; Settings says “This repository is currently public”; root shows `Public` and no `Private` badge; default branch remains `main`                             |
-| Main/license/CI             | exact main `36d4205806597ae14b7306c74e1527c284202023`; Apache-2.0 README badge and canonical LICENSE readable; main CI run `30172556907` / job `89715980644` remains `SUCCESS`                        |
-| Unsigned HTTP               | repository root, exact main commit, README, LICENSE, issues, pull requests, tags, Releases, and Actions each returned HTTP `200`; README and canonical Apache License content were readable           |
-| Credential-free Git read    | `git ls-remote` with terminal prompts and credential helpers disabled returned exact `36d4205806597ae14b7306c74e1527c284202023` for `refs/heads/main`; no clone or credential was stored              |
-| Branches and PRs            | all 47 branches retained; 1 open/43 closed pull requests; Draft PR #53 remains open, `Not ready`, conflict-free, unmerged, with its branch and conversation retained                                  |
-| Issues and Actions          | 2 open/7 closed issues retained; 125 workflow runs existed before the evidence push, including accepted run `30175050395`; histories/logs remain visible                                              |
-| Tag/Release                 | one `v1.0.0-rc.1` tag retained at `c4e33f7af3707f604d35b1220a18e4e83f491be3`; Draft Release remains unpublished with zero user-uploaded assets and only two automatic source archives                 |
-| Pages/deployments           | Pages remains disabled with source `None`; no public deployment is configured or claimed                                                                                                              |
-| Security reporting          | private vulnerability reporting remains disabled; an authenticated maintainer can open a draft advisory and an unsigned request reaches GitHub sign-in, but external private submission is not proven |
+| Surface                     | Exact post-mutation evidence                                                                                                                                                                                                      |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Identity/default/visibility | `toannnnq1424/data-incident-investigator`; Settings says “This repository is currently public”; root shows `Public` and no `Private` badge; default branch remains `main`                                                         |
+| Main/license/CI             | exact main `36d4205806597ae14b7306c74e1527c284202023`; Apache-2.0 README badge and canonical LICENSE readable; main CI run `30172556907` / job `89715980644` remains `SUCCESS`                                                    |
+| Unsigned HTTP               | repository root, exact main commit, README, LICENSE, issues, pull requests, tags, Releases, and Actions each returned HTTP `200`; README and canonical Apache License content were readable                                       |
+| Credential-free Git read    | `git ls-remote` with terminal prompts and credential helpers disabled returned exact `36d4205806597ae14b7306c74e1527c284202023` for `refs/heads/main`; no clone or credential was stored                                          |
+| Branches and PRs            | all 47 branches retained; 1 open/43 closed pull requests; Draft PR #53 remains open, `Not ready`, conflict-free, unmerged, with its branch and conversation retained                                                              |
+| Issues and Actions          | 2 open/7 closed issues retained; 125 workflow runs existed before the evidence push, including accepted run `30175050395`; histories/logs remain visible                                                                          |
+| Tag/Release                 | one `v1.0.0-rc.1` tag retained at `c4e33f7af3707f604d35b1220a18e4e83f491be3`; Draft Release remains unpublished with zero user-uploaded assets and only two automatic source archives                                             |
+| Pages/deployments           | Pages remains disabled with source `None`; no public deployment is configured or claimed                                                                                                                                          |
+| Security reporting          | enabled at 2026-07-26 05:22 ICT; Settings shows `Disable private vulnerability reporting`, Security overview shows `Enabled`, and unsigned `/security` exposes `Report a vulnerability`; the report route requires GitHub sign-in |
 
 No branch, conversation, issue, Actions history, tag, Release, or user-uploaded asset was deleted,
 archived, hidden, or created by the visibility change. No unexpected owner/name/default-branch,
-Pages, deployment, merge, branch-retention, or release-setting drift was observed. The separately
-authorized security-reporting follow-up remains open; Stage 2 does not enable that setting.
+Pages, deployment, merge, branch-retention, or release-setting drift was observed. The authorized
+QA2 security follow-up enabled only private vulnerability reporting; no other setting changed.
 
 Public source access and the exact unsigned read evidence make C10 `PASS`. C09 remains `PASS`; C11
 and Phase 8.2 remain `PARTIAL`. Artifact publication/distribution remains `BLOCKED` pending the exact
@@ -625,9 +625,12 @@ Merging it does not press the visibility control or authorize any other external
    evidence make C10 `PASS`; preserve and reverify that state through QA2 and the normal merge.
 4. Phase 8.2 remains `PARTIAL` pending live/judge DataHub credentials and validation; this packet does
    not change that independent readiness condition.
-5. Private vulnerability reporting remains disabled after Public visibility. An authenticated
-   maintainer can open a draft advisory, but external private submission is not proven; enabling that
-   control or documenting another actionable private channel requires separate authorization.
+5. The prior private-reporting blocker is closed. At 2026-07-26 05:22 ICT
+   (2026-07-25 22:22 UTC), Settings showed the reporting control as `Disable`, proving enabled state.
+   Security overview showed `Private vulnerability reporting • Enabled`, and an unsigned `/security`
+   read exposed `Report a vulnerability`. The exact report route redirects unsigned users to GitHub
+   sign-in, so a GitHub account is required and anonymous submission is not claimed. No non-maintainer
+   account was used; public issues remain prohibited for vulnerability details.
 
 ## Primary official references
 
@@ -635,6 +638,7 @@ GitHub sources were accessed 2026-07-25 22:00 ICT (2026-07-25 15:00 UTC). The ca
 and NOTICE condition were rechecked 2026-07-25 23:54 ICT (2026-07-25 16:54 UTC):
 
 - [GitHub: Setting repository visibility](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/managing-repository-settings/setting-repository-visibility)
+- [GitHub: Privately reporting a security vulnerability](https://docs.github.com/code-security/security-advisories/guidance-on-reporting-and-writing-information-about-vulnerabilities/privately-reporting-a-security-vulnerability)
 - [GitHub: Adding a license to a repository](https://docs.github.com/en/communities/setting-up-your-project-for-healthy-contributions/adding-a-license-to-a-repository)
 - [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0)
 - [Apache Software Foundation: Applying the Apache license, version 2.0](https://www.apache.org/legal/apply-license.html)

@@ -5159,3 +5159,81 @@ Finish the focused eight-doc validation and full diff review; create one additiv
 evidence commit; normal-push the same branch; update only Draft PR #53 body with exact post-mutation
 evidence, new Git identities and diffs; require exact-new-head PR CI `SUCCESS`; keep the PR Draft and
 unmerged; return `READY FOR SAME QA2 / PUBLIC VERIFIED / PR STILL DRAFT`.
+
+## 2026-07-26 — Phase 8.4B QA2 private-reporting correction
+
+### Objective
+
+Close the single QA2 security-process blocker without creating another task, branch, or PR: enable
+only GitHub Private vulnerability reporting, publish one exact private-report route in the security
+policy and issue chooser, correct current evidence, and keep PR #53 Draft/unmerged for re-review.
+
+### Completed
+
+- Refetched exact main and feature refs and preserved clean accepted head
+  `ae22580f13130bd4ddd7f0d8a846c3b7c102965a`, tree
+  `b228a6d2b0dd4ff7657dc21183344765e731d9c8`, parent
+  `f272ce890ddfd65be9e1d50e409abf75333eb50b`, and base/main
+  `36d4205806597ae14b7306c74e1527c284202023`; accepted CI run `30176584471`, job
+  `89726241001`, remains `SUCCESS`.
+- Reconfirmed `Public`, default `main`, 47 branches, 1 open/43 closed PRs, 2 open/7 closed issues, 126
+  Actions runs, one tag, the unpublished Draft Release with zero user-uploaded assets, and Draft PR
+  #53 `Not ready`, conflict-free, unmerged, with its branch and conversation retained.
+- At 2026-07-26 05:22 ICT (2026-07-25 22:22 UTC), enabled exactly GitHub Private vulnerability
+  reporting through the official signed-in Browser. Settings saved and now exposes `Disable private
+vulnerability reporting`; Security overview reports `Private vulnerability reporting • Enabled`.
+- Verified unsigned `/security` returns `200` and exposes `Report a vulnerability`; the exact private
+  report route redirects an unsigned visitor to GitHub sign-in. Official GitHub guidance establishes
+  the enabled private-report workflow. No non-maintainer account was used and anonymous reporting is
+  not claimed.
+- Replaced the unspecified private-owner route with the exact GitHub advisory URL in the security
+  policy, one issue-chooser contact link, and the three existing public issue-form warnings. Public
+  issue disclosure remains prohibited; the policy lists actionable report contents and explicitly
+  promises no fixed response or resolution SLA.
+- Corrected only current private-reporting evidence. C09/C10 remain `PASS`; C11 and Phase 8.2 remain
+  `PARTIAL`; exact 37-row totals remain `2 PASS / 12 PARTIAL / 15 OPEN / 8 NOT REQUIRED`; artifact
+  publication/distribution remains `BLOCKED`.
+
+### Files changed
+
+`docs/SECURITY.md`, `.github/ISSUE_TEMPLATE/config.yml`, the three existing issue forms,
+`docs/PUBLIC_SOURCE_APACHE_READINESS.md`, `docs/DEVPOST_REQUIREMENTS.md`,
+`docs/KNOWN_ISSUES.md`, `docs/RELEASE_CHECKLIST.md`, `docs/IMPLEMENTATION_PLAN.md`, and this session
+log only.
+
+### Decisions
+
+The canonical reporter URL is
+`https://github.com/toannnnq1424/data-incident-investigator/security/advisories/new`. GitHub sign-in
+is a truthful access requirement, so no anonymous channel is claimed. A public issue is never a
+fallback. No other GitHub setting or repository visibility changed.
+
+### Validation performed
+
+Focused YAML/schema/contact-link/discoverability, changed Markdown/Prettier/local links, strict
+UTF-8/LF/final newline/no BOM, exact allowlist, current disabled/unspecified-route scan, added-line
+secret/private-data/internal-link scan, compliance totals/statuses, hash-only LICENSE/lock/seven
+manifest invariants, and `git diff --check`. Prior unchanged product gates are reused.
+
+A `pnpm exec prettier --version` probe unexpectedly invoked the workspace install path before its
+binary lookup failed. No manifest, lockfile, or tracked dependency file changed. Prettier `3.9.5` and
+the YAML parser from that task-created local tree were used only for this focused validation, then all
+task-created `node_modules` paths and `.pnpm-store` were removed and the clean tracked state was
+rechecked.
+
+### Validation intentionally deferred
+
+No further dependency install, full test, build, evaluation, browser E2E, live DataHub smoke,
+artifact operation, version, tag, Release, deployment, submission, Ready transition, or merge is run.
+
+### Known issues
+
+The bundled-output attribution inventory remains incomplete, so artifact publication/distribution
+stays blocked. Live/judge DataHub validation remains absent. No Code of Conduct is tracked; it remains
+an optional governance follow-up rather than a proven Public-source blocker.
+
+### Exact next step
+
+Finish focused validation and diff review, create one additive conventional security-doc commit,
+normal-push the same branch, update Draft PR #53 with exact Git/diff/CI evidence, require exact-new-head
+PR CI `SUCCESS`, and return the still-Draft PR to the same QA task for QA2 re-review.

@@ -170,13 +170,13 @@ sanitized operational fields above and do not serialize `eventTrail` or its evid
 ## Reporting
 
 For a suspected vulnerability, never open a public issue or pull request with vulnerability details.
-GitHub private vulnerability reporting is not currently enabled. The Public-transition verification
-at 2026-07-26 04:48 ICT confirmed that an authenticated maintainer can open the
-[draft security-advisory form](https://github.com/toannnnq1424/data-incident-investigator/security/advisories/new),
-while an unsigned request is sent to GitHub sign-in; this does not prove that an external reporter can
-submit a private report. Enabling the public reporter control or publishing another actionable private
-channel requires separate authorization and was not part of the visibility-only transition.
+Use [GitHub private vulnerability reporting](https://github.com/toannnnq1424/data-incident-investigator/security/advisories/new).
+GitHub requires the reporter to sign in with a GitHub account; this is a private GitHub advisory route,
+not an anonymous channel. A public issue is not an acceptable fallback.
 
-Until that follow-up is approved, contact the repository owner only through an existing private
-channel and do not disclose the vulnerability publicly. Include only the reproduction scope,
-affected revision, impact, and suggested mitigation needed for triage.
+Include a concise summary and impact, the affected revision or version, sanitized reproduction steps
+or proof of concept, affected configurations, and any suggested mitigation. Never include unrelated
+credentials, tokens, private endpoints, raw sensitive incident data, or another party's personal data.
+Maintainers will use the private advisory thread to acknowledge receipt, request missing details,
+assess impact, and coordinate remediation and disclosure. No fixed response or resolution SLA is
+promised.

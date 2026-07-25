@@ -17,11 +17,12 @@ Last updated: 2026-07-26.
   the RC tag, and the unpublished Draft Release with zero user-uploaded assets remain retained. Pages
   is disabled and no deployment is claimed.
 
-  GitHub private vulnerability reporting remains disabled. An authenticated maintainer can open a
-  draft advisory, while an unsigned request reaches GitHub sign-in; external private submission is
-  not proven. Enabling that control or publishing another actionable private channel requires
-  separate authorization. No Code of Conduct is tracked; this is an optional governance follow-up,
-  not a proven Public-source blocker.
+  The prior GitHub private-reporting blocker is closed. At 2026-07-26 05:22 ICT, authenticated
+  Settings showed the enabled control as `Disable private vulnerability reporting`, Security overview
+  showed the feature `Enabled`, and unsigned `/security` exposed `Report a vulnerability`. The exact
+  private report route requires GitHub sign-in; anonymous reporting is not claimed, no non-maintainer
+  account was used, and public issue disclosure remains prohibited. No Code of Conduct is tracked;
+  this is an optional governance follow-up, not a proven Public-source blocker.
 
   The reused frozen production graph remains 138 external package-version nodes/132 names/7
   importers, with declared licenses 122 MIT, 10 ISC, 5 BSD-3-Clause, and 1 BSD-2-Clause; 137 legal

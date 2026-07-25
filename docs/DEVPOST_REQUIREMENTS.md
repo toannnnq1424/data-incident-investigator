@@ -378,8 +378,10 @@ These are repository facts on exact current `main`
   2026-07-26 04:48 ICT post-mutation checkpoint. Unsigned GETs to the repository, exact main commit,
   README, LICENSE, issues, PRs, tags, Releases, and Actions returned `200`; a credential-helper-disabled
   HTTPS `ls-remote` resolved default `main` to exact
-  `36d4205806597ae14b7306c74e1527c284202023`. C10 is `PASS`. Private vulnerability reporting remains
-  disabled and is tracked separately from public-source access.
+  `36d4205806597ae14b7306c74e1527c284202023`. C10 is `PASS`. The authorized QA2 correction enabled
+  GitHub private vulnerability reporting at 2026-07-26 05:22 ICT; GitHub authentication is required
+  to submit through the private report route, and public issue disclosure is prohibited. This
+  security-control correction does not change the 37-row compliance statuses or totals.
 
 ## Compliance matrix
 

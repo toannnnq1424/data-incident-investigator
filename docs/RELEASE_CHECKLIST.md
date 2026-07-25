@@ -190,14 +190,21 @@ actions below remain separately scoped.
 - [x] Verify authenticated and unauthenticated `Public` surfaces, exact default-main baseline commit,
       Apache-2.0, credential-free read/clone, all 47 branches, 43 closed conversations plus Draft PR
       #53, 2 open/7 closed issues, the 125-run pre-evidence Actions history, tag/Draft Release, zero
-      user-uploaded Release assets, and unchanged Pages/deployment/About. Private vulnerability
-      reporting remains disabled and requires separate authorization; do not enable it here.
+      user-uploaded Release assets, and unchanged Pages/deployment/About. At this historical Stage 2
+      checkpoint, private vulnerability reporting remained disabled and was deferred to QA.
 - [x] Prepare only the post-mutation evidence docs commit on this same branch/PR; C10 is `PASS`, C09
       stays `PASS`, C11 and Phase 8.2 stay `PARTIAL`, and artifact publication/distribution stays
       `BLOCKED`.
-- [ ] Normal-push the evidence commit and require exact-new-head PR CI `SUCCESS`; do not mark Ready or
-      merge in the mutation/evidence continuation.
-- [ ] Return the same Draft PR to the same QA task for narrow QA2 and require `PASS / MERGE`.
+- [x] Normal-push evidence commit `ae22580f13130bd4ddd7f0d8a846c3b7c102965a`; exact PR CI run
+      `30176584471`, job `89726241001`, is `SUCCESS`; the PR remained Draft/unmerged.
+- [x] Record same-QA QA2 `FAIL / DO NOT MERGE`: Private vulnerability reporting was disabled and no
+      actionable external private-reporting route was proven.
+- [x] With explicit authorization, enable only GitHub Private vulnerability reporting. At 2026-07-26
+      05:22 ICT Settings shows the control as `Disable`, Security overview shows `Enabled`, and
+      unsigned `/security` exposes `Report a vulnerability`; the report route requires GitHub sign-in.
+- [ ] Normal-push one additive security-route correction, require exact-new-head PR CI `SUCCESS`, keep
+      PR #53 Draft/unmerged, and return it to the same QA task for QA2 re-review.
+- [ ] Require same-QA QA2 re-review `PASS / MERGE`.
 - [ ] Only after explicit post-QA2 publication continuation, mark PR #53 Ready and create a normal
       merge commit; never squash, rebase, force-push, delete the branch, or archive/hide the
       conversation.

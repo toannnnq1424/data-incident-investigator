@@ -1,2 +1,5 @@
 blank_issues_enabled: false
-contact_links: []
+contact_links:
+  - name: Report a security vulnerability privately
+    url: https://github.com/toannnnq1424/data-incident-investigator/security/advisories/new
+    about: GitHub sign-in is required; never disclose vulnerability details in a public issue.
