@@ -5453,3 +5453,149 @@ Local correction result:
   launched. Tests/build/evaluation/E2E/live smoke remain intentionally unrun.
 - One additive commit, normal push to the existing branch, PR #51 body correction, exact-new-head CI,
   and final remote/worktree cleanup verification remain pending.
+
+### Phase 8.4A — authorized Apache-2.0 coordinated relicense
+
+Status: implementation started on `codex/phase-8-4a-apache-2-relicense` from exact fetched
+`origin/main` `a13448fb3e25885410a10f3c8e5efdea6b6b5429`, tree
+`25e661474e888b18252f331844aa066831276f89`, with ordered parents
+`7f05888ce7266f51b5028f5ac5ddacd3a91a11aa` then
+`843a8fe2782abe38c7651f7d34c79b0716823543`. Exact main CI run `30165738417`, job
+`89698326756`, is `SUCCESS`.
+
+Objective: consume only the user's 2026-07-25 explicit authorization to relicense the project from
+MIT to Apache-2.0. Keep the repository Private throughout this slice. The independently approved
+Private-to-Public transition is reserved for Phase 8.4B after this pull request passes independent
+QA, merge, and exact-main CI.
+
+Minimum files:
+
+- Replace root `LICENSE` with the unmodified canonical Apache License 2.0 text.
+- Set `license: "Apache-2.0"` in the root and all six private workspace manifests without changing
+  versions, privacy, dependencies, workspace membership, or the lockfile.
+- Update direct project-license claims in `README.md`, `CHANGELOG.md`, `CONTRIBUTING.md`,
+  `docs/REPOSITORY_MAP.md`, and the narrow Phase 8 compliance/readiness state.
+- Update this plan and `docs/SESSION_LOG.md` as persistent implementation evidence.
+- Do not change runtime/source/tests/fixtures/workflows, packaging scripts, deployment, credentials,
+  submission, tag, Release, version, repository visibility, or `pnpm-lock.yaml`.
+
+Preflight conclusions:
+
+- Fetched `origin/main`, tree, ordered parents, exact main CI, and signed-in GitHub `Private` state
+  match the required baseline. No exposure or visibility action is authorized in Phase 8.4A.
+- Sanitized `origin/main` provenance covers 128 commits: three author-name fingerprints, two
+  author-email fingerprints, and three committer-email fingerprints. The exact fingerprint/count
+  evidence will be recorded without personal emails. Git metadata is provenance evidence, not proof
+  of legal identity or title. The user's explicit relicense authorization is the operative project
+  decision; this record does not claim legal advice.
+- Reused the exact Phase 8.3 frozen production graph: 138 package-version nodes/132 names/7
+  importers; declared licenses 122 MIT, 10 ISC, 5 BSD-3-Clause, 1 BSD-2-Clause; 137 legal files; 0
+  NOTICE files; `abstract-logging@2.0.1` declares MIT without a legal file; MCP SDK `1.29.0`
+  declares MIT and has `LICENSE`; lock SHA-256
+  `e36baa3fe1899c4f58cc66eeeaea279601e5be271690b6fa215273740e4ac107`.
+- No generic project `NOTICE` will be added. Apache-2.0 section 4(d) is conditional on a distributed
+  work already containing NOTICE material, but 0 dependency NOTICE files does not settle MIT/ISC/BSD
+  notice obligations. The release archive omits the `node_modules` directory yet includes complete
+  `apps/web/dist` with bundled third-party runtime code. The missing `abstract-logging` legal file and
+  the incomplete exact bundled-output attribution inventory keep C11 `PARTIAL`; artifact
+  publication/distribution is blocked until that inventory and any justified attribution-file
+  enforcement are complete.
+
+Acceptance criteria:
+
+- All seven manifests parse with unchanged aligned version `1.0.0-rc.1`, unchanged
+  `private: true`, and exact SPDX `Apache-2.0`; workspace/lock consistency and lock bytes remain
+  unchanged.
+- `LICENSE` byte-matches the canonical UTF-8/LF Apache text from
+  `https://www.apache.org/licenses/LICENSE-2.0.txt` with SHA-256
+  `cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30`.
+- README badge/text/link and direct project-license documentation agree. Residual `MIT` text is
+  limited to historical migration context and third-party declared-license evidence.
+- Draft-branch compliance keeps the Apache requirement `OPEN` as a pending-main transition and keeps
+  Public visibility `OPEN`; C11 and Phase 8.2 remain `PARTIAL`.
+- Run changed-file Prettier, JSON parsing, local-link checks, UTF-8/LF/final-newline checks,
+  `git diff --check`, changed-path allowlist, secret-like added-line, conflict/debug, binary/generated
+  residue, and process/listener checks. Do not run full tests, build, evaluation, browser E2E, or live
+  DataHub smoke.
+- Create additive conventional commit(s), push normally, open exactly one Draft pull request against
+  current `main`, and require exact-head `PR CI`/`validate` `SUCCESS`. Keep Draft and unmerged.
+
+Local implementation result:
+
+- The canonical `LICENSE` is 11,358 UTF-8/LF bytes with the required SHA-256. All seven manifests
+  parse with exact `Apache-2.0`, `1.0.0-rc.1`, and `private: true`; stripping only the new licence
+  metadata makes each workspace manifest byte-match its main baseline. The lock has seven exact
+  importers and remains byte-identical at the frozen hash.
+- Offline Prettier `3.9.5` writes/checks all 18 changed Markdown/JSON files. The exact 19-path
+  allowlist, local Markdown links, strict UTF-8/LF/final newline, README licence badge/link, then-current
+  NOTICE decision, C09/C10 `OPEN`, C11/Phase 8.2 `PARTIAL`, unchanged compliance totals
+  `0 PASS / 12 PARTIAL / 17 OPEN / 8 NOT REQUIRED`, added-line secret/conflict/debug scans, binary/
+  generated residue, and `git diff --check` all pass.
+- One formatter-version probe mistakenly invoked pnpm's automatic install behavior in the empty
+  worktree. It was stopped before completion; the exact generated `node_modules` and `.pnpm-store`
+  roots were removed, and the tracked tree, lockfile, ignored status, and process state were
+  reverified clean. All actual formatting then used an existing offline Prettier binary; no test,
+  build, evaluation, E2E, live smoke, or artifact command was run.
+- No task app/pnpm process or relevant 3000/3001/4173/5173 listener remains. An existing 8080 listener
+  belongs to unrelated `tomcat8.exe`; the persistent Node tool process is not an app, formatter, or
+  package-manager process.
+
+Deferred: Phase 8.4B visibility mutation; GitHub About/detected-license verification on integrated
+main; independent legal review; the missing dependency legal file; exact bundled-output attribution
+inventory and any justified artifact attribution-file enforcement; version/tag/Release/deployment/
+credential/submission changes; live DataHub and judge-access validation. Release artifact
+publication/distribution is blocked until the attribution gate passes.
+
+#### Phase 8.4A targeted QA correction — bundled-output attribution
+
+Status: targeted additive correction started on the same branch and Draft PR #52 from prior exact
+head `12690111be1d687cf96a8da48036621d40e9c1e6`, tree
+`aa4a93562f15eb711465592120ebd5c3d7abff36`, parent/base
+`a13448fb3e25885410a10f3c8e5efdea6b6b5429`. Prior exact-head CI run `30166901286`, job
+`89701378087`, was `SUCCESS`; independent QA still returned `FAIL / DO NOT MERGE` for one high
+attribution blocker.
+
+Objective: correct the false inference that excluding the `node_modules` directory means the release
+artifact contains no bundled dependencies. Preserve the authorized source relicense and all prior
+passing evidence while blocking artifact publication/distribution pending an exact bundled-output
+attribution audit.
+
+Evidence:
+
+- `apps/web/package.json` runs `vite build` and declares React/ReactDOM runtime dependencies;
+  `apps/web/src/main.tsx` imports both, and `apps/web/vite.config.ts` does not externalize them.
+- The official Vite production-build guide describes the default output as an application bundle.
+  `scripts/build-release-artifact.mjs` selects every file in `apps/web/dist`, and
+  `docs/DEPLOYMENT.md` describes that directory as complete archive content.
+- The lock resolves React/ReactDOM `19.2.7`; the reused frozen graph has their MIT legal files. This
+  verifies an attribution-review requirement, not the complete set of packages embedded in the exact
+  bundle.
+
+Acceptance:
+
+- Change exactly the six affected docs and the existing Draft PR body; do not modify LICENSE,
+  manifests, README, runtime/source/tests/fixtures/workflows/dependencies/version/lock, packaging,
+  deployment, tag/Release, credentials, submission, or visibility.
+- State that the source relicense may proceed independently, but artifact publication/distribution is
+  blocked until the exact embedded packages and required notices are mapped to upstream legal files
+  with provenance. Add an attribution file and builder/verifier/test enforcement only if that future
+  evidence justifies it; do not invent a NOTICE, holder, year, or complete inventory now.
+- Keep C09/C10 `OPEN`, C11 and Phase 8.2 `PARTIAL`, the 37-row totals unchanged, the PR Draft and
+  unmerged, and the repository Private.
+- Run docs-only Prettier, link/encoding/newline/stale-premise/status/totals/secret/conflict/debug/
+  diff/allowlist/residue/process/listener checks. Do not install, rebuild, or run tests.
+- Create one additive conventional commit, push normally to the same branch, update only Draft PR
+  #52, and require exact-new-head `PR CI`/`validate` terminal `SUCCESS`.
+
+Local correction result:
+
+- Exactly the six authorized docs changed. Stale-premise scans return zero matches, and the corrected
+  release-artifact block is present across readiness, known issues, compliance, checklist, plan, and
+  session state.
+- Offline Prettier `3.9.5`, local links, strict UTF-8/LF/final newline/no BOM, 37-row compliance
+  parsing with unchanged `0 PASS / 12 PARTIAL / 17 OPEN / 8 NOT REQUIRED`, C09/C10 `OPEN`, C11 and
+  Phase 8.2 `PARTIAL`, added-line secret/conflict/debug scans, and `git diff --check` pass.
+- Canonical `LICENSE` and `pnpm-lock.yaml` retain their exact hashes. No `node_modules`, `.pnpm-store`,
+  or current `apps/web/dist` was created; no relevant 3000/3001/4173/5173/8080 listener or
+  package-manager/Vite process exists. No install, rebuild, test, evaluation, E2E, live smoke, or
+  artifact command ran.

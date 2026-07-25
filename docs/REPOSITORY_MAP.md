@@ -1,9 +1,9 @@
 # Repository map
 
-Last verified: 2026-07-25 against exact integrated Phase 8.2 `main`
-`7f05888ce7266f51b5028f5ac5ddacd3a91a11aa` (tree
-`063fc69dcde037dd3ec99bce671561d8fc26d235`). The repository layout is unchanged; the root and six
-private workspace manifests align at candidate version `1.0.0-rc.1`.
+Last verified: 2026-07-25 on the Phase 8.4A branch from exact integrated Phase 8.3 `main`
+`a13448fb3e25885410a10f3c8e5efdea6b6b5429` (tree
+`25e661474e888b18252f331844aa066831276f89`). The repository layout is unchanged; the root and six
+private workspace manifests align at candidate version `1.0.0-rc.1` and SPDX `Apache-2.0`.
 
 ## Directories
 
@@ -35,7 +35,7 @@ private workspace manifests align at candidate version `1.0.0-rc.1`.
 - `tsconfig.base.json`: strict shared compiler rules.
 - `eslint.config.mjs`, `.prettierrc.json`: static quality rules.
 - `.env.example`: environment contract with blank credentials.
-- `LICENSE` and `CONTRIBUTING.md`: MIT terms and contributor workflow.
+- `LICENSE` and `CONTRIBUTING.md`: canonical Apache License 2.0 terms and contributor workflow.
 - `CHANGELOG.md`: curated unreleased and released product changes under the coordinated SemVer policy.
 - `CODEX.md` and `AGENTS.md`: durable agent workflow.
 

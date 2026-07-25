@@ -4744,3 +4744,162 @@ live/judge credentials remain absent, so Phase 8.2 stays `PARTIAL`.
 Format and validate only the six corrected docs; create one additive conventional commit; push the
 same branch; update only Draft PR #51 body through the signed-in official in-app Browser; require the
 exact-new-head `PR CI`/`validate` terminal `SUCCESS`; keep Draft, unmerged, and not Ready.
+
+## 2026-07-25 — Phase 8.4A authorized Apache-2.0 coordinated relicense
+
+### Objective
+
+Consume only the user's explicit 2026-07-25 authorization to relicense Data Incident Investigator
+from MIT to Apache-2.0. Keep GitHub `Private`; reserve the independently approved Public transition
+for Phase 8.4B after this change passes independent QA, normal merge, and exact-main CI.
+
+### Completed
+
+- Fetched and verified exact `origin/main`
+  `a13448fb3e25885410a10f3c8e5efdea6b6b5429`, tree
+  `25e661474e888b18252f331844aa066831276f89`, ordered parents
+  `7f05888ce7266f51b5028f5ac5ddacd3a91a11aa` then
+  `843a8fe2782abe38c7651f7d34c79b0716823543`. Signed-in GitHub shows exact main CI run
+  `30165738417`, job `89698326756`, `SUCCESS`, and repository state `Private`.
+- Created only `codex/phase-8-4a-apache-2-relicense` from that exact main.
+- Sanitized reachable-main provenance covers 128 commits, three author-name fingerprints, two
+  author-email fingerprints, and three committer-email fingerprints. Counts are retained without
+  personal emails. No commit has a Git signature. This is provenance evidence, not legal proof; the
+  user's explicit approval is recorded as the operative project decision without claiming legal
+  advice.
+- Reused the Phase 8.3 frozen production graph without install: 138 package-version nodes/132 names/7
+  importers; 122 MIT, 10 ISC, 5 BSD-3-Clause, 1 BSD-2-Clause; 137 legal files; 0 NOTICE files;
+  declared-MIT `abstract-logging@2.0.1` lacks a legal file; MCP SDK `1.29.0` declares MIT and has
+  `LICENSE`; lock SHA-256 is
+  `e36baa3fe1899c4f58cc66eeeaea279601e5be271690b6fa215273740e4ac107`.
+- Replaced root `LICENSE` with the unmodified canonical Apache License 2.0 text, exact UTF-8/LF
+  SHA-256 `cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30`.
+- Retained the prior file's exact `Copyright (c) 2026 toannnnq1424` statement in the migration record
+  and reachable history without modifying the canonical Apache text or inventing a NOTICE.
+- Set exact SPDX `Apache-2.0` in the root and all six private workspace manifests without changing
+  version, privacy, dependencies, workspaces, or the lockfile. Updated README, contributor terms,
+  changelog, repository map, versioning, and narrow Phase 8 state.
+
+### Files changed
+
+`LICENSE`, `package.json`, all six workspace `package.json` files, `README.md`, `CHANGELOG.md`,
+`CONTRIBUTING.md`, `docs/REPOSITORY_MAP.md`, `docs/PUBLIC_SOURCE_APACHE_READINESS.md`,
+`docs/DEVPOST_REQUIREMENTS.md`, `docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md`,
+`docs/RELEASE_CHECKLIST.md`, `docs/VERSIONING.md`, and this log.
+
+### Decisions
+
+No generic project `NOTICE` is added. Apache-2.0 section 4(d) is conditional on existing NOTICE
+material, but the frozen graph's 0 package NOTICE files do not settle MIT/ISC/BSD attribution
+obligations. Corrected 2026-07-26: the archive omits the `node_modules` directory but includes complete
+`apps/web/dist` with bundled third-party runtime code. The missing `abstract-logging@2.0.1` legal file
+and incomplete exact bundled-output attribution inventory keep C11 `PARTIAL`. Preserve all
+third-party provenance; do not invent a holder/year or publish/distribute an artifact before the
+attribution gate passes.
+
+C09 remains `OPEN` while Apache-2.0 is only on a Draft branch. C10 remains `OPEN` because GitHub stays
+Private. C11 and Phase 8.2 remain `PARTIAL`. Phase 8.4B is authorized but not executed; ordinary merge
+does not perform it.
+
+### Validation performed
+
+Baseline Git/CI/Private-state, canonical licence source/hash, sanitized provenance counts, all seven
+input manifests, workspace importers, lock hash, and packaging/release attribution boundaries passed
+preflight.
+
+Existing offline Prettier `3.9.5` writes/checks all 18 changed Markdown/JSON paths. Bounded assertions
+pass for exact 19-path allowlist; seven JSON manifests; aligned version/private/SPDX; only-license
+manifest deltas; seven exact lock importers; lock byte identity; canonical `LICENSE` hash/bytes;
+README badge/link; no project NOTICE; local Markdown links; strict UTF-8/LF/final newline/no BOM; 37
+compliance rows with `0 PASS / 12 PARTIAL / 17 OPEN / 8 NOT REQUIRED`; C09/C10 `OPEN`; C11 and Phase
+8.2 `PARTIAL`; two independent checked approvals; no direct current-project MIT claim; zero added-line
+secret/conflict/debug matches; no binary/generated residue; and `git diff --check`.
+
+A formatter-version probe mistakenly triggered pnpm's automatic install behavior because this
+worktree had no `node_modules`. The command was stopped before completion. The exact generated
+`node_modules` and `.pnpm-store` roots were removed after path verification; tracked files,
+`pnpm-lock.yaml`, ignored status, and process state remain clean. Actual formatting used only the
+existing offline Prettier binary. No task app/pnpm process or relevant 3000/3001/4173/5173 listener
+remains; the existing 8080 `tomcat8.exe` listener is unrelated.
+
+### Validation intentionally deferred
+
+No dependency install, registry/network scanner, full tests, build, evaluation, browser E2E, live
+DataHub smoke, artifact rebuild, deployment, version/tag/Release, submission, or visibility mutation
+is run.
+
+### Known issues
+
+Apache-2.0 is not yet integrated on `main` or detected there by GitHub. The missing
+`abstract-logging@2.0.1` legal file remains unresolved for future bundled distribution. Live/judge
+DataHub validation remains absent.
+
+### Exact next step
+
+Format and run the bounded 8.4A validations; review the full allowlisted diff; create additive
+conventional commit(s); push normally; open exactly one Draft PR base current `main`; require exact
+PR-head `PR CI`/`validate` `SUCCESS`; keep Draft, unmerged, and repository `Private`.
+
+## 2026-07-26 — Phase 8.4A targeted bundled-output attribution correction
+
+### Objective
+
+Correct the single high independent-QA blocker on the same branch and Draft PR #52: excluding the
+`node_modules` directory does not mean the deterministic release archive contains no bundled
+third-party runtime code. Preserve the authorized Apache-2.0 source relicense; keep GitHub Private and
+the PR Draft/unmerged.
+
+### Completed
+
+- Reconfirmed prior exact branch head `12690111be1d687cf96a8da48036621d40e9c1e6`, tree
+  `aa4a93562f15eb711465592120ebd5c3d7abff36`, parent/base
+  `a13448fb3e25885410a10f3c8e5efdea6b6b5429`, prior CI run `30166901286` / job
+  `89701378087` `SUCCESS`, and signed-in GitHub state `Private`.
+- Verified read-only that the web package runs `vite build`, imports React/ReactDOM, and has no Vite
+  externalization; the release builder selects all `apps/web/dist`, while the deployment contract
+  calls it complete archive content. The official Vite production-build guide calls the default
+  output an application bundle.
+- Confirmed the lock resolves React/ReactDOM `19.2.7` and the reused frozen graph has MIT legal files
+  for both. This is evidence that exact output attribution must be audited, not a complete inventory.
+- Corrected the affected readiness, known-issue, compliance, release-checklist, implementation-plan,
+  and session-log claims. No generic NOTICE or invented holder/year was added.
+
+### Files changed
+
+`docs/PUBLIC_SOURCE_APACHE_READINESS.md`, `docs/KNOWN_ISSUES.md`,
+`docs/DEVPOST_REQUIREMENTS.md`, `docs/RELEASE_CHECKLIST.md`,
+`docs/IMPLEMENTATION_PLAN.md`, and this session log only.
+
+### Decisions
+
+The source relicense to Apache-2.0 is authorized and can proceed independently. Release artifact
+publication/distribution is `BLOCKED` until a future scoped audit determines packages actually
+embedded in the exact web output, captures required copyright and permission notices with upstream
+provenance, and only then adds a third-party attribution file plus builder/verifier/test enforcement
+if justified. C09/C10 stay `OPEN`; C11 and Phase 8.2 stay `PARTIAL`.
+
+### Validation performed
+
+Exactly six authorized docs changed. Offline Prettier `3.9.5` passes; local Markdown links, strict
+UTF-8/LF/final newline/no BOM, stale-premise scan, 37-row compliance counts
+`0 PASS / 12 PARTIAL / 17 OPEN / 8 NOT REQUIRED`, C09/C10 `OPEN`, C11 and Phase 8.2 `PARTIAL`,
+added-line secret/conflict/debug scans, exact changed-path allowlist, and `git diff --check` pass.
+Canonical `LICENSE` and lock hashes remain unchanged. No `node_modules`, `.pnpm-store`, or current
+`apps/web/dist` was created; no relevant listener or package-manager/Vite process exists.
+
+### Validation intentionally deferred
+
+Exact bundle/legal-comment inventory, attribution-file implementation, artifact rebuild, full tests,
+build, evaluation, browser E2E, live DataHub smoke, deployment, tag/Release, submission, merge, and
+visibility mutation.
+
+### Known issues
+
+The exact bundled-package and required-notice inventory is incomplete, and
+`abstract-logging@2.0.1` still lacks a legal file. Artifact publication/distribution remains blocked.
+
+### Exact next step
+
+Format and validate exactly the six docs, create one additive conventional commit, push the same
+branch, update Draft PR #52 with the corrected scope, and require exact-new-head CI `SUCCESS`. Keep
+the PR Draft/unmerged and repository Private for independent QA re-review.

@@ -1,21 +1,29 @@
 # Known issues
 
-Last updated: 2026-07-25.
+Last updated: 2026-07-26.
 
-- Phase 8.3 prepares but does not authorize the two independent Apache-2.0 and Public-visibility
-  decisions. The bounded exact-main audit found no credible credential/private key in 123 current
-  tracked files or 728 unique reachable-history blobs. Four machine-local commit-email metadata
-  records still require provenance/privacy review. The signed-in read-only GitHub inventory confirms
-  Private visibility, 44 branches, one immutable RC tag, one unpublished Draft Release with no
-  uploaded assets, 0 open/41 closed PRs, 2 open/7 closed issues, and 117 Actions runs; all
-  public-facing metadata surfaces require an owner review. The root plus six-workspace production
-  closure contains 138 external package-version nodes/132 names across 7 importers. Matching offline
-  frozen-graph evidence records 138 declared licenses (122 MIT, 10 ISC, 5 BSD-3-Clause, 1
-  BSD-2-Clause), 137 legal files, and 0 NOTICE files; `abstract-logging@2.0.1` lacks a legal file.
-  These declarations are not legal approval: Apache-2.0 compatibility and NOTICE/attribution duties
-  remain unresolved. C09 and C10 stay `OPEN`; C11 and Phase 8.2 stay `PARTIAL`. See
-  [`PUBLIC_SOURCE_APACHE_READINESS.md`](PUBLIC_SOURCE_APACHE_READINESS.md). No licence, manifest,
-  README, visibility, tag, Release, deployment, credential, or submission state changed.
+- Phase 8.4A consumes only the user's explicit 2026-07-25 Apache-2.0 relicense authorization. On this
+  Draft branch, the canonical Apache text, all seven private manifest SPDX fields, README,
+  contributor terms, and direct repository/compliance documentation are coordinated without changing
+  version, dependencies, runtime, or `pnpm-lock.yaml`. C09 remains `OPEN` until independent QA,
+  normal merge, exact-main CI, and GitHub detected-license verification. The independently approved
+  Public transition is reserved for Phase 8.4B; GitHub remains `Private`, so C10 remains `OPEN`.
+  C11 and Phase 8.2 remain `PARTIAL`.
+
+  The reused frozen production graph remains 138 external package-version nodes/132 names/7
+  importers, with declared licenses 122 MIT, 10 ISC, 5 BSD-3-Clause, and 1 BSD-2-Clause; 137 legal
+  files; 0 NOTICE files; and a missing legal file for declared-MIT `abstract-logging@2.0.1`. No generic
+  project NOTICE is added, but 0 dependency NOTICE files does not settle the attribution obligations
+  for bundled MIT/ISC/BSD code. The archive does not copy the `node_modules` directory; it does copy
+  complete `apps/web/dist`, whose Vite application bundle includes third-party runtime code. React
+  and ReactDOM resolve to `19.2.7`, are imported by the web entry, are not externalized by Vite
+  configuration, and have MIT legal files in the frozen evidence. The exact embedded-package and
+  required-notice inventory remains incomplete. Source relicensing may proceed, but publishing or
+  distributing the release artifact is blocked until the exact bundled-output attribution audit
+  captures required notices with provenance and, if justified, adds an enforced third-party
+  attribution file. Git provenance is recorded only by sanitized counts/fingerprints and is not
+  claimed as legal proof. See
+  [`PUBLIC_SOURCE_APACHE_READINESS.md`](PUBLIC_SOURCE_APACHE_READINESS.md).
 
 - Phase 8.2 is integrated as `aa8d120205fdc35298b9ef36c7dd36b38b23e342` through main merge
   `7f05888ce7266f51b5028f5ac5ddacd3a91a11aa`; exact main CI run `30161661962`, job
@@ -332,9 +340,8 @@ Last updated: 2026-07-25.
   `submit -> processing -> completed -> full evidence display` in `32.400s`, with real evidence
   references and clean-console assertions. Post-run probes found zero listeners and zero
   launcher-related process leaks.
-- The GitHub repository is private. Official Rules require the submitted source repository to be
-  public and Apache-2.0 licensed, but visibility/licence changes remain separate authorized gates
-  after secret/history and legal review.
+- The GitHub repository remains Private. The authorized Apache-2.0 change is pending Draft PR
+  QA/merge/main CI; the separately approved Public transition remains an unexecuted Phase 8.4B gate.
 - Slice 1.2 stores incident lifecycle and completed reports only in API process memory. Restarting the
   API removes existing incident IDs; durable persistence remains deferred.
 - The UI exposes seven guided presets, but only `removed-schema-column` has the rich checked-in

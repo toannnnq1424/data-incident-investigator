@@ -19,6 +19,11 @@ defined in a separate approved policy change before its version diverges.
 encode product versions. `pnpm-lock.yaml` owns the resolved dependency graph; it is not a version
 source of truth.
 
+License metadata is likewise not a version source of truth. An explicitly authorized coordinated
+relicense may update `LICENSE`, all seven manifest SPDX fields, contributor terms, and documentation
+without changing the product version or regenerating the lockfile when the dependency graph is
+unchanged. Record the change under `Unreleased` and keep all package versions aligned.
+
 ## Semantic Versioning
 
 Versions use `MAJOR.MINOR.PATCH` without a leading `v` in manifests and changelog headings.
