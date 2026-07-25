@@ -188,6 +188,12 @@ adapter/provider invocation and record unique returned lineage URNs after schema
 duration comes from a monotonic clock; tests inject a deterministic clock. The canonical fixture
 currently executes five agent stages, eight tool calls, zero retries, and no model call.
 
+The report runner also owns one total-runtime `AbortController`. Its signal is passed through health,
+search, lineage, and recent-changes operations for every metadata provider. When the monotonic total
+budget reaches `duration_limit_reached`, the runner aborts the in-flight MCP request before returning
+the terminal snapshot and checks the signal before later cache/budget/report work. A provider cannot
+complete late and add another network call, cache entry, lineage count, or tool-budget mutation.
+
 The retry cap permits only additional structured-output attempts after schema rejection; valid fixture
 output still performs zero retries. The output-size seam validates every serialized runner attempt
 before it may cross the API contract. No synthetic model token, retry, call, step, lineage, or duration
@@ -279,15 +285,18 @@ the same outer route bound. Missing/unsafe configuration, authorization rejectio
 timeout, and invalid response become fixed DataHub reason codes; provider messages and values are
 discarded. A separate `investigation_runtime` check validates the local deterministic report
 runtime/assets still required by the existing live flow, preventing DataHub availability alone from
-creating a false ready state. The current deterministic investigation has no model call or model
-provider, so model is explicitly `not_required` and no `OPENAI_API_KEY` read or availability claim
-occurs. An explicitly composed future model-health dependency becomes required and uses the same bounded
-normalized status seam, but this slice adds no model client, routing, retry, or network probe.
+creating a false ready state. The current code-owned investigation orchestration has no model call or
+model provider, so model is explicitly `not_required` and no `OPENAI_API_KEY` read or availability
+claim occurs. An explicitly composed future model-health dependency becomes required and uses the same
+bounded normalized status seam, but this slice adds no model client, routing, retry, or network probe.
 
 DataHub MCP readiness performs only initialize and bounded read-only tool discovery through the
 selected Streamable HTTP adapter. The ordered checks are `datahub_mcp`, then model `not_required`; it
 does not require fixture runtime assets because the MCP adapter is also the report runner's metadata
-source. Missing/invalid URL or auth settings fail startup rather than silently selecting fixture mode.
+source. It requires unique `search`/`get_lineage` definitions, `readOnlyHint: true`, required string
+`query`/`urn`, and compatible types for `num_results`, `offset`, `upstream`, `max_hops`, and
+`max_results`. Missing/invalid URL or auth settings, including bearer over plaintext HTTP, fail
+startup rather than silently selecting fixture mode.
 
 Any required non-ready check makes `/ready` HTTP `503` while `/health` remains HTTP `200`. Readiness
 logs contain only mode and allowlisted reason codes. Neither endpoint contains endpoint/token/header,
@@ -404,6 +413,8 @@ bounded ASCII filename derived from sanitized public context and the complete in
 
 Fixture incidents pin timestamps, entity graph, changes, and expected evidence IDs. Any model-backed
 summarization must not change entity selection or evidence identity in deterministic evaluation mode.
+For live DataHub providers, only code-owned orchestration and ordering are deterministic for fixed
+requests and fixed provider responses; provider results may change with live metadata state.
 
 ## Failure behavior
 

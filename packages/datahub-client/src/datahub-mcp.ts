@@ -1,6 +1,6 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
-import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
+import type { FetchLike, Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
 import { CallToolResultSchema, ListToolsResultSchema } from '@modelcontextprotocol/sdk/types.js';
 import {
   METADATA_LINEAGE_MAX_NODES,
@@ -28,10 +28,31 @@ import {
   type MetadataHealthCheckOptions,
   type MetadataHealthResult,
   type MetadataLineageOptions,
+  type MetadataOperationOptions,
   type MetadataRecentChangesOptions,
 } from './index.js';
 
 const DATAHUB_MCP_ALLOWED_TOOLS = ['search', 'get_lineage'] as const;
+const DATAHUB_MCP_TOOL_INPUTS = {
+  search: {
+    required: 'query',
+    properties: {
+      query: 'string',
+      num_results: 'integer',
+      offset: 'integer',
+    },
+  },
+  get_lineage: {
+    required: 'urn',
+    properties: {
+      urn: 'string',
+      upstream: 'boolean',
+      max_hops: 'integer',
+      max_results: 'integer',
+      offset: 'integer',
+    },
+  },
+} as const;
 const DEFAULT_DATAHUB_MCP_TIMEOUT_MS = 5_000;
 const MIN_DATAHUB_MCP_TIMEOUT_MS = 100;
 const MAX_DATAHUB_MCP_TIMEOUT_MS = 30_000;
@@ -108,6 +129,9 @@ function resolveDataHubMcpConfig(config: DataHubMcpClientConfig): ResolvedDataHu
   const parsedAuthMode = DataHubMcpAuthModeSchema.safeParse(config.authMode?.trim());
   if (!parsedAuthMode.success) {
     throw new DataHubMcpConfigurationError('DATAHUB_MCP_AUTH_MODE');
+  }
+  if (parsedAuthMode.data === 'bearer' && url.protocol !== 'https:') {
+    throw new DataHubMcpConfigurationError('DATAHUB_MCP_URL');
   }
   const token = config.token?.trim();
   if (parsedAuthMode.data === 'bearer' && !token) {
@@ -316,6 +340,114 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
 
+function invalidMcpResponse() {
+  return new MetadataProviderError('invalid_response');
+}
+
+function declaredContentLengthWithinLimit(response: Response, maxResponseBytes: number) {
+  const rawContentLength = response.headers.get('content-length');
+  if (rawContentLength === null) {
+    return true;
+  }
+  const normalized = rawContentLength.trim();
+  return /^\d+$/u.test(normalized) && BigInt(normalized) <= BigInt(maxResponseBytes);
+}
+
+function boundedMcpFetch(maxResponseBytes: number, onResponseLimitExceeded: () => void): FetchLike {
+  return async (url, init = {}) => {
+    const requestController = new AbortController();
+    const sourceSignal = init.signal;
+    const abortFromSource = () => requestController.abort(sourceSignal?.reason);
+    if (sourceSignal?.aborted) {
+      abortFromSource();
+    } else {
+      sourceSignal?.addEventListener('abort', abortFromSource, { once: true });
+    }
+
+    let response: Response;
+    try {
+      response = await fetch(url, { ...init, signal: requestController.signal });
+    } catch (error) {
+      sourceSignal?.removeEventListener('abort', abortFromSource);
+      throw error;
+    }
+
+    if (!declaredContentLengthWithinLimit(response, maxResponseBytes)) {
+      const failure = invalidMcpResponse();
+      onResponseLimitExceeded();
+      try {
+        await response.body?.cancel(failure);
+      } finally {
+        requestController.abort(failure);
+        sourceSignal?.removeEventListener('abort', abortFromSource);
+      }
+      throw failure;
+    }
+    if (!response.body) {
+      sourceSignal?.removeEventListener('abort', abortFromSource);
+      return response;
+    }
+
+    const reader = response.body.getReader();
+    let receivedBytes = 0;
+    let finished = false;
+    const cleanup = () => {
+      sourceSignal?.removeEventListener('abort', abortFromSource);
+    };
+    const cancel = async (reason?: unknown) => {
+      if (finished) {
+        return;
+      }
+      finished = true;
+      try {
+        await reader.cancel(reason);
+      } finally {
+        requestController.abort(reason);
+        cleanup();
+      }
+    };
+    const boundedBody = new ReadableStream<Uint8Array>({
+      async pull(controller) {
+        try {
+          const { done, value } = await reader.read();
+          if (done) {
+            finished = true;
+            cleanup();
+            controller.close();
+            return;
+          }
+          if (!value) {
+            return;
+          }
+          const remainingBytes = maxResponseBytes - receivedBytes;
+          if (value.byteLength > remainingBytes) {
+            receivedBytes = maxResponseBytes + 1;
+            const failure = invalidMcpResponse();
+            onResponseLimitExceeded();
+            await cancel(failure);
+            controller.error(failure);
+            return;
+          }
+          receivedBytes += value.byteLength;
+          controller.enqueue(value);
+        } catch (error) {
+          finished = true;
+          cleanup();
+          controller.error(error);
+        }
+      },
+      async cancel(reason) {
+        await cancel(reason);
+      },
+    });
+    return new Response(boundedBody, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: response.headers,
+    });
+  };
+}
+
 function responsePayload(result: z.infer<typeof CallToolResultSchema>, maxResponseBytes: number) {
   if (serializedBytes(result) > maxResponseBytes) {
     throw new MetadataProviderError('invalid_response');
@@ -384,7 +516,7 @@ export class DataHubMcpMetadataAdapter implements MetadataAdapter {
     this.config = resolveDataHubMcpConfig(config);
   }
 
-  private transport() {
+  private transport(responseBoundary: { exceeded: boolean }) {
     if (this.config.transportFactory) {
       return this.config.transportFactory();
     }
@@ -392,10 +524,14 @@ export class DataHubMcpMetadataAdapter implements MetadataAdapter {
       this.config.authMode === 'bearer'
         ? { Authorization: `Bearer ${this.config.token!}` }
         : undefined;
-    return new StreamableHTTPClientTransport(
-      this.config.url,
-      headers ? { requestInit: { headers } } : {},
-    ) as unknown as Transport;
+    const transport = new StreamableHTTPClientTransport(this.config.url, {
+      ...(headers ? { requestInit: { headers } } : {}),
+      fetch: boundedMcpFetch(this.config.maxResponseBytes, () => {
+        responseBoundary.exceeded = true;
+        void transport.close().catch(() => undefined);
+      }),
+    });
+    return transport as unknown as Transport;
   }
 
   private async withClient<T>(
@@ -403,7 +539,8 @@ export class DataHubMcpMetadataAdapter implements MetadataAdapter {
     operation: (client: Client, signal: AbortSignal) => Promise<T>,
   ): Promise<T> {
     const controller = new AbortController();
-    const abort = () => controller.abort();
+    const responseBoundary = { exceeded: false };
+    const abort = () => controller.abort(signal?.reason);
     signal?.addEventListener('abort', abort, { once: true });
     const timeout = setTimeout(() => controller.abort(), this.config.timeoutMs);
     const client = new Client(
@@ -414,12 +551,19 @@ export class DataHubMcpMetadataAdapter implements MetadataAdapter {
       if (signal?.aborted) {
         controller.abort();
       }
-      await client.connect(this.transport(), {
+      await client.connect(this.transport(responseBoundary), {
         signal: controller.signal,
         timeout: this.config.timeoutMs,
       });
-      return await operation(client, controller.signal);
+      const result = await operation(client, controller.signal);
+      if (controller.signal.aborted) {
+        throw new MetadataProviderError('timeout');
+      }
+      return result;
     } catch (error) {
+      if (responseBoundary.exceeded) {
+        throw invalidMcpResponse();
+      }
       throw providerFailure(error, controller.signal.aborted);
     } finally {
       clearTimeout(timeout);
@@ -441,17 +585,27 @@ export class DataHubMcpMetadataAdapter implements MetadataAdapter {
       throw new MetadataProviderError('invalid_response');
     }
     for (const name of DATAHUB_MCP_ALLOWED_TOOLS) {
-      const tool = result.tools.find((candidate) => candidate.name === name);
-      if (!tool || tool.annotations?.readOnlyHint !== true) {
+      const matchingTools = result.tools.filter((candidate) => candidate.name === name);
+      const tool = matchingTools[0];
+      const expectedInput = DATAHUB_MCP_TOOL_INPUTS[name];
+      if (matchingTools.length !== 1 || !tool || tool.annotations?.readOnlyHint !== true) {
         throw new MetadataProviderError('invalid_response');
       }
-      const requiredProperty = name === 'search' ? 'query' : 'urn';
       if (
         !isRecord(tool.inputSchema) ||
+        tool.inputSchema.type !== 'object' ||
         !isRecord(tool.inputSchema.properties) ||
-        !(requiredProperty in tool.inputSchema.properties)
+        !Array.isArray(tool.inputSchema.required) ||
+        !tool.inputSchema.required.every((property) => typeof property === 'string') ||
+        !tool.inputSchema.required.includes(expectedInput.required)
       ) {
         throw new MetadataProviderError('invalid_response');
+      }
+      for (const [property, expectedType] of Object.entries(expectedInput.properties)) {
+        const propertySchema = tool.inputSchema.properties[property];
+        if (!isRecord(propertySchema) || propertySchema.type !== expectedType) {
+          throw new MetadataProviderError('invalid_response');
+        }
       }
     }
     return result.tools;
@@ -508,140 +662,160 @@ export class DataHubMcpMetadataAdapter implements MetadataAdapter {
     const { signal, fallbackToDefault: _fallbackToDefault, ...input } = options;
     const request = MetadataEntitySearchRequestSchema.parse(input);
     void _fallbackToDefault;
-    const payload = await this.callAllowedTool(
-      'search',
-      {
-        query: request.query,
-        num_results: request.limit,
-        offset: 0,
-      },
-      signal,
-    );
-    const response = DataHubMcpSearchResponseSchema.parse(payload);
-    const entities = response.searchResults
-      .map(({ entity }) => normalizeEntity(entity))
-      .filter((entity): entity is MetadataEntitySearchResult => entity !== undefined)
-      .filter((entity) => !request.entityType || entity.kind === request.entityType)
-      .sort(compareEntities)
-      .slice(0, request.limit);
-    const unique = [...new Map(entities.map((entity) => [entity.urn, entity] as const)).values()];
-    unique.forEach((entity) => this.entitiesByUrn.set(entity.urn, entity));
-    return unique;
+    try {
+      const payload = await this.callAllowedTool(
+        'search',
+        {
+          query: request.query,
+          num_results: request.limit,
+          offset: 0,
+        },
+        signal,
+      );
+      if (signal?.aborted) {
+        throw new MetadataProviderError('timeout');
+      }
+      const response = DataHubMcpSearchResponseSchema.parse(payload);
+      const entities = response.searchResults
+        .map(({ entity }) => normalizeEntity(entity))
+        .filter((entity): entity is MetadataEntitySearchResult => entity !== undefined)
+        .filter((entity) => !request.entityType || entity.kind === request.entityType)
+        .sort(compareEntities)
+        .slice(0, request.limit);
+      const unique = [...new Map(entities.map((entity) => [entity.urn, entity] as const)).values()];
+      if (signal?.aborted) {
+        throw new MetadataProviderError('timeout');
+      }
+      unique.forEach((entity) => this.entitiesByUrn.set(entity.urn, entity));
+      return unique;
+    } catch (error) {
+      throw providerFailure(error, signal?.aborted === true);
+    }
   }
 
   async getLineageGraph(options: MetadataLineageOptions): Promise<MetadataLineageResponse> {
     const { signal, ...input } = options;
     const request = MetadataLineageRequestSchema.parse(input);
-    const payload = await this.callAllowedTool(
-      'get_lineage',
-      {
-        urn: request.rootUrn,
-        upstream: request.direction === 'upstream',
-        max_hops: request.depth,
-        max_results: Math.max(1, request.maxNodes - 1),
-        offset: 0,
-      },
-      signal,
-    );
-    const response = DataHubMcpLineageResponseSchema.parse(payload);
-    const directionResult =
-      request.direction === 'upstream' ? response.upstreams : response.downstreams;
-    if (!directionResult) {
-      throw new MetadataProviderError('invalid_response');
-    }
-    if (
-      directionResult.returned !== undefined &&
-      directionResult.returned !== directionResult.searchResults.length
-    ) {
-      throw new MetadataProviderError('invalid_response');
-    }
-
-    const root =
-      this.entitiesByUrn.get(request.rootUrn) ??
-      normalizeEntity(
-        DataHubMcpEntitySchema.parse({
+    try {
+      const payload = await this.callAllowedTool(
+        'get_lineage',
+        {
           urn: request.rootUrn,
-          name: request.rootUrn,
-        }),
+          upstream: request.direction === 'upstream',
+          max_hops: request.depth,
+          max_results: Math.max(1, request.maxNodes - 1),
+          offset: 0,
+        },
+        signal,
       );
-    if (!root) {
-      throw new MetadataProviderError('invalid_response');
-    }
-    const rootNode = MetadataLineageNodeSchema.parse({ ...root, depth: 0 });
-    const rawCandidates = directionResult.searchResults
-      .map(({ degree, entity }) => {
-        const normalized = normalizeEntity(entity);
-        return normalized ? { degree, entity: normalized } : undefined;
-      })
-      .filter(
-        (
-          candidate,
-        ): candidate is {
-          degree: number;
-          entity: MetadataEntitySearchResult;
-        } => candidate !== undefined && candidate.degree <= request.depth,
-      );
-    const candidates = [
-      ...rawCandidates.reduce((byUrn, candidate) => {
-        const existing = byUrn.get(candidate.entity.urn);
-        if (!existing || candidate.degree < existing.degree) {
-          byUrn.set(candidate.entity.urn, candidate);
-        }
-        return byUrn;
-      }, new Map<string, (typeof rawCandidates)[number]>()),
-    ]
-      .map(([, candidate]) => candidate)
-      .sort(
-        (left, right) => left.degree - right.degree || compareEntities(left.entity, right.entity),
-      )
-      .slice(0, Math.max(0, request.maxNodes - 1));
-    const nodes = [
-      rootNode,
-      ...candidates.map(({ degree, entity }) =>
-        MetadataLineageNodeSchema.parse({ ...entity, depth: degree }),
-      ),
-    ];
-    const uniqueNodes = [...new Map(nodes.map((node) => [node.urn, node] as const)).values()].sort(
-      (left, right) => {
+      if (signal?.aborted) {
+        throw new MetadataProviderError('timeout');
+      }
+      const response = DataHubMcpLineageResponseSchema.parse(payload);
+      const directionResult =
+        request.direction === 'upstream' ? response.upstreams : response.downstreams;
+      if (!directionResult) {
+        throw new MetadataProviderError('invalid_response');
+      }
+      if (
+        directionResult.returned !== undefined &&
+        directionResult.returned !== directionResult.searchResults.length
+      ) {
+        throw new MetadataProviderError('invalid_response');
+      }
+
+      const root =
+        this.entitiesByUrn.get(request.rootUrn) ??
+        normalizeEntity(
+          DataHubMcpEntitySchema.parse({
+            urn: request.rootUrn,
+            name: request.rootUrn,
+          }),
+        );
+      if (!root) {
+        throw new MetadataProviderError('invalid_response');
+      }
+      const rootNode = MetadataLineageNodeSchema.parse({ ...root, depth: 0 });
+      const rawCandidates = directionResult.searchResults
+        .map(({ degree, entity }) => {
+          const normalized = normalizeEntity(entity);
+          return normalized ? { degree, entity: normalized } : undefined;
+        })
+        .filter(
+          (
+            candidate,
+          ): candidate is {
+            degree: number;
+            entity: MetadataEntitySearchResult;
+          } => candidate !== undefined && candidate.degree <= request.depth,
+        );
+      const candidates = [
+        ...rawCandidates.reduce((byUrn, candidate) => {
+          const existing = byUrn.get(candidate.entity.urn);
+          if (!existing || candidate.degree < existing.degree) {
+            byUrn.set(candidate.entity.urn, candidate);
+          }
+          return byUrn;
+        }, new Map<string, (typeof rawCandidates)[number]>()),
+      ]
+        .map(([, candidate]) => candidate)
+        .sort(
+          (left, right) => left.degree - right.degree || compareEntities(left.entity, right.entity),
+        )
+        .slice(0, Math.max(0, request.maxNodes - 1));
+      const nodes = [
+        rootNode,
+        ...candidates.map(({ degree, entity }) =>
+          MetadataLineageNodeSchema.parse({ ...entity, depth: degree }),
+        ),
+      ];
+      const uniqueNodes = [
+        ...new Map(nodes.map((node) => [node.urn, node] as const)).values(),
+      ].sort((left, right) => {
         if (left.depth !== right.depth) {
           return left.depth - right.depth;
         }
         return compareEntities(left, right);
-      },
-    );
-    const directCandidates = candidates.filter(({ degree }) => degree === 1);
-    const edges: MetadataLineageEdge[] = directCandidates
-      .map(({ entity }) =>
-        request.direction === 'upstream'
-          ? { sourceUrn: entity.urn, targetUrn: request.rootUrn }
-          : { sourceUrn: request.rootUrn, targetUrn: entity.urn },
-      )
-      .sort((left, right) =>
-        left.sourceUrn === right.sourceUrn
-          ? left.targetUrn.localeCompare(right.targetUrn)
-          : left.sourceUrn.localeCompare(right.sourceUrn),
+      });
+      const directCandidates = candidates.filter(({ degree }) => degree === 1);
+      const edges: MetadataLineageEdge[] = directCandidates
+        .map(({ entity }) =>
+          request.direction === 'upstream'
+            ? { sourceUrn: entity.urn, targetUrn: request.rootUrn }
+            : { sourceUrn: request.rootUrn, targetUrn: entity.urn },
+        )
+        .sort((left, right) =>
+          left.sourceUrn === right.sourceUrn
+            ? left.targetUrn.localeCompare(right.targetUrn)
+            : left.sourceUrn.localeCompare(right.sourceUrn),
+        );
+      if (signal?.aborted) {
+        throw new MetadataProviderError('timeout');
+      }
+      uniqueNodes.forEach((node) =>
+        this.entitiesByUrn.set(node.urn, {
+          urn: node.urn,
+          kind: node.kind,
+          name: node.name,
+          ...(node.description ? { description: node.description } : {}),
+        }),
       );
-    uniqueNodes.forEach((node) =>
-      this.entitiesByUrn.set(node.urn, {
-        urn: node.urn,
-        kind: node.kind,
-        name: node.name,
-        ...(node.description ? { description: node.description } : {}),
-      }),
-    );
-    return MetadataLineageResponseSchema.parse({
-      rootUrn: request.rootUrn,
-      direction: request.direction,
-      requestedDepth: request.depth,
-      maxNodes: request.maxNodes,
-      visitedNodeCount: uniqueNodes.length,
-      truncated:
-        directionResult.hasMore === true ||
-        directionResult.searchResults.length > candidates.length ||
-        candidates.some(({ degree }) => degree > 1),
-      nodes: uniqueNodes,
-      edges,
-    });
+      return MetadataLineageResponseSchema.parse({
+        rootUrn: request.rootUrn,
+        direction: request.direction,
+        requestedDepth: request.depth,
+        maxNodes: request.maxNodes,
+        visitedNodeCount: uniqueNodes.length,
+        truncated:
+          directionResult.hasMore === true ||
+          directionResult.searchResults.length > candidates.length ||
+          candidates.some(({ degree }) => degree > 1),
+        nodes: uniqueNodes,
+        edges,
+      });
+    } catch (error) {
+      throw providerFailure(error, signal?.aborted === true);
+    }
   }
 
   async getRecentChangesForEntity(
@@ -663,9 +837,17 @@ export class DataHubMcpMetadataAdapter implements MetadataAdapter {
     });
   }
 
-  async getLineage(entity: EntityRef, depth: number, entityLimit: number): Promise<LineageResult> {
+  async getLineage(
+    entity: EntityRef,
+    depth: number,
+    entityLimit: number,
+    options: MetadataOperationOptions = {},
+  ): Promise<LineageResult> {
     if (depth <= 0 || entityLimit <= 0) {
       return { seed: entity, upstream: [], downstream: [], truncated: false };
+    }
+    if (options.signal?.aborted) {
+      throw new MetadataProviderError('timeout');
     }
     this.entitiesByUrn.set(entity.urn, MetadataEntitySearchResultSchema.parse(entity));
     const graph = await this.getLineageGraph({
@@ -673,6 +855,7 @@ export class DataHubMcpMetadataAdapter implements MetadataAdapter {
       direction: 'upstream',
       depth,
       maxNodes: Math.min(METADATA_LINEAGE_MAX_NODES, entityLimit + 1),
+      ...(options.signal ? { signal: options.signal } : {}),
     });
     return {
       seed: entity,
@@ -688,10 +871,14 @@ export class DataHubMcpMetadataAdapter implements MetadataAdapter {
     entities: EntityRef[],
     since: string,
     changeLimit: number,
+    options: MetadataOperationOptions = {},
   ): Promise<MetadataChange[]> {
     void entities;
     void since;
     void changeLimit;
+    if (options.signal?.aborted) {
+      throw new MetadataProviderError('timeout');
+    }
     return [];
   }
 }

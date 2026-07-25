@@ -140,12 +140,12 @@ Current DataHub ready response `200`:
 
 DataHub readiness reuses the existing `MetadataHealthProvider` `/config` probe and its bounded
 two-second timeout/AbortSignal; the readiness route adds the same outer bound and no retry. The local
-`investigation_runtime` check validates the deterministic report runtime/assets that the existing live
-flow still requires, without a network call. The current deterministic investigation performs zero model
-calls, so production composition explicitly marks model as `not_required`, does not read
-`OPENAI_API_KEY`, and makes no model-availability claim. If a real model-health dependency is explicitly
-composed later, it becomes required and uses the model reason codes below; Slice 6.4 does not add a model
-client or provider network call.
+`investigation_runtime` check validates the report runtime/assets that the existing live flow still
+requires, without a network call. Current code-owned orchestration performs zero model calls, so
+production composition explicitly marks model as `not_required`, does not read `OPENAI_API_KEY`, and
+makes no model-availability claim. If a real model-health dependency is explicitly composed later, it
+becomes required and uses the model reason codes below; Slice 6.4 does not add a model client or
+provider network call.
 
 DataHub MCP ready response `200`:
 
@@ -165,9 +165,11 @@ DataHub MCP ready response `200`:
 ```
 
 MCP readiness connects only to the configured Streamable HTTP endpoint and validates bounded
-`tools/list` output: official `search` and `get_lineage` must both exist, declare read-only intent,
-and expose their required input properties. It invokes no tool, GraphQL side channel, fixture, model,
-mutation, shell, or fallback.
+`tools/list` output. Official `search` and `get_lineage` must each appear exactly once, declare
+`readOnlyHint: true`, expose an object input schema, require string `query`/`urn`, and declare
+compatible types for every argument the client sends: integer `num_results`/`offset`, boolean
+`upstream`, and integer `max_hops`/`max_results`. Unrelated tools are ignored and remain uncallable.
+Readiness invokes no tool, GraphQL side channel, fixture, model, mutation, shell, or fallback.
 
 Stable non-ready reasons are:
 
@@ -231,7 +233,11 @@ only with normalized mode/status fields.
 `datahub-mcp` health instead performs MCP initialize plus bounded `tools/list` discovery through the
 configured Streamable HTTP endpoint. It returns the same normalized status vocabulary and
 provider-safe message, never a URL/tool description/body. Missing or invalid MCP configuration fails
-API startup, so there is no runtime fixture fallback.
+API startup, so there is no runtime fixture fallback. Bearer auth accepts only HTTPS. The provider
+rejects an over-limit declared body before reading, incrementally counts actual JSON/SSE bytes when a
+length is missing or inaccurate, cancels on the first byte over the configured cap, and caps the
+parsed protocol object again. Malformed search/lineage tool payload schemas map to
+`invalid_response`.
 
 ### `POST /metadata/search`
 

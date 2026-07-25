@@ -86,24 +86,28 @@ conditions.
   requires an authorized DataHub instance.
 - `APP_MODE=datahub-mcp`: DataHub MCP Server over an operator-provided Streamable HTTP endpoint in
   `DATAHUB_MCP_URL`. Set `DATAHUB_MCP_AUTH_MODE=none` only for a trusted local server, or `bearer`
-  with `DATAHUB_TOKEN` for managed DataHub Cloud or another authorized bearer-protected endpoint.
-  Startup rejects missing/invalid MCP settings and never falls back to fixtures.
+  with `DATAHUB_TOKEN` for an authorized HTTPS endpoint. Startup rejects bearer-over-HTTP and every
+  other missing/invalid MCP setting, and never falls back to fixtures.
 
 The fixture-mode investigation path and its algorithms given fixed inputs are deterministic. Live
-DataHub inputs and provider state can vary. All three modes use deterministic orchestration and make
-zero model calls, so `OPENAI_API_KEY` is not required.
+DataHub inputs and provider state can vary. Given a fixed request and fixed provider responses, all
+three modes use deterministic code-owned orchestration and ordering. They make zero model calls, so
+`OPENAI_API_KEY` is not required.
 
 The MCP provider discovers and calls only the official read-only `search` and `get_lineage` tools.
 The current official server exposes no recent-changes/timeline tool, so reports identify that
 capability as unsupported and do not infer change evidence. The application never starts the
 open-source Python server itself: an operator may run it separately with `--transport http`, or use
-the managed Cloud Streamable HTTP endpoint. See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for exact
-configuration, bounds, supported/unsupported capabilities, and live-smoke prerequisites.
+the managed Cloud Streamable HTTP endpoint. The client bounds the actual JSON/SSE network body while
+it is read and validates the parsed object again before adapter use. See
+[`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for exact configuration, bounds,
+supported/unsupported capabilities, and live-smoke prerequisites.
 
-Run the deterministic MCP protocol and product slice without credentials:
+Run the credential-free MCP protocol/product slice and local Streamable HTTP
+body-bound/cancellation regressions:
 
 ```bash
-pnpm exec vitest run tests/integration/datahub-mcp.test.ts
+pnpm exec vitest run tests/integration/datahub-mcp.test.ts tests/integration/datahub-mcp-http.test.ts
 ```
 
 The optional Stitch MCP configuration is stored without credentials in `.codex/config.toml`. Set

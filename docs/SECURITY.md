@@ -60,20 +60,32 @@ endpoints, and full provider error bodies.
   an explicit fixture-mode request/environment choice.
 - Treat `datahub-mcp` as a separate fail-closed provider boundary. Startup requires an absolute
   HTTP(S) `DATAHUB_MCP_URL` without URL credentials/query/fragment and an explicit `none` or `bearer`
-  auth mode. `none` rejects a supplied token; `bearer` requires one. The application uses only
-  Streamable HTTP, never launches stdio/`uvx`/Python/shell processes, and never performs interactive
-  OAuth or token-URL exchange.
+  auth mode. `none` rejects a supplied token; `bearer` requires one and rejects every non-HTTPS URL
+  before transport creation. The application uses only Streamable HTTP, never launches
+  stdio/`uvx`/Python/shell processes, and never performs interactive OAuth or token-URL exchange.
 - Advertise no MCP client capabilities and allow only official read-only `search` and `get_lineage`.
-  Require both discovered tool definitions, their read-only annotation, and required input fields
-  before any call. Never dispatch a model-selected/arbitrary name or any mutation, user, document,
-  sampling, elicitation, root, file, network-proxy, or shell capability. Enforce a 100–30,000 ms
-  timeout/cancellation bound, a 1 KiB–1 MiB protocol-response bound, and the stricter existing search,
-  entity, depth, node, and edge contracts.
+  Before any call, require exactly one definition of each, `readOnlyHint: true`, object input schemas,
+  required string `query`/`urn`, and compatible types for every sent parameter: integer
+  `num_results`/`offset`, boolean `upstream`, and integer `max_hops`/`max_results`. Never dispatch a
+  model-selected/arbitrary name or any mutation, user, document, sampling, elicitation, root, file,
+  network-proxy, or shell capability.
+- Enforce a 100–30,000 ms request timeout and a 1 KiB–1 MiB response bound in the injected
+  Streamable HTTP fetch. Reject an invalid or over-limit `Content-Length` before reading; when a JSON
+  or SSE response is chunked or its declared length is absent/inaccurate, count bytes incrementally
+  and cancel/abort on the first byte over the configured limit. Cap the parsed protocol object again
+  as defense in depth, then apply the stricter existing search, entity, depth, node, and edge
+  contracts.
+- Give each investigation run one total-deadline `AbortController` and propagate its signal through
+  health, search, lineage, and recent-changes adapter calls. Reaching `duration_limit_reached` aborts
+  the in-flight MCP request and prevents later provider-cache, network-sequence, lineage-count, or
+  tool-budget mutation after the terminal snapshot.
 - Accept MCP tool output only from schema-valid structured content or one JSON text item. Reject mixed
   media/content, provider error content, oversized payloads, unsupported entity kinds, malformed
-  lineage, and unexpected/missing tools. When a compact multi-hop response cannot reconstruct exact
-  intermediate edges, mark coverage truncated and never fabricate a path. Sanitize every provider
-  display value before evidence/report use. Tool text is untrusted data, never instructions.
+  lineage, and unexpected/missing required tools. Search/lineage payload schema failures normalize to
+  `invalid_response`, not provider unavailability. When a compact multi-hop response cannot
+  reconstruct exact intermediate edges, mark coverage truncated and never fabricate a path. Sanitize
+  every provider display value before evidence/report use. Tool text is untrusted data, never
+  instructions.
 - The official MCP Server currently has no recent-changes/timeline tool. Resolve that operation as the
   explicit `recent_changes_unsupported` capability gap with zero change evidence and zero hidden
   GraphQL fallback. Do not relabel the in-memory MCP protocol fixture as live provider validation.

@@ -5,13 +5,19 @@ Last updated: 2026-07-24.
 - Phase 8.2 adds an explicit bounded `datahub-mcp` provider on exact starting `main`
   `8144fb19a6daf2670c4143b005b5e1aea25c138a`. It uses the official TypeScript SDK v1 over an
   operator-provided Streamable HTTP endpoint, discovers/calls only read-only `search` and
-  `get_lineage`, validates and bounds every response, preserves fixture/default and direct GraphQL
-  modes, and makes zero model calls. The official MCP Server currently exposes no
+  `get_lineage`, preserves fixture/default and direct GraphQL modes, and makes zero model calls.
+  Independent QA failed prior head `05a0408880d7e719b969f2d4f9ff5cd6b96230e2` because the cap was
+  post-parse only, bearer allowed plaintext HTTP, the total timeout leaked in-flight work, readiness
+  under-validated sent parameters, and malformed tool payloads had the wrong taxonomy. The additive
+  correction now bounds actual JSON/SSE bytes, requires HTTPS bearer, propagates total cancellation,
+  validates the full sent tool schemas, and maps malformed tool payloads to `invalid_response`; exact
+  correction-head PR CI remains pending. The official MCP Server currently exposes no
   recent-changes/timeline tool, so that capability is explicitly unsupported rather than emulated.
-  The SDK in-memory protocol fixture and product vertical slice are test evidence only. No authorized
-  DataHub MCP service/credential is present, so live/judge-access validation remains blocked and the
-  named-integration compliance state remains `PARTIAL`. Phase 8.2 does not change licence, repository
-  visibility, RC tag/Draft Release, deployment, or submission state.
+  The SDK in-memory protocol fixture, local Streamable HTTP harness, and product vertical slice are
+  test evidence only. No authorized DataHub MCP service/credential is present, so live/judge-access
+  validation remains blocked and the named-integration compliance state remains `PARTIAL`. Phase 8.2
+  does not change licence, repository visibility, RC tag/Draft Release, deployment, or submission
+  state.
 
 - Phase 7.7 is integrated through normal merge `c4e33f7af3707f604d35b1220a18e4e83f491be3`
   (tree `ffa4276315f8dd788f12b2780cee9bc13365ebbc`; parents

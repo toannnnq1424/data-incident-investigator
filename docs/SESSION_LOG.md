@@ -4523,3 +4523,57 @@ mutation/remediation/model/LLM/OpenAI call. Tiếp theo: format/diff/secret/resi
 additive conventional commit; normal push; dùng signed-in official in-app Browser tạo đúng một Draft
 PR base current `main`; verify exact base/head/tree/parent/full diff, unique OPEN/DRAFT/conflict-free
 state và exact-head PR CI SUCCESS. Không merge.
+
+## 2026-07-25 — Phase 8.2 independent-QA correction
+
+### Exact target and scope
+
+Resumed only existing branch `codex/phase-8-2-datahub-mcp-integration` and Draft PR #50 from prior
+head `05a0408880d7e719b969f2d4f9ff5cd6b96230e2`, tree
+`c28a58220bd1661d845da86fa756117ee69ad6a0`, base
+`8144fb19a6daf2670c4143b005b5e1aea25c138a`. Superseded PR CI run `30041646021`, job
+`89322724715`, was `SUCCESS`; its 16-file/169-test matrix and lint/typecheck results are reused only
+for unchanged seams. No new branch, PR, task, dependency, credential, provider, or fallback was
+created.
+
+### Additive correction
+
+- The real SDK `StreamableHTTPClientTransport` now receives a bounded fetch. It rejects invalid or
+  over-limit `Content-Length` before reading, counts actual chunked JSON/SSE bytes incrementally, and
+  cancels/aborts at the first byte over the configured cap. Closing the transport propagates a
+  late-SSE stream violation to the waiting request; the parsed-object cap remains defense in depth.
+- Bearer MCP auth now fails config/startup for every non-HTTPS URL. `none` still rejects a token.
+  Errors expose only the safe variable name and never the token or endpoint.
+- The report runner owns one total-runtime `AbortController`, passes its signal through health,
+  search, lineage, and recent changes, and checks cancellation before later budget/cache/report work.
+  Legacy adapter methods gained only a backward-compatible optional signal parameter.
+- Readiness now requires exactly one official `search` and `get_lineage`, `readOnlyHint: true`, object
+  schemas, required string `query`/`urn`, and compatible declarations for integer
+  `num_results`/`offset`/`max_hops`/`max_results` plus boolean `upstream`. Unrelated tools are ignored
+  and never callable; duplicate/missing/incompatible required tools fail closed.
+- Search/lineage Zod payload failures now map inside the provider boundary to `invalid_response`.
+  Fixture default and direct GraphQL behavior remain compatible; MCP recent changes remains
+  explicitly unsupported; orchestration remains zero-model. Determinism claims are limited to fixed
+  input/provider responses and code-owned order because live provider results can vary.
+
+### Targeted local validation
+
+- Real local Streamable HTTP harness plus updated MCP provider suite: **2 files / 31 tests PASS** in
+  `2.66s` (`7` HTTP/body/cancellation and `24` provider/readiness/taxonomy/product-slice tests).
+- Changed-file ESLint PASS in `2.954s`.
+- `@dii/datahub-client` and `@dii/agent-core` typecheck PASS in `2.728s` and `2.648s`.
+- The same two production builds PASS in `3.601s` and `3.660s`.
+- Tracked bootstrap verified Node `24.14.0`, pnpm `11.9.0`, and an up-to-date frozen graph, then
+  reproduced the known managed-Windows `pnpm exec` root-shim resolution limitation. The verified
+  workspace `.CMD` binaries under the exact Node 24 process completed validation. Manifest and lock
+  files are unchanged.
+- Full suite, UI/browser E2E, evaluation, release validation, dependency audit, and live DataHub MCP
+  smoke were intentionally not rerun. No service/credential was introduced; live/judge-access
+  validation remains blocked/skipped and Phase 8.2 remains `PARTIAL`.
+
+### Exact next step
+
+Finish changed-file format/diff/secret/encoding/link/residue/port audits, remove only generated affected
+build roots, create one additive conventional commit, push normally to the same branch, update only
+Draft PR #50 in the official signed-in in-app Browser, and wait for exact-new-head PR CI success.
+Keep the PR Draft and unmerged.

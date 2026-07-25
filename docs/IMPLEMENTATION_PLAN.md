@@ -5091,7 +5091,9 @@ Status: implementation in progress from exact `origin/main`
 
 Objective: close only the named-integration blocker with an explicit
 `APP_MODE=datahub-mcp` provider. Preserve credential-free fixture mode as the default and the existing
-direct GraphQL `APP_MODE=datahub` path. The MCP path remains deterministic and makes zero model calls.
+direct GraphQL `APP_MODE=datahub` path. For fixed inputs/provider responses, the MCP path keeps
+deterministic code-owned orchestration/order and makes zero model calls; live provider results may
+change with DataHub state.
 
 Official-source checkpoint: accessed **2026-07-24 02:27:32 ICT /
 2026-07-23 19:27:32 UTC**.
@@ -5150,3 +5152,94 @@ Acceptance and threat model:
 - Additive commit(s), normal push, exactly one conflict-free Draft PR against current `main`, and
   exact-head PR CI success are required. Do not merge, tag, publish, deploy, provision credentials, or
   mutate the existing RC/Draft Release.
+
+#### Independent QA correction — transport, cancellation, readiness, and provider taxonomy
+
+Status: targeted additive correction implemented and locally validated on existing branch
+`codex/phase-8-2-datahub-mcp-integration` and Draft PR #50. Independent QA failed exact head
+`05a0408880d7e719b969f2d4f9ff5cd6b96230e2`, tree
+`c28a58220bd1661d845da86fa756117ee69ad6a0`, with unchanged base
+`8144fb19a6daf2670c4143b005b5e1aea25c138a`. The superseded exact-head PR CI run
+`30041646021`, job `89322724715`, was `SUCCESS`; its 16-file/169-test targeted matrix and
+exact-head lint/typecheck remain valid for unchanged seams.
+
+Objective:
+
+- Correct only the six independent-QA blockers: enforce the response-byte cap while the real
+  Streamable HTTP body is read; forbid bearer credentials over plaintext HTTP; abort the in-flight MCP
+  request at the investigation duration limit without late cache/budget work; validate every official
+  input-schema field the client sends before readiness; normalize malformed tool payloads to
+  `invalid_response`; and remove documentation overclaims.
+
+Minimum affected files:
+
+- `packages/datahub-client/src/datahub-mcp.ts` and `packages/datahub-client/src/index.ts`
+- `packages/agent-core/src/index.ts`
+- `tests/integration/datahub-mcp.test.ts`
+- one focused real-local-HTTP MCP transport regression file
+- `README.md`, `.env.example`, `docs/AGENT_DESIGN.md`, `docs/API_CONTRACTS.md`,
+  `docs/SECURITY.md`, `docs/DEPLOYMENT.md`, `docs/IMPLEMENTATION_PLAN.md`,
+  `docs/KNOWN_ISSUES.md`, and `docs/SESSION_LOG.md`
+
+Acceptance and threat/config model:
+
+- The SDK transport receives one bounded fetch implementation. A declared `Content-Length` above the
+  configured cap fails before body consumption; absent or inaccurate lengths cannot bypass an
+  incremental byte counter; JSON and SSE streams accept the exact limit and cancel/abort on the first
+  byte beyond it. The existing parsed-object cap remains defense in depth.
+- `DATAHUB_MCP_AUTH_MODE=bearer` accepts only `https:` endpoints. Startup errors remain variable-name
+  only and never contain the token or endpoint. Plain HTTP remains available only with auth mode
+  `none`, which rejects a supplied token.
+- One investigation-owned `AbortController` is propagated through health, search, lineage, and recent
+  changes, including the backward-compatible optional signal on legacy adapter methods. The duration
+  terminal result aborts the MCP fetch and prevents any later cache, network-sequence, or budget
+  mutation.
+- Readiness requires unique official `search` and `get_lineage` definitions, `readOnlyHint: true`, an
+  object input schema, required string `query`/`urn`, and compatible types for every argument the
+  client sends: `num_results`, `offset`, `upstream`, `max_hops`, and `max_results`. Unrelated server
+  tools remain ignored and uncallable; missing, duplicate, or incompatible required definitions fail
+  closed.
+- Zod failures from search/lineage tool payload parsing and normalization are caught inside the MCP
+  provider and reported only as `invalid_response`.
+- Determinism claims remain limited to fixed inputs and code-owned orchestration/order. Live DataHub
+  MCP results may change with provider state. Phase 8.2 compliance remains `PARTIAL` until authorized
+  live/judge-access validation.
+
+Targeted validation:
+
+- Run the focused real Streamable HTTP transport/cancellation regressions and the updated in-memory
+  MCP provider/readiness/taxonomy tests.
+- Run formatting for changed files, lint/typecheck for `datahub-client`/`agent-core` and the focused
+  test files, then production builds only for those two affected workspaces.
+- Reuse the unchanged 16-file/169-test, API/shared-contract, and prior build greens; do not run the
+  full suite, UI/browser E2E, evaluation, release artifact, or live credential smoke.
+- Review dependency/lock invariance, secret/log output, diff/path/encoding, task-owned
+  process/port/temp/build residue, full branch diff, and exact new commit ancestry.
+- Create one additive conventional commit, normal-push the same branch, update only Draft PR #50, and
+  wait for its exact-new-head `PR CI`/`validate` SUCCESS. Keep the PR Draft, conflict-free, and
+  unmerged.
+
+Deferred:
+
+- Live/judge DataHub credentials and smoke, direct GraphQL or fixture redesign, dependency upgrades,
+  UI/evaluation/full-suite/release validation, licence/visibility/tag/Release/deployment/submission
+  changes, LLM/model/OpenAI work, and every production mutation.
+
+Local correction result:
+
+- Real local Streamable HTTP tests pass **1 file / 7 tests**, covering declared exact-limit,
+  over-declared length, lengthless chunked JSON/SSE at exact limit and one byte over, plus total
+  deadline cancellation with no late network/cache/budget mutation. The updated in-memory MCP
+  provider suite passes **1 file / 24 tests** for HTTPS bearer config, full discovery-schema
+  compatibility, duplicate/missing/unrelated tools, payload taxonomy, and the unchanged zero-model
+  vertical slice. Combined result: **2 files / 31 tests** in `2.66s`.
+- Changed-file ESLint passes in `2.954s`; `datahub-client` and `agent-core` typechecks pass in
+  `2.728s` and `2.648s`; their production builds pass in `3.601s` and `3.660s`.
+- The frozen install remained lock-consistent and introduced no manifest/lock/dependency change. The
+  tracked bootstrap verified Node `24.14.0`, pnpm `11.9.0`, and a frozen up-to-date graph, then
+  reproduced the known managed-Windows `pnpm exec` root-shim resolution issue; direct workspace
+  binaries under the verified Node 24 process completed validation.
+- The prior exact-head 16-file/169-test matrix and lint/typecheck greens are reused only for unchanged
+  seams. Full suite, UI/browser E2E, evaluation, release validation, dependency audit, and live MCP
+  smoke are not rerun. Additive commit, normal push, same-Draft-PR update, exact-new-head CI, final
+  residue review, and remote identity verification remain terminal gates.

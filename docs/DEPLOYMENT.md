@@ -91,26 +91,27 @@ Set runtime values in the service manager or process environment. A local operat
 `.env.example` to ignored `.env` and use Node's `--env-file=.env`; never edit the tracked example or
 place a real secret in the artifact.
 
-| Variable                                                                                          | Phase 7.6 behavior                                                                                       |
-| ------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| `APP_MODE`                                                                                        | API runtime; `fixture` (default), direct GraphQL `datahub`, or `datahub-mcp`.                            |
-| `API_HOST` / `API_PORT`                                                                           | API listen address/port; defaults `127.0.0.1:3001`. Keep loopback behind a same-host proxy.              |
-| `DATAHUB_GMS_URL` / `DATAHUB_TOKEN`                                                               | API runtime; required only for `datahub`. Use an authorized read-only token.                             |
-| `DATAHUB_MCP_URL` / `DATAHUB_MCP_AUTH_MODE`                                                       | Required for `datahub-mcp`; exact Streamable HTTP URL plus explicit `none` or `bearer`.                  |
-| `DATAHUB_TOKEN` in MCP mode                                                                       | Required only when MCP auth mode is `bearer`; keep it blank when auth mode is `none`.                    |
-| `DATAHUB_MCP_TIMEOUT_MS` / `DATAHUB_MCP_MAX_RESPONSE_BYTES`                                       | MCP request bound (100–30,000 ms) and parsed protocol-response bound (1,024–1,048,576 bytes).            |
-| `MAX_AGENT_STEPS`, `MAX_TOOL_CALLS`, `MAX_LINEAGE_DEPTH`, `MAX_ENTITIES_PER_QUERY`, `MAX_RETRIES` | Validated API runtime bounds; safe defaults are in `.env.example`.                                       |
-| `AGENT_TIMEOUT_SECONDS`, `MAX_MODEL_OUTPUT_BYTES`                                                 | Validated total deadline and output bound.                                                               |
-| `MAX_REQUEST_BODY_BYTES`, `RATE_LIMIT_WINDOW_SECONDS`, `RATE_LIMIT_MAX_REQUESTS`                  | Validated process-local ingress limits.                                                                  |
-| `MAX_LINEAGE_ENTITIES`, `INVESTIGATION_TIMEOUT_MS`                                                | Legacy fallbacks only; leave unset when canonical values are set.                                        |
-| `VITE_API_BASE_URL`                                                                               | Web build-time value, fixed to `/api` by `release:artifact`; it is not a runtime setting.                |
-| `WEB_ORIGIN`                                                                                      | Reserved host/proxy documentation value; the current API does not read it or enable cross-origin access. |
-| `OPENAI_API_KEY`                                                                                  | Not read by the current deterministic investigation path; no model call is made.                         |
-| `STITCH_API_KEY`                                                                                  | Developer-tool-only and never a release runtime variable.                                                |
+| Variable                                                                                          | Phase 7.6 behavior                                                                                                               |
+| ------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `APP_MODE`                                                                                        | API runtime; `fixture` (default), direct GraphQL `datahub`, or `datahub-mcp`.                                                    |
+| `API_HOST` / `API_PORT`                                                                           | API listen address/port; defaults `127.0.0.1:3001`. Keep loopback behind a same-host proxy.                                      |
+| `DATAHUB_GMS_URL` / `DATAHUB_TOKEN`                                                               | API runtime; required only for `datahub`. Use an authorized read-only token.                                                     |
+| `DATAHUB_MCP_URL` / `DATAHUB_MCP_AUTH_MODE`                                                       | Required for `datahub-mcp`; exact Streamable HTTP URL plus explicit `none` or `bearer`; bearer requires HTTPS.                   |
+| `DATAHUB_TOKEN` in MCP mode                                                                       | Required only when MCP auth mode is `bearer`; keep it blank when auth mode is `none`.                                            |
+| `DATAHUB_MCP_TIMEOUT_MS` / `DATAHUB_MCP_MAX_RESPONSE_BYTES`                                       | MCP request bound (100–30,000 ms), actual JSON/SSE body bound, and parsed-object defense-in-depth bound (1,024–1,048,576 bytes). |
+| `MAX_AGENT_STEPS`, `MAX_TOOL_CALLS`, `MAX_LINEAGE_DEPTH`, `MAX_ENTITIES_PER_QUERY`, `MAX_RETRIES` | Validated API runtime bounds; safe defaults are in `.env.example`.                                                               |
+| `AGENT_TIMEOUT_SECONDS`, `MAX_MODEL_OUTPUT_BYTES`                                                 | Validated total deadline and output bound.                                                                                       |
+| `MAX_REQUEST_BODY_BYTES`, `RATE_LIMIT_WINDOW_SECONDS`, `RATE_LIMIT_MAX_REQUESTS`                  | Validated process-local ingress limits.                                                                                          |
+| `MAX_LINEAGE_ENTITIES`, `INVESTIGATION_TIMEOUT_MS`                                                | Legacy fallbacks only; leave unset when canonical values are set.                                                                |
+| `VITE_API_BASE_URL`                                                                               | Web build-time value, fixed to `/api` by `release:artifact`; it is not a runtime setting.                                        |
+| `WEB_ORIGIN`                                                                                      | Reserved host/proxy documentation value; the current API does not read it or enable cross-origin access.                         |
+| `OPENAI_API_KEY`                                                                                  | Not read by any current investigation mode; no model call is made.                                                               |
+| `STITCH_API_KEY`                                                                                  | Developer-tool-only and never a release runtime variable.                                                                        |
 
 Invalid modes, MCP URLs/auth combinations, and numeric limits fail API startup. An MCP URL must be
-absolute HTTP(S) and contain no username, password, query, or fragment. Do not log or print DataHub
-values while diagnosing startup.
+absolute HTTP(S) and contain no username, password, query, or fragment. Bearer mode additionally
+requires `https:`; plaintext HTTP is accepted only with auth mode `none` and a blank token. Do not log
+or print DataHub values while diagnosing startup.
 
 ## DataHub MCP Server setup
 
@@ -122,25 +123,35 @@ server process.
   its documented `DATAHUB_GMS_URL`/`DATAHUB_GMS_TOKEN`, starts
   `mcp-server-datahub --transport http`, and places that server's exact published Streamable HTTP URL
   in this application's `DATAHUB_MCP_URL`. Use `DATAHUB_MCP_AUTH_MODE=none` only across a trusted
-  loopback or otherwise protected local boundary.
+  loopback or otherwise protected local boundary. The application enforces the absence of a client
+  token in this mode but cannot determine whether a non-loopback network is trusted.
 - For managed DataHub Cloud, use the documented
   `https://<tenant>.acryl.io/integrations/ai/mcp/` endpoint, set auth mode `bearer`, and inject an
   authorized PAT or service-account token only as `DATAHUB_TOKEN`.
 
-Interactive OAuth/Dynamic Client Registration, the universal OAuth endpoint, token URLs, SSE, stdio,
-and server process management are deliberately outside this unattended Node service. They must not be
-silently substituted. The MCP client advertises no server capabilities, requires the discovered
-`search` and `get_lineage` tools to be marked read-only, and calls only those names. It rejects
-non-JSON/mixed content, oversized or schema-invalid output, unexpected/missing tools, and requests
-outside the existing entity/lineage/deadline bounds.
+Interactive OAuth/Dynamic Client Registration, the universal OAuth endpoint, token URLs, the legacy
+standalone SSE transport, stdio, and server process management are deliberately outside this
+unattended Node service. Streamable HTTP responses may themselves use JSON or SSE. The MCP client
+advertises no server capabilities and calls only `search` and `get_lineage`. Readiness requires
+exactly one read-only definition of each plus compatible schemas for string `query`/`urn`, integer
+`num_results`/`offset`/`max_hops`/`max_results`, and boolean `upstream`. It rejects non-JSON/mixed tool
+content, malformed payload schemas, missing/duplicate/incompatible required tools, and requests
+outside existing entity/lineage/deadline bounds.
+
+The injected fetch rejects an invalid or over-limit `Content-Length` before reading and counts actual
+JSON/SSE response bytes incrementally when length is missing or inaccurate. It cancels and aborts on
+the first byte over `DATAHUB_MCP_MAX_RESPONSE_BYTES`, then applies the same cap to the parsed protocol
+object. The investigation's total deadline propagates through every adapter operation; reaching it
+aborts an in-flight MCP request, and terminal budget/cache state cannot be mutated by late completion.
 
 The official MCP server currently exposes no recent-changes/timeline tool. MCP investigations return
 an explicit `recent_changes_unsupported` gap and never route that operation through direct GraphQL or
-claim MCP change evidence. The in-memory protocol fixture validates the integration without
-credentials:
+claim MCP change evidence. Fixed requests and fixed provider responses have deterministic code-owned
+orchestration/order, but live provider results may change with DataHub state. The in-memory protocol
+fixture and local Streamable HTTP harness validate the integration without credentials:
 
 ```powershell
-pnpm exec vitest run tests\integration\datahub-mcp.test.ts
+pnpm exec vitest run tests\integration\datahub-mcp.test.ts tests\integration\datahub-mcp-http.test.ts
 ```
 
 A live smoke additionally requires an already-authorized Core/Cloud service and the matching endpoint
@@ -173,7 +184,7 @@ Use these probes before routing traffic:
 - `GET /ready`: traffic readiness. Fixture requires HTTP `200` with `fixture_assets: ready`. Direct
   GraphQL mode checks `datahub` plus the local investigation runtime. MCP mode checks `datahub_mcp`
   through read-only tool discovery. Either external mode may return sanitized HTTP `503` reason
-  codes. The model remains `not_required` in every current deterministic flow.
+  codes. The model remains `not_required` in every current flow.
 
 For fixture mode, submit the `request` object from
 `fixtures/incidents/removed-schema-column.json` to `POST /incidents`, retain the returned UUID, and

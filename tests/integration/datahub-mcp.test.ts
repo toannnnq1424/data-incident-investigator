@@ -22,12 +22,85 @@ interface RecordedProtocolRequest {
 
 interface ProtocolFixtureOptions {
   omitLineageTool?: boolean;
+  tools?: unknown[];
+  malformedLineagePayload?: boolean;
+  malformedSearchPayload?: boolean;
   oversizedSearchResponse?: boolean;
   stallTool?: 'search' | 'get_lineage';
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
+}
+
+function officialToolDefinitions() {
+  return [
+    {
+      name: 'search',
+      description: 'Read-only DataHub entity search.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          query: { type: 'string' },
+          num_results: { type: 'integer' },
+          offset: { type: 'integer' },
+        },
+        required: ['query'],
+      },
+      annotations: { readOnlyHint: true },
+    },
+    {
+      name: 'get_lineage',
+      description: 'Read-only DataHub lineage lookup.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          urn: { type: 'string' },
+          upstream: { type: 'boolean' },
+          max_hops: { type: 'integer' },
+          max_results: { type: 'integer' },
+          offset: { type: 'integer' },
+        },
+        required: ['urn'],
+      },
+      annotations: { readOnlyHint: true },
+    },
+  ];
+}
+
+function toolDefinitionsWithProperty(
+  toolName: 'search' | 'get_lineage',
+  propertyName: string,
+  propertySchema: unknown,
+) {
+  const tools = structuredClone(officialToolDefinitions()) as unknown[];
+  const tool = tools.find((candidate) => isRecord(candidate) && candidate.name === toolName);
+  const inputSchema = isRecord(tool) && isRecord(tool.inputSchema) ? tool.inputSchema : undefined;
+  const properties =
+    inputSchema && isRecord(inputSchema.properties) ? inputSchema.properties : undefined;
+  if (!properties) {
+    throw new Error('The test tool definition is malformed.');
+  }
+  if (propertySchema === undefined) {
+    delete properties[propertyName];
+  } else {
+    properties[propertyName] = propertySchema;
+  }
+  return tools;
+}
+
+function toolDefinitionsWithoutRequired(
+  toolName: 'search' | 'get_lineage',
+  requiredProperty: string,
+) {
+  const tools = structuredClone(officialToolDefinitions()) as unknown[];
+  const tool = tools.find((candidate) => isRecord(candidate) && candidate.name === toolName);
+  const inputSchema = isRecord(tool) && isRecord(tool.inputSchema) ? tool.inputSchema : undefined;
+  if (!inputSchema || !Array.isArray(inputSchema.required)) {
+    throw new Error('The test tool definition is malformed.');
+  }
+  inputSchema.required = inputSchema.required.filter((property) => property !== requiredProperty);
+  return tools;
 }
 
 class DataHubMcpProtocolTransport {
@@ -77,37 +150,13 @@ class DataHubMcpProtocolTransport {
         serverInfo: { name: 'datahub-mcp-protocol-fixture', version: 'test-only' },
       };
     } else if (message.method === 'tools/list') {
+      const tools =
+        this.options.tools ??
+        officialToolDefinitions().filter(
+          (tool) => !this.options.omitLineageTool || tool.name !== 'get_lineage',
+        );
       result = {
-        tools: [
-          {
-            name: 'search',
-            description: 'Read-only DataHub entity search.',
-            inputSchema: {
-              type: 'object',
-              properties: { query: { type: 'string' }, num_results: { type: 'integer' } },
-              required: ['query'],
-            },
-            annotations: { readOnlyHint: true },
-          },
-          ...(this.options.omitLineageTool
-            ? []
-            : [
-                {
-                  name: 'get_lineage',
-                  description: 'Read-only DataHub lineage lookup.',
-                  inputSchema: {
-                    type: 'object',
-                    properties: {
-                      urn: { type: 'string' },
-                      upstream: { type: 'boolean' },
-                      max_hops: { type: 'integer' },
-                    },
-                    required: ['urn'],
-                  },
-                  annotations: { readOnlyHint: true },
-                },
-              ]),
-        ],
+        tools,
       };
     } else if (message.method === 'tools/call' && request.toolName === 'search') {
       const largeDescription = this.options.oversizedSearchResponse ? 'x'.repeat(2_000) : undefined;
@@ -116,15 +165,17 @@ class DataHubMcpProtocolTransport {
           {
             type: 'text',
             text: JSON.stringify({
-              searchResults: [
-                {
-                  entity: {
-                    urn: 'urn:li:dataset:(urn:li:dataPlatform:snowflake,analytics.daily_revenue,PROD)',
-                    properties: { name: 'analytics.daily_revenue' },
-                    ...(largeDescription ? { description: largeDescription } : {}),
-                  },
-                },
-              ],
+              searchResults: this.options.malformedSearchPayload
+                ? 'not-an-array'
+                : [
+                    {
+                      entity: {
+                        urn: 'urn:li:dataset:(urn:li:dataPlatform:snowflake,analytics.daily_revenue,PROD)',
+                        properties: { name: 'analytics.daily_revenue' },
+                        ...(largeDescription ? { description: largeDescription } : {}),
+                      },
+                    },
+                  ],
             }),
           },
         ],
@@ -138,7 +189,7 @@ class DataHubMcpProtocolTransport {
               upstreams: {
                 searchResults: [
                   {
-                    degree: 1,
+                    degree: this.options.malformedLineagePayload ? 'one' : 1,
                     entity: {
                       urn: 'urn:li:dataset:(urn:li:dataPlatform:snowflake,raw.orders,PROD)',
                       type: 'DATASET',
@@ -219,6 +270,21 @@ describe('DataHub MCP Server provider', () => {
         authMode: 'bearer',
       }),
     ).toThrow(DataHubMcpConfigurationError);
+    let plaintextBearerFailure: unknown;
+    try {
+      createDataHubMcpMetadataAdapter({
+        url: 'http://example.invalid/mcp',
+        authMode: 'bearer',
+        token: 'plaintext-bearer-must-not-appear',
+      });
+    } catch (error) {
+      plaintextBearerFailure = error;
+    }
+    expect(plaintextBearerFailure).toMatchObject({
+      name: 'DataHubMcpConfigurationError',
+      variableName: 'DATAHUB_MCP_URL',
+    });
+    expect(String(plaintextBearerFailure)).not.toContain('plaintext-bearer-must-not-appear');
     expect(() =>
       createDataHubMcpMetadataAdapter({
         url: 'http://127.0.0.1:8080/mcp',
@@ -352,6 +418,63 @@ describe('DataHub MCP Server provider', () => {
     ]);
   });
 
+  it.each([
+    ['search query type', toolDefinitionsWithProperty('search', 'query', { type: 'integer' })],
+    ['search num_results field', toolDefinitionsWithProperty('search', 'num_results', undefined)],
+    ['search offset field', toolDefinitionsWithProperty('search', 'offset', undefined)],
+    ['required search query', toolDefinitionsWithoutRequired('search', 'query')],
+    ['lineage urn type', toolDefinitionsWithProperty('get_lineage', 'urn', { type: 'integer' })],
+    [
+      'lineage upstream type',
+      toolDefinitionsWithProperty('get_lineage', 'upstream', { type: 'string' }),
+    ],
+    ['lineage max_hops field', toolDefinitionsWithProperty('get_lineage', 'max_hops', undefined)],
+    [
+      'lineage max_results type',
+      toolDefinitionsWithProperty('get_lineage', 'max_results', { type: 'number' }),
+    ],
+    ['lineage offset field', toolDefinitionsWithProperty('get_lineage', 'offset', undefined)],
+    ['required lineage urn', toolDefinitionsWithoutRequired('get_lineage', 'urn')],
+    [
+      'unique search definition',
+      [...officialToolDefinitions(), structuredClone(officialToolDefinitions()[0])],
+    ],
+    [
+      'present lineage definition',
+      officialToolDefinitions().filter(({ name }) => name !== 'get_lineage'),
+    ],
+    [
+      'read-only annotation',
+      officialToolDefinitions().map((tool) =>
+        tool.name === 'search' ? { ...tool, annotations: { readOnlyHint: false } } : tool,
+      ),
+    ],
+  ])('fails readiness for an incompatible %s', async (_label, tools) => {
+    await expect(testAdapter([], { tools }).healthCheck()).resolves.toMatchObject({
+      status: 'invalid_response',
+    });
+  });
+
+  it('ignores unrelated discovered tools while keeping them uncallable', async () => {
+    const requests: RecordedProtocolRequest[] = [];
+    const adapter = testAdapter(requests, {
+      tools: [
+        ...officialToolDefinitions(),
+        {
+          name: 'delete_entity',
+          inputSchema: { type: 'object', properties: {}, required: [] },
+          annotations: { readOnlyHint: false },
+        },
+      ],
+    });
+
+    await expect(adapter.healthCheck()).resolves.toMatchObject({ status: 'ready' });
+    await adapter.searchEntities({ query: 'daily revenue', limit: 1 });
+    expect(requests.filter(({ method }) => method === 'tools/call')).toEqual([
+      expect.objectContaining({ toolName: 'search' }),
+    ]);
+  });
+
   it('fails safely for missing tools, timeouts, and oversized responses', async () => {
     const missingTool = testAdapter([], { omitLineageTool: true });
     await expect(missingTool.healthCheck()).resolves.toMatchObject({
@@ -379,6 +502,24 @@ describe('DataHub MCP Server provider', () => {
     });
     await expect(
       oversizedAdapter.searchEntities({ query: 'daily revenue', limit: 3 }),
+    ).rejects.toMatchObject<MetadataProviderError>({ status: 'invalid_response' });
+  });
+
+  it('normalizes malformed search and lineage payload schemas as invalid_response', async () => {
+    await expect(
+      testAdapter([], { malformedSearchPayload: true }).searchEntities({
+        query: 'daily revenue',
+        limit: 3,
+      }),
+    ).rejects.toMatchObject<MetadataProviderError>({ status: 'invalid_response' });
+
+    await expect(
+      testAdapter([], { malformedLineagePayload: true }).getLineageGraph({
+        rootUrn: 'urn:li:dataset:(urn:li:dataPlatform:snowflake,analytics.daily_revenue,PROD)',
+        direction: 'upstream',
+        depth: 1,
+        maxNodes: 4,
+      }),
     ).rejects.toMatchObject<MetadataProviderError>({ status: 'invalid_response' });
   });
 

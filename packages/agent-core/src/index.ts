@@ -2017,6 +2017,7 @@ export interface InvestigationContext {
   limits: InvestigationLimits;
   mode?: MetadataSourceMode;
   executionBudget?: InvestigationExecutionBudget;
+  signal?: AbortSignal;
 }
 
 export interface InvestigationRunner {
@@ -2081,6 +2082,18 @@ function validateLimits(limits: InvestigationLimits) {
   }
 }
 
+function investigationAbortError(signal: AbortSignal) {
+  return signal.reason instanceof InvestigationLimitError
+    ? signal.reason
+    : new MetadataProviderError('timeout');
+}
+
+function assertInvestigationActive(signal: AbortSignal) {
+  if (signal.aborted) {
+    throw investigationAbortError(signal);
+  }
+}
+
 export class DeterministicInvestigationRunner implements InvestigationRunner {
   async investigate(
     request: IncidentRequest,
@@ -2097,27 +2110,39 @@ export class DeterministicInvestigationRunner implements InvestigationRunner {
       context.limits.timeoutMs,
       context.executionBudget?.remainingDurationMs() ?? context.limits.timeoutMs,
     );
+    const controller = new AbortController();
+    const abortFromContext = () => controller.abort(context.signal?.reason);
+    if (context.signal?.aborted) {
+      abortFromContext();
+    } else {
+      context.signal?.addEventListener('abort', abortFromContext, { once: true });
+    }
     let timeout: ReturnType<typeof setTimeout> | undefined;
     const timeoutPromise = new Promise<never>((_, reject) => {
-      timeout = setTimeout(
-        () =>
-          reject(
-            context.executionBudget
-              ? new InvestigationLimitError(
-                  'duration_limit_reached',
-                  context.executionBudget.snapshot('duration_limit_reached'),
-                )
-              : new Error('The metadata investigation exceeded its duration limit.'),
-          ),
-        timeoutMs,
-      );
+      timeout = setTimeout(() => {
+        const error = context.executionBudget
+          ? new InvestigationLimitError(
+              'duration_limit_reached',
+              context.executionBudget.snapshot('duration_limit_reached'),
+            )
+          : new Error('The metadata investigation exceeded its duration limit.');
+        controller.abort(error);
+        reject(error);
+      }, timeoutMs);
     });
 
     try {
-      return await Promise.race([this.runInvestigation(request, context), timeoutPromise]);
+      return await Promise.race([
+        this.runInvestigation(request, context, controller.signal),
+        timeoutPromise,
+      ]);
     } finally {
       if (timeout) {
         clearTimeout(timeout);
+      }
+      context.signal?.removeEventListener('abort', abortFromContext);
+      if (!controller.signal.aborted) {
+        controller.abort();
       }
     }
   }
@@ -2125,29 +2150,37 @@ export class DeterministicInvestigationRunner implements InvestigationRunner {
   private async runInvestigation(
     request: IncidentRequest,
     context: InvestigationContext,
+    signal: AbortSignal,
   ): Promise<InvestigationDraftReport> {
     const { metadata, limits } = context;
     const sourceLabel = context.mode === 'datahub-mcp' ? 'DataHub MCP Server' : 'Fixture';
+    assertInvestigationActive(signal);
     context.executionBudget?.recordToolCall();
-    await metadata.healthCheck();
+    await metadata.healthCheck({ signal });
 
+    assertInvestigationActive(signal);
     context.executionBudget?.recordToolCall();
     const candidates = await metadata.searchEntities({
       query: request.entityHint ?? request.question,
       limit: limits.entityCount,
       fallbackToDefault: true,
+      signal,
     });
+    assertInvestigationActive(signal);
     const seed = candidates[0];
     if (!seed) {
       throw new Error('The metadata provider did not return an investigation seed.');
     }
 
+    assertInvestigationActive(signal);
     context.executionBudget?.recordToolCall();
     const lineage = await metadata.getLineage(
       seed,
       limits.lineageDepth,
       Math.max(0, limits.entityCount - 1),
+      { signal },
     );
+    assertInvestigationActive(signal);
     const entities = [
       ...new Map(
         [lineage.seed, ...lineage.upstream, ...lineage.downstream].map(
@@ -2155,13 +2188,17 @@ export class DeterministicInvestigationRunner implements InvestigationRunner {
         ),
       ).values(),
     ];
+    assertInvestigationActive(signal);
     context.executionBudget?.recordLineageEntities(entities.map((entity) => entity.urn));
+    assertInvestigationActive(signal);
     context.executionBudget?.recordToolCall();
     const changes = await metadata.getRecentChanges(
       entities,
       recentChangeBoundary(request.occurredAt),
       limits.recentChangeCount,
+      { signal },
     );
+    assertInvestigationActive(signal);
 
     const evidence: Evidence[] = [
       {
@@ -2200,7 +2237,7 @@ export class DeterministicInvestigationRunner implements InvestigationRunner {
       ? `Plausible contributor: the recent ${leadingChange.category} change on ${leadingChange.entity.name} may have contributed to the reported incident.`
       : `Available ${sourceLabel} metadata is insufficient to identify a plausible recent-change contributor for ${lineage.seed.name}.`;
 
-    return InvestigationDraftReportSchema.parse({
+    const report = InvestigationDraftReportSchema.parse({
       incidentId: context.incidentId,
       summary: `The strongest evidence-backed inference is: ${hypothesisSummary}`,
       entities,
@@ -2233,5 +2270,7 @@ export class DeterministicInvestigationRunner implements InvestigationRunner {
           : 'Runtime query logs and production pipeline execution records are not included in this bounded fixture.',
       ],
     });
+    assertInvestigationActive(signal);
+    return report;
   }
 }
