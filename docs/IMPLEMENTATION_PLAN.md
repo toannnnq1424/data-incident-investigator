@@ -5599,3 +5599,92 @@ Local correction result:
   or current `apps/web/dist` was created; no relevant 3000/3001/4173/5173/8080 listener or
   package-manager/Vite process exists. No install, rebuild, test, evaluation, E2E, live smoke, or
   artifact command ran.
+
+### Phase 8.4B Stage 1 — Public repository transition preflight packet
+
+Status: pre-mutation documentation implementation on
+`codex/phase-8-4b-public-transition` from exact fetched `origin/main`
+`36d4205806597ae14b7306c74e1527c284202023`, tree
+`876899895449981f3c4dd3981ef76ba64597d1bd`, ordered parents
+`a13448fb3e25885410a10f3c8e5efdea6b6b5429` then
+`7154b8ce036ec97adb87ed76d8483727746e4501`. Exact main CI run `30172556907`,
+job `89715980644`, is `SUCCESS`.
+
+Objective: prepare the complete reviewable preflight and Draft PR for the already-approved GitHub
+Private-to-Public transition without executing the visibility mutation. Keep the repository Private
+until independent QA and an explicit post-QA continuation arrive in this same task. Preserve the
+independent artifact-publication block.
+
+Minimum files:
+
+- `docs/PUBLIC_SOURCE_APACHE_READINESS.md` for the exact integrated baseline, bounded source audit,
+  read-only GitHub metadata, UI effect wording, rollback/escalation boundary, and post-mutation gates.
+- `docs/DEVPOST_REQUIREMENTS.md` for C09 `PASS`, C10 `OPEN`, and exact current totals.
+- This plan, `docs/KNOWN_ISSUES.md`, `docs/RELEASE_CHECKLIST.md`, and `docs/SESSION_LOG.md` for durable
+  Stage 1 state and terminal evidence.
+- `README.md` because its public-facing artifact section omitted the active bundled-attribution
+  publication block and its status did not distinguish Apache-2.0 source from Private visibility.
+- `docs/SECURITY.md` because the existing generic owner-contact instruction is not an actionable
+  public-repository private-reporting path; record the intended GitHub advisory route and current 404
+  boundary without enabling a setting.
+- No `CONTRIBUTING.md` change: it already routes vulnerabilities to the security policy and its public
+  intake/redaction guidance remains truthful.
+- No runtime/source/test/fixture/workflow/manifest/lock/version/tag/Release/deployment/artifact/
+  submission or other repository-setting change.
+
+Acceptance criteria:
+
+- Re-fetch and require exact main SHA/tree/ordered parents plus successful exact-main CI. Confirm
+  signed-in GitHub `Private` state and detected `Apache-2.0`; stop on mismatch.
+- Reuse Phase 8.3 and 8.4A broad evidence. Review current tracked filenames, only the three new main
+  commits and their 782 added lines, and targeted secret/private-path/internal-link/junk patterns.
+  Confirm no submodule, symlink, LFS pointer, private dependency locator, or non-example environment
+  file. Never print a candidate secret or personal email.
+- Reconfirm the canonical licence hash, seven aligned `1.0.0-rc.1`/`private: true`/`Apache-2.0`
+  manifests, and byte-identical lock hash without install or full dependency-graph work.
+- Inspect GitHub metadata/settings read-only in the official signed-in in-app Browser: owner/name,
+  default branch, visibility, Apache detection, exact main/CI, branches and retention controls,
+  PR/issues, Actions, tag/Draft Release/assets, About, Pages/deployment, rules/protection, and security
+  reporting. Change no setting.
+- Record only the exact UI effects shown before visibility mutation. Close the flow before its next
+  acknowledgement; do not make the repository Public in Stage 1.
+- Treat missing Code of Conduct truthfully as optional unless an authoritative requirement proves
+  otherwise. Treat the currently unavailable public advisory route as a post-Public verification/
+  escalation gate, not permission to change another setting now.
+- Keep C09 `PASS`, C10 `OPEN`, C11 and Phase 8.2 `PARTIAL`. Keep artifact publication/distribution
+  `BLOCKED`.
+- Define post-QA mutation evidence: UI Public state, unauthenticated credential-free read/clone,
+  default branch/exact commit/license, tag/Draft Release/issues/Actions visibility, exact branch/PR
+  conversation retention, unchanged About/Pages/deployment, actionable private reporting, one
+  additive evidence commit, exact-new-head PR CI `SUCCESS`, and new independent QA before merge.
+- Run changed-doc Prettier, local-link, UTF-8/LF/final-newline/no-BOM, diff-check, exact allowlist,
+  status/count wording, targeted secret/path/link/history-sensitive and tracked-junk checks,
+  manifest/license/lock invariants, and task-owned process/port cleanup. Do not run full tests, build,
+  evaluation, E2E, live DataHub smoke, install, or artifact commands.
+- Create one additive conventional commit, normal-push one branch, open exactly one Draft PR against
+  unchanged current `main`, and require exact-head `PR CI`/`validate` `SUCCESS`. Keep Draft, unmerged,
+  and repository Private.
+
+Local preflight evidence:
+
+- Fetched `FETCH_HEAD` and `origin/main` match the assigned exact commit/tree/parents. Signed-in
+  GitHub verifies `Private`, detected `Apache-2.0`, and exact-main CI `SUCCESS`.
+- Current main contains 131 reachable commits and 124 tracked paths. Phase 8.4A added only three main
+  commits and 782 net lines after the audited Phase 8.3 integration baseline. Targeted added-line
+  checks found zero private-key/provider-token, machine path, task/delegation identifier,
+  private-account marker, or new internal-endpoint match. Current filename/junk/submodule/symlink/LFS/
+  private-dependency checks are clean; `.env.example` remains the only tracked environment file.
+- The signed-in GitHub pre-mutation inventory is 46 branches, 0 open/43 closed PRs, 2 open/7 closed
+  issues, and 123 Actions runs; one RC tag and one unpublished Draft Release with zero user-uploaded
+  assets remain. About has a truthful description with blank website/topics. Pages/deployments are
+  absent. Automatic branch deletion is off; no classic protection or ruleset exists.
+- The UI says Public will expose code to everyone visiting GitHub, allow anyone to fork, disable all
+  push rulesets, publish the change as activity, and expose Actions history/logs. The flow was closed
+  before the next acknowledgement.
+- The public advisory submission route currently returns 404 while Private. No Code of Conduct is
+  tracked. Both conditions are recorded without guessing or changing settings.
+
+Deferred: visibility mutation until explicit post-QA continuation; post-mutation evidence and additive
+docs commit; any private-vulnerability-reporting setting change; branch protection/ruleset; bundled
+output attribution and all artifact publication/distribution; full validation; live DataHub;
+deployment; tag/Release; submission; version; merge; and every other external mutation.

@@ -169,5 +169,16 @@ sanitized operational fields above and do not serialize `eventTrail` or its evid
 
 ## Reporting
 
-For a suspected vulnerability, avoid public issue details until impact is understood. Contact the
-repository owner privately and include reproduction scope, affected revision, and suggested mitigation.
+For a suspected vulnerability, never open a public issue or pull request with vulnerability details.
+When the repository is Public and GitHub private vulnerability reporting is enabled, use the
+[private security-advisory form](https://github.com/toannnnq1424/data-incident-investigator/security/advisories/new).
+Include only the reproduction scope, affected revision, impact, and suggested mitigation needed for
+triage.
+
+At the Phase 8.4B pre-mutation checkpoint, that route returns 404 while the repository is still
+Private and no public-reporting control is available. This documentation change does not enable a
+GitHub setting. The post-Public gate must verify that the private advisory route works; if it does
+not, stop and obtain separate authorization to enable GitHub private vulnerability reporting or
+publish another actionable private channel before calling the transition complete. Until then,
+contact the repository owner only through an existing private channel and do not disclose the
+vulnerability publicly.

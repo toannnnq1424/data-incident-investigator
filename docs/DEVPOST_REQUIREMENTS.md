@@ -63,11 +63,12 @@ The overview's “Aug 10, 2026 @ 5:00pm EDT” deadline is consistent. “On or 
 is not guaranteed. [[R §1](https://datahub.devpost.com/rules)]
 [[D](https://datahub.devpost.com/details/dates), both accessed 2026-07-24]
 
-**Deadline risk:** submissions were open at access time, but the repository still had multiple
-submission blockers: a qualifying named DataHub integration, Apache 2.0 licensing, public repository,
-testable Project URL/access, video, form completion, entrant eligibility/registration attestations,
-and submission-specific IP/data review. No post-deadline substantive edit is allowed, so these must
-not be left for the final hours. [[R §§4–5](https://datahub.devpost.com/rules), accessed 2026-07-24]
+**Deadline risk:** submissions were open at access time. Apache-2.0 is now integrated and detected on
+exact main, but the repository still has multiple submission blockers: live/judge evidence for the
+named DataHub integration, Public visibility, testable Project URL/access, video, form completion,
+entrant eligibility/registration attestations, and submission-specific IP/data review. No
+post-deadline substantive edit is allowed, so these must not be left for the final hours.
+[[R §§4–5](https://datahub.devpost.com/rules), accessed 2026-07-24]
 
 ## Eligibility, participation, and work window
 
@@ -165,11 +166,14 @@ Explicit conditions:
   their own data must have permission to publish it in the open-source repository.
   [[S](https://datahub.devpost.com/resources), accessed 2026-07-24]
 
-The integrated Phase 8.3 `main` remains MIT-licensed. The user explicitly authorized the coordinated
-Apache-2.0 relicense on 2026-07-25, and Phase 8.4A implements it on a Draft branch across `LICENSE`,
-all seven private manifests, the README, contributor terms, and direct repository documentation.
-The Apache condition remains **OPEN** until independent QA, normal merge, exact-main CI success, and
-GitHub detected-license verification. Repository visibility remains Private.
+Phase 8.4A is integrated through exact normal merge
+`36d4205806597ae14b7306c74e1527c284202023`, tree
+`876899895449981f3c4dd3981ef76ba64597d1bd`, with ordered parents
+`a13448fb3e25885410a10f3c8e5efdea6b6b5429` then
+`7154b8ce036ec97adb87ed76d8483727746e4501`. Exact main CI run `30172556907`,
+job `89715980644`, is `SUCCESS`, and GitHub detects Apache-2.0 on main. C09 is therefore `PASS`.
+Repository visibility remains Private. The independently approved Public mutation is in Phase 8.4B
+Stage 1 preflight and is pending independent QA plus explicit same-task post-QA continuation.
 
 The source relicense is independent from release-artifact attribution. The archive omits the
 `node_modules` directory but includes complete `apps/web/dist`; Vite produces an application bundle,
@@ -339,9 +343,9 @@ DataHub validation. Live/judge-access evidence remains credential/service-gated.
 
 ## Corrected current product facts
 
-These are repository facts on the Phase 8.2 branch from exact starting `main`
-`8144fb19a6daf2670c4143b005b5e1aea25c138a` (tree
-`aaa53c1708020d85bee8dc4bfe09a437778ecbac`), not competition claims:
+These are repository facts on exact current `main`
+`36d4205806597ae14b7306c74e1527c284202023` (tree
+`876899895449981f3c4dd3981ef76ba64597d1bd`), not competition claims:
 
 - Fixture-mode selection, investigation, scoring, report composition, and Markdown rendering are
   deterministic. Live DataHub mode depends on external metadata and timeline state, so its returned
@@ -368,10 +372,11 @@ These are repository facts on the Phase 8.2 branch from exact starting `main`
   allowlist, with startup validation, bounded/sanitized failure behavior, explicit unsupported
   recent-changes semantics, and a protocol-level product vertical slice. No live authorized DataHub
   MCP service or judge-access path has been validated, so named-integration compliance is `PARTIAL`.
-- [GitHub](https://github.com/toannnnq1424/data-incident-investigator) showed the repository as
-  **Private** at the 2026-07-24 access checkpoint. Visibility must not change during Phase 8.1. The
-  Rules prove that a public repository is required for submission, but any later visibility change
-  needs separate authorization and a final secret/history/readiness review.
+- [GitHub](https://github.com/toannnnq1424/data-incident-investigator) still showed the repository as
+  **Private** at the 2026-07-26 03:16 ICT pre-mutation checkpoint. The user independently approved the
+  Public change on 2026-07-25, but Stage 1 only prepares the review packet. C10 cannot pass until
+  independent QA, explicit same-task continuation, the UI mutation, and all post-mutation public
+  access/retention/security evidence complete.
 
 ## Compliance matrix
 
@@ -391,8 +396,8 @@ Every source link in the matrix was accessed at the 2026-07-24 checkpoint in the
 | C06 | [R §4](https://datahub.devpost.com/rules)                                                              | Working application uses open-source DataHub plus at least one named integration.                                                           | Explicit `datahub-mcp` mode uses the official SDK and only read-only `search`/`get_lineage`; protocol fixture and product vertical slice pass, but live/judge-access MCP validation is absent.                                    | PARTIAL      | Phase 8.2–8.3           | Validate the exact path against an authorized DataHub Core/Cloud MCP endpoint, then show the same evidence in judge instructions, video, and copy.           |
 | C07 | [R §4](https://datahub.devpost.com/rules)                                                              | App installs/runs consistently on its stated intended platform.                                                                             | Node 24 runbook, fixture smoke, frozen lock, and MCP protocol/product-slice evidence exist; a clean live MCP judge path does not.                                                                                                 | PARTIAL      | Phase 8.2–8.3           | Validate the final named-integration path from clean judge instructions on the declared platform.                                                            |
 | C08 | [R §4](https://datahub.devpost.com/rules)                                                              | Submission functionality matches text and video.                                                                                            | Current docs describe RC behavior, but final submission/video do not exist.                                                                                                                                                       | PARTIAL      | Phase 8.3               | Freeze verified claims after integration; record a claim-to-demo checklist.                                                                                  |
-| C09 | [R §4](https://datahub.devpost.com/rules)                                                              | Submitted repo uses Apache 2.0 visible at top/About.                                                                                        | The authorized Apache-2.0 migration is implemented only on the Phase 8.4A Draft branch. Integrated main and GitHub detection remain MIT until QA, normal merge, and exact-main CI succeed.                                        | OPEN         | Phase 8.4A              | Complete independent QA, normal merge, exact-main CI, and GitHub detected-license verification; only then may C09 change status.                             |
-| C10 | [R §4](https://datahub.devpost.com/rules)                                                              | Public source repository with all necessary source/assets/instructions.                                                                     | GitHub remains Private. The separate Public authorization is reserved for Phase 8.4B and is not consumed by this branch or its merge.                                                                                             | OPEN         | Phase 8.4B              | After 8.4A integration evidence, perform the separately scoped visibility transition and verify public clone/setup/exposure surfaces.                        |
+| C09 | [R §4](https://datahub.devpost.com/rules)                                                              | Submitted repo uses Apache 2.0 visible at top/About.                                                                                        | Exact main `36d4205806597ae14b7306c74e1527c284202023` contains canonical Apache-2.0 licensing; exact-main CI is successful and GitHub detects `Apache-2.0`.                                                                       | PASS         | Phase 8.4A complete     | Preserve exact license/main evidence through the Public transition and recheck detection afterward.                                                          |
+| C10 | [R §4](https://datahub.devpost.com/rules)                                                              | Public source repository with all necessary source/assets/instructions.                                                                     | GitHub remains Private. Phase 8.4B Stage 1 records the approved mutation and bounded preflight only; independent QA and explicit same-task continuation are pending.                                                              | OPEN         | Phase 8.4B              | After QA, change visibility once; verify anonymous access, exact main, retained branches/PRs, tag/Release/issues/Actions, and private reporting.             |
 | C11 | [R §§4, 7](https://datahub.devpost.com/rules), [S](https://datahub.devpost.com/resources)              | All third-party SDK/API/data/content use is authorized and licence-compliant.                                                               | Frozen-graph evidence covers 138/138 declared licenses and 137 legal files; complete `apps/web/dist` bundles third-party runtime code, and the precise embedded-package/required-notice attribution inventory remains incomplete. | PARTIAL      | Legal/owner + Phase 8.3 | Audit the exact bundle and enforce a provenance-backed attribution file if justified; then resolve remaining rights.                                         |
 | C12 | [R §§4, 7](https://datahub.devpost.com/rules), [T §7](https://info.devpost.com/legal/terms-of-service) | Submission is original/solely owned and does not violate third-party rights.                                                                | Git provenance exists; entrant/contributor ownership attestation is absent.                                                                                                                                                       | PARTIAL      | Entrant / Phase 8 final | Confirm contributor and asset rights, including any assistance or external work, before submission.                                                          |
 | C13 | [R §4](https://datahub.devpost.com/rules), [O](https://datahub.devpost.com/)                           | Provide an easily testable Project URL.                                                                                                     | No public live URL or finalized judge-ready repository setup exists.                                                                                                                                                              | OPEN         | Phase 8.3               | Choose hosted demo or public-repo setup path and test it from a clean, unauthenticated judge context.                                                        |
@@ -421,25 +426,25 @@ Every source link in the matrix was accessed at the 2026-07-24 checkpoint in the
 | C36 | [O](https://datahub.devpost.com/), [R §4](https://datahub.devpost.com/rules)                           | Separate binary/archive upload.                                                                                                             | Verified RC archive history exists, but no rule requires upload and the Draft RC Release has no user-uploaded assets.                                                                                                             | NOT REQUIRED | —                       | Do not upload an artifact merely for Devpost; keep RC Release and tag immutable.                                                                             |
 | C37 | [O](https://datahub.devpost.com/), [R §§6, 8](https://datahub.devpost.com/rules)                       | Feedback survey for the $50 bonus.                                                                                                          | Optional and not entered.                                                                                                                                                                                                         | NOT REQUIRED | Entrant / optional      | Consider only with separate authorization; one complete actionable feedback submission per entrant.                                                          |
 
-Current matrix totals after the Phase 8.3 preparation audit are
-**0 PASS / 12 PARTIAL / 17 OPEN / 8 NOT REQUIRED** across 37 rows.
+Current matrix totals after the Phase 8.4B Stage 1 preflight are
+**1 PASS / 12 PARTIAL / 16 OPEN / 8 NOT REQUIRED** across 37 rows.
 
 ## Open blockers and verification questions
 
 1. **Live/judge MCP evidence:** the local technical integration and protocol product slice exist, but
    no authorized live DataHub Core/Cloud MCP endpoint or durable judge-access configuration has been
    validated. Do not present protocol fixtures as live evidence.
-2. **Licence:** Phase 8.4A consumes the explicit Apache-2.0 authorization and implements the
-   coordinated project relicense on a Draft branch. The exact frozen graph remains 138 declared
+2. **Licence:** integrated exact main satisfies C09. The exact frozen graph remains 138 declared
    licenses, 137 legal files, and 0 package NOTICE files. No generic project NOTICE is added, but the
    release archive includes complete `apps/web/dist` with bundled third-party runtime code even
    though it omits the `node_modules` directory. The exact embedded-package/required-notice inventory
    is incomplete, so publishing or distributing that artifact is blocked until the bundled-output
    audit captures required notices with provenance and adds an enforced attribution file if
    justified. The missing `abstract-logging@2.0.1` legal file remains a C11 `PARTIAL` caveat.
-3. **Public repository:** required for submission, but visibility remains Private until the residual
-   metadata review in [`PUBLIC_SOURCE_APACHE_READINESS.md`](PUBLIC_SOURCE_APACHE_READINESS.md) is
-   complete and a separate explicit visibility authorization is recorded.
+3. **Public repository:** required for submission. Visibility remains Private even though the user
+   independently approved the mutation on 2026-07-25. Phase 8.4B Stage 1 is pre-mutation only;
+   independent QA and explicit same-task continuation precede the one UI change and its anonymous
+   access, retention, Actions/Release, license, Pages/deployment, and security-reporting checks.
 4. **Judge access:** choose and verify a Project URL path, intended platform, clean setup, and free
    access through judging. A public live production deployment is one option, not the only option.
 5. **Form schema:** exact screenshot/cover image, teammate, challenge selector, credentials, and other
@@ -454,7 +459,6 @@ Current matrix totals after the Phase 8.3 preparation audit are
    submission because the Rules reserve the right to change.
 
 Phase 8.2 closes only the local named-integration technical seam and remains `PARTIAL` without
-live/judge credentials. Phase 8.4A consumes only the independently approved Apache-2.0 decision and
-keeps both C09 and C10 `OPEN` while the change is a Draft branch. It performs no registration,
-submission, consent, upload, deployment, credential entry, live provisioning, visibility change, or
-tag/Release mutation.
+live/judge credentials. Integrated Phase 8.4A makes C09 `PASS`. Phase 8.4B Stage 1 keeps C10 `OPEN`
+and performs no registration, submission, consent, upload, deployment, credential entry, live
+provisioning, visibility change, tag/Release mutation, or artifact publication/distribution.
