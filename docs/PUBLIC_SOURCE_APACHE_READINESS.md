@@ -73,9 +73,11 @@ branch added its decision packet.
   local-development or test behavior. The only private/internal-endpoint detector record is a
   synthetic health-readiness test in `tests/integration/health-readiness.test.ts`, fingerprint
   `sha256:c9f929dafa17a41f`.
-- The only file-content email-like records use the reserved `example.invalid` domain in
-  `tests/integration/datahub-health.test.ts` and `tests/integration/datahub-mcp.test.ts`; they share
-  the synthetic fingerprint `sha256:b838307aa1c7bc01`.
+- The file-content email detector returned 15 records: 2 synthetic `example.invalid` fixtures in
+  `tests/integration/datahub-health.test.ts` and `tests/integration/datahub-mcp.test.ts`, sharing
+  fingerprint `sha256:b838307aa1c7bc01`; 11 placeholders on reserved example domains; and 2
+  already-published public-contact references. None is a credential or private address. No detected
+  value is reproduced here.
 - Reachable author/committer metadata contains three distinct email fingerprints: GitHub-hosted
   domain `github.com`, fingerprint `sha256:3c205d8fc749f729`, first at `c020a4c05652` on 2026-07-18
   (41 records); a machine-local `.local` domain, fingerprint `sha256:6ea35c6bf9a0eb3c`, first at
@@ -92,10 +94,10 @@ authorized history-rewrite/purge plan. This packet authorizes neither remediatio
 
 ## Production dependency and third-party license inventory
 
-The repository has one root and six private workspace manifests. `pnpm list -r --prod --depth
-Infinity --json` resolved 138 distinct external package-version nodes, representing 132 distinct
-package names. The root has no production dependency. Internal workspace links were traversed but are
-not double-counted as third-party packages.
+The repository has one root and six private workspace manifests: 7 importers in total. `pnpm list -r
+--prod --depth Infinity --json` resolved 138 distinct external package-version nodes, representing 132
+distinct package names. The root has no production dependency. Internal workspace links were
+traversed but are not double-counted as third-party packages.
 
 | Importer              | Direct production inputs                                                   | External production closure |
 | --------------------- | -------------------------------------------------------------------------- | --------------------------: |
@@ -112,21 +114,27 @@ The exact direct subclosures are `fastify@5.10.0`: 49 nodes;
 `react@19.2.7`: 1 node; and `react-dom@19.2.7`: 3 nodes. Shared transitives explain why importer
 closure counts do not sum to the 138-node union.
 
-There is no `node_modules` directory in the workspace, and `pnpm-lock.yaml` contains no `license`
-fields. Read-only `pnpm licenses list --prod --json` cannot complete without the missing local pnpm
-package-index metadata and reports `ERR_PNPM_MISSING_PACKAGE_INDEX_FILE`. No install or network
-fallback was allowed. Therefore every external node below, including
-`@modelcontextprotocol/sdk@1.29.0`, is conservatively classified:
+The implementation worktree has no `node_modules`, so the first pass could not read package metadata.
+Independent QA reproduced the inventory from an existing offline QA-worktree installed graph. Its
+repository `pnpm-lock.yaml` and `node_modules/.pnpm/lock.yaml` both have SHA-256
+`e36baa3fe1899c4f58cc66eeeaea279601e5be271690b6fa215273740e4ac107`, matching this branch's
+repository lock. The reproduction used no install, registry, or network access.
 
-- license evidence: `UNKNOWN` under the allowed local evidence;
-- Apache-2.0 compatibility: `UNRESOLVED`;
-- attribution/NOTICE obligation: `UNKNOWN`;
-- approval status: not legal approval and not sufficient to authorize relicensing.
+Exact frozen-graph evidence:
 
-Earlier project text describing the MCP SDK as MIT-licensed is not treated as local dependency-license
-evidence in this packet. A later authorized legal-readiness task must obtain package-specific
-license/notice texts from an approved authoritative source or a frozen installed package graph,
-preserve the evidence, and resolve every node before approval.
+- 138/138 package-version nodes declare license metadata: 122 MIT, 10 ISC, 5 BSD-3-Clause, and 1
+  BSD-2-Clause.
+- 137/138 package directories contain a top-level `LICENSE`, `LICENCE`, or `COPYING` file.
+  `abstract-logging@2.0.1` declares MIT but has no such legal file.
+- 0/138 package directories contain a top-level `NOTICE` file.
+- `@modelcontextprotocol/sdk@1.29.0` declares MIT and contains `LICENSE`; it has no `NOTICE`.
+
+These are package declarations and legal-file-presence facts, not legal approval or proof of
+Apache-2.0 compatibility. Compatibility, the meaning and completeness of each legal text, attribution/
+NOTICE obligations, and project relicensing authority remain `UNRESOLVED`. A later authorized
+legal-readiness task must review package-specific texts and provenance, resolve the missing
+`abstract-logging@2.0.1` legal file, and determine required attribution before approval. Zero observed
+package NOTICE files does not prove that no notice or attribution is required.
 
 <details>
 <summary>Exact sorted 138-node external production closure</summary>
@@ -338,12 +346,14 @@ retain applicable copyright, patent, trademark, and attribution notices. If the 
 contains a `NOTICE`, relevant notices must be propagated in a readable place; informational NOTICE
 content does not modify the license.
 
-Before migration, resolve the exact 138-node dependency evidence and determine whether project or
-upstream notices must be preserved. If a `NOTICE` is required, keep it concise and traceable to the
-specific upstream obligations; do not copy unrelated license text indiscriminately. Preserve the
-current project copyright and commit provenance when replacing the MIT license text. The ASF
-application guide is useful implementation guidance, but ASF-specific source-header and NOTICE
-conventions are not automatically a legal mandate for this non-ASF project.
+Before migration, review the exact declared-license distribution and 137 available legal files,
+resolve the missing `abstract-logging@2.0.1` legal file, and determine whether project or upstream
+notices must be preserved. The absence of package NOTICE files is evidence, not a conclusion about
+obligations. If a `NOTICE` is required, keep it concise and traceable to the specific upstream
+obligations; do not copy unrelated license text indiscriminately. Preserve the current project
+copyright and commit provenance when replacing the MIT license text. The ASF application guide is
+useful implementation guidance, but ASF-specific source-header and NOTICE conventions are not
+automatically a legal mandate for this non-ASF project.
 
 ### Relicensing authority is separate from dependency compatibility
 
@@ -377,8 +387,10 @@ must remain Draft and unmerged for independent QA and cannot be interpreted as e
 
 ## Residual blockers and next evidence
 
-1. All 138 external production package-version license records, including the MCP SDK, remain
-   `UNKNOWN` under the allowed local evidence; compatibility and NOTICE obligations are unresolved.
+1. All 138 external production package-version nodes have declared-license metadata, and 137 have a
+   legal file, but those declarations have not received legal compatibility/obligation review.
+   `abstract-logging@2.0.1` lacks a legal file, and 0 observed package NOTICE files does not resolve
+   attribution/NOTICE obligations.
 2. Project ownership and entrant/contributor relicensing authority have not been attested.
 3. The four machine-local commit-email records require a repository-owner provenance/privacy review.
 4. The 44 branches, 41 closed PRs, 9 issues, 117 Actions runs and related artifacts/metadata, one tag,

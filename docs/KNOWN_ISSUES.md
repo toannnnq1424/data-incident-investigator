@@ -9,15 +9,18 @@ Last updated: 2026-07-25.
   Private visibility, 44 branches, one immutable RC tag, one unpublished Draft Release with no
   uploaded assets, 0 open/41 closed PRs, 2 open/7 closed issues, and 117 Actions runs; all
   public-facing metadata surfaces require an owner review. The root plus six-workspace production
-  closure contains 138 external package-version nodes, including
-  `@modelcontextprotocol/sdk@1.29.0`, but the lockfile has no licence fields and no installed package
-  metadata exists. Apache-2.0 compatibility and NOTICE/attribution duties therefore remain
-  unresolved. C09 and C10 stay `OPEN`; C11 and Phase 8.2 stay `PARTIAL`. See
+  closure contains 138 external package-version nodes/132 names across 7 importers. Matching offline
+  frozen-graph evidence records 138 declared licenses (122 MIT, 10 ISC, 5 BSD-3-Clause, 1
+  BSD-2-Clause), 137 legal files, and 0 NOTICE files; `abstract-logging@2.0.1` lacks a legal file.
+  These declarations are not legal approval: Apache-2.0 compatibility and NOTICE/attribution duties
+  remain unresolved. C09 and C10 stay `OPEN`; C11 and Phase 8.2 stay `PARTIAL`. See
   [`PUBLIC_SOURCE_APACHE_READINESS.md`](PUBLIC_SOURCE_APACHE_READINESS.md). No licence, manifest,
   README, visibility, tag, Release, deployment, credential, or submission state changed.
 
-- Phase 8.2 adds an explicit bounded `datahub-mcp` provider on exact starting `main`
-  `8144fb19a6daf2670c4143b005b5e1aea25c138a`. It uses the official TypeScript SDK v1 over an
+- Phase 8.2 is integrated as `aa8d120205fdc35298b9ef36c7dd36b38b23e342` through main merge
+  `7f05888ce7266f51b5028f5ac5ddacd3a91a11aa`; exact main CI run `30161661962`, job
+  `89687850631`, is `SUCCESS`. It adds an explicit bounded `datahub-mcp` provider using the official
+  TypeScript SDK v1 over an
   operator-provided Streamable HTTP endpoint, discovers/calls only read-only `search` and
   `get_lineage`, preserves fixture/default and direct GraphQL modes, and makes zero model calls.
   Independent QA failed prior head `05a0408880d7e719b969f2d4f9ff5cd6b96230e2` because the cap was
@@ -29,15 +32,14 @@ Last updated: 2026-07-25.
   `89684010510`. A second QA recheck found only two medium issues: official optional `query`/`urn`
   fields must not be required by readiness, while unknown server-required fields must fail closed;
   security/deployment wording must describe ignored auxiliary structured-result content and filtered
-  unsupported entity kinds rather than claiming whole-response rejection. Their small additive
-  correction is locally validated on the same Draft PR; exact-new-head CI remains pending. The
-  official MCP Server currently exposes no
-  recent-changes/timeline tool, so that capability is explicitly unsupported rather than emulated.
-  The SDK in-memory protocol fixture, local Streamable HTTP harness, and product vertical slice are
-  test evidence only. No authorized DataHub MCP service/credential is present, so live/judge-access
-  validation remains blocked and the named-integration compliance state remains `PARTIAL`. Phase 8.2
-  does not change licence, repository visibility, RC tag/Draft Release, deployment, or submission
-  state.
+  unsupported entity kinds rather than claiming whole-response rejection. The integrated correction
+  accepts official optional inputs, still rejects extra required fields, and preserves the truthful
+  content-handling boundary. The official MCP Server currently exposes no recent-changes/timeline
+  tool, so that capability is explicitly unsupported rather than emulated. The SDK in-memory protocol
+  fixture, local Streamable HTTP harness, and product vertical slice are test evidence only. No
+  authorized DataHub MCP service/credential is present, so live/judge-access validation remains
+  blocked and the named-integration compliance state remains `PARTIAL`. Phase 8.2 does not change
+  licence, repository visibility, RC tag/Draft Release, deployment, or submission state.
 
 - Phase 7.7 is integrated through normal merge `c4e33f7af3707f604d35b1220a18e4e83f491be3`
   (tree `ffa4276315f8dd788f12b2780cee9bc13365ebbc`; parents

@@ -4633,25 +4633,31 @@ deployment, credentials, or Devpost submission.
   `.gitmodules`, worktree reparse point, generated/junk root, unsafe-log match, or tracked environment
   value file exists.
 - Bounded credential/private-key/endpoint/PII/machine-path detectors found no credible credential or
-  private key. Synthetic Bearer/redaction/internal-endpoint/email test inputs were retained and
-  recorded only by class/path/first commit/date and non-reversible fingerprint. Four machine-local
-  commit-email metadata records remain an owner provenance/privacy review item. The mandatory stop
-  condition was not triggered; no rewrite, purge, rotation, deletion, or remediation occurred.
+  private key. Synthetic Bearer/redaction/internal-endpoint inputs were retained and recorded only by
+  class/path/first commit/date and non-reversible fingerprint. The file-content email detector has 15
+  records: 2 `example.invalid` fixtures, 11 reserved-example-domain placeholders, and 2
+  already-published public-contact references; none is a credential or private address. Four
+  machine-local commit-email metadata records remain an owner provenance/privacy review item. The
+  mandatory stop condition was not triggered; no rewrite, purge, rotation, deletion, or remediation
+  occurred.
 
 ### Dependency/licence and GitHub exposure evidence
 
-- Root plus six-workspace production closure resolves from manifests/lock to exactly 138 external
-  package-version nodes/132 names. `@modelcontextprotocol/sdk@1.29.0` is included. The workspace has
-  no `node_modules`, the lock has no licence fields, and read-only pnpm licence listing lacks its local
-  package index; no install/network fallback was used. All 138 license, Apache-2.0 compatibility, and
-  NOTICE/attribution conclusions remain `UNKNOWN`/`UNRESOLVED`, not legal approval.
+- Root plus six-workspace production closure resolves to exactly 138 external package-version
+  nodes/132 names/7 importers. An existing offline QA-worktree installed graph has matching repository
+  and `node_modules/.pnpm` lock SHA-256
+  `e36baa3fe1899c4f58cc66eeeaea279601e5be271690b6fa215273740e4ac107`; no install, registry, or
+  network was used. All 138 nodes declare a license (122 MIT, 10 ISC, 5 BSD-3-Clause, 1 BSD-2-Clause),
+  137 have a legal file, and 0 have NOTICE. `abstract-logging@2.0.1` declares MIT but lacks a legal
+  file; `@modelcontextprotocol/sdk@1.29.0` declares MIT and has `LICENSE`. Declarations are evidence,
+  not legal approval; compatibility and attribution/NOTICE obligations remain unresolved.
 - Official signed-in in-app Browser read-only review at 2026-07-25 22:00 ICT confirms Private, 44
   branches, one `v1.0.0-rc.1` tag, one unpublished Draft RC Release with zero uploaded assets, 0
   open/41 closed PRs, 2 open/7 closed issues, and 117 Actions runs. Actions secret values were not
   inspected. Primary GitHub and Apache sources were accessed directly and timestamped in the packet.
-- Manual exposure review, project-owner/contributor authority attestation, exact dependency
-  licence/notice evidence, and two separate human approvals remain blockers. C09/C10 remain `OPEN`;
-  C11 and Phase 8.2 remain `PARTIAL`.
+- Manual exposure review, project-owner/contributor authority attestation, dependency legal
+  compatibility/obligation review, and two separate human approvals remain blockers. C09/C10 remain
+  `OPEN`; C11 and Phase 8.2 remain `PARTIAL`.
 
 ### Documentation and local validation
 
@@ -4669,3 +4675,72 @@ checks pass. No relevant listener on ports 3000/4173/5173/8080 exists and no ser
 Full tests/build/evaluation/browser E2E/live DataHub smoke were intentionally not run. Next: one
 additive conventional commit, normal push, exactly one Draft PR base current `main`, exact-head
 `PR CI`/`validate` success, and final identity/cleanup verification. Keep Draft and unmerged.
+
+## 2026-07-25 — Phase 8.3 independent-QA evidence correction
+
+### Objective
+
+Correct only the three documentation/evidence blockers from independent QA on the existing branch and
+Draft PR #51. Start from exact prior head `c7a5286c998d21b3bcaf4016746aa3af274aece1`, tree
+`b940742c54abd52c0ce7967ea35763602fa61ea2`, and base
+`7f05888ce7266f51b5028f5ac5ddacd3a91a11aa`; prior PR CI run `30163357073`, job
+`89692149170`, is `SUCCESS`.
+
+### Completed
+
+- Reproduced QA's frozen-graph evidence read-only from an existing offline installed graph. Repository
+  and `node_modules/.pnpm` lock SHA-256 both equal
+  `e36baa3fe1899c4f58cc66eeeaea279601e5be271690b6fa215273740e4ac107`. No install, registry, or
+  network action occurred.
+- Corrected the dependency evidence to 138 package-version nodes/132 names/7 importers; 138 declared
+  licenses split 122 MIT, 10 ISC, 5 BSD-3-Clause, 1 BSD-2-Clause; 137 legal files; 0 NOTICE files.
+  `abstract-logging@2.0.1` declares MIT without a legal file, while
+  `@modelcontextprotocol/sdk@1.29.0` declares MIT and has `LICENSE`.
+- Corrected the file-content email detector to 15 sanitized records: 2 `example.invalid` fixtures, 11
+  reserved-example-domain placeholders, and 2 already-published public-contact references. None is a
+  credential or private address. Four `.local` commit-email records remain for owner review.
+- Corrected `KNOWN_ISSUES.md`: Phase 8.2 is integrated as
+  `aa8d120205fdc35298b9ef36c7dd36b38b23e342` through main
+  `7f05888ce7266f51b5028f5ac5ddacd3a91a11aa`; exact main CI run `30161661962`, job
+  `89687850631`, is `SUCCESS`.
+
+### Files changed
+
+`docs/PUBLIC_SOURCE_APACHE_READINESS.md`, `docs/DEVPOST_REQUIREMENTS.md`,
+`docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md`, `docs/RELEASE_CHECKLIST.md`, and this log.
+`docs/REPOSITORY_MAP.md` was checked as the seventh Phase 8.3 path and has no copied stale claim, so it
+remains unchanged.
+
+### Decisions
+
+Declared package metadata and file presence are evidence only, not legal approval or proof of
+Apache-2.0 compatibility. Compatibility, attribution/NOTICE obligations, the missing legal file,
+project ownership/contributor authority, and manual exposure review remain unresolved. Preserve
+`HOLD`, C09/C10 `OPEN`, C11 and Phase 8.2 `PARTIAL`, and exactly two unchecked independent approvals.
+
+### Validation performed
+
+Exact target/worktree/PR and prior CI identities passed read-only verification. The offline graph
+reproduction exactly matches the QA counts and lock hashes. Prettier 3.9.5, six-doc changed-path
+allowlist, exact evidence wording, 138-node/132-name closure, preserved audit fingerprints/history
+counts, two unchecked approvals, 37-row matrix and unchanged totals/statuses, Phase 8.2
+integration/CI wording, local links, UTF-8/LF/final newline, high-confidence added-secret/
+conflict/debug markers, lock provenance, `git diff --check`, generated residue, and relevant listener
+checks pass. Commit, remote, PR-body, and exact-new-head CI checks remain terminal steps.
+
+### Validation intentionally deferred
+
+No dependency install, registry/network scan, tests, build, evaluation, browser E2E, live DataHub
+smoke, legal approval, or publication/release/submission gate is run.
+
+### Known issues
+
+Legal compatibility and obligations remain unresolved; `abstract-logging@2.0.1` lacks a legal file;
+four `.local` commit-email metadata records and all public-exposure surfaces require owner review;
+live/judge credentials remain absent, so Phase 8.2 stays `PARTIAL`.
+
+### Exact next step
+
+Format and validate only the six corrected docs; create one additive conventional commit; push the
+same branch; update only Draft PR #51 body through the signed-in official in-app Browser; require the
+exact-new-head `PR CI`/`validate` terminal `SUCCESS`; keep Draft, unmerged, and not Ready.

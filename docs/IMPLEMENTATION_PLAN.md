@@ -5366,12 +5366,16 @@ Execution evidence:
   binary/archive/executable/media, LFS, submodule, symlink, or reparse record. All 127 reachable
   commits and 728 unique historical blobs were scanned with bounded detectors. No credible credential
   or private key was found. Synthetic authorization/redaction fixtures were classified without
-  recording values. Four machine-local author/committer-email records remain a manual
+  recording values. The file-content email detector has 15 non-private records: 2
+  `example.invalid` fixtures, 11 reserved-example-domain placeholders, and 2 already-published
+  public-contact references. Four machine-local author/committer-email records remain a manual
   provenance/privacy review item.
 - Root plus six-workspace production closure resolves to 138 external package-version nodes/132 names,
-  including `@modelcontextprotocol/sdk@1.29.0`. There is no installed `node_modules` metadata and the
-  lockfile has no licence fields; all dependency licence, Apache-2.0 compatibility, and NOTICE
-  conclusions therefore remain conservatively unresolved.
+  across 7 importers. Matching offline frozen-graph evidence records 138 declared licenses: 122 MIT,
+  10 ISC, 5 BSD-3-Clause, and 1 BSD-2-Clause. It has 137 legal files and 0 NOTICE files;
+  `abstract-logging@2.0.1` lacks a legal file, while `@modelcontextprotocol/sdk@1.29.0` declares MIT
+  and has `LICENSE`. These declarations do not resolve Apache-2.0 compatibility or
+  attribution/NOTICE obligations.
 - Signed-in read-only GitHub review confirms Private visibility, 44 branches, one RC tag, one
   unpublished Draft Release with zero uploaded assets, 0 open/41 closed PRs, 2 open/7 closed issues,
   and 117 Actions runs. Owner review of all exposure surfaces remains mandatory.
@@ -5383,5 +5387,69 @@ Execution evidence:
 - The documentation-only changed-path allowlist, strict UTF-8/LF/final newline, 37-row compliance
   totals, exact 138-node closure, two unchecked decisions, local links, high-confidence added-secret
   patterns, conflict markers, Prettier 3.9.5, and `git diff --check` pass locally. No relevant
-  3000/4173/5173/8080 listener exists; no service was launched. Additive commit, normal push, one
-  Draft PR, exact-head CI, and final remote cleanup verification remain pending.
+  3000/4173/5173/8080 listener exists; no service was launched. Draft PR #51 prior head
+  `c7a5286c998d21b3bcaf4016746aa3af274aece1` passed PR CI run `30163357073`, job
+  `89692149170`; the independent-QA correction below remains pending.
+
+#### Independent-QA targeted evidence correction
+
+Status: locally validated correction on the same branch and Draft PR #51 from exact prior head
+`c7a5286c998d21b3bcaf4016746aa3af274aece1`, tree
+`b940742c54abd52c0ce7967ea35763602fa61ea2`, parent/base
+`7f05888ce7266f51b5028f5ac5ddacd3a91a11aa`. Prior exact-head PR CI run `30163357073`, job
+`89692149170`, is `SUCCESS`.
+
+Objective and minimum files:
+
+- Replace the blanket dependency-license-unknown claim with the independently reproduced offline
+  frozen-graph evidence while retaining the legal `HOLD`: 138 package-version nodes/132 names/7
+  importers; 138 declared licenses split across 122 MIT, 10 ISC, 5 BSD-3-Clause, and 1 BSD-2-Clause;
+  137 legal files, 0 NOTICE files, and one declared-MIT package without a legal file.
+- Correct the file-content email detector summary to 15 sanitized records in three non-private groups
+  while retaining four `.local` commit-email records for owner privacy/provenance review.
+- Correct the stale Phase 8.2 integration/CI wording in `docs/KNOWN_ISSUES.md`.
+- Update only the affected Phase 8.3 evidence copies in
+  `docs/PUBLIC_SOURCE_APACHE_READINESS.md`, `docs/DEVPOST_REQUIREMENTS.md`,
+  `docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md`, `docs/RELEASE_CHECKLIST.md`, and
+  `docs/SESSION_LOG.md`. Re-verify that `docs/REPOSITORY_MAP.md`, the seventh Phase 8.3 path, contains
+  no copied stale claim and needs no correction.
+
+Acceptance:
+
+- State provenance exactly as an existing offline QA-worktree installed graph whose repository lock
+  and `node_modules/.pnpm` lock both have SHA-256
+  `e36baa3fe1899c4f58cc66eeeaea279601e5be271690b6fa215273740e4ac107`; no install, registry, or
+  network action.
+- Treat package declarations/legal-file presence as evidence, not legal approval or proof of
+  Apache-2.0 compatibility. Compatibility, attribution/NOTICE duties, project ownership/contributor
+  authority, and manual exposure review remain unresolved. Preserve `HOLD`, C09/C10 `OPEN`, C11 and
+  Phase 8.2 `PARTIAL`, and exactly two independent unchecked approvals.
+- Keep the correction documentation-only. Do not change LICENSE/README, runtime/source/tests/workflow,
+  manifests/workspaces/lock, tag/Release, deployment, credentials, submission, or visibility.
+- Run Prettier only on changed docs plus bounded path/status/count/wording/link/UTF-8/LF/final-newline/
+  secret-like/diff/residue/port checks. Do not install or run tests, build, evaluation, E2E, or live
+  smoke.
+- Create one additive conventional commit without amend/rebase/force, push the same branch, update the
+  existing PR #51 body through the official signed-in in-app Browser, and require exact-new-head
+  `PR CI`/`validate` terminal `SUCCESS`. Keep the PR Draft, conflict-free, unmerged, and not Ready.
+
+Deferred: actual legal compatibility/attribution determinations, missing upstream legal-file
+resolution, project-owner/contributor attestation, manual metadata exposure review, both explicit
+human decisions, live/judge credentials, and every previously deferred release/publication/submission
+action.
+
+Local correction result:
+
+- Read-only reproduction from the matching offline installed graph confirms all supplied QA counts,
+  both exact lock hashes, the missing legal file, 0 NOTICE files, and the MCP SDK declaration/legal
+  file without install, registry, or network use.
+- Prettier 3.9.5 passes the six corrected docs. Changed-path allowlist, strict UTF-8/LF/final newline,
+  exact evidence wording, 138-node/132-name sorted closure, six preserved audit fingerprints/history
+  counts, two unchecked approvals, 37-row matrix with unchanged
+  `0 PASS / 12 PARTIAL / 17 OPEN / 8 NOT REQUIRED`, Phase 8.2 integration/CI wording, local links,
+  high-confidence added-secret/conflict/debug markers, lock provenance, and `git diff --check` pass.
+- `docs/REPOSITORY_MAP.md` remains byte-unchanged from prior head and contains no stale copied claim.
+  No generated residue or relevant 3000/4173/5173/8080 listener exists; no task-owned service was
+  launched. Tests/build/evaluation/E2E/live smoke remain intentionally unrun.
+- One additive commit, normal push to the existing branch, PR #51 body correction, exact-new-head CI,
+  and final remote/worktree cleanup verification remain pending.

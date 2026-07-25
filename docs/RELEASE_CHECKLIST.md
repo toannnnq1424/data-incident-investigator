@@ -106,9 +106,10 @@ actions below remain separately scoped.
       detectors; record only sanitized classes, paths, dates/commits, and non-reversible fingerprints.
 - [x] Confirm that no credible credential/private key triggered the publication stop condition;
       retain the machine-local commit-email metadata as a manual provenance/privacy review item.
-- [x] Inventory the root plus six-workspace production closure from manifests/lock/local metadata
-      without install or network scanning: 138 external package-version nodes, all with licence,
-      Apache-2.0 compatibility, and NOTICE obligations unresolved under the allowed evidence.
+- [x] Inventory the root plus six-workspace production closure without install/registry/network:
+      138 external package-version nodes/132 names/7 importers; all 138 declare a license (122 MIT, 10
+      ISC, 5 BSD-3-Clause, 1 BSD-2-Clause), 137 have a legal file, and 0 have NOTICE. Treat declarations
+      as evidence only; compatibility and attribution/NOTICE obligations remain unresolved.
 - [x] Inventory GitHub exposure read-only in the official signed-in in-app Browser: Private, 44
       branches, one RC tag, one no-uploaded-asset Draft Release, 0 open/41 closed PRs, 2 open/7 closed
       issues, and 117 Actions runs.
