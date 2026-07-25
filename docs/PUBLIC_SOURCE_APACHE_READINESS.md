@@ -1,21 +1,24 @@
 # Public-source and Apache-2.0 readiness decision packet
 
-Status: `PHASE 8.4A IMPLEMENTED LOCALLY`; Draft PR QA, merge, and exact-main CI are pending.
+Status: `PHASE 8.4B STAGE 2 — POST-MUTATION EVIDENCE`; Apache-2.0 is integrated on exact `main`,
+the repository is `Public`, C10 is `PASS`, and Draft PR #53 remains unmerged pending independent QA2.
 
 This document prepares two independent decisions for Data Incident Investigator:
 
 1. whether the project may be relicensed from MIT to Apache-2.0; and
 2. whether the GitHub repository may be changed from Private to Public.
 
-The user explicitly approved both decisions independently on 2026-07-25. Phase 8.4A consumes only the
-first approval. It replaces the project licence and metadata on a Draft branch while keeping the
-repository Private. The second approval is reserved for Phase 8.4B only after independent QA, normal
-merge, and exact-main CI success for this change. Ordinary merge does not authorize or perform the
-visibility mutation.
+The user explicitly approved both decisions independently on 2026-07-25. Phase 8.4A consumed the
+first approval and is integrated on `main`. Phase 8.4B Stage 1 remains the historical pre-mutation
+packet. After its independent QA returned `PASS / EXECUTE`, the repository owner completed the
+approved visibility change outside this agent. The exact mutation timestamp was not exposed by the
+reviewed GitHub UI; authenticated and unsigned verification began at 2026-07-26 04:48 ICT
+(2026-07-25 21:48 UTC).
 
-This is an engineering and review record, not legal advice. Phase 8.4A does not change GitHub
-visibility or About metadata, tags, Releases, release assets, deployment, credentials, submission
-state, runtime, dependencies, or versions.
+This is an engineering and review record, not legal advice. Stage 2 records the external visibility
+change and evidence; it does not disclose credential or re-authentication details and changes no
+other GitHub setting, About metadata, tag, Release, release asset, deployment, credential, submission
+state, runtime, dependency, version, workflow, manifest, lockfile, or artifact.
 
 ## Phase 8.4A authorized implementation
 
@@ -51,6 +54,188 @@ terms. Versions remain `1.0.0-rc.1`; `private: true`, dependencies, workspace me
 The prior MIT file stated `Copyright (c) 2026 toannnnq1424`. That exact historical notice remains in
 reachable Git history and is retained here as migration provenance. It is not inserted into the
 unmodified canonical licence text or used to invent a project NOTICE.
+
+## Phase 8.4B Stage 1 public-transition preflight
+
+### Exact integrated baseline and bounded source review
+
+Stage 1 fetched `origin/main` without pruning and verified exact commit
+`36d4205806597ae14b7306c74e1527c284202023`, tree
+`876899895449981f3c4dd3981ef76ba64597d1bd`, and ordered parents
+`a13448fb3e25885410a10f3c8e5efdea6b6b5429` then
+`7154b8ce036ec97adb87ed76d8483727746e4501`. Signed-in GitHub showed main CI run
+`30172556907`, job `89715980644`, `SUCCESS` for that exact commit. Branch
+`codex/phase-8-4b-public-transition` was created only from that fetched main.
+
+The repository now has 131 commits reachable from `main` and 124 tracked paths. The Phase 8.3
+current/history audit and Phase 8.4A provenance evidence remain the broad baseline. Stage 1 did not
+repeat the full history or dependency graph. It instead reviewed every tracked filename, the three
+new main commits after the Phase 8.3 integration baseline, and the 782 added lines in the Phase 8.4A
+net change:
+
+- no tracked filename indicates a credential, key, cookie, session, private environment file, local
+  database, generated output, or editor/OS residue;
+- no private-key block, recognized provider-token form, machine-user path, embedded task/delegation
+  identifier, private-account marker, or new internal endpoint occurs in the added Phase 8.4A text;
+- the previously classified authorization, URL-credential, internal-host, and email detector
+  candidates remain synthetic tests, sanitization/redaction contracts, reserved example values, or
+  already-published public contacts; no candidate became a credible secret;
+- `.env.example` remains the only tracked environment file and contains blank credentials;
+- there is no `.gitmodules`, submodule or symlink mode, LFS pointer, private dependency locator, or
+  tracked generated/junk path; and
+- 46 current remote branch names match the signed-in GitHub count and contain no secret/account/path
+  marker. This is a retention and name-safety baseline, not a new full branch-history scan.
+
+The canonical `LICENSE` remains byte-identical at SHA-256
+`cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30`. Root plus all six
+workspace manifests remain aligned at `1.0.0-rc.1`, `private: true`, and exact SPDX `Apache-2.0`.
+`pnpm-lock.yaml` remains byte-identical at SHA-256
+`e36baa3fe1899c4f58cc66eeeaea279601e5be271690b6fa215273740e4ac107`.
+At the Stage 1 checkpoint GitHub detected `Apache-2.0` on exact main, so C09 was `PASS`; C10 remained
+`OPEN`, while C11 and Phase 8.2 remained `PARTIAL`.
+
+Fixture mode remains credential-free. Direct GraphQL and DataHub MCP modes require operator-supplied
+authorized external configuration, but no live/judge DataHub credential is present or required to
+make the source public. Release artifact publication or distribution remains independently
+`BLOCKED` by the exact bundled-output attribution gate.
+
+### Read-only GitHub metadata baseline
+
+The official signed-in in-app Browser recorded this pre-mutation state at
+2026-07-26 03:16 ICT (2026-07-25 20:16 UTC):
+
+| Surface                     | Exact pre-mutation state                                                                                                                                                   |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Identity/default/visibility | `toannnnq1424/data-incident-investigator`; default `main`; `Private`                                                                                                       |
+| Main/license/CI             | exact `36d4205806597ae14b7306c74e1527c284202023`; detected `Apache-2.0`; run `30172556907` / job `89715980644` `SUCCESS`                                                   |
+| Branches and retention      | 46 branches; automatic head-branch deletion is off; 0 classic branch protections and 0 rulesets                                                                            |
+| Pull requests               | 0 open / 43 closed; no conversation deletion was performed in Stage 1                                                                                                      |
+| Issues                      | 2 open / 7 closed; Issues are enabled for all users who can see the repository                                                                                             |
+| Actions                     | 123 runs across `CI`, `PR CI`, and `Release validation`; the latest exact-main run is successful                                                                           |
+| Tag/Release                 | one `v1.0.0-rc.1` tag at `c4e33f7af3707f604d35b1220a18e4e83f491be3`; one unpublished Draft Release at that target; zero user-uploaded assets                               |
+| About                       | truthful description; blank website; no topics; Releases and Packages shown; Deployments not shown                                                                         |
+| Pages/deployments           | Pages says “Upgrade or make this repository public to enable Pages”; no Pages site or repository deployment is configured or claimed                                       |
+| Security reporting          | `docs/SECURITY.md` is detected; `/security/advisories/new` currently returns 404 and no private-vulnerability-reporting control is exposed while the repository is Private |
+| Community health            | `CONTRIBUTING.md` and sanitized issue/PR templates exist; no Code of Conduct is tracked                                                                                    |
+
+The absent Code of Conduct is recorded as an optional community-governance follow-up, not a blocker:
+neither the reviewed GitHub UI nor the Devpost requirements baseline establishes it as a Public-source
+requirement. The unavailable advisory route is a real post-mutation readiness check. If it remains
+unavailable after Public visibility, stop and obtain separate authorization to enable GitHub private
+vulnerability reporting or document another actionable private channel before calling the transition
+complete.
+
+### Sanitized owner operational disposition
+
+The repository owner explicitly and independently approved the Private-to-Public transition on
+2026-07-25. For this operational gate, that authorization records the owner's acceptance that the
+following retained surfaces will become publicly visible and may be forked, copied, or cached:
+
+- reachable commit identity metadata, including the category-only count of four machine-local
+  `.local` author/committer metadata records;
+- all 47 branches retained after the task branch push, the 43 closed pull-request conversations plus
+  current Draft PR #53, and 2 open/7 closed issues;
+- all 124 Actions runs present at the disposition checkpoint and their histories/logs, plus subsequent
+  same-PR runs, the RC tag, Draft Release metadata, repository activity, and linked public surfaces.
+
+The bounded review and sanitized sample found no credential, account secret, private endpoint, or
+private key in those reviewed surfaces. This is an operational disposition based on the explicit
+owner authorization, not legal advice, an identity claim, or proof that all history is exhaustively
+risk-free. The records are retained: this transition performs no history rewrite, branch or
+conversation deletion, archive, or hide action.
+
+### Exact visibility effects and rollback/escalation boundary
+
+Stage 1 opened only the read-only confirmation flow and stopped before the next acknowledgement. The
+GitHub UI displayed exactly these effects:
+
+- “The code will be visible to everyone who can visit https://github.com”
+- “Anyone can fork your repository.”
+- “All push rulesets will be disabled.”
+- “Your changes will be published as activity.”
+- “Actions history and logs will be visible to everyone.”
+
+The UI also showed 0 stars and 0 watchers. No visibility acknowledgement or final confirmation was
+pressed. Because the repository has no current ruleset or classic protection, the ruleset warning
+does not remove an existing control, but branch protection remains an explicit post-transition
+follow-up.
+
+Rollback cannot retract already cloned, forked, cached, or copied material. If post-mutation
+verification finds a credible secret or unsafe exposure, stop every further publication action, do
+not delete branches/conversations or rewrite history, and escalate to the repository owner/security
+review. Credential rotation/revocation, a Public-to-Private rollback, or history remediation each
+requires a separately scoped decision based on the confirmed finding. The owner accepts this residual
+irreversibility as a consequence of the already-authorized transition: changing visibility back to
+Private later is containment/escalation only and cannot erase or recall clones, forks, caches, or
+copies.
+
+### Post-QA mutation and evidence gate
+
+The Stage 1 correction turn performed no visibility mutation. It established this exact terminal
+sequence:
+
+1. The same independent QA task returns Stage 1 `PASS / EXECUTE`.
+2. The controller sends an explicit post-QA continuation to this same implementation task.
+3. Immediately before mutation, the implementation task re-fetches and requires exact current `main`
+   `36d4205806597ae14b7306c74e1527c284202023`, successful exact-main CI, `Private` UI state, and the
+   unchanged exposure baseline; otherwise it stops.
+4. The same implementation task changes only GitHub visibility from Private to Public.
+5. It verifies authenticated and unauthenticated GitHub surfaces, UI `Public`, default `main`, the
+   exact baseline main commit and detected Apache-2.0, plus credential-free HTTPS read/clone without
+   invoking a credential helper or persisting a clone.
+6. It verifies all 47 branches, 43 closed PR conversations plus current Draft PR #53, 2 open/7 closed
+   issues, Actions histories/logs including the 124-run disposition checkpoint and subsequent
+   correction/evidence runs, the RC tag, Draft Release status/text/assets, and unchanged
+   Pages/deployment/About state. It also verifies an actionable private vulnerability-reporting route
+   for a public reporter or stops for separately authorized correction.
+7. It adds only an evidence documentation commit on this same branch, normal-pushes it to this same
+   Draft PR, and obtains exact-new-head PR CI `SUCCESS`.
+8. The mutation/evidence continuation does not mark the PR Ready and does not merge. It returns the
+   same Draft PR to the same independent QA task for narrow QA2.
+9. The same QA task must return QA2 `PASS / MERGE`.
+10. Only after an explicit post-QA2 publication continuation does this same implementation task mark
+    PR #53 Ready and perform a normal merge commit; squash, rebase, force-push, branch deletion, and
+    conversation archival/hiding remain prohibited.
+11. It fetches and verifies the exact merge SHA, tree, ordered parents, `origin/main`, and default
+    branch `main` all resolve to that normal merge, then requires exact merge-head main CI `SUCCESS`.
+12. It finally verifies the repository remains `Public` and the task branch and PR conversation remain
+    retained.
+
+Artifact publication/distribution, tag/Release mutation, deployment, submission, live credential
+entry, and every other repository setting remain outside this gate.
+
+## Phase 8.4B Stage 2 Public evidence
+
+The repository owner completed the authorized visibility change manually outside this agent. The
+agent did not repeat or reverse the mutation. At 2026-07-26 04:48 ICT (2026-07-25 21:48 UTC), the
+official signed-in in-app Browser and independent unsigned reads established this post-mutation state:
+
+| Surface                     | Exact post-mutation evidence                                                                                                                                                                                                      |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Identity/default/visibility | `toannnnq1424/data-incident-investigator`; Settings says “This repository is currently public”; root shows `Public` and no `Private` badge; default branch remains `main`                                                         |
+| Main/license/CI             | exact main `36d4205806597ae14b7306c74e1527c284202023`; Apache-2.0 README badge and canonical LICENSE readable; main CI run `30172556907` / job `89715980644` remains `SUCCESS`                                                    |
+| Unsigned HTTP               | repository root, exact main commit, README, LICENSE, issues, pull requests, tags, Releases, and Actions each returned HTTP `200`; README and canonical Apache License content were readable                                       |
+| Credential-free Git read    | `git ls-remote` with terminal prompts and credential helpers disabled returned exact `36d4205806597ae14b7306c74e1527c284202023` for `refs/heads/main`; no clone or credential was stored                                          |
+| Branches and PRs            | all 47 branches retained; 1 open/43 closed pull requests; Draft PR #53 remains open, `Not ready`, conflict-free, unmerged, with its branch and conversation retained                                                              |
+| Issues and Actions          | 2 open/7 closed issues retained; 125 workflow runs existed before the evidence push, including accepted run `30175050395`; histories/logs remain visible                                                                          |
+| Tag/Release                 | one `v1.0.0-rc.1` tag retained at `c4e33f7af3707f604d35b1220a18e4e83f491be3`; Draft Release remains unpublished with zero user-uploaded assets and only two automatic source archives                                             |
+| Pages/deployments           | Pages remains disabled with source `None`; no public deployment is configured or claimed                                                                                                                                          |
+| Security reporting          | enabled at 2026-07-26 05:22 ICT; Settings shows `Disable private vulnerability reporting`, Security overview shows `Enabled`, and unsigned `/security` exposes `Report a vulnerability`; the report route requires GitHub sign-in |
+
+No branch, conversation, issue, Actions history, tag, Release, or user-uploaded asset was deleted,
+archived, hidden, or created by the visibility change. No unexpected owner/name/default-branch,
+Pages, deployment, merge, branch-retention, or release-setting drift was observed. The authorized
+QA2 security follow-up enabled only private vulnerability reporting; no other setting changed.
+
+Public source access and the exact unsigned read evidence make C10 `PASS`. C09 remains `PASS`; C11
+and Phase 8.2 remain `PARTIAL`. Artifact publication/distribution remains `BLOCKED` pending the exact
+bundled-output attribution audit. Public visibility does not claim a deployment, video, Devpost
+submission, published Release, or distributable artifact.
+
+The residual exposure remains irreversible: a later visibility rollback cannot recall forks, clones,
+caches, or copies. Any rollback would be containment/escalation, not erasure. This evidence commit
+must receive exact-new-head PR CI `SUCCESS`, then Draft PR #53 returns to the same QA task for QA2;
+this continuation does not mark Ready or merge.
 
 ## Audited baseline and method
 
@@ -326,7 +511,7 @@ project. Its Category A/B/X groupings are useful only as a conservative triage m
 replace package-specific evidence or counsel. Even commonly permissive dependencies may require
 retained notices or attribution.
 
-## Read-only GitHub public-exposure inventory
+## Historical Phase 8.3 GitHub public-exposure inventory
 
 The official signed-in in-app Browser showed the following repository state at
 2026-07-25 22:00 ICT (2026-07-25 15:00 UTC):
@@ -429,18 +614,23 @@ Merging it does not press the visibility control or authorize any other external
 
 ## Residual blockers and next evidence
 
-1. The Apache change is only on a Draft branch. Independent QA, normal merge, exact-main CI success,
-   and GitHub detected-license verification are still required before the Apache compliance row may
-   leave `OPEN`.
+1. Apache-2.0 is integrated on exact `main`, exact-main CI is successful, and GitHub detects the
+   license. C09 is `PASS`; no license mutation remains in Phase 8.4B.
 2. All 138 external production package-version nodes have declared-license metadata, and 137 have a
    legal file. `abstract-logging@2.0.1` lacks a legal file. This does not block the current source
    relicense, but C11 stays `PARTIAL`. The release archive already includes bundled third-party
    runtime code in `apps/web/dist`; publication/distribution is blocked until the exact bundled-output
    attribution audit and any justified artifact attribution-file enforcement are complete.
-3. GitHub visibility remains `Private`. The separately approved Public transition is reserved for
-   Phase 8.4B; it is not performed by this branch, its merge, or ordinary repository permission.
+3. GitHub is `Public`. Authenticated and unsigned access plus credential-helper-disabled Git read
+   evidence make C10 `PASS`; preserve and reverify that state through QA2 and the normal merge.
 4. Phase 8.2 remains `PARTIAL` pending live/judge DataHub credentials and validation; this packet does
    not change that independent readiness condition.
+5. The prior private-reporting blocker is closed. At 2026-07-26 05:22 ICT
+   (2026-07-25 22:22 UTC), Settings showed the reporting control as `Disable`, proving enabled state.
+   Security overview showed `Private vulnerability reporting • Enabled`, and an unsigned `/security`
+   read exposed `Report a vulnerability`. The exact report route redirects unsigned users to GitHub
+   sign-in, so a GitHub account is required and anonymous submission is not claimed. No non-maintainer
+   account was used; public issues remain prohibited for vulnerability details.
 
 ## Primary official references
 
@@ -448,6 +638,7 @@ GitHub sources were accessed 2026-07-25 22:00 ICT (2026-07-25 15:00 UTC). The ca
 and NOTICE condition were rechecked 2026-07-25 23:54 ICT (2026-07-25 16:54 UTC):
 
 - [GitHub: Setting repository visibility](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/managing-repository-settings/setting-repository-visibility)
+- [GitHub: Privately reporting a security vulnerability](https://docs.github.com/code-security/security-advisories/guidance-on-reporting-and-writing-information-about-vulnerabilities/privately-reporting-a-security-vulnerability)
 - [GitHub: Adding a license to a repository](https://docs.github.com/en/communities/setting-up-your-project-for-healthy-contributions/adding-a-license-to-a-repository)
 - [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0)
 - [Apache Software Foundation: Applying the Apache license, version 2.0](https://www.apache.org/legal/apply-license.html)

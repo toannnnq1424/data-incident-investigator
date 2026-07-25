@@ -19,6 +19,11 @@ metadata retrieval is available through the existing direct GraphQL path or an e
 Server path. The MCP protocol fixture and product vertical slice are validated locally; a live
 credentialed DataHub MCP smoke remains blocked until an authorized service is available.
 
+The source is licensed under Apache-2.0 on `main`, and the
+[GitHub repository](https://github.com/toannnnq1424/data-incident-investigator) is Public and readable
+without project credentials. Draft PR #53 contains the post-transition evidence packet and remains
+unmerged pending independent QA2.
+
 ## Stack
 
 - TypeScript monorepo managed with pnpm workspaces
@@ -74,6 +79,10 @@ From a clean exact commit, `pnpm release:artifact` performs one pinned release b
 version-and-commit-named deterministic archive plus SHA-256 sidecar under ignored
 `outputs/release/`. Verify it with `pnpm release:verify -- --artifact <archive>` and the separately
 approved full commit/version before extraction.
+
+Artifact publication or distribution is currently **blocked**. The web output bundles third-party
+runtime code, and the exact embedded-package/required-notice attribution audit is incomplete. Public
+source visibility does not authorize publishing, attaching, or distributing the release archive.
 
 The supported deployment boundary is a generic Node 24 host with a static web host and same-origin
 `/api` reverse proxy. No Docker/cloud/public deployment is currently claimed. See

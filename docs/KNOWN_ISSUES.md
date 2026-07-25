@@ -2,27 +2,38 @@
 
 Last updated: 2026-07-26.
 
-- Phase 8.4A consumes only the user's explicit 2026-07-25 Apache-2.0 relicense authorization. On this
-  Draft branch, the canonical Apache text, all seven private manifest SPDX fields, README,
-  contributor terms, and direct repository/compliance documentation are coordinated without changing
-  version, dependencies, runtime, or `pnpm-lock.yaml`. C09 remains `OPEN` until independent QA,
-  normal merge, exact-main CI, and GitHub detected-license verification. The independently approved
-  Public transition is reserved for Phase 8.4B; GitHub remains `Private`, so C10 remains `OPEN`.
-  C11 and Phase 8.2 remain `PARTIAL`.
+- Phase 8.4A is integrated through exact normal merge
+  `36d4205806597ae14b7306c74e1527c284202023`, tree
+  `876899895449981f3c4dd3981ef76ba64597d1bd`, with ordered parents
+  `a13448fb3e25885410a10f3c8e5efdea6b6b5429` then
+  `7154b8ce036ec97adb87ed76d8483727746e4501`. Exact main CI run `30172556907`,
+  job `89715980644`, is `SUCCESS`, and signed-in GitHub detects `Apache-2.0`. C09 is `PASS`.
+
+  Phase 8.4B Stage 2 verified the owner's externally completed visibility change at 2026-07-26 04:48
+  ICT. Authenticated GitHub and unsigned HTTPS reads show `Public`; credential-helper-disabled
+  `ls-remote` resolves default `main` to exact
+  `36d4205806597ae14b7306c74e1527c284202023`. C10 is `PASS`. All 47 branches, 43 closed PR
+  conversations plus Draft PR #53, 2 open/7 closed issues, the 125-run pre-evidence Actions history,
+  the RC tag, and the unpublished Draft Release with zero user-uploaded assets remain retained. Pages
+  is disabled and no deployment is claimed.
+
+  The prior GitHub private-reporting blocker is closed. At 2026-07-26 05:22 ICT, authenticated
+  Settings showed the enabled control as `Disable private vulnerability reporting`, Security overview
+  showed the feature `Enabled`, and unsigned `/security` exposed `Report a vulnerability`. The exact
+  private report route requires GitHub sign-in; anonymous reporting is not claimed, no non-maintainer
+  account was used, and public issue disclosure remains prohibited. No Code of Conduct is tracked;
+  this is an optional governance follow-up, not a proven Public-source blocker.
 
   The reused frozen production graph remains 138 external package-version nodes/132 names/7
   importers, with declared licenses 122 MIT, 10 ISC, 5 BSD-3-Clause, and 1 BSD-2-Clause; 137 legal
   files; 0 NOTICE files; and a missing legal file for declared-MIT `abstract-logging@2.0.1`. No generic
   project NOTICE is added, but 0 dependency NOTICE files does not settle the attribution obligations
   for bundled MIT/ISC/BSD code. The archive does not copy the `node_modules` directory; it does copy
-  complete `apps/web/dist`, whose Vite application bundle includes third-party runtime code. React
-  and ReactDOM resolve to `19.2.7`, are imported by the web entry, are not externalized by Vite
-  configuration, and have MIT legal files in the frozen evidence. The exact embedded-package and
-  required-notice inventory remains incomplete. Source relicensing may proceed, but publishing or
-  distributing the release artifact is blocked until the exact bundled-output attribution audit
-  captures required notices with provenance and, if justified, adds an enforced third-party
-  attribution file. Git provenance is recorded only by sanitized counts/fingerprints and is not
-  claimed as legal proof. See
+  complete `apps/web/dist`, whose Vite application bundle includes third-party runtime code. The exact
+  embedded-package and required-notice inventory remains incomplete. Artifact publication or
+  distribution is `BLOCKED` until the exact bundled-output attribution audit captures required
+  notices with provenance and, if justified, adds enforced third-party attribution. C11 and Phase 8.2
+  remain `PARTIAL`. See
   [`PUBLIC_SOURCE_APACHE_READINESS.md`](PUBLIC_SOURCE_APACHE_READINESS.md).
 
 - Phase 8.2 is integrated as `aa8d120205fdc35298b9ef36c7dd36b38b23e342` through main merge
@@ -340,8 +351,8 @@ Last updated: 2026-07-26.
   `submit -> processing -> completed -> full evidence display` in `32.400s`, with real evidence
   references and clean-console assertions. Post-run probes found zero listeners and zero
   launcher-related process leaks.
-- The GitHub repository remains Private. The authorized Apache-2.0 change is pending Draft PR
-  QA/merge/main CI; the separately approved Public transition remains an unexecuted Phase 8.4B gate.
+- The GitHub repository is Public. Apache-2.0 is integrated and detected on exact main; authenticated
+  and unsigned Phase 8.4B evidence makes C10 `PASS`. Draft PR #53 remains unmerged pending QA2.
 - Slice 1.2 stores incident lifecycle and completed reports only in API process memory. Restarting the
   API removes existing incident IDs; durable persistence remains deferred.
 - The UI exposes seven guided presets, but only `removed-schema-column` has the rich checked-in

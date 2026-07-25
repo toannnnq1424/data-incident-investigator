@@ -169,5 +169,14 @@ sanitized operational fields above and do not serialize `eventTrail` or its evid
 
 ## Reporting
 
-For a suspected vulnerability, avoid public issue details until impact is understood. Contact the
-repository owner privately and include reproduction scope, affected revision, and suggested mitigation.
+For a suspected vulnerability, never open a public issue or pull request with vulnerability details.
+Use [GitHub private vulnerability reporting](https://github.com/toannnnq1424/data-incident-investigator/security/advisories/new).
+GitHub requires the reporter to sign in with a GitHub account; this is a private GitHub advisory route,
+not an anonymous channel. A public issue is not an acceptable fallback.
+
+Include a concise summary and impact, the affected revision or version, sanitized reproduction steps
+or proof of concept, affected configurations, and any suggested mitigation. Never include unrelated
+credentials, tokens, private endpoints, raw sensitive incident data, or another party's personal data.
+Maintainers will use the private advisory thread to acknowledge receipt, request missing details,
+assess impact, and coordinate remediation and disclosure. No fixed response or resolution SLA is
+promised.

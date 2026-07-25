@@ -7,7 +7,7 @@ body:
       value: |
         Thanks for helping improve Data Incident Investigator.
 
-        **Security:** Do not disclose a vulnerability here. Follow the [security policy](https://github.com/toannnnq1424/data-incident-investigator/security/policy) and contact the repository owner privately.
+        **Security:** Do not disclose a vulnerability here. Follow the [security policy](https://github.com/toannnnq1424/data-incident-investigator/security/policy) and use [GitHub private vulnerability reporting](https://github.com/toannnnq1424/data-incident-investigator/security/advisories/new). GitHub sign-in is required.
 
         **Data handling:** Never include secrets, credentials, authorization headers, private endpoints, raw provider payloads, or raw sensitive incident data. Use a minimal fixture or sanitized example.
   - type: dropdown
