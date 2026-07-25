@@ -5754,3 +5754,74 @@ Deferred: every visibility mutation and public probe until Stage 1 QA `PASS / EX
 action until QA2 `PASS / MERGE` plus explicit publication continuation; artifact
 publication/distribution; private-reporting setting changes; full tests/build/E2E/live DataHub;
 version/tag/Release/deployment/submission; and all other external mutations.
+
+#### Stage 2 — externally completed Public transition evidence
+
+Status: the same independent QA task returned `PASS / EXECUTE PUBLIC MUTATION`. GitHub required a
+user-held re-authentication step, after which the repository owner completed the authorized
+visibility change manually outside this agent. The reviewed UI did not expose the exact mutation
+timestamp. Authenticated and unsigned verification began at 2026-07-26 04:48 ICT
+(2026-07-25 21:48 UTC). Do not attempt the visibility mutation again.
+
+Objective: record exact post-mutation evidence on the same branch and Draft PR #53, change only C10
+from `OPEN` to `PASS`, require exact-new-head PR CI, and return the still-Draft PR to the same QA task
+for QA2. Keep artifact publication/distribution `BLOCKED`; do not mark Ready or merge.
+
+Minimum files:
+
+- `README.md` for the directly stale current Public status.
+- `docs/SECURITY.md` for the verified private-reporting limitation without enabling a setting.
+- `docs/PUBLIC_SOURCE_APACHE_READINESS.md` for the authoritative authenticated/unsigned evidence,
+  retained inventories, status, and irreversibility boundary.
+- `docs/DEVPOST_REQUIREMENTS.md` for C10 `PASS` and exact 37-row totals.
+- `docs/KNOWN_ISSUES.md` for current Public/security/artifact limitations.
+- `docs/RELEASE_CHECKLIST.md`, this plan, and `docs/SESSION_LOG.md` for durable execution state.
+- Draft PR #53 body for exact post-mutation Git/diff/CI evidence after push.
+- No runtime, source, test, fixture, workflow, manifest, lock, version, tag, Release, deployment,
+  artifact, submission, or additional GitHub setting change.
+
+Acceptance criteria:
+
+- Authenticated repository root and Settings both say `Public`, with owner/name/default `main`
+  unchanged and no current `Private` badge.
+- Unsigned HTTP returns `200` for the repository, exact main commit, README, LICENSE, issues, pull
+  requests, tags, Releases, and Actions; exact README and canonical Apache License content are
+  readable.
+- Credential-helper-disabled HTTPS `git ls-remote` returns exact
+  `36d4205806597ae14b7306c74e1527c284202023` for `refs/heads/main` without persisting a clone or
+  invoking a stored credential.
+- Refetched `origin/main` remains that exact commit; branch/remote/PR #53 remain exact accepted head
+  `f272ce890ddfd65be9e1d50e409abf75333eb50b` before the evidence commit; accepted PR CI run
+  `30175050395`, job `89722362388`, remains `SUCCESS`.
+- Preserve all 47 branches, 43 closed PR conversations plus Draft PR #53, 2 open/7 closed issues, 125
+  pre-evidence Actions runs, one RC tag, and the unpublished Draft Release with zero user-uploaded
+  assets. Pages remains disabled/source `None`; no deployment is claimed.
+- Record that private vulnerability reporting remains disabled. An authenticated maintainer can open
+  a draft advisory, and an unsigned request reaches GitHub sign-in, but external private submission
+  is not proven. Do not enable the setting; leave the separately authorized follow-up visible.
+- Set C10 to `PASS` and require exact totals `2 PASS / 12 PARTIAL / 15 OPEN / 8 NOT REQUIRED`; retain
+  C09 `PASS`, C11 and Phase 8.2 `PARTIAL`.
+- Preserve the residual warning that Public-to-Private containment cannot recall forks, clones,
+  caches, or copies. Do not claim reversibility or exhaustive historical risk proof.
+- Run only changed-doc Prettier, local links, UTF-8/LF/final newline/no BOM, exact eight-path
+  allowlist, stale-current-Private and added-line secret/private-data/internal-link scans, compliance
+  totals, hash-only LICENSE/lock/manifest invariants, and `git diff --check`.
+- Create one additive conventional evidence commit, normal-push the same branch, update only Draft PR
+  #53, require exact-new-head PR CI `SUCCESS`, and keep the PR Draft/unmerged for same-QA QA2.
+
+Start evidence:
+
+- Authenticated root shows `Public`, exact latest main `36d4205`, 47 branches, and one tag; Settings
+  says “This repository is currently public,” repository name remains `data-incident-investigator`,
+  and default branch remains `main`.
+- Unsigned root/commit/README/LICENSE/issues/PR/tags/Releases/Actions GETs return `200`; README and
+  canonical Apache License content are readable. Credential-helper-disabled `ls-remote` resolves the
+  exact main SHA.
+- Draft PR #53 remains unique open, `Not ready`, conflict-free, unmerged, with 2 commits, 8 files,
+  no reviews, and one successful check. The inventories and release target/assets remain unchanged.
+- Private vulnerability reporting remains disabled; Pages remains disabled with source `None`.
+
+Deferred: exact evidence-commit identities and PR CI until commit/push; same-QA QA2; every Ready/merge
+action until QA2 `PASS / MERGE` plus explicit publication continuation; private-reporting setting
+change; artifact publication/distribution; full tests/build/E2E/live DataHub; version/tag/Release/
+deployment/submission; and all other external mutations.

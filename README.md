@@ -19,8 +19,10 @@ metadata retrieval is available through the existing direct GraphQL path or an e
 Server path. The MCP protocol fixture and product vertical slice are validated locally; a live
 credentialed DataHub MCP smoke remains blocked until an authorized service is available.
 
-The source is licensed under Apache-2.0 on `main`. The GitHub repository remains Private while the
-independently approved Public transition waits for pre-mutation QA and post-transition verification.
+The source is licensed under Apache-2.0 on `main`, and the
+[GitHub repository](https://github.com/toannnnq1424/data-incident-investigator) is Public and readable
+without project credentials. Draft PR #53 contains the post-transition evidence packet and remains
+unmerged pending independent QA2.
 
 ## Stack
 

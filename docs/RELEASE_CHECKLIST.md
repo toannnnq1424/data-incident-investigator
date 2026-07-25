@@ -182,18 +182,21 @@ actions below remain separately scoped.
       recall forks, clones, caches, or copies.
 - [x] Record that no Code of Conduct exists without inventing a blocker, and that the private
       vulnerability-reporting route is currently unavailable while Private.
-- [ ] Require the same independent QA task to return Stage 1 `PASS / EXECUTE`, then require explicit
-      same-task continuation before visibility mutation. Until then keep C10 `OPEN`, C11 and Phase 8.2
-      `PARTIAL`, repository `Private`, and artifact publication/distribution `BLOCKED`.
-- [ ] In the same implementation task, re-fetch the exact Private baseline and change only visibility
-      to Public.
-- [ ] Verify authenticated and unauthenticated `Public` surfaces, exact default-main baseline commit,
+- [x] The same independent QA task returned Stage 1 `PASS / EXECUTE`, followed by explicit same-task
+      continuation. The repository owner then completed the authorized visibility change manually
+      outside this agent; no credential/re-authentication detail is recorded.
+- [x] Re-fetch the exact Private baseline before the external change, then verify after it that GitHub
+      Settings and the root show `Public` with owner/name/default `main` unchanged.
+- [x] Verify authenticated and unauthenticated `Public` surfaces, exact default-main baseline commit,
       Apache-2.0, credential-free read/clone, all 47 branches, 43 closed conversations plus Draft PR
-      #53, 2 open/7 closed issues, the 124-run Actions disposition checkpoint plus subsequent
-      correction/evidence histories/logs, tag/Draft Release, unchanged Pages/deployment/About, and
-      actionable private vulnerability reporting.
-- [ ] Add only the post-mutation evidence docs commit on this branch/PR, normal-push it, and require
-      exact-new-head PR CI `SUCCESS`; do not mark Ready or merge in the mutation/evidence continuation.
+      #53, 2 open/7 closed issues, the 125-run pre-evidence Actions history, tag/Draft Release, zero
+      user-uploaded Release assets, and unchanged Pages/deployment/About. Private vulnerability
+      reporting remains disabled and requires separate authorization; do not enable it here.
+- [x] Prepare only the post-mutation evidence docs commit on this same branch/PR; C10 is `PASS`, C09
+      stays `PASS`, C11 and Phase 8.2 stay `PARTIAL`, and artifact publication/distribution stays
+      `BLOCKED`.
+- [ ] Normal-push the evidence commit and require exact-new-head PR CI `SUCCESS`; do not mark Ready or
+      merge in the mutation/evidence continuation.
 - [ ] Return the same Draft PR to the same QA task for narrow QA2 and require `PASS / MERGE`.
 - [ ] Only after explicit post-QA2 publication continuation, mark PR #53 Ready and create a normal
       merge commit; never squash, rebase, force-push, delete the branch, or archive/hide the

@@ -1,7 +1,7 @@
 # Public-source and Apache-2.0 readiness decision packet
 
-Status: `PHASE 8.4B STAGE 1 — PRE-MUTATION`; Apache-2.0 is integrated on exact `main`, the
-repository is still `Private`, and the approved Public mutation is pending independent QA.
+Status: `PHASE 8.4B STAGE 2 — POST-MUTATION EVIDENCE`; Apache-2.0 is integrated on exact `main`,
+the repository is `Public`, C10 is `PASS`, and Draft PR #53 remains unmerged pending independent QA2.
 
 This document prepares two independent decisions for Data Incident Investigator:
 
@@ -9,14 +9,16 @@ This document prepares two independent decisions for Data Incident Investigator:
 2. whether the GitHub repository may be changed from Private to Public.
 
 The user explicitly approved both decisions independently on 2026-07-25. Phase 8.4A consumed the
-first approval and is now integrated on `main`. Phase 8.4B Stage 1 consumes no visibility mutation:
-it creates this reviewable preflight packet while keeping the repository Private. The second approval
-remains valid, but execution requires independent QA and an explicit post-QA continuation in the same
-task.
+first approval and is integrated on `main`. Phase 8.4B Stage 1 remains the historical pre-mutation
+packet. After its independent QA returned `PASS / EXECUTE`, the repository owner completed the
+approved visibility change outside this agent. The exact mutation timestamp was not exposed by the
+reviewed GitHub UI; authenticated and unsigned verification began at 2026-07-26 04:48 ICT
+(2026-07-25 21:48 UTC).
 
-This is an engineering and review record, not legal advice. Stage 1 does not change GitHub visibility
-or any repository setting, About metadata, tag, Release, release asset, deployment, credential,
-submission state, runtime, dependency, version, workflow, manifest, lockfile, or artifact.
+This is an engineering and review record, not legal advice. Stage 2 records the external visibility
+change and evidence; it does not disclose credential or re-authentication details and changes no
+other GitHub setting, About metadata, tag, Release, release asset, deployment, credential, submission
+state, runtime, dependency, version, workflow, manifest, lockfile, or artifact.
 
 ## Phase 8.4A authorized implementation
 
@@ -89,8 +91,8 @@ The canonical `LICENSE` remains byte-identical at SHA-256
 workspace manifests remain aligned at `1.0.0-rc.1`, `private: true`, and exact SPDX `Apache-2.0`.
 `pnpm-lock.yaml` remains byte-identical at SHA-256
 `e36baa3fe1899c4f58cc66eeeaea279601e5be271690b6fa215273740e4ac107`.
-GitHub detects `Apache-2.0` on exact main, so C09 is `PASS`. C10 remains `OPEN`; C11 and Phase 8.2
-remain `PARTIAL`.
+At the Stage 1 checkpoint GitHub detected `Apache-2.0` on exact main, so C09 was `PASS`; C10 remained
+`OPEN`, while C11 and Phase 8.2 remained `PARTIAL`.
 
 Fixture mode remains credential-free. Direct GraphQL and DataHub MCP modes require operator-supplied
 authorized external configuration, but no live/judge DataHub credential is present or required to
@@ -169,7 +171,8 @@ copies.
 
 ### Post-QA mutation and evidence gate
 
-This correction turn performs no visibility mutation. The exact terminal sequence is:
+The Stage 1 correction turn performed no visibility mutation. It established this exact terminal
+sequence:
 
 1. The same independent QA task returns Stage 1 `PASS / EXECUTE`.
 2. The controller sends an explicit post-QA continuation to this same implementation task.
@@ -200,6 +203,39 @@ This correction turn performs no visibility mutation. The exact terminal sequenc
 
 Artifact publication/distribution, tag/Release mutation, deployment, submission, live credential
 entry, and every other repository setting remain outside this gate.
+
+## Phase 8.4B Stage 2 Public evidence
+
+The repository owner completed the authorized visibility change manually outside this agent. The
+agent did not repeat or reverse the mutation. At 2026-07-26 04:48 ICT (2026-07-25 21:48 UTC), the
+official signed-in in-app Browser and independent unsigned reads established this post-mutation state:
+
+| Surface                     | Exact post-mutation evidence                                                                                                                                                                          |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Identity/default/visibility | `toannnnq1424/data-incident-investigator`; Settings says “This repository is currently public”; root shows `Public` and no `Private` badge; default branch remains `main`                             |
+| Main/license/CI             | exact main `36d4205806597ae14b7306c74e1527c284202023`; Apache-2.0 README badge and canonical LICENSE readable; main CI run `30172556907` / job `89715980644` remains `SUCCESS`                        |
+| Unsigned HTTP               | repository root, exact main commit, README, LICENSE, issues, pull requests, tags, Releases, and Actions each returned HTTP `200`; README and canonical Apache License content were readable           |
+| Credential-free Git read    | `git ls-remote` with terminal prompts and credential helpers disabled returned exact `36d4205806597ae14b7306c74e1527c284202023` for `refs/heads/main`; no clone or credential was stored              |
+| Branches and PRs            | all 47 branches retained; 1 open/43 closed pull requests; Draft PR #53 remains open, `Not ready`, conflict-free, unmerged, with its branch and conversation retained                                  |
+| Issues and Actions          | 2 open/7 closed issues retained; 125 workflow runs existed before the evidence push, including accepted run `30175050395`; histories/logs remain visible                                              |
+| Tag/Release                 | one `v1.0.0-rc.1` tag retained at `c4e33f7af3707f604d35b1220a18e4e83f491be3`; Draft Release remains unpublished with zero user-uploaded assets and only two automatic source archives                 |
+| Pages/deployments           | Pages remains disabled with source `None`; no public deployment is configured or claimed                                                                                                              |
+| Security reporting          | private vulnerability reporting remains disabled; an authenticated maintainer can open a draft advisory and an unsigned request reaches GitHub sign-in, but external private submission is not proven |
+
+No branch, conversation, issue, Actions history, tag, Release, or user-uploaded asset was deleted,
+archived, hidden, or created by the visibility change. No unexpected owner/name/default-branch,
+Pages, deployment, merge, branch-retention, or release-setting drift was observed. The separately
+authorized security-reporting follow-up remains open; Stage 2 does not enable that setting.
+
+Public source access and the exact unsigned read evidence make C10 `PASS`. C09 remains `PASS`; C11
+and Phase 8.2 remain `PARTIAL`. Artifact publication/distribution remains `BLOCKED` pending the exact
+bundled-output attribution audit. Public visibility does not claim a deployment, video, Devpost
+submission, published Release, or distributable artifact.
+
+The residual exposure remains irreversible: a later visibility rollback cannot recall forks, clones,
+caches, or copies. Any rollback would be containment/escalation, not erasure. This evidence commit
+must receive exact-new-head PR CI `SUCCESS`, then Draft PR #53 returns to the same QA task for QA2;
+this continuation does not mark Ready or merge.
 
 ## Audited baseline and method
 
@@ -585,14 +621,13 @@ Merging it does not press the visibility control or authorize any other external
    relicense, but C11 stays `PARTIAL`. The release archive already includes bundled third-party
    runtime code in `apps/web/dist`; publication/distribution is blocked until the exact bundled-output
    attribution audit and any justified artifact attribution-file enforcement are complete.
-3. GitHub visibility remains `Private`. Stage 1 records the valid Public approval but performs no
-   mutation. C10 stays `OPEN` pending independent QA, explicit same-task continuation, the visibility
-   change, and every post-mutation evidence gate above.
+3. GitHub is `Public`. Authenticated and unsigned access plus credential-helper-disabled Git read
+   evidence make C10 `PASS`; preserve and reverify that state through QA2 and the normal merge.
 4. Phase 8.2 remains `PARTIAL` pending live/judge DataHub credentials and validation; this packet does
    not change that independent readiness condition.
-5. The public private-vulnerability-reporting route is not available while the repository is Private.
-   Its post-Public verification or a separately authorized alternate private channel is required
-   before the transition may be called complete.
+5. Private vulnerability reporting remains disabled after Public visibility. An authenticated
+   maintainer can open a draft advisory, but external private submission is not proven; enabling that
+   control or documenting another actionable private channel requires separate authorization.
 
 ## Primary official references
 

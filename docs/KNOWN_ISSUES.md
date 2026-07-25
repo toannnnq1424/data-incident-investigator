@@ -9,15 +9,19 @@ Last updated: 2026-07-26.
   `7154b8ce036ec97adb87ed76d8483727746e4501`. Exact main CI run `30172556907`,
   job `89715980644`, is `SUCCESS`, and signed-in GitHub detects `Apache-2.0`. C09 is `PASS`.
 
-  Phase 8.4B Stage 1 is pre-mutation only. The user independently approved Public visibility on
-  2026-07-25, but GitHub remains `Private`; C10 remains `OPEN` pending independent QA, explicit
-  same-task continuation, the one UI mutation, and anonymous access/clone, exact-main,
-  branch/conversation retention, tag/Release/issues/Actions, Pages/deployment, license, and private
-  vulnerability-reporting evidence. The current public-advisory submission route returns 404 while
-  the repository is Private. If it remains unavailable after Public visibility, stop and obtain
-  separate authorization for GitHub private vulnerability reporting or another actionable private
-  channel before the transition is complete. No Code of Conduct is tracked; this is an optional
-  governance follow-up, not a proven Public-source blocker.
+  Phase 8.4B Stage 2 verified the owner's externally completed visibility change at 2026-07-26 04:48
+  ICT. Authenticated GitHub and unsigned HTTPS reads show `Public`; credential-helper-disabled
+  `ls-remote` resolves default `main` to exact
+  `36d4205806597ae14b7306c74e1527c284202023`. C10 is `PASS`. All 47 branches, 43 closed PR
+  conversations plus Draft PR #53, 2 open/7 closed issues, the 125-run pre-evidence Actions history,
+  the RC tag, and the unpublished Draft Release with zero user-uploaded assets remain retained. Pages
+  is disabled and no deployment is claimed.
+
+  GitHub private vulnerability reporting remains disabled. An authenticated maintainer can open a
+  draft advisory, while an unsigned request reaches GitHub sign-in; external private submission is
+  not proven. Enabling that control or publishing another actionable private channel requires
+  separate authorization. No Code of Conduct is tracked; this is an optional governance follow-up,
+  not a proven Public-source blocker.
 
   The reused frozen production graph remains 138 external package-version nodes/132 names/7
   importers, with declared licenses 122 MIT, 10 ISC, 5 BSD-3-Clause, and 1 BSD-2-Clause; 137 legal
@@ -346,8 +350,8 @@ Last updated: 2026-07-26.
   `submit -> processing -> completed -> full evidence display` in `32.400s`, with real evidence
   references and clean-console assertions. Post-run probes found zero listeners and zero
   launcher-related process leaks.
-- The GitHub repository remains Private. Apache-2.0 is integrated and detected on exact main; the
-  separately approved Public transition remains an unexecuted Phase 8.4B gate pending independent QA.
+- The GitHub repository is Public. Apache-2.0 is integrated and detected on exact main; authenticated
+  and unsigned Phase 8.4B evidence makes C10 `PASS`. Draft PR #53 remains unmerged pending QA2.
 - Slice 1.2 stores incident lifecycle and completed reports only in API process memory. Restarting the
   API removes existing incident IDs; durable persistence remains deferred.
 - The UI exposes seven guided presets, but only `removed-schema-column` has the rich checked-in

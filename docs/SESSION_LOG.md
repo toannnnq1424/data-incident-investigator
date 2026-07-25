@@ -5072,3 +5072,90 @@ conventional correction commit; normal-push the same branch; update only Draft P
 new identities, correction diff, both blocker closures, and complete terminal sequence; require
 exact-new-head PR CI `SUCCESS`; keep GitHub Private and return
 `READY FOR SAME QA RE-REVIEW / PUBLIC NOT YET EXECUTED`.
+
+## 2026-07-26 — Phase 8.4B Stage 2 verified Public evidence
+
+### Objective
+
+Record the repository owner's externally completed authorized Public transition on the same branch
+and Draft PR #53. Verify authenticated and unsigned access, set only C10 to `PASS`, preserve the
+artifact block, and return the evidence commit to the same QA task for QA2 without marking Ready or
+merging.
+
+### Completed
+
+- Authenticated GitHub verification began at 2026-07-26 04:48 ICT (2026-07-25 21:48 UTC). The root
+  shows `Public`; Settings says “This repository is currently public”; repository name remains
+  `data-incident-investigator`; default branch remains `main`; exact main remains
+  `36d4205806597ae14b7306c74e1527c284202023`. The owner completed the authorized visibility change
+  manually outside this agent; no credential or re-authentication detail is recorded, and the exact
+  mutation timestamp was not exposed by the reviewed UI.
+- Unsigned HTTP GETs returned `200` for the repository root, exact main commit, README, LICENSE,
+  issues, pull requests, tags, Releases, and Actions. README and canonical Apache License content were
+  readable. A credential-helper-disabled HTTPS `git ls-remote` returned exact main
+  `36d4205806597ae14b7306c74e1527c284202023` without storing a clone or invoking a credential helper.
+- Refetched and preserved accepted local/remote head
+  `f272ce890ddfd65be9e1d50e409abf75333eb50b`, tree
+  `6795872a962edbbaefaf1dabc62b272f198ce29d`, parent
+  `b1c01495702454e678069db49e7285bb693dfd4a`, and exact base/main
+  `36d4205806597ae14b7306c74e1527c284202023`. Accepted CI run `30175050395`, job
+  `89722362388`, remains `SUCCESS`.
+- Confirmed 47 retained branches; 1 open/43 closed PRs; Draft PR #53 `Not ready`, conflict-free,
+  unmerged, with no reviews and its branch/conversation retained; 2 open/7 closed issues; 125
+  pre-evidence Actions runs; one RC tag; and one unpublished Draft Release with zero user-uploaded
+  assets and only two automatic source archives. Pages remains disabled with source `None`; no
+  deployment is configured or claimed.
+- Confirmed private vulnerability reporting remains disabled. An authenticated maintainer can open a
+  draft security advisory and an unsigned request reaches GitHub sign-in, but external private
+  submission is not proven. No security setting was changed; enabling it or publishing another
+  actionable private channel requires separate authorization.
+- Updated only the eight directly stale packet documents. C10 is `PASS`; exact matrix totals are
+  `2 PASS / 12 PARTIAL / 15 OPEN / 8 NOT REQUIRED`; C09 stays `PASS`; C11 and Phase 8.2 stay
+  `PARTIAL`; artifact publication/distribution stays `BLOCKED`.
+
+### Files changed
+
+`README.md`, `docs/SECURITY.md`, `docs/PUBLIC_SOURCE_APACHE_READINESS.md`,
+`docs/DEVPOST_REQUIREMENTS.md`, `docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md`,
+`docs/RELEASE_CHECKLIST.md`, and this session log only.
+
+### Decisions
+
+The external/manual visibility change is recorded as an authorized repository-owner action, not as
+an agent credential operation. The exact mutation time is not guessed; the exact verification time
+is recorded. Public access makes C10 `PASS`, but does not authorize artifact publication, deployment,
+submission, tag/Release mutation, or security-setting changes. A later Private rollback cannot recall
+forks, clones, caches, or copies and would be containment/escalation rather than erasure.
+
+The evidence continuation may not mark PR #53 Ready or merge. Only same-QA QA2 `PASS / MERGE` plus an
+explicit post-QA2 publication continuation can authorize the normal merge sequence. Squash, rebase,
+force-push, branch deletion, and conversation archive/hide remain prohibited.
+
+### Validation performed
+
+Authenticated Public/default-main/Settings, unsigned HTTP and raw-file reads,
+credential-helper-disabled `ls-remote`, retained GitHub inventories, advisory-setting limitation,
+Pages-disabled state, accepted PR/CI identities, and refetched Git refs passed. Focused eight-doc
+Prettier, local links, strict UTF-8/LF/final newline/no BOM, exact allowlist, stale-current-Private,
+added-line secret/private-data/internal-link, compliance totals/statuses, canonical LICENSE/lock/seven
+manifest hash/invariant checks, and `git diff --check` pass. Prior unchanged product gates are reused.
+
+### Validation intentionally deferred
+
+No dependency install, full test, build, evaluation, browser E2E, live DataHub smoke, artifact build/
+publication/distribution, private-reporting setting change, version, tag, Release, deployment,
+submission, Ready transition, or merge is run.
+
+### Known issues
+
+Private vulnerability reporting is disabled and external private submission is not proven. The exact
+bundled-output attribution inventory remains incomplete, so artifact publication/distribution stays
+blocked. Live/judge DataHub validation remains absent. No Code of Conduct is tracked; it remains an
+optional governance follow-up rather than a proven Public-source blocker.
+
+### Exact next step
+
+Finish the focused eight-doc validation and full diff review; create one additive conventional
+evidence commit; normal-push the same branch; update only Draft PR #53 body with exact post-mutation
+evidence, new Git identities and diffs; require exact-new-head PR CI `SUCCESS`; keep the PR Draft and
+unmerged; return `READY FOR SAME QA2 / PUBLIC VERIFIED / PR STILL DRAFT`.

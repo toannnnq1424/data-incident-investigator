@@ -172,8 +172,10 @@ Phase 8.4A is integrated through exact normal merge
 `a13448fb3e25885410a10f3c8e5efdea6b6b5429` then
 `7154b8ce036ec97adb87ed76d8483727746e4501`. Exact main CI run `30172556907`,
 job `89715980644`, is `SUCCESS`, and GitHub detects Apache-2.0 on main. C09 is therefore `PASS`.
-Repository visibility remains Private. The independently approved Public mutation is in Phase 8.4B
-Stage 1 preflight and is pending independent QA plus explicit same-task post-QA continuation.
+The repository owner completed the independently approved visibility change outside this agent.
+Authenticated GitHub plus unsigned HTTP and credential-helper-disabled Git read evidence verified the
+repository as Public at 2026-07-26 04:48 ICT, with default `main` still exact
+`36d4205806597ae14b7306c74e1527c284202023`. C10 is therefore `PASS`.
 
 The source relicense is independent from release-artifact attribution. The archive omits the
 `node_modules` directory but includes complete `apps/web/dist`; Vite produces an application bundle,
@@ -372,11 +374,12 @@ These are repository facts on exact current `main`
   allowlist, with startup validation, bounded/sanitized failure behavior, explicit unsupported
   recent-changes semantics, and a protocol-level product vertical slice. No live authorized DataHub
   MCP service or judge-access path has been validated, so named-integration compliance is `PARTIAL`.
-- [GitHub](https://github.com/toannnnq1424/data-incident-investigator) still showed the repository as
-  **Private** at the 2026-07-26 03:16 ICT pre-mutation checkpoint. The user independently approved the
-  Public change on 2026-07-25, but Stage 1 only prepares the review packet. C10 cannot pass until
-  independent QA, explicit same-task continuation, the UI mutation, and all post-mutation public
-  access/retention/security evidence complete.
+- [GitHub](https://github.com/toannnnq1424/data-incident-investigator) displayed **Public** at the
+  2026-07-26 04:48 ICT post-mutation checkpoint. Unsigned GETs to the repository, exact main commit,
+  README, LICENSE, issues, PRs, tags, Releases, and Actions returned `200`; a credential-helper-disabled
+  HTTPS `ls-remote` resolved default `main` to exact
+  `36d4205806597ae14b7306c74e1527c284202023`. C10 is `PASS`. Private vulnerability reporting remains
+  disabled and is tracked separately from public-source access.
 
 ## Compliance matrix
 
@@ -397,7 +400,7 @@ Every source link in the matrix was accessed at the 2026-07-24 checkpoint in the
 | C07 | [R §4](https://datahub.devpost.com/rules)                                                              | App installs/runs consistently on its stated intended platform.                                                                             | Node 24 runbook, fixture smoke, frozen lock, and MCP protocol/product-slice evidence exist; a clean live MCP judge path does not.                                                                                                 | PARTIAL      | Phase 8.2–8.3           | Validate the final named-integration path from clean judge instructions on the declared platform.                                                            |
 | C08 | [R §4](https://datahub.devpost.com/rules)                                                              | Submission functionality matches text and video.                                                                                            | Current docs describe RC behavior, but final submission/video do not exist.                                                                                                                                                       | PARTIAL      | Phase 8.3               | Freeze verified claims after integration; record a claim-to-demo checklist.                                                                                  |
 | C09 | [R §4](https://datahub.devpost.com/rules)                                                              | Submitted repo uses Apache 2.0 visible at top/About.                                                                                        | Exact main `36d4205806597ae14b7306c74e1527c284202023` contains canonical Apache-2.0 licensing; exact-main CI is successful and GitHub detects `Apache-2.0`.                                                                       | PASS         | Phase 8.4A complete     | Preserve exact license/main evidence through the Public transition and recheck detection afterward.                                                          |
-| C10 | [R §4](https://datahub.devpost.com/rules)                                                              | Public source repository with all necessary source/assets/instructions.                                                                     | GitHub remains Private. Phase 8.4B Stage 1 records the approved mutation and bounded preflight only; independent QA and explicit same-task continuation are pending.                                                              | OPEN         | Phase 8.4B              | After QA, change visibility once; verify anonymous access, exact main, retained branches/PRs, tag/Release/issues/Actions, and private reporting.             |
+| C10 | [R §4](https://datahub.devpost.com/rules)                                                              | Public source repository with all necessary source/assets/instructions.                                                                     | GitHub is Public. Authenticated and unsigned reads verify the repository, exact main commit, README/LICENSE, collaboration, tag/Release, and Actions surfaces; credential-free Git read resolves the exact default-main SHA.      | PASS         | Phase 8.4B complete     | Preserve Public access and exact-main evidence through QA2 and the normal merge; reverify after merge.                                                       |
 | C11 | [R §§4, 7](https://datahub.devpost.com/rules), [S](https://datahub.devpost.com/resources)              | All third-party SDK/API/data/content use is authorized and licence-compliant.                                                               | Frozen-graph evidence covers 138/138 declared licenses and 137 legal files; complete `apps/web/dist` bundles third-party runtime code, and the precise embedded-package/required-notice attribution inventory remains incomplete. | PARTIAL      | Legal/owner + Phase 8.3 | Audit the exact bundle and enforce a provenance-backed attribution file if justified; then resolve remaining rights.                                         |
 | C12 | [R §§4, 7](https://datahub.devpost.com/rules), [T §7](https://info.devpost.com/legal/terms-of-service) | Submission is original/solely owned and does not violate third-party rights.                                                                | Git provenance exists; entrant/contributor ownership attestation is absent.                                                                                                                                                       | PARTIAL      | Entrant / Phase 8 final | Confirm contributor and asset rights, including any assistance or external work, before submission.                                                          |
 | C13 | [R §4](https://datahub.devpost.com/rules), [O](https://datahub.devpost.com/)                           | Provide an easily testable Project URL.                                                                                                     | No public live URL or finalized judge-ready repository setup exists.                                                                                                                                                              | OPEN         | Phase 8.3               | Choose hosted demo or public-repo setup path and test it from a clean, unauthenticated judge context.                                                        |
@@ -426,8 +429,8 @@ Every source link in the matrix was accessed at the 2026-07-24 checkpoint in the
 | C36 | [O](https://datahub.devpost.com/), [R §4](https://datahub.devpost.com/rules)                           | Separate binary/archive upload.                                                                                                             | Verified RC archive history exists, but no rule requires upload and the Draft RC Release has no user-uploaded assets.                                                                                                             | NOT REQUIRED | —                       | Do not upload an artifact merely for Devpost; keep RC Release and tag immutable.                                                                             |
 | C37 | [O](https://datahub.devpost.com/), [R §§6, 8](https://datahub.devpost.com/rules)                       | Feedback survey for the $50 bonus.                                                                                                          | Optional and not entered.                                                                                                                                                                                                         | NOT REQUIRED | Entrant / optional      | Consider only with separate authorization; one complete actionable feedback submission per entrant.                                                          |
 
-Current matrix totals after the Phase 8.4B Stage 1 preflight are
-**1 PASS / 12 PARTIAL / 16 OPEN / 8 NOT REQUIRED** across 37 rows.
+Current matrix totals after the Phase 8.4B Stage 2 public-access verification are
+**2 PASS / 12 PARTIAL / 15 OPEN / 8 NOT REQUIRED** across 37 rows.
 
 ## Open blockers and verification questions
 
@@ -441,10 +444,11 @@ Current matrix totals after the Phase 8.4B Stage 1 preflight are
    is incomplete, so publishing or distributing that artifact is blocked until the bundled-output
    audit captures required notices with provenance and adds an enforced attribution file if
    justified. The missing `abstract-logging@2.0.1` legal file remains a C11 `PARTIAL` caveat.
-3. **Public repository:** required for submission. Visibility remains Private even though the user
-   independently approved the mutation on 2026-07-25. Phase 8.4B Stage 1 is pre-mutation only;
-   independent QA and explicit same-task continuation precede the one UI change and its anonymous
-   access, retention, Actions/Release, license, Pages/deployment, and security-reporting checks.
+3. **Public repository:** C10 is `PASS`. The repository is Public, exact main remains
+   `36d4205806597ae14b7306c74e1527c284202023`, and authenticated/unsigned source and collaboration
+   surfaces are readable. Preserve this evidence through QA2 and normal merge. Private vulnerability
+   reporting remains a separately authorized security follow-up and was not enabled by the visibility
+   change.
 4. **Judge access:** choose and verify a Project URL path, intended platform, clean setup, and free
    access through judging. A public live production deployment is one option, not the only option.
 5. **Form schema:** exact screenshot/cover image, teammate, challenge selector, credentials, and other
@@ -459,6 +463,6 @@ Current matrix totals after the Phase 8.4B Stage 1 preflight are
    submission because the Rules reserve the right to change.
 
 Phase 8.2 closes only the local named-integration technical seam and remains `PARTIAL` without
-live/judge credentials. Integrated Phase 8.4A makes C09 `PASS`. Phase 8.4B Stage 1 keeps C10 `OPEN`
-and performs no registration, submission, consent, upload, deployment, credential entry, live
-provisioning, visibility change, tag/Release mutation, or artifact publication/distribution.
+live/judge credentials. Integrated Phase 8.4A makes C09 `PASS`; verified Phase 8.4B Public access makes
+C10 `PASS`. This evidence turn performs no registration, submission, consent, upload, deployment,
+credential entry, live provisioning, tag/Release mutation, or artifact publication/distribution.
