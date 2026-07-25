@@ -5195,10 +5195,11 @@ Acceptance and threat/config model:
   terminal result aborts the MCP fetch and prevents any later cache, network-sequence, or budget
   mutation.
 - Readiness requires unique official `search` and `get_lineage` definitions, `readOnlyHint: true`, an
-  object input schema, required string `query`/`urn`, and compatible types for every argument the
-  client sends: `num_results`, `offset`, `upstream`, `max_hops`, and `max_results`. Unrelated server
-  tools remain ignored and uncallable; missing, duplicate, or incompatible required definitions fail
-  closed.
+  object input schema, and compatible property types for every argument the client sends: `query`,
+  `urn`, `num_results`, `offset`, `upstream`, `max_hops`, and `max_results`. The official schema may
+  leave client-sent fields optional; any additional server-required field outside that sent set fails
+  closed. Unrelated server tools remain ignored and uncallable; missing, duplicate, or incompatible
+  required definitions fail closed.
 - Zod failures from search/lineage tool payload parsing and normalization are caught inside the MCP
   provider and reported only as `invalid_response`.
 - Determinism claims remain limited to fixed inputs and code-owned orchestration/order. Live DataHub
@@ -5243,3 +5244,48 @@ Local correction result:
   seams. Full suite, UI/browser E2E, evaluation, release validation, dependency audit, and live MCP
   smoke are not rerun. Additive commit, normal push, same-Draft-PR update, exact-new-head CI, final
   residue review, and remote identity verification remain terminal gates.
+
+#### Second independent-QA correction — optional official inputs and truthful content handling
+
+Status: locally validated small additive correction on the same branch and Draft PR #50 from exact head
+`945d6f566c43038a37ef8c9204880bd8a4d46baf`, tree
+`f6f7504b7d400dc38c711986cf7880e4d0237b93`, parent
+`05a0408880d7e719b969f2d4f9ff5cd6b96230e2`, and unchanged base
+`8144fb19a6daf2670c4143b005b5e1aea25c138a`. Exact-head CI run `30160131446`, job
+`89684010510`, is `SUCCESS`; the QA recheck confirms the preceding 2-file/31-test transport,
+HTTPS-bearer, total-cancellation, and malformed-output corrections remain closed.
+
+Objective and minimum files:
+
+- Correct readiness compatibility only in `packages/datahub-client/src/datahub-mcp.ts`: the JSON
+  Schema `required` array may be absent or empty, and client-sent fields need not be required. Every
+  sent field must still exist in `properties` with its compatible type, while any server-required
+  field outside the client's sent-parameter set fails closed.
+- Update only `tests/integration/datahub-mcp.test.ts` so the verified official search fixture treats
+  `query` as optional, explicitly accepts that schema, and rejects an additional required `tenant`
+  for both search and lineage. Preserve duplicate/missing/type/read-only coverage.
+- Correct only `docs/SECURITY.md` and `docs/DEPLOYMENT.md`: validated `structuredContent` wins while
+  auxiliary content is ignored/not propagated; mixed/media fallback content is rejected only when
+  structured content is absent; unsupported entity kinds are excluded from normalized results.
+- Record the narrow result in `docs/IMPLEMENTATION_PLAN.md` and `docs/SESSION_LOG.md`; keep Phase 8.2
+  `PARTIAL`. No official-source re-browse is required because QA supplied the already-verified schema
+  correction and the transport/tool path is unchanged.
+
+Acceptance and validation:
+
+- Apply one generic rule to `search` and `get_lineage`: validate all sent property schemas and reject
+  every declared required name not present in that tool's sent-parameter map. Missing or empty
+  `required` is accepted; a present non-array value or non-string entry remains invalid.
+- Run Prettier only for changed TypeScript/Markdown, targeted Vitest name filters for optional-input
+  acceptance and extra-required-field rejection, then diff/docs/secret/encoding/link/residue/port
+  checks. Reuse all prior HTTP regressions, 2-file/31-test matrix, lint/typechecks, builds, dependency
+  audit, vertical slice, and official-source evidence.
+- Create one additive conventional commit, normal-push the same branch, update only Draft PR #50 in
+  the signed-in in-app Browser, and require exact-new-head `PR CI`/`validate` SUCCESS. Do not create a
+  task/branch/PR, amend/rebase/force, mark Ready, or merge.
+
+Local result: focused Vitest filtering ran only the four new readiness cases in
+`tests/integration/datahub-mcp.test.ts`: **1 file / 4 tests PASS**, 22 unrelated cases skipped, in
+`2.06s` (test execution `25ms`). The earlier 2-file/31-test QA matrix, HTTP regressions,
+lint/typechecks, builds, audit, vertical slice, and official-source evidence are reused unchanged.
+Additive commit/push, exact-new-head CI, and final remote/cleanup verification remain pending.

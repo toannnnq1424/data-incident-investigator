@@ -11,7 +11,13 @@ Last updated: 2026-07-24.
   under-validated sent parameters, and malformed tool payloads had the wrong taxonomy. The additive
   correction now bounds actual JSON/SSE bytes, requires HTTPS bearer, propagates total cancellation,
   validates the full sent tool schemas, and maps malformed tool payloads to `invalid_response`; exact
-  correction-head PR CI remains pending. The official MCP Server currently exposes no
+  correction-head `945d6f566c43038a37ef8c9204880bd8a4d46baf` passed PR CI run `30160131446`, job
+  `89684010510`. A second QA recheck found only two medium issues: official optional `query`/`urn`
+  fields must not be required by readiness, while unknown server-required fields must fail closed;
+  security/deployment wording must describe ignored auxiliary structured-result content and filtered
+  unsupported entity kinds rather than claiming whole-response rejection. Their small additive
+  correction is locally validated on the same Draft PR; exact-new-head CI remains pending. The
+  official MCP Server currently exposes no
   recent-changes/timeline tool, so that capability is explicitly unsupported rather than emulated.
   The SDK in-memory protocol fixture, local Streamable HTTP harness, and product vertical slice are
   test evidence only. No authorized DataHub MCP service/credential is present, so live/judge-access

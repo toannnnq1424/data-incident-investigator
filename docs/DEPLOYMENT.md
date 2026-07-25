@@ -134,9 +134,13 @@ standalone SSE transport, stdio, and server process management are deliberately 
 unattended Node service. Streamable HTTP responses may themselves use JSON or SSE. The MCP client
 advertises no server capabilities and calls only `search` and `get_lineage`. Readiness requires
 exactly one read-only definition of each plus compatible schemas for string `query`/`urn`, integer
-`num_results`/`offset`/`max_hops`/`max_results`, and boolean `upstream`. It rejects non-JSON/mixed tool
-content, malformed payload schemas, missing/duplicate/incompatible required tools, and requests
-outside existing entity/lineage/deadline bounds.
+`num_results`/`offset`/`max_hops`/`max_results`, and boolean `upstream`. Those sent fields may be
+optional, but any additional field the server marks required makes readiness fail because the client
+cannot satisfy it. Validated `structuredContent` is used when present and auxiliary content is ignored
+and not propagated; without structured content, only one JSON text item is accepted, so mixed/media
+fallback content fails. Malformed payload schemas and missing/duplicate/incompatible required tools
+fail, while unsupported entity kinds are excluded from normalized results. Existing
+entity/lineage/deadline bounds remain authoritative.
 
 The injected fetch rejects an invalid or over-limit `Content-Length` before reading and counts actual
 JSON/SSE response bytes incrementally when length is missing or inaccurate. It cancels and aborts on

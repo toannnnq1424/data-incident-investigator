@@ -45,7 +45,6 @@ function officialToolDefinitions() {
           num_results: { type: 'integer' },
           offset: { type: 'integer' },
         },
-        required: ['query'],
       },
       annotations: { readOnlyHint: true },
     },
@@ -89,17 +88,32 @@ function toolDefinitionsWithProperty(
   return tools;
 }
 
-function toolDefinitionsWithoutRequired(
-  toolName: 'search' | 'get_lineage',
-  requiredProperty: string,
-) {
+function toolDefinitionsWithRequired(toolName: 'search' | 'get_lineage', required: string[]) {
   const tools = structuredClone(officialToolDefinitions()) as unknown[];
   const tool = tools.find((candidate) => isRecord(candidate) && candidate.name === toolName);
   const inputSchema = isRecord(tool) && isRecord(tool.inputSchema) ? tool.inputSchema : undefined;
-  if (!inputSchema || !Array.isArray(inputSchema.required)) {
+  if (!inputSchema) {
     throw new Error('The test tool definition is malformed.');
   }
-  inputSchema.required = inputSchema.required.filter((property) => property !== requiredProperty);
+  inputSchema.required = required;
+  return tools;
+}
+
+function toolDefinitionsWithAdditionalRequired(
+  toolName: 'search' | 'get_lineage',
+  propertyName: string,
+  propertySchema: unknown,
+) {
+  const tools = toolDefinitionsWithProperty(toolName, propertyName, propertySchema);
+  const tool = tools.find((candidate) => isRecord(candidate) && candidate.name === toolName);
+  const inputSchema = isRecord(tool) && isRecord(tool.inputSchema) ? tool.inputSchema : undefined;
+  if (!inputSchema) {
+    throw new Error('The test tool definition is malformed.');
+  }
+  inputSchema.required = [
+    ...(Array.isArray(inputSchema.required) ? inputSchema.required : []),
+    propertyName,
+  ];
   return tools;
 }
 
@@ -422,7 +436,6 @@ describe('DataHub MCP Server provider', () => {
     ['search query type', toolDefinitionsWithProperty('search', 'query', { type: 'integer' })],
     ['search num_results field', toolDefinitionsWithProperty('search', 'num_results', undefined)],
     ['search offset field', toolDefinitionsWithProperty('search', 'offset', undefined)],
-    ['required search query', toolDefinitionsWithoutRequired('search', 'query')],
     ['lineage urn type', toolDefinitionsWithProperty('get_lineage', 'urn', { type: 'integer' })],
     [
       'lineage upstream type',
@@ -434,7 +447,14 @@ describe('DataHub MCP Server provider', () => {
       toolDefinitionsWithProperty('get_lineage', 'max_results', { type: 'number' }),
     ],
     ['lineage offset field', toolDefinitionsWithProperty('get_lineage', 'offset', undefined)],
-    ['required lineage urn', toolDefinitionsWithoutRequired('get_lineage', 'urn')],
+    [
+      'additional required search tenant',
+      toolDefinitionsWithAdditionalRequired('search', 'tenant', { type: 'string' }),
+    ],
+    [
+      'additional required lineage tenant',
+      toolDefinitionsWithAdditionalRequired('get_lineage', 'tenant', { type: 'string' }),
+    ],
     [
       'unique search definition',
       [...officialToolDefinitions(), structuredClone(officialToolDefinitions()[0])],
@@ -453,6 +473,47 @@ describe('DataHub MCP Server provider', () => {
     await expect(testAdapter([], { tools }).healthCheck()).resolves.toMatchObject({
       status: 'invalid_response',
     });
+  });
+
+  it('accepts an optional official search query while sending the bounded query explicitly', async () => {
+    const requests: RecordedProtocolRequest[] = [];
+    const adapter = testAdapter(requests);
+
+    await expect(adapter.healthCheck()).resolves.toMatchObject({ status: 'ready' });
+    await adapter.searchEntities({ query: 'daily revenue', limit: 2 });
+    expect(requests.filter(({ method }) => method === 'tools/call')).toEqual([
+      expect.objectContaining({
+        toolName: 'search',
+        arguments: { query: 'daily revenue', num_results: 2, offset: 0 },
+      }),
+    ]);
+  });
+
+  it('accepts an optional lineage urn while sending every lineage parameter explicitly', async () => {
+    const requests: RecordedProtocolRequest[] = [];
+    const adapter = testAdapter(requests, {
+      tools: toolDefinitionsWithRequired('get_lineage', []),
+    });
+
+    await expect(adapter.healthCheck()).resolves.toMatchObject({ status: 'ready' });
+    await adapter.getLineageGraph({
+      rootUrn: 'urn:li:dataset:(urn:li:dataPlatform:snowflake,analytics.daily_revenue,PROD)',
+      direction: 'upstream',
+      depth: 1,
+      maxNodes: 4,
+    });
+    expect(requests.filter(({ method }) => method === 'tools/call')).toEqual([
+      expect.objectContaining({
+        toolName: 'get_lineage',
+        arguments: expect.objectContaining({
+          urn: 'urn:li:dataset:(urn:li:dataPlatform:snowflake,analytics.daily_revenue,PROD)',
+          upstream: true,
+          max_hops: 1,
+          max_results: 3,
+          offset: 0,
+        }),
+      }),
+    ]);
   });
 
   it('ignores unrelated discovered tools while keeping them uncallable', async () => {

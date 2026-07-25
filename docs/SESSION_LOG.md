@@ -4548,8 +4548,9 @@ created.
   search, lineage, and recent changes, and checks cancellation before later budget/cache/report work.
   Legacy adapter methods gained only a backward-compatible optional signal parameter.
 - Readiness now requires exactly one official `search` and `get_lineage`, `readOnlyHint: true`, object
-  schemas, required string `query`/`urn`, and compatible declarations for integer
-  `num_results`/`offset`/`max_hops`/`max_results` plus boolean `upstream`. Unrelated tools are ignored
+  schemas, compatible declarations for string `query`/`urn`, integer
+  `num_results`/`offset`/`max_hops`/`max_results`, and boolean `upstream`. Client-sent fields may be
+  optional; a server-required field outside that sent set fails closed. Unrelated tools are ignored
   and never callable; duplicate/missing/incompatible required tools fail closed.
 - Search/lineage Zod payload failures now map inside the provider boundary to `invalid_response`.
   Fixture default and direct GraphQL behavior remain compatible; MCP recent changes remains
@@ -4577,3 +4578,35 @@ Finish changed-file format/diff/secret/encoding/link/residue/port audits, remove
 build roots, create one additive conventional commit, push normally to the same branch, update only
 Draft PR #50 in the official signed-in in-app Browser, and wait for exact-new-head PR CI success.
 Keep the PR Draft and unmerged.
+
+## 2026-07-25 — Phase 8.2 second independent-QA correction
+
+### Exact target and correction
+
+Resumed only existing branch `codex/phase-8-2-datahub-mcp-integration` and Draft PR #50 from exact
+head `945d6f566c43038a37ef8c9204880bd8a4d46baf`, tree
+`f6f7504b7d400dc38c711986cf7880e4d0237b93`, parent
+`05a0408880d7e719b969f2d4f9ff5cd6b96230e2`, and unchanged base
+`8144fb19a6daf2670c4143b005b5e1aea25c138a`. Its exact CI run `30160131446`, job
+`89684010510`, was `SUCCESS`; the QA recheck confirmed the wire cap, HTTPS bearer, total
+cancellation/no-late-mutation, and malformed-output taxonomy fixes. Those seams were not changed or
+rerun.
+
+Readiness now accepts absent/empty JSON Schema `required` arrays and does not require any
+client-sent field to appear there. It still requires every sent search/lineage parameter in
+`properties` with the compatible type, and rejects any server-required field outside that sent set.
+The official search fixture therefore leaves `query` optional. Security/deployment text now matches
+runtime behavior: validated `structuredContent` wins while auxiliary content is ignored/not
+propagated; mixed/media fallback content fails only without structured content; unsupported entity
+kinds are excluded from normalized results.
+
+### Focused validation and next gate
+
+Prettier changed only the two TypeScript files. Focused Vitest filtering ran only optional-input
+acceptance and extra-required-field rejection: **1 file / 4 tests PASS**, 22 unrelated cases skipped,
+in `2.06s` (test execution `25ms`). Prior 2-file/31-test coverage, lint/typechecks, production builds,
+HTTP harness, supply-chain audit, vertical slice, and official-source evidence are reused unchanged.
+No source re-browse, dependency/config/live-smoke/UI/evaluation/full-suite action occurred; Phase 8.2
+remains `PARTIAL`. Next: finish narrow static/cleanup audits, additive commit and normal push to the
+same branch, update Draft PR #50, and require exact-new-head CI success while keeping it Draft and
+unmerged.

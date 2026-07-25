@@ -35,7 +35,6 @@ import {
 const DATAHUB_MCP_ALLOWED_TOOLS = ['search', 'get_lineage'] as const;
 const DATAHUB_MCP_TOOL_INPUTS = {
   search: {
-    required: 'query',
     properties: {
       query: 'string',
       num_results: 'integer',
@@ -43,7 +42,6 @@ const DATAHUB_MCP_TOOL_INPUTS = {
     },
   },
   get_lineage: {
-    required: 'urn',
     properties: {
       urn: 'string',
       upstream: 'boolean',
@@ -594,10 +592,20 @@ export class DataHubMcpMetadataAdapter implements MetadataAdapter {
       if (
         !isRecord(tool.inputSchema) ||
         tool.inputSchema.type !== 'object' ||
-        !isRecord(tool.inputSchema.properties) ||
-        !Array.isArray(tool.inputSchema.required) ||
-        !tool.inputSchema.required.every((property) => typeof property === 'string') ||
-        !tool.inputSchema.required.includes(expectedInput.required)
+        !isRecord(tool.inputSchema.properties)
+      ) {
+        throw new MetadataProviderError('invalid_response');
+      }
+      const requiredProperties = tool.inputSchema.required;
+      if (
+        requiredProperties !== undefined &&
+        (!Array.isArray(requiredProperties) ||
+          !requiredProperties.every((property) => typeof property === 'string'))
+      ) {
+        throw new MetadataProviderError('invalid_response');
+      }
+      if (
+        requiredProperties?.some((property) => !Object.hasOwn(expectedInput.properties, property))
       ) {
         throw new MetadataProviderError('invalid_response');
       }
