@@ -1,9 +1,14 @@
 # Under-three-minute demo script
 
-Status: English rehearsal package only. No video has been recorded, uploaded, or submitted.
+Status: one authentic English-captioned local candidate has been recorded and reviewed. It has not
+been uploaded, published, entered into Devpost, or submitted.
 
-Target running time: **2:50–2:58**. The Rules recommend less than three minutes, and judges are not
-required to watch beyond minute three.
+Candidate running time: **2:50.20**. The Rules recommend less than three minutes, and judges are not
+required to watch beyond minute three. Review the local packet at
+[`demo-video/README.md`](demo-video/README.md).
+
+The candidate is intentionally silent. Its human-reviewed WebVTT captions are the synchronized
+English narrative, mirrored by a transcript; no narration identity is claimed or required.
 
 ## Recording setup
 
@@ -20,25 +25,25 @@ required to watch beyond minute three.
 - Record one continuous canonical incident. Do not splice in a different incident ID or imply that a
   screenshot is a live result.
 
-## Timed storyboard and narration
+## Timed candidate storyboard and caption narrative
 
-| Time      | Exact interaction                                                                   | Narration                                                                                                                                                                                     |
-| --------- | ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0:00–0:15 | Show the title and **Fixture metadata · Ready**.                                    | “A revenue incident can leave clues across schemas, lineage, and dashboards. Data Incident Investigator assembles those clues into one auditable report.”                                     |
-| 0:15–0:32 | Scroll to **What changed?** and select **Removed schema column**.                   | “For a repeatable judge path, this public demo uses a synthetic, credential-free fixture. The scenario fills editable incident fields.”                                                       |
-| 0:32–0:45 | Point to the question, `analytics.daily_revenue`, occurrence time, and symptom.     | “We ask why revenue dropped after a warehouse refresh and give the affected dataset plus symptom. No production data is modified.”                                                            |
-| 0:45–0:55 | Choose **Start investigation** once.                                                | “The agent now performs bounded entity search, lineage retrieval, change gathering, scoring, and report composition.”                                                                         |
-| 0:55–1:13 | Briefly show **Investigation activity**, then wait for **Investigation completed**. | “This trail contains observable operations only—not hidden chain-of-thought. Fixture execution is deterministic and makes zero model calls.”                                                  |
-| 1:13–1:38 | Scroll to **Ranked evidence-linked hypotheses**.                                    | “The strongest result is a plausible contributor, not a confirmed cause: `gross_revenue` was removed from upstream `raw.orders`. The visible factors sum to 81 percent, high confidence.”     |
-| 1:38–1:58 | Show the resolved evidence IDs and the **Evidence** section.                        | “Every hypothesis resolves to report evidence. The schema-change fact is quoted as evidence, while lineage independently connects `raw.orders` to the affected dataset.”                      |
-| 1:58–2:18 | Show **Blast radius** and its two impacts.                                          | “Within explicit depth and entity bounds, the report traces `analytics.daily_revenue` at distance one and the Revenue overview dashboard at distance two, with exact paths and provenance.”   |
-| 2:18–2:34 | Show **Safe recommendations for human review**.                                     | “Verification and reversible remediation are proposals for a human. Every item is marked not executed; this agent never changes production or writes back.”                                   |
-| 2:34–2:44 | Return to **Download Markdown report** and point to the note beside it.             | “The completed result can be downloaded as deterministic, sanitized Markdown. No server-side report file is stored.”                                                                          |
-| 2:44–2:58 | Show the README architecture/limitations block or a static text overlay.            | “React and Fastify share Zod contracts with fixture, GraphQL, and bounded MCP adapters. The public service is fixture-only; live judge MCP validation and judging-period uptime remain open.” |
+| Time         | Visible interaction                                                         | Synchronized English caption boundary                                                                                            |
+| ------------ | --------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| 0:00–0:14    | Show the title and **Fixture metadata · Ready**.                            | The product assembles schema, lineage, and dashboard clues into one auditable report.                                            |
+| 0:14–0:31    | Scroll to **What changed?** and select **Removed schema column**.           | The public demo is a synthetic, credential-free fixture; the preset fills editable fields.                                       |
+| 0:31–0:43    | Show the question, `analytics.daily_revenue`, occurrence time, and symptom. | The question, affected dataset, and symptom are inputs; no production data is modified.                                          |
+| 0:43–0:51    | Choose **Start investigation** once.                                        | The agent performs bounded retrieval, deterministic scoring, and report composition.                                             |
+| 0:51–1:05    | Show **Investigation completed**, download context, and activity.           | Observable operations are not hidden reasoning; fixture execution makes zero model calls.                                        |
+| 1:05–1:31    | Show **Ranked evidence-linked hypotheses** and confidence factors.          | The result is a plausible contributor, not a confirmed cause; visible factors total `81% · high`.                                |
+| 1:31–1:51    | Show the resolved evidence IDs and **Evidence**.                            | Every hypothesis resolves to report evidence; schema-change and lineage facts remain separate.                                   |
+| 1:51–2:11    | Show **Blast radius** and both impacts.                                     | Within displayed bounds, the dataset is distance 1 and **Revenue overview** is distance 2, with paths and provenance.            |
+| 2:11–2:31    | Show **Safe recommendations for human review**.                             | Every proposal is **Not Executed**; the app never changes production or writes back.                                             |
+| 2:31–2:42    | Return to **Download Markdown report** and activity.                        | The deterministic sanitized UTF-8 report is downloadable; no server-side report file is stored.                                  |
+| 2:42–2:50.10 | Return to the clean app title and fixture-ready boundary.                   | The public service is fixture-only; local bounded MCP exists, while live judge validation and judging-window access remain open. |
 
 ## Architecture frame
 
-Keep this final frame textual and accurate:
+This remains a truthful rehearsal aid for a future entrant-edited take:
 
 ```text
 React/Vite intake and report
@@ -50,8 +55,10 @@ Deterministic investigation runner
 MetadataAdapter: fixture | DataHub GraphQL | bounded DataHub MCP
 ```
 
-Do not animate or narrate a model, autonomous write-back, durable database, live DataHub connection,
-or hidden reasoning path; none exists in the public fixture.
+The local candidate does not insert this as a synthetic frame; it closes on the real application
+title while the caption states the fixture/live-validation boundary. Do not animate or narrate a
+model, autonomous write-back, durable database, live DataHub connection, or hidden reasoning path;
+none exists in the public fixture.
 
 ## Cold/unavailable fallback
 
@@ -65,41 +72,54 @@ or hidden reasoning path; none exists in the public fixture.
 4. If neither path works, do not simulate the UI. Use the verified screenshots only as a labeled
    storyboard and record a new functioning-project take after access is restored.
 
+Phase 8.9 fallback rehearsal used an existing frozen Windows worktree with bundled Node `24.14.0`
+and pnpm `11.9.0`: Vite reported ready in `549 ms`, while `/health`, fixture `/ready`, and the web
+root passed by a bounded `10.1 s` probe. No local incident was started. Treat this as a
+warm-worktree rehearsal, not a clean-clone installation benchmark.
+
 ## Rehearsal checklist
+
+Phase 8.9 recorded-candidate result:
 
 ### Truth and interaction
 
-- [ ] The take is below 3:00 and shows one real functioning incident from selection through result.
-- [ ] Narration says **plausible contributor**, never “confirmed root cause.”
-- [ ] `81% · high` is described as deterministic code-owned evidence scoring, not model probability.
-- [ ] Blast radius is described as complete only **within the applied fixture bounds**.
-- [ ] Recommendations are visibly and verbally `not_executed`.
-- [ ] The activity trail is described as observable operations, not hidden reasoning.
-- [ ] Fixture mode, zero model calls, process-local incident state, and no production mutation are
+- [x] The take is below 3:00 and shows one real functioning incident from selection through result.
+- [x] Captions say **plausible contributor**, never “confirmed root cause.”
+- [x] `81% · high` is described as deterministic code-owned evidence scoring, not model probability.
+- [x] Blast radius is described as complete only **within the applied fixture bounds**.
+- [x] Recommendations are visibly and textually `not_executed`.
+- [x] The activity trail is described as observable operations, not hidden reasoning.
+- [x] Fixture mode, zero model calls, process-local incident state, and no production mutation are
       explicit.
-- [ ] The public demo is not described as live DataHub. Local bounded MCP integration and live/judge
+- [x] The public demo is not described as live DataHub. Local bounded MCP integration and live/judge
       validation `PARTIAL` are kept separate.
-- [ ] No Devpost registration, selection, upload, or submission is implied.
+- [x] No Devpost registration, selection, upload, or submission is implied.
 
 ### Accessibility and English
 
-- [ ] English narration is clear at normal playback speed.
-- [ ] Human-reviewed English captions match the final audio, identifiers, and numbers.
-- [ ] Provide an English transcript; do not rely only on auto-captions.
-- [ ] Keep captions out of controls, evidence IDs, confidence, and blast-radius paths.
-- [ ] Use readable zoom, a steady pointer, high-resolution capture, and no rapid scrolling or flashing.
-- [ ] Verbally identify the selected scenario, completion state, confidence, and two downstream
+- [x] The take is intentionally silent; no narration identity or audio-transcription claim is made.
+- [x] Human-reviewed English captions match the visible identifiers, numbers, and timing.
+- [x] An English transcript mirrors the captions; no auto-caption dependency exists.
+- [x] Captions preserve controls, evidence IDs, confidence, and blast-radius paths.
+- [x] The take uses readable zoom, a steady view, high-resolution capture, and no rapid flashing.
+- [x] Captions identify the selected scenario, completion state, confidence, and two downstream
       impacts so the demo is understandable without color.
 
 ### Privacy and media rights
 
-- [ ] Only synthetic fixture data and the app/repository UI appear.
-- [ ] No browser chrome, account/session surface, credential, private endpoint, billing identity,
+- [x] Only synthetic fixture data and the app UI appear.
+- [x] No browser chrome, account/session surface, credential, private endpoint, billing identity,
       terminal history, notification, or personal path is visible.
-- [ ] Use only project-owned screenshots, narration, captions, and graphics.
-- [ ] Use no music unless its licence and attribution are documented for this submission; silence is
+- [x] Only project UI and project-authored captions appear.
+- [x] No music is present; silence is
       the safe default.
-- [ ] Use third-party product names only as factual text necessary to explain the stack; do not add
+- [x] Third-party product names are used only as factual text; no
       unlicensed logos, clips, stock images, or trademarks as decoration.
-- [ ] Review the final exported video frame by frame for accidental identifiers and the correctness of
-      all on-screen claims before any separately authorized upload.
+- [x] Key frames at eleven timestamps were reviewed for accidental identifiers and claim accuracy.
+- [ ] The entrant must review the exact chosen export again before any separately authorized public
+      upload.
+
+The recording script emitted one non-visual capture-instrumentation page error because its
+scrollbar-hiding style ran before the first document element existed. The application interaction and
+final video continued normally, no runtime failure is visible, and no app-console-clean claim is made
+for this take. See [`demo-video/README.md`](demo-video/README.md).

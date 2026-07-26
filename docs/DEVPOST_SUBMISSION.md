@@ -19,9 +19,11 @@ an auditable report with transparent confidence, blast radius, and safe human ne
   <https://github.com/toannnnq1424/data-incident-investigator>
 - Judge instructions: [`JUDGE_QUICKSTART.md`](JUDGE_QUICKSTART.md)
 - Screenshot gallery: [`demo-assets/README.md`](demo-assets/README.md)
+- Local video candidate and review packet: [`demo-video/README.md`](demo-video/README.md)
 
 The Public repository quickstart is the fallback if the Cloud Run fixture service is cold or
-unavailable.
+unavailable. The video is a repository-local candidate only; it has not been publicly hosted or
+entered into Devpost.
 
 ## Inspiration
 
@@ -140,12 +142,15 @@ No Devpost challenge control has been selected.
 - The agent makes zero model calls and performs no automatic production change or DataHub write-back.
 - Cloud Run availability through the judging end is unresolved because the cost-control stop boundary
   precedes it; the Public repository fallback remains essential.
-- Registration, entrant eligibility, ownership/rights attestations, public video, final form review,
-  and submission remain undone.
+- One authentic 2:50.20 app-only local video candidate now exists with human-reviewed English
+  captions/transcript. It is silent and not a public Devpost video.
+- Registration, entrant eligibility, ownership/rights attestations, public video hosting, final form
+  review, and submission remain undone.
 
 Next work is operational rather than a new product claim: obtain authorized live/judge MCP evidence,
-resolve judging-period access, record and rights-audit the under-three-minute English demo, complete
-entrant attestations, and verify the final form before the deadline.
+resolve judging-period access, complete the entrant's final media/rights review and separately
+authorized public upload, complete entrant attestations, and verify the final form before the
+deadline.
 
 ## Codex usage
 

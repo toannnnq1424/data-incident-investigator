@@ -6289,3 +6289,100 @@ Run the final five-path formatting/link/PNG/diff/secret/residue/process/port aud
 commit, normal-push the existing branch, update only Draft PR #57 with correction evidence, require
 exact-new-head PR CI `SUCCESS`, and return the clean exact head to the same Windows QA. Do not mark
 Ready or merge.
+
+## 2026-07-27 — Phase 8.9 final demo rehearsal and local video-candidate readiness
+
+### Scope
+
+Started additive branch `codex/phase-8-9-demo-rehearsal` from exact current `origin/main`
+`082d617cab203393f87d0cc3b97aff5ca2b3a3dc`, tree
+`208e80f8d7e9fbab14b93ff1af16787c48e34d92`, without rewriting or cherry-picking history. The slice
+is docs/media only: no runtime, API, workflow, package, lock, version, tag, Release, GCP, deployment,
+Devpost form, credential, consent, submission, or external upload mutation.
+
+### Official-source drift recheck
+
+Re-read the official DataHub Devpost
+[overview](https://datahub.devpost.com/),
+[dates](https://datahub.devpost.com/details/dates),
+[rules](https://datahub.devpost.com/rules),
+[resources](https://datahub.devpost.com/resources), and incorporated
+[Terms](https://info.devpost.com/legal/terms-of-service) read-only at
+`2026-07-27 03:12:26 ICT` / `2026-07-26 20:12:26 UTC`. The deadline, judging window,
+functioning-video/public-host/English/access/rights rules, challenge descriptions, resources, and
+Terms boundaries had no material drift. A changing participant count was not persisted. No joined
+form, challenge control, eligibility/team/IP attestation, consent, or hidden form field was inspected
+or inferred.
+
+### Authentic candidate and rehearsal evidence
+
+- The official in-app Browser has no recording operation. Existing Playwright Chromium plus its
+  already-installed FFmpeg build captured one continuous real app-only public-fixture flow without a
+  new dependency, fake/generated UI, synthetic frame, or app change.
+- Exactly one new public **Removed schema column** incident was created. No capture or incident was
+  repeated.
+- `docs/demo-video/phase-8-9-demo-candidate.webm` is WebM/VP8, 1440 × 900, 25 fps,
+  `170.20 s`, 11,074,997 bytes, no audio stream, SHA-256
+  `f7cef629fa03db6113949e1b347004230158b05f695258454278cc7473f14e18`.
+- Original-resolution frame review at `00:05`, `00:20`, `00:48`, `00:55`, `01:10`, `01:35`,
+  `01:55`, `02:15`, `02:35`, `02:45`, and `02:49` confirms intake-before-Start, completion/export,
+  plausible-contributor wording, `81% · high` factors, resolved evidence, both bounded impacts,
+  **Not Executed** recommendations, and a clean terminal app frame. No browser/Windows/account chrome,
+  native scrollbar, credential, private endpoint, personal path, external media, or visible runtime
+  failure appears.
+- The silent candidate has synchronized human-reviewed English WebVTT captions and a matching
+  transcript. It explicitly preserves fixture-only, zero-model, no-remediation, no-hidden-reasoning,
+  bounded-blast-radius, live MCP `PARTIAL`, C11 qualified, C14 open, and no-upload/no-submission
+  boundaries.
+- The capture script recorded one non-visual instrumentation page error when its scrollbar-hiding
+  style ran before the initial document element existed. The flow and finalized video completed
+  normally. No app-console-clean claim is made for this candidate.
+- The public rehearsal take is `2:50.20`. The existing-frozen-install Windows fallback used bundled
+  Node `24.14.0` and pnpm `11.9.0`; Vite reported ready in `549 ms`, and `/health`, fixture `/ready`,
+  and web `/` all passed by the `10.1 s` probe. No local incident was started. A first sandboxed
+  launch was denied dependency/config reads; the scoped retry passed and all runtime ports/processes
+  were stopped.
+- Official Browser policy blocked the local `file://` review page. Its tab was closed; no alternate
+  browser bypass was attempted. Direct media probes, static HTML/link checks, caption validation, and
+  inspected source frames provide the local-review evidence.
+
+### Requirement and submission posture
+
+C18 is `PARTIAL — LOCAL CANDIDATE`, never `PASS`; C20 has bounded `PARTIAL` media/English evidence;
+C19 remains `OPEN` until a separately authorized public YouTube/Vimeo/Youku upload. C11 remains
+`QUALIFIED PASS — OWNER-AUTHORIZED SCOPE`; C14 remains `OPEN`; DataHub MCP remains `PARTIAL`;
+**Open / Wildcard** remains primary and **Agents That Do Real Work** conditional only. The local
+candidate is not registration, a form save, challenge selection, entrant/team/IP attestation, public
+video, upload, submission, or judging-period access resolution.
+
+The user asked that a later separately authorized narrated-video slice evaluate a suitable voice
+tool, potentially ElevenLabs if access is granted. Phase 8.9 uses no voice service or credential. Any
+future narration must be synchronized to visible actions and captions and must not claim a false
+speaker identity.
+
+### Bounded validation completed
+
+- Prettier check passed for every changed Markdown/HTML file; 45 relative Markdown links resolve, as
+  do all local candidate/caption/transcript references in `review.html`.
+- Exact EBML signature, 11,074,997-byte size, SHA-256, WebM/VP8 identity, 1440 × 900 resolution,
+  25 fps, `170.20 s` duration, no-audio boundary, and private-path/URL/key metadata string scan pass.
+- Eleven WebVTT cues are monotonic and non-overlapping from `4.00 s` through `170.10 s`, within the
+  media duration. Required claims appear in both captions and the transcript.
+- Strict UTF-8/LF/final-newline/no-BOM passes for 13 changed text files. Requirement matrix parsing
+  confirms all 37 rows and exact totals
+  `3 PASS / 1 QUALIFIED PASS / 13 PARTIAL / 12 OPEN / 8 NOT REQUIRED`.
+- `git diff --check`, exact 14-path allowlist, added-line secret/private-path/email/conflict scan,
+  claim consistency, and task temp-residue checks pass.
+- Ports `3001`/`5173` and task-owned Node processes are clean. The persistent Codex Browser kernel
+  is correctly excluded from the task-owned runtime check.
+
+Validation remains intentionally bounded to changed docs/media and reuses exact-main/Phase 8.8
+greens. The full suite, Level D, evaluation, build, public smoke, another incident, and all deferred
+mutations were not run.
+
+### Exact next step
+
+Complete the bounded docs/media validation, clean task-owned temporary capture/key-frame residue,
+create one additive commit, push normally, create exactly one Draft PR against exact current `main`,
+require exact-head PR CI `SUCCESS`, and return the clean branch for independent Windows QA. Do not
+mark Ready or merge.

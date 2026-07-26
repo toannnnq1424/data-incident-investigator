@@ -6699,3 +6699,138 @@ Acceptance:
 Deferred: full suite, build, evaluation, runtime/source/API/workflow/package/lock/version changes,
 every GCP/deployment/billing mutation, Devpost registration/form/upload/submission, video work, live
 DataHub/model validation, another public incident, a second PR, PR Ready transition, and merge.
+
+### Phase 8.9 — final demo rehearsal and local video-candidate readiness
+
+Status: in progress on `codex/phase-8-9-demo-rehearsal` from exact merged `origin/main`
+`082d617cab203393f87d0cc3b97aff5ca2b3a3dc` (tree
+`208e80f8d7e9fbab14b93ff1af16787c48e34d92`). This slice may produce a local/repository video
+candidate and final-readiness evidence only. It does not upload media, register or submit on Devpost,
+enter credentials or consent, or mutate the deployment.
+
+Objective: rehearse the merged Phase 8.8 public and repository-fallback paths, create one authentic
+functioning-project video candidate when available tooling can capture only real app interaction
+safely, and produce a truthful readiness packet that leaves organizer-controlled, entrant-controlled,
+and public-upload gates explicitly open.
+
+Minimum files:
+
+- `docs/IMPLEMENTATION_PLAN.md` and `docs/SESSION_LOG.md` for canonical Phase 8.9 state.
+- `docs/DEVPOST_SUBMISSION.md`, `docs/DEVPOST_REQUIREMENTS.md`,
+  `docs/CLAIM_TO_DEMO_MATRIX.md`, `docs/DEMO_SCRIPT.md`, and `docs/JUDGE_QUICKSTART.md` only where
+  rehearsal, official-source drift, or local-media evidence changes current truth.
+- One bounded `docs/demo-video/` packet for a real local candidate plus synchronized English
+  captions/transcript, media facts, and review instructions if capture succeeds safely.
+- `docs/REPOSITORY_MAP.md` and `docs/KNOWN_ISSUES.md` only if the new packet or a genuine blocker
+  changes indexed/current state.
+
+Acceptance criteria:
+
+- Re-read the current official DataHub Devpost overview, dates, rules, resources, and incorporated
+  terms read-only; record access time and persist only material drift without inferring hidden form
+  controls.
+- Rehearse and time the public credential-free **Removed schema column** path plus cold/unavailable
+  and repository-local Node 24 / pnpm `11.9.0` fallback handling. Create at most one new public
+  fixture incident, only when needed for an authentic recording.
+- If capture succeeds, the candidate is real app-only interaction, English, comfortably under
+  `03:00`, at 1440 × 900 or a truthfully disclosed supported resolution, with no browser/Windows/
+  account chrome, credentials, private endpoints, copyrighted music, generated/fabricated UI, or
+  synthesized frames. Captions and transcript stay synchronized with visible evidence.
+- Verify media container, video codec, resolution, duration, key timestamp frames, English
+  completeness, caption timing, accessibility, and media rights using dependency-free or already
+  available project-local tooling. Do not install global tools or alter application behavior.
+- Preserve exact claims: the public service is credential-free fixture mode with zero model calls,
+  no automated remediation, and process-local incidents; deterministic `81% · high` is a plausible
+  contributor rather than a confirmed cause; blast radius is bounded by displayed fixture lineage;
+  recommendations remain `not_executed`.
+- Preserve deployment source `3653cf6b591eed76ad6276d07b1ea08e88d7fa4f`, C11
+  `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE`, C14 judging-window mismatch, and DataHub MCP
+  `PARTIAL`. **Open / Wildcard** remains primary; **Agents That Do Real Work** remains conditional.
+- C18 may advance only to local-candidate/`PARTIAL`; C19 remains `OPEN` until a separately authorized
+  public video upload. Eligibility, team/IP attestations, consent, registration, challenge selection,
+  exact form controls, save, and submission remain user-owned `OPEN` gates.
+- If safe authentic capture is unavailable after bounded attempts, create no fake candidate; persist
+  exact evidence and return the smallest genuine user-choice blocker while completing safe rehearsal
+  and readiness documentation.
+- Changed docs/media pass bounded format, local-link, UTF-8/LF/final-newline/no-BOM, media identity,
+  caption/transcript sync, key-frame content, English/claim consistency, exact path allowlist,
+  secret/private-data/conflict/debug, residue, process, port, and full-diff checks.
+- Create one additive commit, push normally, open exactly one Draft PR against exact current `main`,
+  require exact-head PR CI `SUCCESS`, and leave the worktree/upstream clean. Do not mark Ready or
+  merge.
+
+Validation plan:
+
+- Inspect official-source access timestamps and compare only persisted overview/dates/rules/resources/
+  incorporated-term facts.
+- Inspect available capture/encoding/probing tooling before recording; use no new dependency or
+  global install. Record no more than one authentic public fixture incident.
+- Probe candidate duration, container, codec, frame size, frame rate, and audio presence; inspect
+  frames at intake, submit/processing, result summary, confidence, blast radius, evidence/lineage, and
+  terminal limitation moments.
+- Validate WebVTT structure and monotonic timing against the media duration; compare every cue and
+  transcript statement with the visible application and Phase 8.8 claim matrix.
+- Run Prettier only on changed Markdown, validate local links/references, `git diff --check`, strict
+  UTF-8/LF/final-newline/no-BOM for text, exact path and binary identity checks, added-line secret/
+  private-path/email/conflict/debug scans, and process/port/temp cleanup. Reuse unchanged exact-main
+  and Phase 8.8 greens; do not run Level D, evaluation, build, or unchanged browser tests.
+
+Deferred: any external video upload or publication, Devpost registration/join/consent/form
+inspection/save/submission, entrant/team/IP attestation, exact hidden form controls, live DataHub/MCP
+credentials or validation, GCP/deployment/billing/resource mutation, paid service, global tool
+installation, runtime/source/API/workflow/package/workspace/lock change, version bump, `v1.0.0`, tag,
+Release, PR Ready transition, merge, and the next phase.
+
+#### Phase 8.9 local result
+
+Status: implementation, rehearsal, and bounded validation complete; Draft-PR publication remains.
+
+- Official overview, dates, rules, resources, and incorporated Terms were re-read read-only at
+  `2026-07-27 03:12:26 ICT` / `2026-07-26 20:12:26 UTC`. No material requirement drift was found,
+  and no joined/hidden form control was inspected or inferred.
+- The official Browser exposes screenshot/interaction controls but no recording operation. The
+  already-installed Playwright Chromium and Playwright FFmpeg path therefore captured one authentic
+  continuous public fixture take without installing a dependency or changing the app.
+- Exactly one new public **Removed schema column** incident was started for that take. The resulting
+  repository candidate is WebM/VP8, 1440 × 900, 25 fps, `170.20 s`, 11,074,997 bytes, has no audio
+  stream, and has SHA-256
+  `f7cef629fa03db6113949e1b347004230158b05f695258454278cc7473f14e18`.
+- Eleven 1440 × 900 key frames cover intake-before-Start, completion/export, hypotheses/confidence,
+  evidence, bounded blast radius, **Not Executed** recommendations, and clean terminal state. Visual
+  review found only the real application and synthetic fixture data, with no browser/Windows/account
+  chrome, credential, private endpoint, external media, synthesized frame, or visible runtime
+  failure.
+- Human-reviewed English WebVTT captions and a matching transcript provide the synchronized
+  narrative. The candidate is intentionally silent; no narration identity is claimed. C18 advances
+  only to `PARTIAL — LOCAL CANDIDATE`, C20 gains bounded `PARTIAL` evidence, and C19 remains `OPEN`.
+- The capture script emitted one non-visual instrumentation page error because its capture-only
+  scrollbar style ran before the initial document element existed. The interaction and finalized
+  video continued normally. No application-console-clean claim is made for this take.
+- The public path is timed by the `2:50.20` functioning take. A repository fallback rehearsal with
+  existing frozen dependencies, bundled Node `24.14.0`, and pnpm `11.9.0` reached Vite ready in
+  `549 ms`; API `/health`, fixture `/ready`, and web `/` were successful by the bounded `10.1 s`
+  probe. No local incident was started, and the runtime/ports were stopped afterward. This is
+  warm-worktree evidence, not a clean-clone install-time promise.
+- The official Browser policy blocks `file://`, so `review.html` was not opened in that surface. The
+  tab was closed, and review falls back to static HTML/link validation plus direct media/caption
+  probes and inspected source frames; no alternate browser was used to bypass policy.
+
+The user requested that a later, separately authorized narrated-video slice evaluate an appropriate
+voice tool, potentially ElevenLabs if access is granted. No voice service, credential, audio
+generation, or upload is used in Phase 8.9. Any future narration must align with visible actions,
+remain synchronized with captions, and make no false speaker-identity claim.
+
+Bounded validation passes:
+
+- Prettier check for all changed Markdown/HTML; 45 relative Markdown links and all local
+  video/caption/transcript HTML references resolve.
+- Candidate EBML/WebM signature, exact size/hash, Matroska/WebM container, VP8/yuv420p progressive
+  video, 1440 × 900 square-pixel frame, 25 fps, `170.20 s` duration, and no audio stream.
+- Eleven WebVTT cues are monotonic, non-overlapping, and end at `170.10 s`, within the media
+  duration; required narrative terms match the human-readable transcript.
+- Strict UTF-8/LF/final-newline/no-BOM for 13 changed text files; 37-row requirement counts are
+  `3 PASS / 1 QUALIFIED PASS / 13 PARTIAL / 12 OPEN / 8 NOT REQUIRED`, with C18/C19/C20 exact.
+- `git diff --check`, exact 14-path allowlist, added-line secret/private-path/email/conflict scan,
+  WebM private-path/URL/key metadata string scan, claim consistency, and task temp-residue checks.
+- Ports `3001`/`5173` and task-owned Node processes are clean after rehearsal. The persistent Codex
+  Browser kernel is correctly excluded from the task-owned process audit.

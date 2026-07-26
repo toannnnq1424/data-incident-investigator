@@ -1,11 +1,11 @@
 # Repository map
 
-Last verified: 2026-07-27 for Phase 8.8 on the implementation branch based on exact `origin/main`
-`b5b394b31ec626bb4ecc175975ca9869e475054e` (tree
-`2499267d819704b900511418818674010b4b9eae`). The root and six private workspace manifests remain at
-candidate version `1.0.0-rc.1` and SPDX `Apache-2.0`. Phase 8.8 changes only judge-facing Markdown
-and real public-fixture PNG captures; it does not change runtime, API, workflow, package, lockfile,
-version, tag, Release, fixture, deployment, or submission state.
+Last verified: 2026-07-27 for Phase 8.9 on the implementation branch based on exact `origin/main`
+`082d617cab203393f87d0cc3b97aff5ca2b3a3dc` (tree
+`208e80f8d7e9fbab14b93ff1af16787c48e34d92`). The root and six private workspace manifests remain at
+candidate version `1.0.0-rc.1` and SPDX `Apache-2.0`. Phase 8.9 adds only judge-facing Markdown and
+one authentic local WebM/caption/transcript review packet; it does not change runtime, API, workflow,
+package, lockfile, version, tag, Release, fixture, deployment, public hosting, or submission state.
 
 ## Directories
 
@@ -22,15 +22,15 @@ version, tag, Release, fixture, deployment, or submission state.
 | `tests/smoke`             | Primary health and build smoke tests                                        | `health.test.ts`                                                                                                                                                                  |
 | `tests/e2e`               | Browser flows                                                               | `report-display.spec.mjs`                                                                                                                                                         |
 | `scripts`                 | Bootstrap, smoke, and deterministic release-artifact operations             | `bootstrap-worktree.ps1`, `smoke.mjs`, `release-path-safety.mjs`, `pnpm-lock-identity.mjs`, `bundle-attribution.mjs`, `build-release-artifact.mjs`, `verify-release-artifact.mjs` |
-| `docs`                    | Product, architecture, plan, memory, release, and judge-package docs        | `JUDGE_QUICKSTART.md`, `CLAIM_TO_DEMO_MATRIX.md`, `DEMO_SCRIPT.md`, `demo-assets/`, plus the index below                                                                          |
+| `docs`                    | Product, architecture, plan, memory, release, and judge-package docs        | `JUDGE_QUICKSTART.md`, `CLAIM_TO_DEMO_MATRIX.md`, `DEMO_SCRIPT.md`, `demo-assets/`, `demo-video/`, plus the index below                                                           |
 | `.github`                 | Collaboration intake plus scoped repository validation                      | `ISSUE_TEMPLATE/`, `pull_request_template.md`, `workflows/`                                                                                                                       |
 | `.codex`                  | Trusted project-scoped Codex settings without secrets                       | `config.toml`                                                                                                                                                                     |
 
 Phase 8.7 added `scripts/runtime-attribution.mjs` and `scripts/prepare-runtime-manifests.mjs` for the
 container-only production/legal boundary and is integrated through exact main
-`b5b394b31ec626bb4ecc175975ca9869e475054e`. The running Cloud Run image remains independently bound
-to immutable source commit `3653cf6b591eed76ad6276d07b1ea08e88d7fa4f`; Phase 8.8 does not rebuild
-or redeploy it.
+`082d617cab203393f87d0cc3b97aff5ca2b3a3dc`. The running Cloud Run image remains independently bound
+to immutable source commit `3653cf6b591eed76ad6276d07b1ea08e88d7fa4f`; Phase 8.8/8.9 do not
+rebuild or redeploy it.
 
 ## Root configuration
 
@@ -144,6 +144,8 @@ Execution and quality: `IMPLEMENTATION_PLAN.md`, `TEST_STRATEGY.md`, `SECURITY.m
 
 Submission: `DEVPOST_REQUIREMENTS.md`, `DEVPOST_SUBMISSION.md`, `JUDGE_QUICKSTART.md`,
 `CLAIM_TO_DEMO_MATRIX.md`, `DEMO_SCRIPT.md`, `demo-assets/README.md`,
+`demo-video/README.md`, `demo-video/review.html`, `demo-video/TRANSCRIPT.md`,
+`demo-video/phase-8-9-demo-captions.vtt`, `demo-video/phase-8-9-demo-candidate.webm`,
 `PUBLIC_SOURCE_APACHE_READINESS.md`, `RELEASE_CHECKLIST.md`.
 
 ## Rescan triggers

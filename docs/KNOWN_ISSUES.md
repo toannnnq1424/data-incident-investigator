@@ -3,10 +3,10 @@
 Last updated: 2026-07-27.
 
 - Current main is exact normal merge
-  `b5b394b31ec626bb4ecc175975ca9869e475054e`, tree
-  `2499267d819704b900511418818674010b4b9eae`, with ordered parents
-  `c7abc652c23b532e90091b377490b27eadd7e084` then
-  `74a4acabe23e110a15a4331bfd9b018d6d115d24`. PR #56 is merged historical. The
+  `082d617cab203393f87d0cc3b97aff5ca2b3a3dc`, tree
+  `208e80f8d7e9fbab14b93ff1af16787c48e34d92`, with ordered parents
+  `b5b394b31ec626bb4ecc175975ca9869e475054e` then
+  `e7fb7d18d2398637366ed11c5ceff8a47402ef9f`. PR #57 is merged historical. The
   prior Phase 8.6 main, main CI run `30188091600`, and job `89756253516` remain historical
   Phase 8.5/8.6 evidence. Phase 8.6 records C11 as
   `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE`: technical attribution passes and the owner authorizes
@@ -14,6 +14,20 @@ Last updated: 2026-07-27.
   authorized zero-cost DataHub/API access. This is operational authorization, not blanket legal
   clearance. `abstract-logging@2.0.1` remains non-embedded and its missing packaged legal file remains
   a documented caveat.
+
+- Phase 8.9 records one authentic local 2:50.20, 1440 × 900 VP8/WebM functioning-project
+  candidate with synchronized human-reviewed English WebVTT captions/transcript. It is silent,
+  repository-local, and not publicly hosted or submitted. C18 is only
+  `PARTIAL — LOCAL CANDIDATE`; C19 remains `OPEN`. Key-frame review found only the application and
+  synthetic fixture data, with no browser/Windows/account chrome, credentials, private endpoints,
+  external media, or visible runtime failure. The capture script emitted one non-visual
+  instrumentation page error when its scrollbar style ran before the initial document element
+  existed; no app-console-clean claim is made for this take.
+- The Phase 8.9 repository fallback rehearsal used the bundled Node `24.14.0` and pnpm `11.9.0`.
+  With the existing frozen install, Vite reported ready in `549 ms`; API `/health`, fixture `/ready`,
+  and web `/` all returned successfully by the bounded `10.1 s` probe. No local incident was started.
+  The first sandboxed launch was denied access to dependency/config paths; the scoped non-sandboxed
+  retry passed. This is environment evidence, not a promise for clean-clone install time.
 
   Phase 8.6 historically selected no public full-stack provider. The owner later explicitly
   superseded the zero-fee/no-overage rejection, accepted the residual Google Cloud Paid-account risk,
