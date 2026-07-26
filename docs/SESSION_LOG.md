@@ -5571,3 +5571,79 @@ documentation files only. The full suite, build, artifact rebuild, evaluation, b
 DataHub are intentionally not run. Next create one additive commit, normal-push the same branch,
 update only Draft PR #55, and require exact-new-head CI `SUCCESS`; do not Ready, merge, deploy,
 publish, sign up, enter a card, or create a cancellation reminder.
+
+## 2026-07-26 — Phase 8.6 QA provider/state correction
+
+### Objective
+
+Close independent Windows QA `FAIL / DO NOT MERGE` findings on exact head
+`7ce7246af35aad12137bdf2bfccb0f7627902dc3`, tree
+`6d0e0b77f36b9f6116a83b05cc5df9aa2fe30b2d`, while preserving its successful CI run
+`30189651010` / job `89760450191`, the same branch, and Draft PR #55. Correct the Koyeb hold,
+nearby persistent-state contradictions, and record the owner's clarified Google Cloud direction
+without any external GCP action.
+
+### Completed
+
+- Corrected Koyeb from “hold unknown” to the official USD 29 pre-authorization hold, immediate
+  cancellation, and possible 7–21-day issuer visibility. Also recorded the official prorated
+  selected-plan signup charge. Koyeb remains `REJECT`: valid payment method required, no spending
+  limit/hard USD 0 cap, and minimum alert USD 5. No signup occurred.
+- Corrected current main/tree to
+  `73172b7e8e8b02ab9629019eac298b89e02895c2` /
+  `a4beb330fb528f4926eee8a538c7d2a79dab1f67`; retained
+  `1c32f6c913b196fc4a23055fb7da3b1482b94e5e` /
+  `5c83d034f30c6d31268109277aaa455a05ff9656` only as historical Phase 8.4B evidence. Marked Phase
+  8.5 correction/QA and PR #54 completed/merged; PR #55 is the current Draft. Corrected the changelog
+  to the existing `v1.0.0-rc.1` tag and unpublished Draft Release.
+- Recorded `onlinelearning-484610` only as a non-mandatory existing reference project and the owner's
+  statement that gifted USD 300 cloud/API credit is available, without claiming signed-in
+  verification. A later packet may propose a dedicated project if official evidence proves credit
+  applicability without increased fee risk.
+- Required the next read-only control packet to name a non-PII/non-credential project display name
+  and globally unique ID, exact owning Google account/organization/billing account, credit linkage,
+  minimum APIs, region/quota/budget/first-billable-event facts, reuse-versus-dedicated isolation/
+  cleanup/quota/fee comparison, and deletion/rollback/retention effects. Fresh owner approval remains
+  mandatory immediately before `Create Project`.
+- Preserved the next-slice technical recommendation: one minimal request-billed Cloud Run service
+  serving Fastify plus built Vite assets/same-origin API, min instances `0`, initial max `1`, smallest
+  passing CPU/memory, and unavoidable-only Cloud Build/Artifact Registry with surplus cleanup.
+  Agent Platform, Vertex AI, and model services remain excluded.
+
+### Files changed
+
+`CHANGELOG.md`; `docs/DEPLOYMENT.md`; `docs/DEVPOST_REQUIREMENTS.md`;
+`docs/IMPLEMENTATION_PLAN.md`; `docs/KNOWN_ISSUES.md`;
+`docs/PUBLIC_SOURCE_APACHE_READINESS.md`; `docs/RELEASE_CHECKLIST.md`; and this session log.
+
+### Decisions
+
+C11 remains `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE`. Permission in principle to consider a
+dedicated project is not approval of a concrete name/ID/account or project creation. This correction
+does not access or mutate GCP Console, enable an API, change billing/trial state, create a
+project/resource, enter card data, deploy, or create a reminder.
+
+### Validation performed
+
+Changed-file Prettier, UTF-8/LF/final-newline/no-BOM, local links, official Koyeb citation
+reachability, exact eight-path allowlist, added-line secret/private-path/debug/conflict scans, full
+diff review, and `git diff --check` pass. Targeted contradiction scans find no remaining “Koyeb hold
+unknown”, current Draft PR #54, or absent RC tag/Release claim in current Phase 8 documentation.
+
+### Validation intentionally deferred
+
+Full suite, build, artifact rebuild, evaluation, browser E2E, live DataHub, signed-in GCP read-only
+packet, every GCP mutation, deployment, and independent QA re-review.
+
+### Known issues
+
+The exact Google account/organization/billing identity, Free Trial versus Paid state, remaining
+credit/expiry, new-project credit applicability, region/free-tier eligibility, first billable event,
+hard-cap absence, and reuse-versus-dedicated choice remain unverified until the authorized next
+read-only Browser slice.
+
+### Exact next step
+
+Pass docs/static validation, create one additive commit, normal-push the same branch, update only
+Draft PR #55, require exact-new-head CI `SUCCESS`, and return for the same independent Windows QA
+re-review without Ready or merge.

@@ -291,6 +291,23 @@ actions below remain separately scoped.
 - [x] Preserve C11 `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE`; the expanded hosting-evaluation policy
       does not authorize paid DataHub/API/runner/storage/domain/hosting, sensitive data, publication,
       deployment, Ready transition, or merge.
+- [x] Close the Phase 8.6 QA provider finding: Koyeb's official Pricing FAQ records a USD 29
+      immediately canceled pre-authorization hold that may remain visible for 7–21 days and a
+      prorated selected-plan signup charge. Preserve `REJECT`, the USD 5 minimum alert, and absence
+      of a spending limit/hard USD 0 cap; perform no signup.
+- [x] Correct current-state docs to exact main
+      `73172b7e8e8b02ab9629019eac298b89e02895c2`, tree
+      `a4beb330fb528f4926eee8a538c7d2a79dab1f67`; keep Phase 8.4B identities historical, record PR #54
+      merged and PR #55 current Draft, and preserve the existing `v1.0.0-rc.1` tag/unpublished Draft
+      Release.
+- [x] Record `onlinelearning-484610` only as a non-mandatory existing Google Cloud reference. A later
+      read-only control packet may prefer a dedicated project only if credit applicability and no
+      increased fee risk are proven; require fresh owner approval for its exact name, globally unique
+      ID, owning account/organization/billing account, and `Create Project` action.
+- [x] Keep the next-slice Cloud Run recommendation to one request-billed Fastify + built Vite
+      same-origin service, min `0`/initial max `1`, minimum passing CPU/memory, and unavoidable-only
+      Build/Artifact Registry with surplus cleanup. Exclude Agent Platform, Vertex AI, models, and
+      every GCP mutation from this correction.
 
 ## Phase 8 — `v1.0.0` final (not performed)
 

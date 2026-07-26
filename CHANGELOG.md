@@ -4,9 +4,9 @@ This file records notable user-facing, operator-facing, security, reliability, a
 changes. It follows a Keep a Changelog-style structure and the repository's
 [versioning policy](docs/VERSIONING.md).
 
-No Git tag or GitHub Release has been created from this changelog yet. The release-candidate metadata
-below is prepared for independent validation; tagging and creating a Draft GitHub Release remain
-separately authorized post-merge gates.
+Tag `v1.0.0-rc.1` exists, and its GitHub Draft Release exists but remains unpublished with only
+automatic source archives and no user-uploaded assets. Final `v1.0.0` tagging/publication remain
+separately authorized gates.
 
 ## [Unreleased]
 
@@ -23,6 +23,10 @@ separately authorized post-merge gates.
   through a provider-specific control packet and fresh owner approval. Render, Koyeb, and Google
   Cloud are separated by current official cost controls; no provider, account, card, trial, reminder,
   or deployment is selected or started, and C11 remains qualified.
+- Corrected the official Koyeb card hold and persistent Phase 8 current-state record. Existing Google
+  Cloud project `onlinelearning-484610` is only a reference; a later packet may propose a dedicated
+  project but must obtain fresh approval for its exact identity/ownership immediately before
+  creation. No GCP mutation or deployment is included.
 
 ## [1.0.0-rc.1] - 2026-07-23
 

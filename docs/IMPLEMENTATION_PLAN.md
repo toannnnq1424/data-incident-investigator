@@ -6210,3 +6210,74 @@ unchanged code; do not run the full suite, build, artifact rebuild, browser E2E,
 Deferred: all signup, account identity choice, billing-term acceptance, trial activation, card or
 verification-hold action, reminder creation, deployment/publication, Release/tag/version/assets/
 settings/runtime/workflow mutation, submission, Ready transition, merge, and independent Windows QA.
+
+#### Phase 8.6 QA correction — provider hold and persistent-state truth
+
+Status: smallest additive docs-only correction on the same branch and Draft PR #55 after independent
+Windows QA returned `FAIL / DO NOT MERGE` on exact head
+`7ce7246af35aad12137bdf2bfccb0f7627902dc3` (tree
+`6d0e0b77f36b9f6116a83b05cc5df9aa2fe30b2d`, parent
+`2cc7321ccac76e8017796d039c9abc9729a2a98c`) despite exact-head CI run `30189651010`,
+job `89760450191`, `SUCCESS`.
+
+Objective: close the official Koyeb pre-authorization-hold omission and nearby current-state
+contradictions, then record existing Google Cloud project `onlinelearning-484610` only as a
+non-mandatory reference for a separate read-only control-packet slice. The owner permits a later
+deployment slice to propose a dedicated Data Incident Investigator project when it is cheaper,
+safer, and easier to clean up, but has not approved a specific name, globally unique ID, owning
+account/organization/billing account, or `Create Project` action. This is not authorization to
+open/mutate GCP Console, enable an API, change billing, upgrade a trial, create a project/resource,
+deploy, enter card data, or create a reminder.
+
+Minimum files: this plan; `docs/DEPLOYMENT.md`; `docs/DEVPOST_REQUIREMENTS.md`;
+`docs/KNOWN_ISSUES.md`; `docs/PUBLIC_SOURCE_APACHE_READINESS.md`; `CHANGELOG.md`;
+`docs/RELEASE_CHECKLIST.md`; and `docs/SESSION_LOG.md` only where the QA finding, owner selection,
+current-state truth, validation, and next action must be recorded.
+
+Acceptance:
+
+- Cite the official Koyeb Pricing FAQ and record the USD 29 pre-authorization hold, immediate
+  cancellation, and possible 7–21-day visibility in both the provider matrix and ten-field packet.
+  Preserve Koyeb `REJECT`: Starter needs a payment method, no spending limit/hard USD 0 cap exists,
+  and the minimum alert is USD 5. Remove every contradictory “hold unknown” statement.
+- Make current main consistently
+  `73172b7e8e8b02ab9629019eac298b89e02895c2` with tree
+  `a4beb330fb528f4926eee8a538c7d2a79dab1f67`; keep
+  `1c32f6c913b196fc4a23055fb7da3b1482b94e5e` /
+  `5c83d034f30c6d31268109277aaa455a05ff9656` only as clearly historical Phase 8.4B evidence.
+  Mark Phase 8.5 correction/QA/PR #54 completed and merged; identify PR #54 as historical and PR #55
+  as the current Draft. State that tag `v1.0.0-rc.1` and its unpublished GitHub Draft Release exist.
+- Record `onlinelearning-484610` as an existing reference project, not a required or selected
+  deployment target, and record the owner's statement that gifted USD 300 cloud/API credit is
+  available without claiming UI verification. Preserve the deterministic no-model boundary and
+  exclude Agent Platform, Vertex AI, and model services.
+- Recommend only for the next validation slice: one minimal request-billed Cloud Run service serving
+  Fastify plus built Vite assets and same-origin API, minimum instances 0, maximum 1 initially, and
+  the smallest CPU/memory that passes health/smoke; use Artifact Registry/Cloud Build only when
+  unavoidable and remove surplus images/build artifacts.
+- Require signed-in in-app Browser read-only verification before any GCP mutation: visible account
+  identity; billing/trial/paid status; exact remaining credit/expiry; official region/free-tier
+  eligibility; first billable event and over-credit behavior; non-capping budgets, quotas/caps,
+  cancellation/deletion steps; exact Console URLs; and every API/service to enable. Require fresh
+  owner approval if real-money billing can occur. Never handle or capture card/CVV/billing
+  credentials.
+- Before any project creation, require the packet to propose a non-PII/non-credential display name
+  and globally unique project ID; identify the exact Google account, organization, and billing
+  account that would own it for owner confirmation; prove whether the free-trial credit applies;
+  enumerate minimum APIs, quota/budget/region, and first billable event; compare reuse of
+  `onlinelearning-484610` against a dedicated project for isolation, cleanup, quota, and fee risk;
+  and document resource/project deletion, rollback, and retention effects. Prefer a dedicated project
+  only if official evidence proves credit applicability without increased fee risk; otherwise stop.
+  Obtain fresh explicit approval immediately before `Create Project`.
+- Preserve C11 `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE`; no signup, card/trial action, GCP Console
+  mutation, API enablement, billing change, resource creation, deployment, reminder, publication,
+  Ready transition, merge, reset, amend, rebase, force-push, or duplicate PR.
+
+Validation: changed-file Prettier, UTF-8/LF/final-newline/no-BOM, local links and official citation
+reachability, exact allowlist, secret/private-path/debug/conflict scans, `git diff --check`, and
+full/correction Git identity/diff checks. Rely on exact root PR CI; do not run build, tests, artifact
+rebuild, browser E2E, live DataHub, or GCP Console.
+
+Deferred: the complete signed-in GCP control packet, account/billing/credit verification, all GCP
+mutation, deployment design validation, reminder creation, independent QA re-review, Ready, and
+merge.

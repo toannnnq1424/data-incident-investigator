@@ -468,14 +468,21 @@ across 37 rows.
    zero-cost DataHub/API use. No blanket legal clearance is claimed; C12 ownership/asset attestations
    and final submission review remain separate. This slice does not publish or distribute anything.
 3. **Public repository:** C10 is `PASS`. The repository is Public, exact main is
-   `1c32f6c913b196fc4a23055fb7da3b1482b94e5e`, and authenticated source/collaboration surfaces remain
-   readable. Private vulnerability reporting is enabled; preserve both states through this task.
+   `73172b7e8e8b02ab9629019eac298b89e02895c2`, tree
+   `a4beb330fb528f4926eee8a538c7d2a79dab1f67`, and authenticated source/collaboration surfaces
+   remain readable. The earlier `1c32f6c913b196fc4a23055fb7da3b1482b94e5e` /
+   `5c83d034f30c6d31268109277aaa455a05ff9656` pair is historical Phase 8.4B evidence, not current
+   main. Private vulnerability reporting is enabled; preserve both states through this task.
 4. **Judge access:** the immediate zero-cost recommendation is the already-Public repository plus a
    timed credential-free fixture quickstart. GitHub Pages is static-only and cannot run the current
    Fastify/same-origin `/api` product. Render Free is a current card-free full-stack candidate but is
-   not selected; Koyeb is rejected under the zero-spend controls, and an unupgraded Google Cloud Free
-   Trial requires a ten-field packet and fresh owner approval before any signup/card/trial action.
-   Choose and verify the final Project URL path and free access through judging without changing C11.
+   not selected; Koyeb is rejected under the zero-spend controls, including its official USD 29
+   pre-authorization hold, and an unupgraded Google Cloud Free Trial requires a ten-field packet and
+   fresh owner approval before any signup/card/trial action. Existing project
+   `onlinelearning-484610` is only a non-mandatory reference. A later read-only packet must compare
+   reuse against a dedicated project and obtain fresh approval for its exact name/ID/owning account
+   immediately before creation. Choose and verify the final Project URL path and free access through
+   judging without changing C11.
 5. **Form schema:** exact screenshot/cover image, teammate, challenge selector, credentials, and other
    live Devpost controls are not enumerated publicly. Inspect only after authorized registration.
 6. **Video visibility:** ask `support@devpost.com` whether unlisted hosting qualifies if Public is not

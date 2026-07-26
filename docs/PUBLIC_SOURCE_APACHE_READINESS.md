@@ -230,11 +230,12 @@ archived, hidden, or created by the visibility change. No unexpected owner/name/
 Pages, deployment, merge, branch-retention, or release-setting drift was observed. The authorized
 QA2 security follow-up enabled only private vulnerability reporting; no other setting changed.
 
-Public source access and the exact unsigned read evidence make C10 `PASS`. C09 remains `PASS`; C11
-and Phase 8.2 remain `PARTIAL`. Phase 8.5 closes the technical bundled-output attribution gap, but
-artifact publication/distribution remains unauthorized pending independent QA and a legal-owner
-disposition. Public visibility does not claim a deployment, video, Devpost submission, published
-Release, or legally approved distributable artifact.
+At the historical Phase 8.4B checkpoint, Public source access and the exact unsigned read evidence
+made C10 `PASS`; C09 remained `PASS`, while C11 and Phase 8.2 remained `PARTIAL`. Phase 8.5 later
+closed the technical bundled-output attribution gap and merged through PR #54; Phase 8.6 later
+recorded the qualified owner disposition. Public visibility alone did not and still does not claim a
+deployment, video, Devpost submission, published Release, or blanket legally approved distributable
+artifact.
 
 The residual exposure remains irreversible: a later visibility rollback cannot recall forks, clones,
 caches, or copies. Any rollback would be containment/escalation, not erasure.
@@ -708,8 +709,10 @@ anything. Those actions retain their own gates.
       user on 2026-07-25; reserved and not consumed by Phase 8.4A.
 
 The approvals are independent. Phase 8.4B consumed the Public authorization and completed through the
-normal merge recorded above; its branch and PR conversation remain retained. Current Draft PR #54 is
-only the Phase 8.5 artifact-enforcement work and does not authorize any other external mutation.
+normal merge recorded above; its branch and PR conversation remain retained. PR #54 is the historical
+Phase 8.5 artifact-enforcement work and is merged through current main
+`73172b7e8e8b02ab9629019eac298b89e02895c2`. Current Draft PR #55 is the Phase 8.6
+rights/deployment preflight and does not authorize any other external mutation.
 
 ## Residual blockers and next evidence
 
