@@ -6217,3 +6217,75 @@ availability boundary remain unchanged.
 
 After the one additive commit, normal push, single Draft PR, and exact-head CI `SUCCESS` terminal
 gates, hand the exact head to independent Windows QA. Do not merge or transition the PR to Ready.
+
+## 2026-07-27 — Phase 8.8 targeted QA correction
+
+### Objective
+
+Resolve the two canonical `FAIL / DO NOT MERGE` blockers on exact Phase 8.8 head
+`e1573bbdf5d1d0d14b5ae485c8ebe1d259efeaa1`: align one stale challenge-positioning sentence and
+remove the browser-native scrollbar from the intake asset without creating another public incident.
+
+### Completed
+
+- Replaced the stale requirements statement with the exact current position: **Open / Wildcard** is
+  primary and strongest; **Agents That Do Real Work** is conditional and secondary only if organizers
+  accept a bounded read-only investigative workflow; no Devpost challenge form selection is claimed.
+- Reused the real public credential-free fixture intake state, selected **Removed schema column**, and
+  verified `Fixture metadata · Ready`, populated synthetic fields, **Start investigation**, and the
+  pre-Start ready message in the official in-app Browser. **Start investigation** was never activated.
+- The Browser screenshot API timed out on two fresh tabs at full app width and on a smaller panel.
+  Rather than simulate or recreate UI, the correction reused the existing real public capture:
+  removed only its captured 15-pixel browser-native scrollbar strip and centered all remaining
+  1410 × 891 app pixels on a sampled page-background 1440 × 900 canvas.
+- Visually inspected the corrected image at original resolution. Preset, question, dataset, occurrence
+  time, symptom, Start button, production-safety note, and ready state remain readable; no native
+  scrollbar, browser chrome, account/session surface, credential, or private endpoint remains.
+- Kept the other four screenshots byte-identical and left their captions unchanged.
+
+### Files changed
+
+`docs/DEVPOST_REQUIREMENTS.md`; `docs/IMPLEMENTATION_PLAN.md`; `docs/SESSION_LOG.md`;
+`docs/demo-assets/README.md`; and
+`docs/demo-assets/01-intake-removed-schema-column.png`.
+
+### Decisions
+
+Use a bounded mechanical correction of the already-authentic public capture after the official
+Browser capture backend failed repeatedly. Exclude only browser chrome, preserve every app-content
+pixel, and disclose the exact 15-pixel exclusion plus background padding. Do not create another
+incident, alter the other screenshots, or broaden the copy change.
+
+### Validation performed
+
+- Corrected intake image: true PNG signature, 1440 × 900, 241,215 bytes, SHA-256
+  `0930bd1688cba0eccdf18e702b0289908915fbb1c154b69ad48b8ef40359b7fc`; chunks only
+  `IHDR`, `sRGB`, `gAMA`, `pHYs`, `IDAT`, and `IEND`; no text, EXIF, timestamp, or ICC metadata.
+- The corrected right-edge maximum average brightness is 22.4, proving the prior bright native
+  scrollbar strip is absent. Original-resolution visual inspection confirms content/caption
+  alignment.
+- The four untouched screenshots match the prior SHA-256 values exactly.
+- Affected Markdown Prettier, local links, exact challenge-claim alignment, `git diff --check`,
+  exact path/residue allowlist, added-line secret/private-path/email/conflict/debug scan, and
+  task-owned process/port checks pass.
+- Ports `3001` and `5173` have zero listeners; no task-owned repository runtime process or QA temp
+  asset remains.
+
+### Validation intentionally deferred
+
+The full suite, build, evaluation, public smoke, another incident, runtime/source/API/workflow/
+package/lock/version changes, every GCP/deployment/billing mutation, live DataHub/model work, Devpost
+registration/form/upload/submission, video, tag, Release, PR Ready transition, and merge.
+
+### Known issues
+
+The public service remains fixture-only and process-local. Authorized live/judge DataHub MCP evidence
+remains `PARTIAL`, and judging-period availability remains unresolved under the earlier cost-control
+stop boundary. This correction does not change those retained Phase 8.7/8.8 limitations.
+
+### Exact next step
+
+Run the final five-path formatting/link/PNG/diff/secret/residue/process/port audit, create one additive
+commit, normal-push the existing branch, update only Draft PR #57 with correction evidence, require
+exact-new-head PR CI `SUCCESS`, and return the clean exact head to the same Windows QA. Do not mark
+Ready or merge.

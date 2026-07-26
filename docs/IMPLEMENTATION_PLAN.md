@@ -6664,3 +6664,38 @@ Local result:
   useful judging evidence without persisting an ephemeral incident identifier.
 - Preserved the Phase 8.7 live-source/digest boundary, current-main identity, deployment and
   cost/shutdown evidence, C11 qualified status, and all unresolved submission/access/live-MCP gates.
+
+#### Phase 8.8 QA correction — aligned challenge position and clean intake asset
+
+Status: canonical Windows QA returned `FAIL / DO NOT MERGE` on exact Phase 8.8 head
+`e1573bbdf5d1d0d14b5ae485c8ebe1d259efeaa1` with two bounded blockers: one stale
+challenge-positioning sentence and a browser-native scrollbar in the intake screenshot.
+
+Objective: align the stale requirements sentence with C23 and the submission draft, and replace only
+the intake asset with a true 1440 × 900 app-only PNG that preserves the pre-Start fixture state without
+creating another incident.
+
+Minimum files:
+
+- `docs/DEVPOST_REQUIREMENTS.md` for the single positioning correction.
+- `docs/demo-assets/01-intake-removed-schema-column.png` for the clean intake asset.
+- `docs/demo-assets/README.md` only to disclose the exact mechanical scrollbar exclusion/padding.
+- this plan and `docs/SESSION_LOG.md` for the canonical QA correction state.
+
+Acceptance:
+
+- **Open / Wildcard** is the primary and strongest current fit; **Agents That Do Real Work** is
+  conditional and secondary only if organizers accept a bounded read-only investigative workflow;
+  no Devpost challenge form selection is claimed.
+- The replacement intake image is a real 1440 × 900 PNG containing only the selected synthetic
+  **Removed schema column** pre-Start app state, with no browser/Windows/UA scrollbar or chrome.
+- The other four screenshots remain byte-identical; no incident is created and no public smoke is
+  rerun.
+- Affected Markdown formatting/links/claim consistency and exact PNG signature/dimensions/metadata/
+  visual-content checks pass, together with bounded diff/path/secret/residue/process/port checks.
+- Create one additive commit, push normally to the existing branch, update only Draft PR #57, require
+  exact-new-head PR CI `SUCCESS`, and leave the worktree/upstream clean. Do not mark Ready or merge.
+
+Deferred: full suite, build, evaluation, runtime/source/API/workflow/package/lock/version changes,
+every GCP/deployment/billing mutation, Devpost registration/form/upload/submission, video work, live
+DataHub/model validation, another public incident, a second PR, PR Ready transition, and merge.

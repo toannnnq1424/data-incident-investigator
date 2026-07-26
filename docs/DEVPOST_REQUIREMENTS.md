@@ -283,9 +283,9 @@ prize, and an individual can receive at most one feedback prize. The Grand Prize
 DataHub Town Hall presentation and promotion; challenge winners receive promotion.
 [[O](https://datahub.devpost.com/)] [[R §8](https://datahub.devpost.com/rules), accessed 2026-07-24]
 
-Positioning recommendation: the current incident-investigation workflow most directly fits **Agents
-That Do Real Work** and can also fit **Open / Wildcard**. This is a recommendation, not a rule or a
-track selection already made.
+Positioning recommendation: **Open / Wildcard** is the primary and strongest current fit.
+**Agents That Do Real Work** is conditional and secondary only if organizers accept a bounded
+read-only investigative workflow. No Devpost challenge form selection has been made.
 
 Official Resources lists:
 

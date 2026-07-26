@@ -2,15 +2,17 @@
 
 These PNGs were captured on 2026-07-27 ICT from the existing public credential-free fixture UI at a
 stable 1440 × 900 viewport. The Browser backend supplied JPEG screenshot bytes, so the frames were
-content-preservingly re-encoded as PNG; the intake frame's viewport-edge pixels were centered on the
-same 1440 × 900 canvas using its sampled page background. No UI content was generated, added, or
+content-preservingly re-encoded as PNG. For the corrected intake asset, only the captured 15-pixel
+browser-native scrollbar strip was excluded; the remaining 1410 × 891 app pixels were centered on the
+same 1440 × 900 canvas using its sampled page background. No app UI content was generated, added, or
 removed. One canonical **Removed schema column** incident produced all terminal screens. They contain
 only synthetic app content and no browser chrome, account surface, session state, credential, or
 private endpoint.
 
 The incident UUID and activity timestamps visible in the completed UI are run-specific display facts,
 not stable identifiers or durable links. The frames preserve the captured app pixels apart from the
-format conversion and disclosed intake-edge padding above; no generated or recreated UI is included.
+format conversion and disclosed intake scrollbar exclusion/edge padding above; no generated or
+recreated UI is included.
 
 ## 1. Guided incident intake
 
