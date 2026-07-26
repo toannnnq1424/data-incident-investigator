@@ -1,11 +1,20 @@
 import { createHash } from 'node:crypto';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, lstatSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
 import { readFile, readdir, realpath } from 'node:fs/promises';
 import path from 'node:path';
+
+import { parsePnpmLockGraph, resolvePnpmPackageRootIdentity } from './pnpm-lock-identity.mjs';
+import {
+  assertCanonicalContainedPath,
+  assertCanonicalRoot,
+  isPortablePathSegment,
+  isPortableRelativePath,
+} from './release-path-safety.mjs';
 
 const noticeFileName = 'THIRD_PARTY_NOTICES.txt';
 const provenanceMethod = 'vite-rollup-rendered-modules-v1';
 const provenanceOutputVariable = 'DII_BUNDLE_ATTRIBUTION_OUTPUT';
+const releaseBuildVariable = 'DII_RELEASE_ARTIFACT_BUILD';
 const packageNamePattern =
   /^(?:@[a-z0-9](?:[a-z0-9._-]*[a-z0-9])?\/)?[a-z0-9](?:[a-z0-9._-]*[a-z0-9])?$/;
 const javascriptModulePattern = /\.(?:[cm]?[jt]sx?|json)$/i;
@@ -56,25 +65,15 @@ function normalizedRelativePath(root, absolutePath, label) {
       !relative.startsWith('../') &&
       !path.isAbsolute(relative) &&
       !relative.includes('\\') &&
-      !relative.includes('\0'),
+      !relative.includes('\0') &&
+      isPortableRelativePath(relative),
     `${label} must remain inside the repository`,
   );
   return relative;
 }
 
 function assertSafeSourcePath(value, label) {
-  assert(
-    typeof value === 'string' &&
-      value.length > 0 &&
-      !value.includes('\\') &&
-      !value.includes('\0') &&
-      !value.startsWith('/') &&
-      !/^[A-Za-z]:/.test(value) &&
-      value
-        .split('/')
-        .every((segment) => segment.length > 0 && segment !== '.' && segment !== '..'),
-    `${label} is unsafe`,
-  );
+  assert(isPortableRelativePath(value), `${label} is unsafe`);
 }
 
 function parseNodeModulesPath(moduleId) {
@@ -112,24 +111,29 @@ async function readUtf8Evidence(absolutePath, label) {
   return { buffer, text };
 }
 
-async function loadPackageEvidence(repositoryRoot, packageRoot) {
-  const canonicalRepositoryRoot = await realpath(repositoryRoot);
+async function loadPackageEvidence(repositoryRoot, packageRoot, lockGraph) {
+  const canonicalRepositoryRoot = await assertCanonicalRoot(repositoryRoot, 'repository root');
   const canonicalPackageRoot = await realpath(packageRoot);
   const relativePackageRoot = normalizedRelativePath(
     canonicalRepositoryRoot,
     canonicalPackageRoot,
     'package root',
   );
-  assert(
-    relativePackageRoot.includes('/node_modules/') ||
-      relativePackageRoot.startsWith('node_modules/'),
-    'third-party package root is not installed under node_modules',
-  );
+  await assertCanonicalContainedPath(canonicalRepositoryRoot, relativePackageRoot, {
+    label: 'third-party package root',
+    type: 'directory',
+  });
+  const graphIdentity = resolvePnpmPackageRootIdentity(relativePackageRoot, lockGraph);
 
-  const packageManifestPath = path.join(canonicalPackageRoot, 'package.json');
+  const packageManifestRelativePath = `${relativePackageRoot}/package.json`;
+  const packageManifestPath = await assertCanonicalContainedPath(
+    canonicalRepositoryRoot,
+    packageManifestRelativePath,
+    { label: `${graphIdentity.lockSnapshot} package manifest`, type: 'file' },
+  );
   const packageManifestEvidence = await readUtf8Evidence(
     packageManifestPath,
-    `${relativePackageRoot}/package.json`,
+    packageManifestRelativePath,
   );
   let packageManifest;
   try {
@@ -146,6 +150,11 @@ async function loadPackageEvidence(repositoryRoot, packageRoot) {
     typeof packageManifest.license === 'string' && packageManifest.license.trim().length > 0,
     `${packageManifest.name}@${packageManifest.version} declared license is missing`,
   );
+  assert(
+    packageManifest.name === graphIdentity.name &&
+      packageManifest.version === graphIdentity.version,
+    `package manifest ${packageManifest.name}@${packageManifest.version} differs from frozen graph ${graphIdentity.lockSnapshot}`,
+  );
 
   const entryNames = await readdir(canonicalPackageRoot);
   const licenseNames = entryNames.filter((name) => legalFilePattern.test(name)).sort(compareText);
@@ -161,14 +170,23 @@ async function loadPackageEvidence(repositoryRoot, packageRoot) {
     ['notice', noticeNames],
   ]) {
     for (const fileName of names) {
-      const absoluteFile = path.join(canonicalPackageRoot, fileName);
+      assert(
+        isPortablePathSegment(fileName),
+        `${graphIdentity.lockSnapshot} legal filename is unsafe`,
+      );
+      const legalRelativePath = `${relativePackageRoot}/${fileName}`;
+      const absoluteFile = await assertCanonicalContainedPath(
+        canonicalRepositoryRoot,
+        legalRelativePath,
+        { label: `${graphIdentity.lockSnapshot}/${fileName}`, type: 'file' },
+      );
       const evidence = await readUtf8Evidence(
         absoluteFile,
         `${packageManifest.name}@${packageManifest.version}/${fileName}`,
       );
       legalFiles.push({
         kind,
-        path: normalizedRelativePath(canonicalRepositoryRoot, absoluteFile, 'legal file'),
+        path: legalRelativePath,
         sha256: sha256(evidence.buffer),
         text: evidence.text,
       });
@@ -180,12 +198,11 @@ async function loadPackageEvidence(repositoryRoot, packageRoot) {
     declaredLicense: packageManifest.license.trim(),
     legalFiles,
     name: packageManifest.name,
+    lockPackage: graphIdentity.lockPackage,
+    lockSnapshot: graphIdentity.lockSnapshot,
+    packageRoot: graphIdentity.packageRoot,
     packageManifest: {
-      path: normalizedRelativePath(
-        canonicalRepositoryRoot,
-        packageManifestPath,
-        'package manifest',
-      ),
+      path: packageManifestRelativePath,
       sha256: sha256(packageManifestEvidence.buffer),
     },
     version: packageManifest.version,
@@ -298,7 +315,14 @@ function addContribution(packageRecord, bundlePath, moduleEvidence) {
 }
 
 export async function createBundleAttribution(rawProvenance, repositoryRoot) {
-  const resolvedRepositoryRoot = path.resolve(repositoryRoot);
+  const resolvedRepositoryRoot = await assertCanonicalRoot(repositoryRoot, 'repository root');
+  const lockfilePath = await assertCanonicalContainedPath(
+    resolvedRepositoryRoot,
+    'pnpm-lock.yaml',
+    { label: 'pnpm-lock.yaml', type: 'file' },
+  );
+  const lockfileEvidence = await readUtf8Evidence(lockfilePath, 'pnpm-lock.yaml');
+  const lockGraph = parsePnpmLockGraph(lockfileEvidence.text);
   const chunks = parseRawProvenance(rawProvenance);
   const packagesByRoot = new Map();
 
@@ -319,7 +343,11 @@ export async function createBundleAttribution(rawProvenance, repositoryRoot) {
       const packageKey = comparablePath(canonicalPackageRoot);
       let packageRecord = packagesByRoot.get(packageKey);
       if (!packageRecord) {
-        const evidence = await loadPackageEvidence(resolvedRepositoryRoot, canonicalPackageRoot);
+        const evidence = await loadPackageEvidence(
+          resolvedRepositoryRoot,
+          canonicalPackageRoot,
+          lockGraph,
+        );
         assert(
           evidence.name === classification.packageName,
           `module package ${classification.packageName} differs from ${evidence.name}`,
@@ -328,16 +356,12 @@ export async function createBundleAttribution(rawProvenance, repositoryRoot) {
         packagesByRoot.set(packageKey, packageRecord);
       }
 
-      const sourceAbsolute = path.join(
-        packageRecord.canonicalPackageRoot,
-        ...classification.sourcePath.split('/'),
-      );
       assertSafeSourcePath(classification.sourcePath, 'classified module source path');
-      const canonicalSource = await realpath(sourceAbsolute);
-      normalizedRelativePath(
-        packageRecord.canonicalPackageRoot,
-        canonicalSource,
-        'module source path',
+      const sourceEvidencePath = `${packageRecord.packageRoot}/${classification.sourcePath}`;
+      const canonicalSource = await assertCanonicalContainedPath(
+        resolvedRepositoryRoot,
+        sourceEvidencePath,
+        { label: 'module source path', type: 'file' },
       );
       const sourceEvidence = await readFile(canonicalSource);
       addContribution(packageRecord, `apps/web/dist/${chunk.fileName}`, {
@@ -367,7 +391,10 @@ export async function createBundleAttribution(rawProvenance, repositoryRoot) {
           })),
         declaredLicense: packageRecord.declaredLicense,
         legalFiles: packageRecord.legalFiles,
+        lockPackage: packageRecord.lockPackage,
+        lockSnapshot: packageRecord.lockSnapshot,
         name: packageRecord.name,
+        packageRoot: packageRecord.packageRoot,
         packageManifest: packageRecord.packageManifest,
         version: packageRecord.version,
       };
@@ -384,10 +411,25 @@ export async function createBundleAttribution(rawProvenance, repositoryRoot) {
   };
 }
 
-export function createViteBundleAttributionPlugin() {
-  const outputPath = process.env[provenanceOutputVariable];
-  if (!outputPath) return false;
+export function createViteBundleAttributionPlugin(environment = process.env) {
+  const outputPath = environment[provenanceOutputVariable];
+  const releaseBuild = environment[releaseBuildVariable];
+  if (!outputPath && !releaseBuild) return false;
+  assert(releaseBuild === '1', `${releaseBuildVariable}=1 is required for release capture`);
+  assert(outputPath, `${provenanceOutputVariable} is required for release capture`);
   assert(path.isAbsolute(outputPath), `${provenanceOutputVariable} must be an absolute path`);
+  assert(isPortablePathSegment(path.basename(outputPath)), 'release capture filename is unsafe');
+  const outputDirectory = path.dirname(outputPath);
+  const outputDirectoryStat = lstatSync(outputDirectory);
+  assert(
+    outputDirectoryStat.isDirectory() && !outputDirectoryStat.isSymbolicLink(),
+    'release capture directory must be a real directory',
+  );
+  assert(
+    comparablePath(realpathSync(outputDirectory)) === comparablePath(outputDirectory),
+    'release capture directory must be canonical and non-linked',
+  );
+  assert(!existsSync(outputPath), 'release capture output already exists');
 
   return {
     apply: 'build',
@@ -420,3 +462,4 @@ export function readRawBundleAttribution(filePath) {
 }
 
 export const bundleAttributionOutputVariable = provenanceOutputVariable;
+export const releaseArtifactBuildVariable = releaseBuildVariable;

@@ -1,3 +1,5 @@
 import type { PluginOption } from 'vite';
 
-export function createViteBundleAttributionPlugin(): PluginOption;
+export function createViteBundleAttributionPlugin(
+  environment?: Record<string, string | undefined>,
+): PluginOption;

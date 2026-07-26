@@ -5345,3 +5345,83 @@ rebuild, inspect/verify it locally, remove every task-created artifact/build res
 same branch, create exactly one Draft PR, require exact-head PR CI and the release-artifact contract
 to reach terminal `SUCCESS`, and return `READY FOR INDEPENDENT WINDOWS QA` without merge or
 publication.
+
+## 2026-07-26 — Phase 8.5 independent Windows QA correction
+
+### Objective
+
+Close the frozen-identity, Windows path/link/output atomicity, focused-coverage, and stale Phase 8.4B
+documentation findings reported as `FAIL / DO NOT MERGE` on exact prior Phase 8.5 head
+`bde288112f504c2067ff85499337d9315c30c432`, while retaining the same branch and Draft PR #54.
+
+### Completed
+
+- Reconfirmed the clean canonical branch at the reported head/tree and exact base/main
+  `1c32f6c913b196fc4a23055fb7da3b1482b94e5e`. The tracked Windows bootstrap verified Node
+  `24.14.0`, pnpm `11.9.0`, frozen install, and Prettier `3.9.5`; the first sandboxed probe was an
+  environment `EPERM`/execution-policy limitation, and the single scoped bootstrap retry passed
+  without changing manifests or lockfile.
+- Added strict pnpm lockfile-v9 identity parsing. Each attributed canonical
+  `node_modules/.pnpm/<virtual-store>/node_modules/<package>` root must encode exactly one lock
+  package/snapshot; installed manifest name/version must match it. Schema v3 records lock package,
+  lock snapshot, canonical package root, manifest/legal evidence, and module-source evidence.
+- Added one shared Windows-safe release path validator and canonical lstat/realpath containment.
+  Builder and verifier reject reserved device names including extensions, ADS colons, trailing dots
+  or spaces, controls/NUL, absolute/UNC/drive/backslash/dot-segment forms, case collisions, links,
+  junctions, reparse/canonical escapes, and unsafe archive/directory roots or inputs.
+- Guarded `outputs/release` plus every generated path and added rollback-safe archive/sidecar
+  publication: any write/rename/cleanup failure removes both final outputs and transaction residue.
+  Release capture now requires the paired builder flag and output path and still fails if the plugin
+  output is missing.
+- Expanded focused contracts to the exact five embedded packages and separately proved that
+  `abstract-logging@2.0.1` exists in the frozen graph but has no rendered contribution. Added direct
+  graph/manifest drift, cross-root legal/manifest, linked evidence/root, Windows path, capture, and
+  sidecar rollback regressions.
+- Corrected current Phase 8.4B state to normal merge
+  `1c32f6c913b196fc4a23055fb7da3b1482b94e5e`, tree
+  `5c83d034f30c6d31268109277aaa455a05ff9656`, ordered parents
+  `36d4205806597ae14b7306c74e1527c284202023` then
+  `e4ddbb8277f430ed1da4593c9f19ca89f1aa39fb`, and exact-main CI run `30178465331`, job
+  `89731006555`, `SUCCESS`. C10 remains `PASS`; Public visibility, enabled private reporting, and the
+  retained branch/conversation remain preservation requirements.
+
+### Files changed
+
+New `scripts/release-path-safety.mjs` and `scripts/pnpm-lock-identity.mjs`; corrected
+`scripts/bundle-attribution.mjs`, its declaration, release builder/verifier, and focused contract;
+updated only directly stale repository/deployment/compliance/plan/known-issue/session documents.
+
+### Decisions
+
+The verifier reconstructs frozen package identity from archived lock bytes and canonical provenance
+paths instead of trusting internally consistent manifest fields. Lock/legal/source hashes remain
+engineering evidence rather than legal advice. C11 remains `PARTIAL`; artifact publication and
+distribution remain `BLOCKED` pending same-QA re-review and a separate legal-owner disposition.
+
+### Validation performed
+
+Focused Node 24 release contracts pass 15/15. The actual installed graph parser resolves the five
+embedded identities plus `abstract-logging@2.0.1` to their exact lock package/snapshot and canonical
+virtual-store roots. Affected ESLint, web typecheck, changed-file Prettier, and `git diff --check`
+pass. No release artifact has been built during this correction yet.
+
+### Validation intentionally deferred
+
+Broad product/full suite, evaluation, browser E2E, live DataHub, dependency/version/lock/workflow
+changes, publication/distribution, tag/Release/assets/deployment/submission, Ready/merge, and legal
+owner decisions remain excluded. One new exact-clean-head local artifact build plus focused
+inspection/verification is deferred until after the additive correction commit.
+
+### Known issues
+
+The prior exact Phase 8.5 head remains QA-failed. The corrected implementation still requires its one
+clean-head local artifact proof, cleanup, push, exact-new-head PR CI, and same Windows QA re-review.
+The missing `abstract-logging@2.0.1` legal file remains a non-bundled production-install/C11 caveat.
+
+### Exact next step
+
+Complete invariant/EOL/link/secret/full-diff review, create additive correction commit(s) without
+amend/rebase, run exactly one new clean-head local-only artifact build and archive/directory/
+repeatability inspection, delete all generated evidence, normal-push the same branch, update Draft PR
+#54, require exact-new-head CI including `test:release-artifact` terminal `SUCCESS`, and return
+`READY FOR SAME WINDOWS QA RE-REVIEW` without merge or publication.

@@ -176,13 +176,21 @@ The repository owner completed the independently approved visibility change outs
 Authenticated GitHub plus unsigned HTTP and credential-helper-disabled Git read evidence verified the
 repository as Public at 2026-07-26 04:48 ICT, with default `main` still exact
 `36d4205806597ae14b7306c74e1527c284202023`. C10 is therefore `PASS`.
+Phase 8.4B subsequently completed through normal merge
+`1c32f6c913b196fc4a23055fb7da3b1482b94e5e`, tree
+`5c83d034f30c6d31268109277aaa455a05ff9656`, with ordered parents
+`36d4205806597ae14b7306c74e1527c284202023` then
+`e4ddbb8277f430ed1da4593c9f19ca89f1aa39fb`. Exact-main CI run `30178465331`, job
+`89731006555`, is `SUCCESS`; Public visibility, enabled private vulnerability reporting, and the
+Phase 8.4B branch/conversation remain preserved. C10 remains `PASS`.
 
 The source relicense is independent from release-artifact attribution. Phase 8.5 now maps the exact
 positive rendered third-party contributions in `apps/web/dist` to five package/version identities and
 their verified legal files, generates deterministic `THIRD_PARTY_NOTICES.txt`, and makes manifest
-schema v2 plus the standalone verifier enforce that evidence. This closes the technical bundle
-inventory gap without providing legal advice. Artifact publication/distribution remains unauthorized
-pending independent QA and the C11 legal-owner disposition.
+schema v3 plus the standalone verifier enforce exact pnpm lock snapshot/canonical virtual-store
+identity, legal/source evidence, and Windows-safe paths. This closes the technical bundle inventory
+gap without providing legal advice. Artifact publication/distribution remains unauthorized pending
+same-QA re-review and the C11 legal-owner disposition.
 
 ## Submission fields and access
 
@@ -347,8 +355,8 @@ DataHub validation. Live/judge-access evidence remains credential/service-gated.
 ## Corrected current product facts
 
 These are repository facts on exact current `main`
-`36d4205806597ae14b7306c74e1527c284202023` (tree
-`876899895449981f3c4dd3981ef76ba64597d1bd`), not competition claims:
+`1c32f6c913b196fc4a23055fb7da3b1482b94e5e` (tree
+`5c83d034f30c6d31268109277aaa455a05ff9656`), not competition claims:
 
 - Fixture-mode selection, investigation, scoring, report composition, and Markdown rendering are
   deterministic. Live DataHub mode depends on external metadata and timeline state, so its returned
@@ -378,8 +386,10 @@ These are repository facts on exact current `main`
 - [GitHub](https://github.com/toannnnq1424/data-incident-investigator) displayed **Public** at the
   2026-07-26 04:48 ICT post-mutation checkpoint. Unsigned GETs to the repository, exact main commit,
   README, LICENSE, issues, PRs, tags, Releases, and Actions returned `200`; a credential-helper-disabled
-  HTTPS `ls-remote` resolved default `main` to exact
-  `36d4205806597ae14b7306c74e1527c284202023`. C10 is `PASS`. The authorized QA2 correction enabled
+  HTTPS `ls-remote` resolved the then-current default `main` to exact
+  `36d4205806597ae14b7306c74e1527c284202023`. Phase 8.4B later merged normally as exact current main
+  `1c32f6c913b196fc4a23055fb7da3b1482b94e5e`; exact-main CI run `30178465331`, job `89731006555`,
+  is `SUCCESS`. C10 remains `PASS`. The authorized QA2 correction enabled
   GitHub private vulnerability reporting at 2026-07-26 05:22 ICT; GitHub authentication is required
   to submit through the private report route, and public issue disclosure is prohibited. This
   security-control correction does not change the 37-row compliance statuses or totals.
@@ -402,8 +412,8 @@ Every source link in the matrix was accessed at the 2026-07-24 checkpoint in the
 | C06 | [R §4](https://datahub.devpost.com/rules)                                                              | Working application uses open-source DataHub plus at least one named integration.                                                           | Explicit `datahub-mcp` mode uses the official SDK and only read-only `search`/`get_lineage`; protocol fixture and product vertical slice pass, but live/judge-access MCP validation is absent.                                                      | PARTIAL      | Phase 8.2–8.3           | Validate the exact path against an authorized DataHub Core/Cloud MCP endpoint, then show the same evidence in judge instructions, video, and copy.                   |
 | C07 | [R §4](https://datahub.devpost.com/rules)                                                              | App installs/runs consistently on its stated intended platform.                                                                             | Node 24 runbook, fixture smoke, frozen lock, and MCP protocol/product-slice evidence exist; a clean live MCP judge path does not.                                                                                                                   | PARTIAL      | Phase 8.2–8.3           | Validate the final named-integration path from clean judge instructions on the declared platform.                                                                    |
 | C08 | [R §4](https://datahub.devpost.com/rules)                                                              | Submission functionality matches text and video.                                                                                            | Current docs describe RC behavior, but final submission/video do not exist.                                                                                                                                                                         | PARTIAL      | Phase 8.3               | Freeze verified claims after integration; record a claim-to-demo checklist.                                                                                          |
-| C09 | [R §4](https://datahub.devpost.com/rules)                                                              | Submitted repo uses Apache 2.0 visible at top/About.                                                                                        | Exact main `36d4205806597ae14b7306c74e1527c284202023` contains canonical Apache-2.0 licensing; exact-main CI is successful and GitHub detects `Apache-2.0`.                                                                                         | PASS         | Phase 8.4A complete     | Preserve exact license/main evidence through the Public transition and recheck detection afterward.                                                                  |
-| C10 | [R §4](https://datahub.devpost.com/rules)                                                              | Public source repository with all necessary source/assets/instructions.                                                                     | GitHub is Public. Authenticated and unsigned reads verify the repository, exact main commit, README/LICENSE, collaboration, tag/Release, and Actions surfaces; credential-free Git read resolves the exact default-main SHA.                        | PASS         | Phase 8.4B complete     | Preserve Public access and exact-main evidence through QA2 and the normal merge; reverify after merge.                                                               |
+| C09 | [R §4](https://datahub.devpost.com/rules)                                                              | Submitted repo uses Apache 2.0 visible at top/About.                                                                                        | Exact main `1c32f6c913b196fc4a23055fb7da3b1482b94e5e` preserves canonical Apache-2.0 licensing; exact-main CI run `30178465331` / job `89731006555` is successful and GitHub detects `Apache-2.0`.                                                  | PASS         | Phase 8.4A complete     | Preserve exact license/main evidence through later work and recheck detection before submission.                                                                     |
+| C10 | [R §4](https://datahub.devpost.com/rules)                                                              | Public source repository with all necessary source/assets/instructions.                                                                     | GitHub is Public. Phase 8.4B normal merge, exact-main CI, authenticated/unsigned reads, enabled private reporting, and retained branch/conversation evidence are complete.                                                                          | PASS         | Phase 8.4B complete     | Preserve and reverify Public access, reporting, and exact-main evidence through later work.                                                                          |
 | C11 | [R §§4, 7](https://datahub.devpost.com/rules), [S](https://datahub.devpost.com/resources)              | All third-party SDK/API/data/content use is authorized and licence-compliant.                                                               | Frozen-graph evidence covers 138/138 declared licenses and 137 legal files. Exact enforced bundle provenance covers five MIT-declared packages and their legal text; `abstract-logging@2.0.1` is not embedded but still lacks a package legal file. | PARTIAL      | Legal/owner + Phase 8.5 | Review the captured upstream texts and remaining non-bundled dependency/data/API rights; record an owner disposition before any artifact distribution or submission. |
 | C12 | [R §§4, 7](https://datahub.devpost.com/rules), [T §7](https://info.devpost.com/legal/terms-of-service) | Submission is original/solely owned and does not violate third-party rights.                                                                | Git provenance exists; entrant/contributor ownership attestation is absent.                                                                                                                                                                         | PARTIAL      | Entrant / Phase 8 final | Confirm contributor and asset rights, including any assistance or external work, before submission.                                                                  |
 | C13 | [R §4](https://datahub.devpost.com/rules), [O](https://datahub.devpost.com/)                           | Provide an easily testable Project URL.                                                                                                     | No public live URL or finalized judge-ready repository setup exists.                                                                                                                                                                                | OPEN         | Phase 8.3               | Choose hosted demo or public-repo setup path and test it from a clean, unauthenticated judge context.                                                                |

@@ -1,8 +1,18 @@
 import { createHash } from 'node:crypto';
-import { readFile, readdir, stat } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { gunzipSync } from 'node:zlib';
+
+import { parsePnpmLockGraph, resolvePnpmPackageRootIdentity } from './pnpm-lock-identity.mjs';
+import {
+  assertCanonicalContainedPath,
+  assertCanonicalStandalonePath,
+  assertUniquePortablePaths,
+  isPortablePathSegment,
+  isPortableRelativePath,
+  portablePathKey,
+} from './release-path-safety.mjs';
 
 const manifestName = 'RELEASE-MANIFEST.json';
 const noticeFileName = 'THIRD_PARTY_NOTICES.txt';
@@ -57,6 +67,8 @@ const requiredStaticFiles = [
   'packages/shared-types/dist/index.js',
   'packages/shared-types/package.json',
   'scripts/verify-release-artifact.mjs',
+  'scripts/pnpm-lock-identity.mjs',
+  'scripts/release-path-safety.mjs',
 ];
 const exactDependencyManifests = [
   'apps/api/package.json',
@@ -85,16 +97,7 @@ export function sha256(value) {
 }
 
 export function isSafeReleasePath(value) {
-  if (
-    typeof value !== 'string' ||
-    value.length === 0 ||
-    value.includes('\\') ||
-    value.includes('\0') ||
-    value.startsWith('/') ||
-    /^[A-Za-z]:/.test(value)
-  ) {
-    return false;
-  }
+  if (!isPortableRelativePath(value)) return false;
 
   const segments = value.split('/');
   return segments.every((segment) => {
@@ -120,15 +123,7 @@ export function isAllowedPayloadPath(filePath) {
 }
 
 function isSafeRelativeEvidencePath(value) {
-  return (
-    typeof value === 'string' &&
-    value.length > 0 &&
-    !value.includes('\\') &&
-    !value.includes('\0') &&
-    !value.startsWith('/') &&
-    !/^[A-Za-z]:/.test(value) &&
-    value.split('/').every((segment) => segment.length > 0 && segment !== '.' && segment !== '..')
-  );
+  return isPortableRelativePath(value);
 }
 
 function isSafeInstalledEvidencePath(value) {
@@ -184,6 +179,9 @@ export function createThirdPartyNotice(attribution) {
       `Declared license metadata: ${packageEntry.declaredLicense}`,
       `Package manifest: ${packageEntry.packageManifest.path}`,
       `Package manifest SHA-256: ${packageEntry.packageManifest.sha256}`,
+      `Canonical package root: ${packageEntry.packageRoot}`,
+      `Frozen lock package: ${packageEntry.lockPackage}`,
+      `Frozen lock snapshot: ${packageEntry.lockSnapshot}`,
       'Rendered bundle contributions:',
     );
     for (const contribution of packageEntry.contributions) {
@@ -202,7 +200,7 @@ export function createThirdPartyNotice(attribution) {
   return Buffer.from(`${sections.join('\n')}\n`, 'utf8');
 }
 
-function validateThirdPartyAttribution(attribution) {
+function validateThirdPartyAttributionStructure(attribution) {
   exactKeys(attribution, ['method', 'noticeFile', 'packages'], 'manifest thirdPartyAttribution');
   assert(
     attribution.method === 'vite-rollup-rendered-modules-v1',
@@ -219,7 +217,17 @@ function validateThirdPartyAttribution(attribution) {
   for (const packageEntry of attribution.packages) {
     exactKeys(
       packageEntry,
-      ['contributions', 'declaredLicense', 'legalFiles', 'name', 'packageManifest', 'version'],
+      [
+        'contributions',
+        'declaredLicense',
+        'legalFiles',
+        'lockPackage',
+        'lockSnapshot',
+        'name',
+        'packageManifest',
+        'packageRoot',
+        'version',
+      ],
       'third-party package attribution',
     );
     assert(packageNamePattern.test(packageEntry.name), 'third-party package name is invalid');
@@ -233,6 +241,18 @@ function validateThirdPartyAttribution(attribution) {
     );
     priorPackage = packageEntry;
     assert(
+      isSafeInstalledEvidencePath(packageEntry.packageRoot),
+      `${identity} canonical package root is invalid`,
+    );
+    assert(
+      typeof packageEntry.lockPackage === 'string' && packageEntry.lockPackage.length > 0,
+      `${identity} frozen lock package is invalid`,
+    );
+    assert(
+      typeof packageEntry.lockSnapshot === 'string' && packageEntry.lockSnapshot.length > 0,
+      `${identity} frozen lock snapshot is invalid`,
+    );
+    assert(
       typeof packageEntry.declaredLicense === 'string' &&
         packageEntry.declaredLicense.trim() === packageEntry.declaredLicense &&
         packageEntry.declaredLicense.length > 0 &&
@@ -243,7 +263,7 @@ function validateThirdPartyAttribution(attribution) {
     exactKeys(packageEntry.packageManifest, ['path', 'sha256'], `${identity} package manifest`);
     assert(
       isSafeInstalledEvidencePath(packageEntry.packageManifest.path) &&
-        packageEntry.packageManifest.path.endsWith('/package.json'),
+        packageEntry.packageManifest.path === `${packageEntry.packageRoot}/package.json`,
       `${identity} package manifest provenance path is invalid`,
     );
     assert(
@@ -273,7 +293,9 @@ function validateThirdPartyAttribution(attribution) {
       assert(legalKey > priorLegalKey, `${identity} legal files are not uniquely sorted`);
       priorLegalKey = legalKey;
       assert(
-        isSafeInstalledEvidencePath(legalFile.path),
+        isSafeInstalledEvidencePath(legalFile.path) &&
+          path.posix.dirname(legalFile.path) === packageEntry.packageRoot &&
+          isPortablePathSegment(path.posix.basename(legalFile.path)),
         `${identity} legal-file provenance path is invalid`,
       );
       assert(sha256Pattern.test(legalFile.sha256), `${identity} legal-file SHA-256 is invalid`);
@@ -330,7 +352,8 @@ function validateThirdPartyAttribution(attribution) {
           `${identity} module rendered-byte evidence is invalid`,
         );
         assert(
-          isSafeRelativeEvidencePath(module.sourcePath),
+          isSafeRelativeEvidencePath(module.sourcePath) &&
+            isSafeInstalledEvidencePath(`${packageEntry.packageRoot}/${module.sourcePath}`),
           `${identity} module source path is invalid`,
         );
         assert(
@@ -342,8 +365,28 @@ function validateThirdPartyAttribution(attribution) {
   }
 }
 
-export function validateThirdPartyNotice(noticeBuffer, attribution) {
-  validateThirdPartyAttribution(attribution);
+export function validateThirdPartyAttribution(attribution, lockfileText) {
+  validateThirdPartyAttributionStructure(attribution);
+  const graph = parsePnpmLockGraph(lockfileText);
+  const packageRoots = new Set();
+  for (const packageEntry of attribution.packages) {
+    const identity = `${packageEntry.name}@${packageEntry.version}`;
+    const packageRootKey = portablePathKey(packageEntry.packageRoot);
+    assert(!packageRoots.has(packageRootKey), `${identity} canonical package root is duplicated`);
+    packageRoots.add(packageRootKey);
+    const frozenIdentity = resolvePnpmPackageRootIdentity(packageEntry.packageRoot, graph);
+    assert(
+      frozenIdentity.name === packageEntry.name &&
+        frozenIdentity.version === packageEntry.version &&
+        frozenIdentity.lockPackage === packageEntry.lockPackage &&
+        frozenIdentity.lockSnapshot === packageEntry.lockSnapshot,
+      `${identity} differs from its frozen pnpm graph identity`,
+    );
+  }
+}
+
+export function validateThirdPartyNotice(noticeBuffer, attribution, lockfileText) {
+  validateThirdPartyAttribution(attribution, lockfileText);
   assert(
     Buffer.isBuffer(noticeBuffer) && noticeBuffer.equals(createThirdPartyNotice(attribution)),
     `${noticeFileName} content is not canonical for its manifest provenance`,
@@ -397,6 +440,7 @@ export function parseReleaseArchive(archiveBuffer) {
   assert(tarBuffer.length % 512 === 0, 'tar payload is not block aligned');
   assert(tarBuffer.length <= maxPayloadBytes, 'tar payload exceeds the 50 MiB limit');
   const entries = new Map();
+  const windowsEntryKeys = new Set();
   let offset = 0;
   let sawTrailer = false;
   let priorEntryName = '';
@@ -420,6 +464,9 @@ export function parseReleaseArchive(archiveBuffer) {
     assert(tarChecksum(header) === storedChecksum, `${name || 'unnamed entry'} checksum mismatch`);
     assert(isSafeReleasePath(name), `unsafe or forbidden archive path ${JSON.stringify(name)}`);
     assert(!entries.has(name), `duplicate archive path ${name}`);
+    const windowsEntryKey = portablePathKey(name);
+    assert(!windowsEntryKeys.has(windowsEntryKey), `Windows-ambiguous archive path ${name}`);
+    windowsEntryKeys.add(windowsEntryKey);
     assert(name > priorEntryName, 'archive entries are not uniquely sorted');
     assert(entries.size < maxPayloadFiles, 'archive exceeds the 500-file limit');
     assert(readTarOctal(header, 100, 8, `${name} mode`) === 0o644, `${name} mode is not 0644`);
@@ -479,7 +526,7 @@ function parseManifest(buffer) {
     ],
     manifestName,
   );
-  assert(manifest.schemaVersion === 2, 'unsupported manifest schemaVersion');
+  assert(manifest.schemaVersion === 3, 'unsupported manifest schemaVersion');
   exactKeys(manifest.product, ['name', 'version'], 'manifest product');
   assert(manifest.product.name === 'data-incident-investigator', 'unexpected product name');
   assert(semverPattern.test(manifest.product.version), 'product version is not SemVer');
@@ -528,9 +575,13 @@ function parseManifest(buffer) {
     Array.isArray(manifest.files) && manifest.files.length > 0,
     'manifest files must be nonempty',
   );
-  validateThirdPartyAttribution(manifest.thirdPartyAttribution);
+  validateThirdPartyAttributionStructure(manifest.thirdPartyAttribution);
 
   let priorPath = '';
+  assertUniquePortablePaths(
+    manifest.files.map((file) => file?.path),
+    'manifest files',
+  );
   for (const file of manifest.files) {
     exactKeys(file, ['path', 'sha256', 'size'], `manifest file ${JSON.stringify(file?.path)}`);
     assert(
@@ -549,6 +600,7 @@ function parseManifest(buffer) {
   }
 
   let priorManifest = '';
+  assertUniquePortablePaths(manifest.dependencyInventory.manifests, 'dependency manifests');
   for (const manifestPath of manifest.dependencyInventory.manifests) {
     assert(isSafeReleasePath(manifestPath), `unsafe dependency manifest path ${manifestPath}`);
     assert(
@@ -585,9 +637,6 @@ function validateReleaseFiles(files, manifest, context) {
   for (const requiredPath of requiredStaticFiles) {
     assert(files.has(requiredPath), `${context} is missing required file ${requiredPath}`);
   }
-  const noticeBuffer = files.get(manifest.thirdPartyAttribution.noticeFile);
-  assert(noticeBuffer, `${context} is missing ${manifest.thirdPartyAttribution.noticeFile}`);
-  validateThirdPartyNotice(noticeBuffer, manifest.thirdPartyAttribution);
   const manifestedPaths = new Set(manifest.files.map((file) => file.path));
   for (const packageEntry of manifest.thirdPartyAttribution.packages) {
     for (const contribution of packageEntry.contributions) {
@@ -618,6 +667,15 @@ function validateReleaseFiles(files, manifest, context) {
     sha256(lockfile) === manifest.dependencyInventory.lockfileSha256,
     'dependency lockfile SHA-256 differs from inventory',
   );
+  const lockfileText = lockfile.toString('utf8');
+  assert(
+    Buffer.from(lockfileText, 'utf8').equals(lockfile),
+    'dependency lockfile is not canonical UTF-8 text',
+  );
+  validateThirdPartyAttribution(manifest.thirdPartyAttribution, lockfileText);
+  const noticeBuffer = files.get(manifest.thirdPartyAttribution.noticeFile);
+  assert(noticeBuffer, `${context} is missing ${manifest.thirdPartyAttribution.noticeFile}`);
+  validateThirdPartyNotice(noticeBuffer, manifest.thirdPartyAttribution, lockfileText);
   const environmentExample = files.get('.env.example');
   assert(environmentExample, '.env.example is missing');
   const environmentText = environmentExample.toString('utf8');
@@ -692,9 +750,19 @@ function validateIdentity(manifest, expected = {}) {
 
 export async function verifyArtifact(artifactPath, expected = {}) {
   const resolvedArtifact = path.resolve(artifactPath);
-  const archiveBuffer = await readFile(resolvedArtifact);
+  assert(isPortablePathSegment(path.basename(resolvedArtifact)), 'artifact filename is unsafe');
+  const canonicalArtifact = await assertCanonicalStandalonePath(resolvedArtifact, {
+    label: 'release artifact input',
+    type: 'file',
+  });
+  const archiveBuffer = await readFile(canonicalArtifact);
   const sidecarPath = `${resolvedArtifact}.sha256`;
-  const sidecar = await readFile(sidecarPath, 'utf8');
+  assert(isPortablePathSegment(path.basename(sidecarPath)), 'artifact sidecar filename is unsafe');
+  const canonicalSidecar = await assertCanonicalStandalonePath(sidecarPath, {
+    label: 'release sidecar input',
+    type: 'file',
+  });
+  const sidecar = await readFile(canonicalSidecar, 'utf8');
   const expectedSidecar = `${sha256(archiveBuffer)}  ${path.basename(resolvedArtifact)}\n`;
   assert(sidecar === expectedSidecar, 'SHA-256 sidecar does not match archive bytes and filename');
 
@@ -727,17 +795,34 @@ export async function verifyArtifact(artifactPath, expected = {}) {
 }
 
 async function listDirectoryFiles(root, relative = '') {
-  const entries = await readdir(path.join(root, relative), { withFileTypes: true });
+  const directory = relative
+    ? await assertCanonicalContainedPath(root, relative, { label: relative, type: 'directory' })
+    : root;
+  const entries = await readdir(directory, { withFileTypes: true });
+  assertUniquePortablePaths(
+    entries.map((entry) => (relative ? `${relative}/${entry.name}` : entry.name)),
+    `directory entries under ${relative || '<root>'}`,
+  );
   const files = new Map();
-  for (const entry of entries.sort((left, right) => left.name.localeCompare(right.name, 'en'))) {
+  for (const entry of entries.sort((left, right) =>
+    left.name < right.name ? -1 : left.name > right.name ? 1 : 0,
+  )) {
     const childRelative = relative ? `${relative}/${entry.name}` : entry.name;
     assert(isSafeReleasePath(childRelative), `unsafe or forbidden extracted path ${childRelative}`);
     if (entry.isSymbolicLink()) fail(`extracted path is a symbolic link: ${childRelative}`);
     if (entry.isDirectory()) {
+      await assertCanonicalContainedPath(root, childRelative, {
+        label: childRelative,
+        type: 'directory',
+      });
       const descendants = await listDirectoryFiles(root, childRelative);
       for (const [filePath, content] of descendants) files.set(filePath, content);
     } else if (entry.isFile()) {
-      files.set(childRelative, await readFile(path.join(root, ...childRelative.split('/'))));
+      const childPath = await assertCanonicalContainedPath(root, childRelative, {
+        label: childRelative,
+        type: 'file',
+      });
+      files.set(childRelative, await readFile(childPath));
     } else {
       fail(`extracted path is not a regular file: ${childRelative}`);
     }
@@ -747,13 +832,20 @@ async function listDirectoryFiles(root, relative = '') {
 
 export async function verifyDirectory(directoryPath, expected = {}) {
   const resolvedDirectory = path.resolve(directoryPath);
-  assert((await stat(resolvedDirectory)).isDirectory(), 'verification path is not a directory');
-  const files = await listDirectoryFiles(resolvedDirectory);
+  assert(
+    isPortablePathSegment(path.basename(resolvedDirectory)),
+    'verification directory name is unsafe',
+  );
+  const canonicalDirectory = await assertCanonicalStandalonePath(resolvedDirectory, {
+    label: 'verification directory root',
+    type: 'directory',
+  });
+  const files = await listDirectoryFiles(canonicalDirectory);
   const manifestBuffer = files.get(manifestName);
   assert(manifestBuffer, `${manifestName} is missing`);
   const manifest = parseManifest(manifestBuffer);
   assert(
-    path.basename(resolvedDirectory) === manifest.artifact.rootDirectory,
+    path.basename(canonicalDirectory) === manifest.artifact.rootDirectory,
     'directory name differs from manifest',
   );
   validateIdentity(manifest, expected);

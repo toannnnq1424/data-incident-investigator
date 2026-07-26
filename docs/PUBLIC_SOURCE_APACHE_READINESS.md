@@ -235,9 +235,16 @@ disposition. Public visibility does not claim a deployment, video, Devpost submi
 Release, or legally approved distributable artifact.
 
 The residual exposure remains irreversible: a later visibility rollback cannot recall forks, clones,
-caches, or copies. Any rollback would be containment/escalation, not erasure. This evidence commit
-must receive exact-new-head PR CI `SUCCESS`, then Draft PR #53 returns to the same QA task for QA2;
-this continuation does not mark Ready or merge.
+caches, or copies. Any rollback would be containment/escalation, not erasure.
+
+Phase 8.4B is now complete through normal merge
+`1c32f6c913b196fc4a23055fb7da3b1482b94e5e`, tree
+`5c83d034f30c6d31268109277aaa455a05ff9656`, with ordered parents
+`36d4205806597ae14b7306c74e1527c284202023` then
+`e4ddbb8277f430ed1da4593c9f19ca89f1aa39fb`. Exact-main CI run `30178465331`, job
+`89731006555`, is `SUCCESS`. GitHub remains `Public`; private vulnerability reporting remains
+enabled; the Phase 8.4B branch and PR #53 conversation remain retained. C10 remains `PASS` as a
+preservation/reverification result. No Phase 8.5 work reopens or repeats that completed mutation.
 
 ## Audited baseline and method
 
@@ -608,8 +615,11 @@ not omitted merely because Vite is a build dependency. None of the five installe
 a top-level NOTICE file. The manifest retains the exact normalized contributing module/output paths,
 rendered-byte counts, source hashes, package-manifest paths/hashes, legal-file paths/hashes, and
 upstream legal text. Deterministic `THIRD_PARTY_NOTICES.txt` reproduces that evidence. Manifest schema
-v2 and the standalone verifier require the notice byte-for-byte for both archive and extracted-tree
-verification and reject missing, extra, reordered, malformed, unsafe, or tampered evidence.
+v3 binds each package to its exact pnpm lock package/snapshot and canonical virtual-store root. The
+standalone verifier independently reconstructs that identity from the archived lockfile, requires
+the notice byte-for-byte for both archive and extracted-tree verification, and rejects missing,
+extra, reordered, malformed, unsafe, cross-root, linked, or tampered evidence. Shared Windows-safe
+path validation and rollback-safe archive/sidecar writes are engineering controls, not legal advice.
 
 `abstract-logging@2.0.1` has no positive rendered-module contribution. The API TypeScript output
 preserves external imports and the archive excludes `node_modules`, so this package is not embedded
@@ -637,8 +647,9 @@ authority does not resolve dependency obligations.
 - [x] **Authorize GitHub repository Public visibility.** Explicitly approved independently by the
       user on 2026-07-25; reserved and not consumed by Phase 8.4A.
 
-The approvals are independent. This Draft PR must remain Draft and unmerged for independent QA.
-Merging it does not press the visibility control or authorize any other external mutation.
+The approvals are independent. Phase 8.4B consumed the Public authorization and completed through the
+normal merge recorded above; its branch and PR conversation remain retained. Current Draft PR #54 is
+only the Phase 8.5 artifact-enforcement work and does not authorize any other external mutation.
 
 ## Residual blockers and next evidence
 
@@ -651,8 +662,8 @@ Merging it does not press the visibility control or authorize any other external
    unauthorized until independent QA passes and the legal owner records whether the captured
    upstream texts and remaining dependency/data/API evidence satisfy the distribution/submission
    obligations.
-3. GitHub is `Public`. Authenticated and unsigned access plus credential-helper-disabled Git read
-   evidence make C10 `PASS`; preserve and reverify that state through QA2 and the normal merge.
+3. GitHub is `Public`. Authenticated and unsigned access, the completed Phase 8.4B normal merge, and
+   exact-main CI make C10 `PASS`; preserve and reverify that state through later work.
 4. Phase 8.2 remains `PARTIAL` pending live/judge DataHub credentials and validation; this packet does
    not change that independent readiness condition.
 5. The prior private-reporting blocker is closed. At 2026-07-26 05:22 ICT

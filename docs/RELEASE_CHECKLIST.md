@@ -203,15 +203,20 @@ actions below remain separately scoped.
 - [x] With explicit authorization, enable only GitHub Private vulnerability reporting. At 2026-07-26
       05:22 ICT Settings shows the control as `Disable`, Security overview shows `Enabled`, and
       unsigned `/security` exposes `Report a vulnerability`; the report route requires GitHub sign-in.
-- [ ] Normal-push one additive security-route correction, require exact-new-head PR CI `SUCCESS`, keep
-      PR #53 Draft/unmerged, and return it to the same QA task for QA2 re-review.
-- [ ] Require same-QA QA2 re-review `PASS / MERGE`.
-- [ ] Only after explicit post-QA2 publication continuation, mark PR #53 Ready and create a normal
-      merge commit; never squash, rebase, force-push, delete the branch, or archive/hide the
-      conversation.
-- [ ] Verify exact merge SHA/tree/ordered parents, `origin/main`, and default `main` equal that merge;
-      require exact merge-head main CI `SUCCESS`; finally confirm the repository remains `Public` and
-      the task branch/conversation remain retained.
+- [x] Normal-push additive security-route commit
+      `e4ddbb8277f430ed1da4593c9f19ca89f1aa39fb`, keep PR #53 Draft/unmerged, and return it to the
+      same QA task for QA2 re-review.
+- [x] Same-QA QA2 returned `PASS / MERGE`; an explicit post-QA2 continuation then authorized only the
+      documented normal-merge sequence.
+- [x] Mark PR #53 Ready and create normal merge
+      `1c32f6c913b196fc4a23055fb7da3b1482b94e5e`; no squash, rebase, force-push, branch deletion, or
+      conversation archival/hiding occurred.
+- [x] Verify tree `5c83d034f30c6d31268109277aaa455a05ff9656`, ordered parents
+      `36d4205806597ae14b7306c74e1527c284202023` then
+      `e4ddbb8277f430ed1da4593c9f19ca89f1aa39fb`, `origin/main` and default `main` at the exact merge,
+      and exact-main CI run `30178465331`, job `89731006555`, `SUCCESS`. Repository visibility remains
+      `Public`, private vulnerability reporting remains enabled, and the task branch/conversation are
+      retained. C10 remains `PASS` as a preservation/reverification result.
 
 ## Phase 8.5 — exact bundled-output attribution
 
@@ -229,9 +234,14 @@ actions below remain separately scoped.
       top-level licence file with no top-level NOTICE.
 - [x] Prove `abstract-logging@2.0.1` is absent from the bundled output. Its missing package legal file
       remains a non-bundled production-install/C11 legal-owner caveat.
-- [x] Generate deterministic `THIRD_PARTY_NOTICES.txt`; bind exact package/module/output/source/legal
-      provenance and hashes into manifest schema v2; enforce exact content and membership for archive
-      and extracted-directory verification.
+- [x] Generate deterministic `THIRD_PARTY_NOTICES.txt`; bind exact pnpm lock package/snapshot,
+      canonical virtual-store root, package/module/output/source/legal provenance and hashes into
+      manifest schema v3; enforce exact content and membership for archive and extracted-directory
+      verification.
+- [x] Record independent Windows QA `FAIL / DO NOT MERGE` on exact prior head
+      `bde288112f504c2067ff85499337d9315c30c432`; correct frozen identity binding, Windows path/link
+      safety, archive/sidecar rollback, capture preconditions, focused coverage, and stale Phase 8.4B
+      state on the same Draft PR #54.
 - [ ] Require independent Windows QA over the exact branch head and local artifact evidence.
 - [ ] Obtain a legal-owner disposition over the captured texts and remaining dependency/data/API
       rights before any artifact publication, attachment, distribution, or Devpost submission. C11
