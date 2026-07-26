@@ -5647,3 +5647,36 @@ read-only Browser slice.
 Pass docs/static validation, create one additive commit, normal-push the same branch, update only
 Draft PR #55, require exact-new-head CI `SUCCESS`, and return for the same independent Windows QA
 re-review without Ready or merge.
+
+## 2026-07-26 — Phase 8.6 QA re-review current-main correction
+
+### Summary
+
+On the same implementation branch and Draft PR #55, corrected the only remaining Devpost
+current-state contradiction reported by independent Windows QA on exact head
+`c9f6aeb0af14c509dbec0015857a114c567eb53d`.
+
+### Files changed
+
+`docs/DEVPOST_REQUIREMENTS.md`, `docs/IMPLEMENTATION_PLAN.md`, and this session log.
+
+### Decisions
+
+- The current main identity in the product-facts block is now
+  `73172b7e8e8b02ab9629019eac298b89e02895c2`, tree
+  `a4beb330fb528f4926eee8a538c7d2a79dab1f67`.
+- The retained `1c32f6c913b196fc4a23055fb7da3b1482b94e5e` /
+  `5c83d034f30c6d31268109277aaa455a05ff9656` identity is explicitly historical Phase 8.4B
+  evidence, not current main.
+- C11, GCP, Koyeb, distribution, deployment, and fail-closed no-mutation policy are unchanged.
+
+### Validation performed
+
+Focused changed-file Prettier, UTF-8/LF/final-newline/no-BOM, local-link, exact-path allowlist,
+secret/private-path/debug/conflict scans, stale-current-main search, full diff review, and
+`git diff --check`. No build, tests, artifact rebuild, browser E2E, live DataHub, or GCP access.
+
+### Exact next step
+
+Create one additive commit, normal-push the same branch, keep Draft PR #55 Draft/unmerged, require
+exact-new-head PR CI `SUCCESS`, and return for the same independent Windows QA re-review.

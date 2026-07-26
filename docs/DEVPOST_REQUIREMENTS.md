@@ -357,8 +357,8 @@ DataHub validation. Live/judge-access evidence remains credential/service-gated.
 ## Corrected current product facts
 
 These are repository facts on exact current `main`
-`1c32f6c913b196fc4a23055fb7da3b1482b94e5e` (tree
-`5c83d034f30c6d31268109277aaa455a05ff9656`), not competition claims:
+`73172b7e8e8b02ab9629019eac298b89e02895c2` (tree
+`a4beb330fb528f4926eee8a538c7d2a79dab1f67`), not competition claims:
 
 - Fixture-mode selection, investigation, scoring, report composition, and Markdown rendering are
   deterministic. Live DataHub mode depends on external metadata and timeline state, so its returned
@@ -389,9 +389,10 @@ These are repository facts on exact current `main`
   2026-07-26 04:48 ICT post-mutation checkpoint. Unsigned GETs to the repository, exact main commit,
   README, LICENSE, issues, PRs, tags, Releases, and Actions returned `200`; a credential-helper-disabled
   HTTPS `ls-remote` resolved the then-current default `main` to exact
-  `36d4205806597ae14b7306c74e1527c284202023`. Phase 8.4B later merged normally as exact current main
-  `1c32f6c913b196fc4a23055fb7da3b1482b94e5e`; exact-main CI run `30178465331`, job `89731006555`,
-  is `SUCCESS`. C10 remains `PASS`. The authorized QA2 correction enabled
+  `36d4205806597ae14b7306c74e1527c284202023`. Historical Phase 8.4B evidence records its later normal
+  merge as `1c32f6c913b196fc4a23055fb7da3b1482b94e5e` with tree
+  `5c83d034f30c6d31268109277aaa455a05ff9656`; its exact-main CI run `30178465331`, job
+  `89731006555`, is `SUCCESS`. This pair is not current main. C10 remains `PASS`. The authorized QA2 correction enabled
   GitHub private vulnerability reporting at 2026-07-26 05:22 ICT; GitHub authentication is required
   to submit through the private report route, and public issue disclosure is prohibited. This
   security-control correction does not change the 37-row compliance statuses or totals.

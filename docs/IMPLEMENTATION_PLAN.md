@@ -6281,3 +6281,24 @@ rebuild, browser E2E, live DataHub, or GCP Console.
 Deferred: the complete signed-in GCP control packet, account/billing/credit verification, all GCP
 mutation, deployment design validation, reminder creation, independent QA re-review, Ready, and
 merge.
+
+#### Phase 8.6 QA re-review correction — Devpost current-main identity
+
+Status: smallest additive docs-only correction on the same branch and Draft PR #55 after independent
+Windows QA found one remaining current-state contradiction on exact head
+`c9f6aeb0af14c509dbec0015857a114c567eb53d`.
+
+Objective: in `docs/DEVPOST_REQUIREMENTS.md`, replace the stale Phase 8.4B identity where it is still
+called exact current main with exact current main
+`73172b7e8e8b02ab9629019eac298b89e02895c2`, tree
+`a4beb330fb528f4926eee8a538c7d2a79dab1f67`, and label the retained
+`1c32f6c913b196fc4a23055fb7da3b1482b94e5e` /
+`5c83d034f30c6d31268109277aaa455a05ff9656` pair explicitly as historical Phase 8.4B evidence.
+
+Acceptance: correct only proven stale current-main wording; preserve C11, GCP, Koyeb, distribution,
+deployment, and no-mutation policy; run focused docs formatting/link/EOL/diff/secret scans; create
+one additive commit and normal-push the same branch; retain Draft PR #55 without Ready or merge; and
+require exact-new-head PR CI `SUCCESS`.
+
+Deferred: all runtime/build/test/artifact/live DataHub/GCP work, external deployment or publication,
+signup/card/trial action, PR Ready transition, merge, and independent Windows QA re-review.
