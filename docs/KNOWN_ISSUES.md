@@ -23,10 +23,10 @@ Last updated: 2026-07-26.
 
   Koyeb's official Pricing FAQ additionally documents a USD 29 pre-authorization hold that is
   immediately canceled but may remain visible for 7–21 days, plus a prorated selected-plan charge at
-  signup; Koyeb remains `REJECT`. The owner identifies `onlinelearning-484610` only as an existing
-  Google Cloud reference project and permits a later packet to propose a dedicated project. Neither
-  is selected for mutation. Fresh approval of the exact project name/ID and owning
-  account/organization/billing account is required immediately before any `Create Project` action.
+  signup; Koyeb remains `REJECT`. `onlinelearning-484610` is a billing-disabled historical reference
+  project. The owner later approved and consumed the exact project/billing/API/build/deploy gates for
+  dedicated project `dii-cloudrun-demo-26-a7c9`; that approval does not authorize a different project,
+  billing association, region, API, paid feature, or material capacity increase.
 
   Phase 8.7 inspection confirmed the candidate billing account is already **Paid**, with
   approximately VND 7.886 million of account-scoped Free Trial credit remaining and expiry
@@ -37,14 +37,16 @@ Last updated: 2026-07-26.
   Google Cloud provides no credible hard VND/USD 0 cap.
 
   Public service `data-incident-investigator` now runs in `asia-southeast1` (Singapore) at
-  <https://data-incident-investigator-1071683558688.asia-southeast1.run.app>. Final revision
-  `data-incident-investigator-00002-pdq` receives 100% traffic with request-based billing,
-  first-generation execution, `0.08` vCPU, `256 MiB`, concurrency `1`, minimum instances `0`,
-  revision maximum instances `1`, timeout `100s` above the `90s` application deadline, CPU
-  throttling on, startup CPU boost off, and fixture mode. Independent QA found that the service-level
-  annotation still allows `maxScale=100`, so the prior claim of a fully bounded/final revision is
-  false and historical public smoke is not correction evidence. The exact corrected clean-commit
-  deployment remains pending.
+  <https://data-incident-investigator-1071683558688.asia-southeast1.run.app>. Historical revision
+  `data-incident-investigator-00002-pdq` and its smoke are superseded because independent QA found
+  service-level `maxScale=100`. Corrected revision
+  `data-incident-investigator-src-3653cf6b591e` receives 100% traffic and is labeled with source
+  commit `3653cf6b591eed76ad6276d07b1ea08e88d7fa4f`. Live read-back verifies request-based billing,
+  first-generation execution, `0.08` vCPU, `256 MiB`, concurrency `1`, minimum instances `0`, both
+  service and revision maximum instances `1`, request timeout `100s` above the `90s` application
+  deadline, CPU throttling on, startup CPU boost off, and fixture mode. Build
+  `7ad5ea5d-c7f2-4999-ada4-175b94d56fd9` produced immutable digest
+  `sha256:fe56a3dc7c8c4fb6e11b329adb107fb7efd8e4de0bece8820027f324d4f36afd`.
   Bangkok has a lower published Tier 1 unit price, but the owner explicitly chose to keep the healthy
   Singapore service. Stop/delete/detach billing by 2026-08-10 or at 20% reported credit remaining,
   whichever occurs first. This does not guarantee access through the 2026-08-31 judging end.
@@ -87,15 +89,17 @@ Last updated: 2026-07-26.
 
   `abstract-logging@2.0.1` is not embedded in the verified RC archive: the API output preserves
   external imports and that archive excludes `node_modules`. The Cloud Run container does install
-  runtime dependencies. Its new correction candidate records lock SHA
+  runtime dependencies. The corrected live distribution records lock SHA
   `eeec795d5a09d5e8865b54bfbd95fb3557cce421c5369d99b6e2f89a472484b2`, 152 full-production
   identities, 149 runtime identities/roots, 5 exact Vite identities, deterministic
   `RUNTIME-ATTRIBUTION.json`/`THIRD_PARTY_NOTICES.txt`, Apache `LICENSE`, project `NOTICE`, and a
   truthfully labeled upstream fallback for `abstract-logging@2.0.1` at exact tag commit
-  `80dfaef91ee87008f4ed2b6e78921d383bccd406`. Source and local production-image verification pass,
-  but C11 is blocked for the current deployed distribution until a clean immutable commit/archive is
-  deployed and the exact live digest/legal files pass. Phase 8.2 remains `PARTIAL`; captured
-  declarations/texts are engineering evidence, not compatibility or legal approval. The newer
+  `80dfaef91ee87008f4ed2b6e78921d383bccd406`. Source, local production-image, and exact live-digest
+  verification pass: all 8 runtime files, 149 package manifests/roots, and 149 package legal files
+  matched the tracked evidence. C11 is restored to
+  `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE` for the exact `fe56a3dc…36afd` live digest. Phase 8.2
+  remains `PARTIAL`; captured declarations/texts are engineering evidence, not compatibility or
+  legal approval. The newer
   Phase 8.6 qualified owner disposition supersedes the historical C11 `PARTIAL/BLOCKED` state only
   within its exact zero-cost artifact/data/API scope. See
   [`PUBLIC_SOURCE_APACHE_READINESS.md`](PUBLIC_SOURCE_APACHE_READINESS.md).

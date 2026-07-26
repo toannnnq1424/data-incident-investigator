@@ -6443,9 +6443,11 @@ Execution result:
 
 #### Phase 8.7 deployed-state QA correction — controls, legal evidence, and provenance
 
-Status: in progress on the same branch and Draft PR #56 after independent Windows QA
-`FAIL / DO NOT MERGE` on deployed head
-`d1d67b13642b40edf570e79106493309b7df05c0`.
+Status: corrected source, clean-archive redeploy, exact live-image audit, and one public smoke are
+complete on the same branch and Draft PR #56 after independent Windows QA `FAIL / DO NOT MERGE` on
+deployed head `d1d67b13642b40edf570e79106493309b7df05c0`. The later evidence-only documentation commit does
+not become the running image's source; exact-final-head CI is recorded in the mutable PR body to
+avoid circular evidence.
 
 Objective: replace the non-reproducible dirty-worktree deployment with one bounded Cloud Run revision
 built from an immutable clean commit/archive, correct the live service to the approved cheapest
@@ -6479,8 +6481,8 @@ Acceptance:
   from Google/default/transitive services; inventory the run-sources bucket, Artifact Registry
   repository/image, build ID, immutable image digest, source archive SHA-256, revision, labels, and
   rollback/cleanup boundaries without disabling or deleting anything;
-- after corrected deploy, run exactly one bounded public smoke covering UI, `/api/health`,
-  `/api/ready`, one canonical fixture incident, Markdown when supported, console, accessibility, and
+- after corrected deploy, run exactly one bounded public smoke covering UI, `/health`, `/ready`,
+  one canonical fixture incident, Markdown when supported, console, accessibility, and
   overflow; earlier public smoke remains historical only;
 - if post-deploy evidence requires a later documentation commit, state exactly that the running
   revision maps to the earlier labeled source commit and never claim it maps to the later docs-only
@@ -6496,14 +6498,11 @@ Deferred: region migration, resource increase, live DataHub/secret/model work, u
 mutation, billing/project deletion, reminder, full suite, tag, Release, Devpost submission, PR Ready,
 and merge.
 
-Interim result before source commit/redeploy:
+Corrected redeploy result:
 
-- read-only live inventory proved service-level `maxScale=100`, revision-level `maxScale=1`,
-  timeout `100s`, and 100% traffic to historical revision `00002-pdq`; the prior fully bounded claim
-  is superseded;
-- inventoried 29 enabled services total, the single 745,422-byte run-sources object, 113.275 MB
-  Artifact Registry repository, one old image/digest, and one historical successful build without
-  disabling or deleting anything;
+- historical read-only inventory proved service-level `maxScale=100`, revision-level `maxScale=1`,
+  request timeout `100s`, and 100% traffic to revision `00002-pdq`; that historical mismatch is
+  superseded by the corrected live revision below;
 - pinned the Node 24 base by immutable digest; changed the final image to compiled production start
   under user `node`; excluded source/dev/test/docs/audit scripts and surplus fixtures;
 - generated exact runtime attribution for lock SHA `eeec795d...84b2`, 152 full-production
@@ -6511,5 +6510,24 @@ Interim result before source commit/redeploy:
   notices/project NOTICE and explicit `abstract-logging@2.0.1` upstream fallback evidence;
 - focused contracts, source generation/verification, immutable-base Docker build, production-only
   closure verification, final-image legal/junk audit, and local root/health/readiness smoke pass;
-- C11 remains blocked for the current deployed distribution. No corrected live revision is claimed
-  until the additive clean source commit passes exact-head CI and its immutable archive is deployed.
+- exact source commit `3653cf6b591eed76ad6276d07b1ea08e88d7fa4f` passed PR CI run
+  `30208678827`, job `89811104840`; its deterministic archive SHA-256 is
+  `7b8636db0dba88973bd82f4079a81fbdd71ca2975d56cc2fd90b21da17dc4cea`, with both the hash and
+  embedded commit identity reproduced in Cloud Shell before build;
+- regional build `7ad5ea5d-c7f2-4999-ada4-175b94d56fd9` completed `SUCCESS` and produced immutable
+  image digest `sha256:fe56a3dc7c8c4fb6e11b329adb107fb7efd8e4de0bece8820027f324d4f36afd`;
+- live revision `data-incident-investigator-src-3653cf6b591e`, labeled with the full source commit,
+  receives 100% traffic. Read-back service/revision state verifies service max `1`, revision max
+  `1`, min `0`, concurrency `1`, request timeout `100s`, `0.08` vCPU, `256 MiB`, CPU throttling on,
+  startup boost off, fixture mode, first generation, and Singapore;
+- current inventory remains 29 enabled services. The run-sources bucket has two objects totaling
+  1,596,294 bytes; Artifact Registry reports a 119.176 MB repository, live 87,097,921-byte image and
+  retained historical 113,273,631-byte rollback image. Nothing was disabled or deleted;
+- a content-addressed pull/run of the live digest reverified all 8 runtime files, 149 package
+  manifests/roots, 149 legal files, exact notices/legal hashes, lock identity, base digest, and five
+  rendered Vite identities. C11 is restored to
+  `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE` for this exact digest without blanket legal clearance;
+- exactly one public post-redeploy smoke passed `/health`, `/ready`, UI, one canonical fixture
+  incident (`81% · high`), 9,221-byte Markdown download, empty warn/error console, accessible names,
+  and desktop/narrow overflow checks. The later evidence-only commit is not the source commit for the
+  running revision.

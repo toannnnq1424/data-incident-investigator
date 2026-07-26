@@ -702,15 +702,15 @@ Within that fail-closed cost boundary, the owner records this operational dispos
 The historical C11 release-archive gate moved from `PARTIAL/BLOCKED` to
 `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE` for the exact Phase 8.5 archive only. That disposition did
 not cover the Cloud Run container, because the container installs external runtime dependencies.
-Independent QA therefore returns C11 to **BLOCKED FOR THE CURRENT CLOUD RUN DISTRIBUTION** until the
-exact clean immutable source commit is deployed and its final image digest, production closure,
-legal files, notices, and compiled-output hashes all pass. This does not resolve
-entrant/contributor ownership attestations under C12, authorize arbitrary data or endpoints, or
-provide blanket legal clearance.
+Independent QA therefore returned C11 to **BLOCKED FOR THE HISTORICAL CLOUD RUN DISTRIBUTION** until
+the exact clean immutable source commit was deployed and its final image digest, production closure,
+legal files, notices, and compiled-output hashes passed. The corrected live evidence below closes
+that deployment-specific block. This does not resolve entrant/contributor ownership attestations
+under C12, authorize arbitrary data or endpoints, or provide blanket legal clearance.
 
 ### Phase 8.7 runtime-container attribution correction
 
-The correction candidate pins all Docker stages to immutable
+The corrected live distribution pins all Docker stages to immutable
 `node:24-bookworm-slim@sha256:6f7b03f7c2c8e2e784dcf9295400527b9b1270fd37b7e9a7285cf83b6951452d`.
 Its exact frozen evidence is:
 
@@ -732,9 +732,19 @@ Focused contracts, exact source regeneration, immutable-base Docker build, produ
 verification, final-image legal-file checks, and local production root/health/readiness smoke pass.
 The final image contains compiled API/workspace/Vite output, one required synthetic fixture file,
 production dependencies, and legal/provenance evidence; it contains no API source, `tsx`, tests,
-docs, or audit scripts. C11 remains blocked here because the currently deployed image predates this
-evidence. The final post-deploy record may restore the qualified disposition only after exact live
-digest verification passes.
+docs, or audit scripts.
+
+Exact source commit `3653cf6b591eed76ad6276d07b1ea08e88d7fa4f` passed PR CI run
+`30208678827`, job `89811104840`; deterministic archive SHA-256
+`7b8636db0dba88973bd82f4079a81fbdd71ca2975d56cc2fd90b21da17dc4cea` reproduced both its hash and
+embedded commit identity before build. Build `7ad5ea5d-c7f2-4999-ada4-175b94d56fd9` produced live
+digest `sha256:fe56a3dc7c8c4fb6e11b329adb107fb7efd8e4de0bece8820027f324d4f36afd`.
+The exact digest was pulled and executed read-only under the approved CPU/memory limits: all 8
+compiled runtime files, 149 package manifests/roots, and 149 package legal files matched the tracked
+hashes, as did the immutable base, lock identity, five Vite identities, notices, Apache `LICENSE`,
+and project `NOTICE`. C11 is therefore
+**QUALIFIED PASS — OWNER-AUTHORIZED SCOPE** for this exact digest and the documented
+synthetic/authorized-data boundary.
 
 ## Independent human decision checklist
 
@@ -760,9 +770,10 @@ mutations now recorded. No additional external mutation is implied.
 2. The historical Phase 8.5 graph had 138 external production package identities and 137 packaged
    legal files. The current container correction recomputes the new lock/runtime graph and supplies
    the exact evidence above, including the truthfully labeled `abstract-logging@2.0.1` upstream
-   fallback. The currently deployed image predates it, so C11 is blocked for Cloud Run until the
-   clean immutable source commit is deployed and exact live digest/legal verification passes. No
-   blanket legal conclusion is claimed.
+   fallback. The exact current live digest passes the clean-source, compiled-output, runtime-closure,
+   notice, and legal-file verification gates, so C11 is
+   `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE` for that bounded distribution. No blanket legal
+   conclusion is claimed.
 3. GitHub is `Public`. Authenticated and unsigned access, the completed Phase 8.4B normal merge, and
    exact-main CI make C10 `PASS`; preserve and reverify that state through later work.
 4. Phase 8.2 remains `PARTIAL` pending live/judge DataHub credentials and validation; this packet does

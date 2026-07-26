@@ -8,9 +8,14 @@ credential-free deployment and demo path. Direct GraphQL and DataHub MCP Server 
 host layout but are ready only when their selected authorized, read-only external dependency passes
 the bounded readiness check.
 
-The repository has no supported Docker image, Compose file, Kubernetes manifest, cloud-provider
-configuration, public URL, TLS termination, or managed persistent store. Do not infer those targets
-from this host runbook or add guessed credentials/endpoints. Phase 7.6 does not deploy externally.
+Draft PR #56 now contains a supported source-build `Dockerfile`, and the exact clean source commit
+identified in the Phase 8.7 evidence below is deployed as a credential-free fixture service at
+<https://data-incident-investigator-1071683558688.asia-southeast1.run.app>. Google terminates TLS;
+there is still no Compose/Kubernetes manifest, managed persistent store, live DataHub credential, or
+durable incident storage. Current `main` remains
+`c7abc652c23b532e90091b377490b27eadd7e084` and does not contain Draft PR #56 changes. The earlier
+Phase 7.6 no-Docker/no-public-URL statement is historical; do not infer any broader provider,
+credential, persistence, or production-support promise from the bounded fixture deployment.
 
 ## Release artifact contract
 
@@ -582,10 +587,10 @@ must tolerate a cold start and must not expect durable incident URLs. Live DataH
 an authorized endpoint and server-side secret are separately approved. Do not expose
 production/customer data, PII, private metadata, tokens, raw provider payloads, or billing identity.
 
-Historical revision `data-incident-investigator-00002-pdq` receives 100% of traffic, but independent
-QA disproved its documented service-level maximum: the service annotation is `maxScale=100` while
-the revision template is `maxScale=1`; the template timeout read back as `100s`. It is therefore not
-the corrected known-good target. The previous immutable revision
+Historical revision `data-incident-investigator-00002-pdq` previously received 100% of traffic, but
+independent QA disproved its documented service-level maximum: the service annotation is
+`maxScale=100` while the revision template is `maxScale=1`; the template timeout read back as `100s`.
+It is therefore not the corrected known-good target. The previous immutable revision
 `data-incident-investigator-00001-jst` is retained only as a historical rollback candidate.
 Rollback means route 100% traffic to an explicitly verified immutable revision, then repeat public
 smoke.
@@ -621,16 +626,18 @@ database, or unrelated paid feature was created or entered.
 Any different account, billing account, project, region, API, architecture, paid feature, secret, or
 material capacity increase requires a refreshed cost/risk check and explicit owner direction.
 
-### Deployed-state QA correction: pre-redeploy source evidence
+### Deployed-state QA correction: verified redeploy evidence
 
 Independent QA returned `FAIL / DO NOT MERGE` on deployed repository head
 `d1d67b13642b40edf570e79106493309b7df05c0`. The existing public URL and Docker deployment are real;
 all earlier Phase 8.7 no-mutation/preflight wording is historical. Current `main` remains
 `c7abc652c23b532e90091b377490b27eadd7e084`; Draft PR #56 changes are not current main.
 QA reported a `240s` timeout at its checkpoint; the correction's later read-only reinspection found
-the current revision template at `100s`. The redeploy still sets and verifies `100s` explicitly.
+the historical revision template at `100s`. The corrected redeploy sets and verifies the request
+timeout at `100s` explicitly; the platform-created startup probe separately reports `240s` and is
+not the request timeout.
 
-The clean-source correction candidate pins every Docker stage to
+The corrected clean source pins every Docker stage to
 `node:24-bookworm-slim@sha256:6f7b03f7c2c8e2e784dcf9295400527b9b1270fd37b7e9a7285cf83b6951452d`,
 builds API/workspace/Vite output, installs only the API production closure, rewrites only runtime
 workspace exports to `dist`, starts `node apps/api/dist/index.js` as the unprivileged `node` user,
@@ -667,30 +674,56 @@ Final-image SHA-256 values are
 `4c3019e13c96e2906eddd3e8fa35d4ef0d4e13826d2398551d8a9796fac82d1f` for `NOTICE`.
 
 Source verification and production-only image verification both pass under the immutable Node 24
-base. C11 is nevertheless **BLOCKED FOR THE CURRENT CLOUD RUN DISTRIBUTION** until this candidate is
-committed, exact-head CI succeeds, the deployment is built from the clean immutable commit archive,
-and the deployed digest/legal files are reverified. The corrected deploy must set both `--max=1`
-(service-level) and `--max-instances=1` (revision-level), plus `--min=0`,
-`--min-instances=0`, concurrency `1`, timeout `100s`, `0.08` vCPU, `256 MiB`, CPU throttling on,
-startup CPU boost off, fixture mode, a deterministic revision suffix, and an exact source-commit
-label. No live correction has been claimed in this pre-redeploy record.
+base. Exact source commit `3653cf6b591eed76ad6276d07b1ea08e88d7fa4f` passed PR CI run
+`30208678827`, job `89811104840`. A deterministic `git archive` from that commit had SHA-256
+`7b8636db0dba88973bd82f4079a81fbdd71ca2975d56cc2fd90b21da17dc4cea`; Cloud Shell reproduced both
+the hash and embedded commit identity before extraction. Regional Cloud Build
+`7ad5ea5d-c7f2-4999-ada4-175b94d56fd9` completed `SUCCESS` and produced immutable image digest
+`sha256:fe56a3dc7c8c4fb6e11b329adb107fb7efd8e4de0bece8820027f324d4f36afd`.
 
-Read-only resource inventory before correction:
+Revision `data-incident-investigator-src-3653cf6b591e` is labeled
+`source-commit=3653cf6b591eed76ad6276d07b1ea08e88d7fa4f` and receives 100% traffic. Read-back service and
+revision evidence verifies service maximum `1`, revision maximum `1`, minimum `0` by absent/default
+min-scale annotations, concurrency `1`, request timeout `100s`, `0.08` vCPU, `256 MiB`, CPU
+throttling on, startup CPU boost off, first-generation execution, `APP_MODE=fixture`, and Singapore.
+The service-level `run.googleapis.com/maxScale` annotation is now exactly `1`.
 
-- source bucket `run-sources-dii-cloudrun-demo-26-a7c9-asia-southeast1`, Singapore, uniform
-  bucket-level access, one source ZIP, 745,422 bytes;
-- standard Docker repository `cloud-run-source-deploy`, Singapore, Google-managed encryption,
-  scanning disabled, reported size 113.275 MB;
-- one tagged old image, digest
-  `sha256:410fdef2cda022f9e8f977b5300adeed9470bb632b5f5d9cee86918dc9d5b707`;
-- one successful historical regional build,
-  `53c336af-d3dc-449f-8366-5f527810dcfe`.
+The exact running digest was pulled read-only and executed under `0.08` CPU / `256 MiB` for a second
+content-addressed audit. All 8 compiled runtime files, 149 package manifests/roots, and 149 package
+legal files matched the tracked hashes; the base-image digest, lock SHA, five rendered Vite
+identities, `RUNTIME-ATTRIBUTION.json`, `THIRD_PARTY_NOTICES.txt`, Apache `LICENSE`, and project
+`NOTICE` also matched. C11 is therefore restored to
+**QUALIFIED PASS — OWNER-AUTHORIZED SCOPE** for this exact live digest and the already documented
+synthetic/authorized-data boundary. This is not blanket legal clearance.
 
-The bucket archive, repository, image, and build history are real storage/resource inventory and
-must remain in cost, rollback, and cleanup gates. They are not deleted in this correction. After a
-new verified deployment, keep only the live image and one proven rollback image if needed; remove
-surplus source archives/images only under a separate exact cleanup check, then preserve the
-2026-08-10 or 20%-remaining-credit stop/delete/detach boundary.
+Post-redeploy resource inventory:
+
+- 29 enabled services remain: only `run.googleapis.com`, `cloudbuild.googleapis.com`, and
+  `artifactregistry.googleapis.com` were explicitly enabled for deployment; the other 26 are
+  Google/default/transitive services with unproven causal origin and were not blindly disabled;
+- source bucket `run-sources-dii-cloudrun-demo-26-a7c9-asia-southeast1` now has two source ZIPs
+  totaling 1,596,294 bytes; the new build-source object is 850,872 bytes and the historical object is
+  745,422 bytes;
+- standard Docker repository `cloud-run-source-deploy`, Singapore, Google-managed encryption and
+  scanning disabled, reports 119.176 MB;
+- the live image is the `fe56a3dc…36afd` digest above, tagged `latest`, with Artifact Registry size
+  87,097,921 bytes; historical rollback digest `410fdef2…5b707` remains untagged at 113,273,631
+  bytes. Shared layers explain why repository size is not the sum of displayed image sizes.
+
+Exactly one post-redeploy public smoke verified HTTP 200 `{"status":"ok"}` at `/health`, HTTP 200
+fixture readiness at `/ready`, the static UI, one canonical Removed schema column incident,
+completed report `81% · high`, a 9,221-byte Markdown download, zero browser console warnings/errors,
+zero unnamed interactive controls, and no horizontal overflow at desktop or narrowed viewport.
+Direct browser navigation to response-only `/ready` and `.md` resources was blocked by the browser
+client, so readiness was checked once with public `curl` and Markdown through the visible UI download;
+the incident was not rerun.
+
+The bucket archives, repository, both images, and build history are real storage/resource inventory
+and remain in cost, rollback, and cleanup gates. Nothing was deleted in this correction. Keep only
+the live image and one proven rollback image if needed; remove surplus source archives/images only
+under a separate exact cleanup check, then preserve the 2026-08-10 or 20%-remaining-credit
+stop/delete/detach boundary. Any later documentation-only commit records evidence only: the running
+revision remains bound to source commit `3653cf6b…7fa4f`, not that later repository HEAD.
 
 Official sources accessed 2026-07-26:
 

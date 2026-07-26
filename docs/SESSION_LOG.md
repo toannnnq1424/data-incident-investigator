@@ -5847,8 +5847,8 @@ Devpost fixture service and retain bounded rollback/stop controls.
   credential, token, or `node_modules`, and used `gcloud run deploy --source`. Cloud Build built the
   Dockerfile and source deploy auto-created co-located Artifact Registry repository
   `cloud-run-source-deploy`.
-- Deployed public service `data-incident-investigator` in `asia-southeast1` (Singapore). Final
-  revision `data-incident-investigator-00002-pdq` receives 100% traffic at
+- Deployed public service `data-incident-investigator` in `asia-southeast1` (Singapore). At that
+  historical checkpoint, revision `data-incident-investigator-00002-pdq` received 100% traffic at
   <https://data-incident-investigator-1071683558688.asia-southeast1.run.app>.
 - Verified request-based billing, first-generation execution, `0.08` vCPU, `256 MiB`, concurrency
   `1`, minimum instances `0`, service maximum instances `1`, timeout `100s` above the bounded `90s`
@@ -5945,12 +5945,87 @@ and redeploy only from a clean immutable commit/archive with explicit provenance
   Final-image legal hashes are `d343d346...c6b1` (runtime manifest), `9cc0b8b5...ccab` (notices),
   `cfc7749b...3d30` (Apache LICENSE), and `4c3019e...2d1f` (project NOTICE).
 
-### Current gate
+### Historical gate before corrected redeploy
 
-C11 is blocked for the current Cloud Run distribution because the live image predates the new
-evidence. No corrected deployment is claimed yet. Next: complete bounded source checks, create and
-push one additive source commit, require exact-source-head PR CI success, create a deterministic
-archive from that clean commit, deploy with both service and revision maximum `1`, exact source
-label/revision suffix, verify live provenance/config, run exactly one corrected public smoke, then
-record a separate docs-only evidence commit and final-head CI without claiming it is the deployed
-source commit.
+At this pre-redeploy checkpoint, C11 was blocked for the then-current Cloud Run distribution because
+the live image predated the new evidence. No corrected deployment was claimed in that checkpoint.
+The next section records completion without treating its later docs-only HEAD as the deployed source
+commit.
+
+## 2026-07-26 — Phase 8.7 corrected clean-commit redeploy evidence
+
+### Source and CI provenance
+
+- Source commit `3653cf6b591eed76ad6276d07b1ea08e88d7fa4f`, tree
+  `432eae7beeb3d79edc7ac0582a5f114e8be4d47d`, parent
+  `bd9f7afe934078a3f3bd5b7d3228eebf6d427ba1`, passed PR CI run `30208678827`, job
+  `89811104840`.
+- `git archive` from exactly that commit produced
+  `data-incident-investigator-3653cf6b591e.tar.gz`, 775,567 bytes, SHA-256
+  `7b8636db0dba88973bd82f4079a81fbdd71ca2975d56cc2fd90b21da17dc4cea`. Cloud Shell reproduced the
+  SHA-256 and embedded Git commit identity before extraction into a new directory.
+- The running revision remains bound to that source commit. This later evidence-only documentation
+  commit is not the source of the image; exact-final-head CI belongs in the mutable Draft PR #56
+  body to avoid a circular evidence commit.
+
+### Build, image, and live configuration
+
+- Regional Cloud Build `7ad5ea5d-c7f2-4999-ada4-175b94d56fd9` completed `SUCCESS` from the
+  Cloud Run source object and produced immutable digest
+  `sha256:fe56a3dc7c8c4fb6e11b329adb107fb7efd8e4de0bece8820027f324d4f36afd`.
+- Revision `data-incident-investigator-src-3653cf6b591e` has label
+  `source-commit=3653cf6b591eed76ad6276d07b1ea08e88d7fa4f` and receives 100% traffic at the existing public URL.
+  Read-back service/revision state verifies service max `1`, revision max `1`, min `0` by default/
+  absent min-scale annotations, concurrency `1`, request timeout `100s`, `0.08` vCPU, `256 MiB`, CPU
+  throttling on, startup CPU boost off, first-generation execution, fixture mode, and Singapore.
+  The platform-created startup probe separately reports `240s`; that is not the request timeout.
+- Current main remains `c7abc652c23b532e90091b377490b27eadd7e084`, tree
+  `66e90eae74c7065c62a30a14ffeb25ef26974ea4`. Draft PR #56 remains current, Draft, and unmerged;
+  its changes are not current main.
+
+### API/resource and legal inventory
+
+- Enabled-service count remains 29. The three explicit deployment enablements are Cloud Run, Cloud
+  Build, and Artifact Registry; the other 26 Google/default/transitive services retain unproven
+  causal origin and were not blindly disabled.
+- The Singapore run-sources bucket has two ZIP objects totaling 1,596,294 bytes: historical 745,422
+  bytes and corrected-build 850,872 bytes. `cloud-run-source-deploy` remains a standard,
+  Google-managed-key Docker repository with scanning disabled and reported size 119.176 MB. It
+  contains live `latest` digest `fe56a3dc…36afd` at 87,097,921 bytes and retained untagged historical
+  digest `410fdef2…5b707` at 113,273,631 bytes. Nothing was deleted.
+- The exact live digest was pulled read-only and executed under `0.08` CPU / `256 MiB`. All 8
+  compiled runtime files, 149 package manifests/roots, and 149 package legal files matched the
+  manifest. The immutable Node base, lock SHA, 152 full-production identities, 149 runtime
+  identities, five rendered Vite identities, and required legal files matched.
+- Live-image hashes are `d343d34681cf92e1d7c9a3bf834251c2a2db98a3b1b6614a365c382da769c6b1`
+  (`RUNTIME-ATTRIBUTION.json`),
+  `9cc0b8b55f4a78435cf4d25b7f7f5aa05a981ee041963d38ab82e2afdcebccab`
+  (`THIRD_PARTY_NOTICES.txt`),
+  `cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30` (`LICENSE`), and
+  `4c3019e13c96e2906eddd3e8fa35d4ef0d4e13826d2398551d8a9796fac82d1f` (`NOTICE`). C11 is restored
+  to `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE` only for this exact digest and bounded
+  synthetic/authorized-data use; no blanket legal clearance is claimed.
+
+### Single corrected public smoke
+
+Exactly one post-redeploy smoke verified:
+
+- public `/health` HTTP 200 with `{"status":"ok"}` and `/ready` HTTP 200 with fixture assets ready;
+- the static UI and one canonical Removed schema column incident completed at `81% · high`;
+- visible UI Markdown download produced 9,221 bytes, SHA-256
+  `f258d2b0e84fe730312bfe74048f9b00101d88ec3e73fdb1a1cd7c2ee85711a9`, with completed incident,
+  six stages, nine tool calls, and deterministic evidence content;
+- browser console had zero warnings/errors, every interactive control had an accessible name, one
+  H1/main landmark was present, and desktop/narrowed views had no horizontal overflow.
+
+Direct browser navigation to response-only `/ready` and `.md` resources was client-blocked, so the
+same bounded smoke checked readiness once via public `curl` and Markdown via the visible UI download;
+the incident was not rerun.
+
+### Boundaries
+
+No region/resource increase, billing/project deletion, billing association change, unrelated API
+mutation, image/archive cleanup, card/payment access, secret/model/DataHub credential, reminder,
+tag, Release, Devpost submission, PR Ready transition, merge, amend, rebase, or force-push occurred.
+The Paid account still has no hard VND/USD zero cap. Preserve shutdown/delete/detach by 2026-08-10 or
+20% reported credit remaining, whichever occurs first; this remains earlier than the judging end.

@@ -369,17 +369,20 @@ The execution checklist above is historical and was found incomplete by independ
       identities, 149 runtime identities/roots, five Vite identities, deterministic runtime
       manifest/notices, Apache `LICENSE`, project `NOTICE`, and explicit
       `abstract-logging@2.0.1` upstream fallback evidence.
-- [x] Keep C11 blocked for the current Cloud Run distribution until the exact clean source commit
-      passes CI, is archived and deployed, and its live digest/legal evidence passes.
-- [ ] Push the additive clean source commit and require exact-source-head PR CI success.
-- [ ] Deploy only its immutable archive with source label/revision suffix and both service
+- [x] Keep C11 blocked for the historical Cloud Run distribution until the exact clean source commit
+      passed CI, was archived and deployed, and its live digest/legal evidence passed; restore only
+      the bounded qualified disposition after those exact gates.
+- [x] Push clean source commit `3653cf6b…7fa4f`; exact-source-head PR CI run `30208678827`, job
+      `89811104840`, succeeded.
+- [x] Deploy only its immutable archive with source label/revision suffix and both service
       `--max=1` and revision `--max-instances=1`, plus min `0`, concurrency `1`, timeout `100s`,
       `0.08` CPU, `256 MiB`, CPU throttling on, CPU boost off, fixture mode, and Singapore.
-- [ ] Verify exact build/archive/image/revision/config/API/resource/legal provenance, then run exactly
+- [x] Verify exact build/archive/image/revision/config/API/resource/legal provenance, then run exactly
       one corrected public UI/health/readiness/canonical/Markdown/console/accessibility/overflow
       smoke.
-- [ ] Record a later docs-only evidence commit without claiming the running revision was built from
-      that later commit; require exact-final-head CI and keep Draft PR #56 unmerged.
+- [x] Record this later docs-only evidence commit without claiming the running revision was built
+      from it. Record exact-final-head CI only in the mutable Draft PR #56 body to avoid circular
+      evidence; keep the PR Draft and unmerged.
 
 ## Phase 8 — `v1.0.0` final (not performed)
 
