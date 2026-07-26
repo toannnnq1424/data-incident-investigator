@@ -433,3 +433,184 @@ an un-upgraded Free Trial and official UI confirms no automatic post-credit char
 before expiry; if it is upgraded or overage can reach real money without a hard cap, stop for a
 zero-risk configuration packet and fresh approval. This correction performs no Console access or
 mutation, project/API/resource creation, billing/trial change, card action, deployment, or reminder.
+
+## Phase 8.7 Google Cloud deployment control packet
+
+Access date: **2026-07-26**. This packet combines read-only signed-in Console inspection with current
+official Google Cloud documentation. It authorizes no mutation.
+
+### Provider, account, billing, and credit facts
+
+- Provider/runtime: Google Cloud, one Cloud Run service. Official entry points:
+  [Cloud Console](https://console.cloud.google.com/),
+  [Cloud Billing](https://console.cloud.google.com/billing),
+  [Cloud Run](https://console.cloud.google.com/run),
+  [API Library](https://console.cloud.google.com/apis/library), and
+  [Manage resources](https://console.cloud.google.com/cloud-resource-manager).
+- Signed-in identity: a personal Google account, recorded only as `t***@gmail.com`. No Google Cloud
+  organization is selected; Console reports **No organization**.
+- Candidate billing account: active Direct account `M***`, identifier recorded only as `…D627`.
+  Console labels it **Paid account**. No payment method, card, payment profile, invoice, or tax
+  identity was opened or recorded.
+- The candidate account has an **Available** one-time Free Trial credit scoped to eligible usage,
+  with 100% shown remaining: approximately **VND 7.886 million** of approximately **VND 7.890
+  million**, ending **2026-10-07**. The tiny difference between displayed remaining and original
+  value means the packet must not claim literally unused credit.
+- The official Free Program documentation says an upgraded Paid account keeps unused Welcome credit
+  until the original 90-day expiry, and bills usage not covered by credit or Free Tier. Cloud Run
+  Free Tier and Artifact Registry limits are aggregated across projects by billing account. The
+  Console credit row is billing-account scoped and does not show a project restriction. Therefore,
+  a newly created project linked to `M*** …D627` is expected to consume eligible remaining credit.
+  This is a documented inference, not a guarantee that every SKU is credit-eligible; the owner must
+  confirm the exact billing association immediately before deployment.
+- `onlinelearning-484610` is already linked to the candidate billing account. Reuse avoids project
+  creation but mixes IAM, quotas, APIs, logs, artifacts, cleanup, and cost attribution with unrelated
+  work. A dedicated project does not add a project fee and shares the same account-level credit/free
+  tier; it gives cleaner isolation and one-action teardown. **Prefer a dedicated project**, subject
+  to fresh owner approval, because it does not increase metered unit prices but does make the same
+  Paid billing account capable of charging after credit/free-tier coverage.
+
+Proposed display name: **Data Incident Investigator Demo**.
+
+Unreserved project-ID candidates (availability was not checked and no ID was created or reserved):
+
+1. `data-incident-investigator-26`
+2. `dii-judge-demo-20260726`
+3. `dii-cloudrun-demo-26-a7c9`
+
+### Cheapest truthful deployment shape
+
+Deploy one public, request-based Cloud Run service in `asia-southeast3` (Bangkok), serving the built
+Vite assets from Fastify and retaining same-origin `/api`. Bangkok is a current Tier 1 Cloud Run
+pricing region and is closest to the operator in Thailand; `asia-southeast1` (Singapore) is the
+latency fallback but is not listed in the current Tier 1 group. Do not add a load balancer, custom
+domain, database, VPC connector, scheduler, Agent Platform, Vertex AI, Gemini, or any model API.
+
+Initial runtime controls:
+
+- request-based billing, first-generation execution environment;
+- `0.08` vCPU, concurrency `1`, minimum instances `0`, service-level maximum instances `1`, and
+  request timeout no higher than the application's existing bounded timeout;
+- test the first-generation memory ladder `128 MiB` → `256 MiB` → `512 MiB` and select the first
+  value that passes cold-start health/readiness and fixture smoke; do not claim a passing size in
+  this docs-only slice;
+- unauthenticated public invocation only for the fixture demo; keep the existing application rate
+  limit conservative and expose only synthetic fixture data;
+- validate `/health`, `/ready`, one canonical fixture investigation, static asset delivery, and cold
+  start. Increase CPU or memory only after a failed health/smoke proof and separate owner approval.
+
+The recommended deploy path is `gcloud run deploy --source` **with the repository's explicit
+Dockerfile only after a later runtime slice adds and validates it**. Source deploy is convenient but
+unavoidably uses Cloud Build and Artifact Registry and can auto-create the
+`cloud-run-source-deploy` repository. Direct image deploy still needs an image registry and a local
+or remote build. The no-build source path avoids Cloud Build but is Preview, needs Cloud Storage,
+requires a self-contained x86 archive, and is not the truthful first production choice. This docs
+slice does not add a Dockerfile or choose Preview.
+
+Minimum APIs for the recommended source-build path:
+
+1. Cloud Run Admin API: `run.googleapis.com`;
+2. Cloud Build API: `cloudbuild.googleapis.com`;
+3. Artifact Registry API: `artifactregistry.googleapis.com`.
+
+Do not enable Secret Manager for fixture mode. A later authorized live-DataHub deployment would add
+`secretmanager.googleapis.com`, create a least-privilege secret reference for `DATAHUB_TOKEN`, and
+never put the token in source, image, CLI history, logs, or a client bundle. That is a separate
+credential and mutation approval.
+
+### Price, quota, and charge boundary
+
+- Cloud Run charges request-based CPU/RAM during startup, shutdown, and request handling, rounded to
+  100 ms. Free Tier is account-aggregated and price-based using `us-central1` Tier 1 rates. Consult
+  the live pricing/SKU page immediately before deployment because regional/currency conversion and
+  allowances can change.
+- Cloud Build currently includes 2,500 free `e2-standard-2` default-pool build-minutes per billing
+  account per month; partial minutes are billed by seconds and network/log/storage charges can be
+  separate.
+- Artifact Registry currently includes 0.5 GiB-month storage per billing account. Excess storage,
+  cross-region transfer, optional vulnerability scanning, or retained old images can charge. Keep
+  registry and Cloud Run co-located, disable paid scanning, retain only the deployed image plus one
+  rollback image, then delete surplus tags/digests.
+- Cloud Run resource quotas vary by region. The service maximum of `1`, not the much larger regional
+  quota, is the intended operational limit. Admin API quotas are unrelated to public request volume.
+  Do not request quota increases.
+- Billing currency shown by Console is VND. USD reference prices convert through Google Cloud SKUs;
+  taxes and the payments-profile tax treatment were not safely inspectable and remain **unknown**.
+  This is a mandatory pre-deploy reconfirmation item.
+- First real-money event: any eligible usage after the credit expires or is exhausted, any usage not
+  covered by the credit, or any Free Tier/build/storage/network/logging usage above its allowance.
+  The account is already Paid, so there is no protective trial auto-close and no additional upgrade
+  gate.
+
+### Hard controls, alerts, and residual risk
+
+Hard or enforceable controls are limited to minimum instances `0`, service-level maximum instances
+`1`, fractional CPU/memory, concurrency `1`, short application/request timeouts, no quota increase,
+application rate limiting, deletion of the public service, deletion of surplus images, billing
+detachment, and project shutdown. Maximum instances can be exceeded briefly during spikes or
+revision transitions, so even `1` is not an absolute monetary cap.
+
+Budgets and alerts **do not cap usage or spending**. Product quotas constrain individual resources,
+not total currency spend. Automated budget shutdown needs additional Pub/Sub/automation resources,
+has reporting delay, and can itself fail or cost money; it is not selected in this minimal packet.
+There is no credible provider-native hard VND/USD 0 spending cap on this Paid account. Public traffic,
+cold starts, logs, builds, registry retention, egress, delayed usage reporting, regional conversion,
+tax, brief max-instance overshoot, and credit-ineligible SKUs remain residual charge risks.
+
+Safe stop boundary: do not begin deployment unless at least 20% credit remains. If later approved,
+remove public traffic, delete the service and surplus images, detach billing, and request project
+shutdown by **2026-09-30** (seven days before credit expiry) or immediately when credit remaining
+reaches 20%, whichever occurs first. No reminder is created in this read-only slice.
+
+### Data, judging, secrets, rollback, and deletion
+
+The public URL is a Google-managed HTTPS `run.app` endpoint. Fixture mode is credential-free,
+process-local, and synthetic; incidents disappear on restart/scale-to-zero. Judges must tolerate a
+cold start and must not expect durable incident URLs. Live DataHub is excluded until an authorized
+endpoint and server-side secret are separately approved. Do not expose production/customer data,
+PII, private metadata, tokens, raw provider payloads, or billing identity.
+
+Rollback means route 100% traffic to the previous known-good immutable revision, then smoke it.
+Deletion means first remove public access/traffic, delete the Cloud Run service, delete unused
+Artifact Registry images/repository, verify no builds/resources remain, detach billing, and finally
+request project shutdown. Deleting a revision does not delete its image. Project shutdown disconnects
+billing and enters a 30-day recovery period; some resources can disappear sooner, restoration can
+take up to 36 hours, billing is not automatically reattached, and a project ID is never reusable.
+Google warns that charges can continue through the current billing cycle, so billing detachment and
+resource deletion must precede project shutdown.
+
+### Decision and fresh-approval gates
+
+**ACCEPTABLE AFTER OWNER APPROVAL**, with explicit residual financial risk and no hard zero-spend
+containment. Approval must name the redacted account/billing context, selected display name and exact
+project ID, Bangkok region, safe-stop boundary, and acceptance of Paid-account overage risk.
+
+Fresh approvals are required separately and immediately before:
+
+1. `Create Project` with the chosen display name/project ID and no organization;
+2. linking that project to candidate billing account `M*** …D627`;
+3. enabling each of `run.googleapis.com`, `cloudbuild.googleapis.com`, and
+   `artifactregistry.googleapis.com`;
+4. starting the build, creating the Artifact Registry repository/image, and deploying the public
+   Cloud Run service with the exact limits above.
+
+Any different account, organization, billing account, project, region, API, architecture, paid
+feature, tax/pricing result, secret entry, or credit state invalidates the approval and requires a
+refreshed packet. This slice created no project, API, billing association, resource, deployment,
+credential, card action, or reminder.
+
+Official sources accessed 2026-07-26:
+
+- [Google Cloud Free Program](https://docs.cloud.google.com/free/docs/free-cloud-features)
+- [Cloud Run pricing](https://cloud.google.com/run/pricing)
+- [Cloud Run locations](https://docs.cloud.google.com/run/docs/locations)
+- [Cloud Run source deployment](https://docs.cloud.google.com/run/docs/deploying-source-code)
+- [Cloud Run CPU](https://docs.cloud.google.com/run/docs/configuring/services/cpu) and
+  [memory](https://docs.cloud.google.com/run/docs/configuring/services/memory-limits)
+- [Cloud Run maximum instances](https://docs.cloud.google.com/run/docs/configuring/max-instances)
+  and [quotas](https://docs.cloud.google.com/run/quotas)
+- [Cloud Build pricing](https://cloud.google.com/build/pricing)
+- [Artifact Registry pricing](https://cloud.google.com/artifact-registry/pricing)
+- [Cloud Billing budgets](https://docs.cloud.google.com/billing/docs/how-to/budgets)
+- [Project deletion and restoration](https://docs.cloud.google.com/resource-manager/docs/delete-restore-projects)
+- [Cloud Run revision management](https://docs.cloud.google.com/run/docs/managing/revisions)

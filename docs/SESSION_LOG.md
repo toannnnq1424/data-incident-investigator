@@ -5680,3 +5680,70 @@ secret/private-path/debug/conflict scans, stale-current-main search, full diff r
 
 Create one additive commit, normal-push the same branch, keep Draft PR #55 Draft/unmerged, require
 exact-new-head PR CI `SUCCESS`, and return for the same independent Windows QA re-review.
+
+## 2026-07-26 — Phase 8.7 Google Cloud deployment control packet
+
+### Objective
+
+Prepare the provider/account/project-specific Google Cloud deployment control packet and cheapest
+truthful deployment plan using read-only signed-in Console evidence and current official sources,
+without any Google Cloud mutation.
+
+### Completed
+
+- Verified exact starting main `c7abc652c23b532e90091b377490b27eadd7e084` and created only
+  `codex/phase-8-7-gcp-deployment-control-packet`.
+- Read-only Console inspection confirmed a redacted personal Google identity, no organization, an
+  active Direct Paid billing account, and Available account-scoped Free Trial credit of approximately
+  VND 7.886 million ending 2026-10-07. `onlinelearning-484610` is linked to that billing account.
+  No payment method/profile/card or full identity/account ID was opened or recorded.
+- Preferred an uncreated dedicated project for isolation; proposed one display name and three
+  unreserved IDs. Recorded the inference that eligible new-project usage linked to the same billing
+  account can consume its remaining credit, while explicitly preserving SKU eligibility and
+  overage uncertainty.
+- Specified one public request-based Cloud Run service in Bangkok serving Fastify plus built Vite
+  same-origin, minimum `0`, maximum `1`, initial `0.08` vCPU/concurrency `1`, a
+  `128 MiB`/`256 MiB`/`512 MiB` smoke-tested memory ladder, and only the three source-build APIs.
+  Excluded Agent Platform, Vertex AI, model APIs, database, VPC, scheduler, custom domain, and Secret
+  Manager in fixture mode.
+- Distinguished hard controls from alerts. Budgets do not cap spend; maximum instances may briefly
+  overshoot; the Paid account has no credible hard zero-spend cap. Recorded first-charge events,
+  Free Tier/build/registry/network/log risks, unknown taxes, rollback/cleanup/deletion consequences,
+  and the 20%-credit or 2026-09-30 safe stop boundary.
+- Labeled the packet `ACCEPTABLE AFTER OWNER APPROVAL` and required separate fresh approvals
+  immediately before Create Project, billing association, each API enablement, and build/deploy.
+
+### Files changed
+
+`docs/DEPLOYMENT.md`, `docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md`, and this session log only.
+
+### Decisions
+
+The candidate billing account's Paid status invalidates the earlier unupgraded-trial no-charge
+assumption. Dedicated isolation is operationally preferable but does not create a hard cost boundary.
+No GCP action is authorized by this packet.
+
+### Validation performed
+
+Read-only in-app Browser inspection and current official Google Cloud documentation review;
+changed-file Prettier; `git diff --check`; exact four-document allowlist; strict
+UTF-8/LF/final-newline/no-BOM; local Markdown links; official citation reachability; and added-line
+secret, full-identity, private-path, conflict, and debug scans pass. Full diff review confirms only
+the four planned documentation files.
+
+### Validation intentionally deferred
+
+Every GCP mutation; runtime/container/workflow/manifest/lock/version/source/test/asset change; build,
+test, browser E2E, deploy, reminder, publication, Ready transition, merge, and independent QA.
+
+### Known issues
+
+Project-ID availability, exact live SKU/tax conversion, credit eligibility for every SKU, and a hard
+zero-spend containment remain unresolved. They require a refreshed pre-mutation check and owner
+decision; no guess is permitted.
+
+### Exact next step
+
+Complete bounded documentation validation and secret/full-identity review, create one additive
+commit, normal-push, create exactly one Draft PR against current main, require exact-head PR CI
+`SUCCESS`, and stop without merge or Google Cloud mutation.

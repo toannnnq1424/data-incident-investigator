@@ -31,6 +31,17 @@ Last updated: 2026-07-26.
   is selected for mutation. Fresh approval of the exact project name/ID and owning
   account/organization/billing account is required immediately before any `Create Project` action.
 
+  Phase 8.7 read-only Console inspection now confirms the candidate billing account is already
+  **Paid**, has an Available account-scoped Free Trial credit of approximately VND 7.886 million
+  ending 2026-10-07, and is linked to `onlinelearning-484610`. A new dedicated project is preferred
+  for isolation because account-level credit/free-tier aggregation makes reuse no cheaper. However,
+  the Paid account can charge for credit-ineligible or over-credit/free-tier usage; budgets do not
+  cap spend, Cloud Run maximum instances can briefly be exceeded, taxes are unknown, and Google
+  Cloud provides no credible hard VND/USD 0 cap. The packet is therefore `ACCEPTABLE AFTER OWNER
+APPROVAL` only with explicit residual-risk acceptance, a 20%-credit/2026-09-30 stop boundary, and
+  separate fresh approvals for project creation, billing association, API enablement, and
+  build/deploy. No GCP mutation or reminder has occurred.
+
 - Phase 8.4A is integrated through exact normal merge
   `36d4205806597ae14b7306c74e1527c284202023`, tree
   `876899895449981f3c4dd3981ef76ba64597d1bd`, with ordered parents

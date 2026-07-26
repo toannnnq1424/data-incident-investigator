@@ -6302,3 +6302,40 @@ require exact-new-head PR CI `SUCCESS`.
 
 Deferred: all runtime/build/test/artifact/live DataHub/GCP work, external deployment or publication,
 signup/card/trial action, PR Ready transition, merge, and independent Windows QA re-review.
+
+### Phase 8.7 — Google Cloud deployment control packet
+
+Status: documentation-only read-only preflight from exact main
+`c7abc652c23b532e90091b377490b27eadd7e084`.
+
+Objective: use signed-in Console read-only evidence and current official Google Cloud documentation
+to produce an account/project-specific cheapest truthful Cloud Run control packet without any GCP
+mutation.
+
+Minimum files: `docs/DEPLOYMENT.md`, this plan, `docs/KNOWN_ISSUES.md`, and
+`docs/SESSION_LOG.md`.
+
+Acceptance:
+
+- record only redacted account, organization, billing, credit, expiry, and currency facts;
+- compare `onlinelearning-484610` with an uncreated dedicated project and propose one display name
+  plus three unreserved project-ID candidates;
+- specify one request-based same-origin Cloud Run service, minimum `0`, maximum `1`, smallest
+  health/smoke-gated CPU/RAM, minimum APIs, region, source-build path, quotas, Free Tier/credit and
+  first-charge boundaries;
+- distinguish enforceable controls from non-capping budgets/alerts and flag that this Paid account
+  has no hard zero-spend cap;
+- record public URL, fixture/data/secret/judging constraints, rollback, artifact cleanup, billing
+  detachment, project deletion, safe stop threshold/deadline, and cancellation consequences;
+- label the packet `ACCEPTABLE AFTER OWNER APPROVAL` and enumerate separate fresh approvals for
+  project creation, billing association, API enablement, and build/deploy;
+- perform no project/API/billing/resource/deploy/card/credential/reminder mutation and change no
+  runtime, workflow, manifest, lockfile, version, test, fixture, or asset.
+
+Validation: changed-file Prettier, Markdown/local-link checks, UTF-8/LF/final-newline/no-BOM,
+`git diff --check`, exact docs-only allowlist, added-line secret/private-identity/conflict/debug scan,
+official citation reachability, full diff review, one additive commit/push, exactly one Draft PR
+against current main, and exact-head PR CI `SUCCESS`.
+
+Deferred: every GCP mutation, runtime/container work, build/test/browser E2E, deployment, reminder,
+publication, Ready transition, merge, and independent QA.
