@@ -2,12 +2,13 @@
 
 Last updated: 2026-07-26.
 
-- Phase 8.5 is integrated through exact normal merge
-  `73172b7e8e8b02ab9629019eac298b89e02895c2`, tree
-  `a4beb330fb528f4926eee8a538c7d2a79dab1f67`, with ordered parents
-  `1c32f6c913b196fc4a23055fb7da3b1482b94e5e` then
-  `0b37e8a3235f0db0af8d84cbaaa2fd35cc48ddbd`; exact main CI run `30188091600`, job
-  `89756253516`, is `SUCCESS`. PR #54 is merged. Phase 8.6 records C11 as
+- Current main is exact normal merge
+  `c7abc652c23b532e90091b377490b27eadd7e084`, tree
+  `66e90eae74c7065c62a30a14ffeb25ef26974ea4`, with ordered parents
+  `73172b7e8e8b02ab9629019eac298b89e02895c2` then
+  `91c52ae69b335b2b3122c8d5e1a95a997bc49ec5`. PR #55 is merged historical. Its
+  parent `73172b7e8e8b02ab9629019eac298b89e02895c2`, main CI run `30188091600`, and job
+  `89756253516` remain historical Phase 8.5 evidence. Phase 8.6 records C11 as
   `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE`: technical attribution passes and the owner authorizes
   only zero-cost distribution of the exact verified artifact with synthetic/authorized data and
   authorized zero-cost DataHub/API access. This is operational authorization, not blanket legal
@@ -17,10 +18,9 @@ Last updated: 2026-07-26.
   No public full-stack provider is selected. GitHub Pages is available for the Public repository but
   is static-only and cannot run Fastify or the same-origin `/api` proxy. The immediate zero-cost judge
   path remains the Public repository plus a later timed credential-free fixture quickstart. Official
-  evidence identifies Render Free as a card-free candidate, rejects Koyeb Starter/Free for lack of a
-  hard zero-dollar cap, and makes the unupgraded Google Cloud Free Trial eligible only after a
-  provider-specific ten-field packet and fresh owner approval. Account identity and repository-
-  specific runtime/judge-window validation remain open. Phase 8.6 performs no signup, card/trial
+  evidence identifies Render Free as an unselected card-free candidate and rejects both Koyeb
+  Starter/Free and the inspected Google Cloud Paid-account candidate for lack of credible hard
+  zero-dollar containment. Phase 8.6 performs no signup, card/trial
   action, reminder, deploy, Pages enablement, credential entry, artifact upload/publication, or
   submission.
 
@@ -33,14 +33,13 @@ Last updated: 2026-07-26.
 
   Phase 8.7 read-only Console inspection now confirms the candidate billing account is already
   **Paid**, has an Available account-scoped Free Trial credit of approximately VND 7.886 million
-  ending 2026-10-07, and is linked to `onlinelearning-484610`. A new dedicated project is preferred
-  for isolation because account-level credit/free-tier aggregation makes reuse no cheaper. However,
-  the Paid account can charge for credit-ineligible or over-credit/free-tier usage; budgets do not
-  cap spend, Cloud Run maximum instances can briefly be exceeded, taxes are unknown, and Google
-  Cloud provides no credible hard VND/USD 0 cap. The packet is therefore `ACCEPTABLE AFTER OWNER
-APPROVAL` only with explicit residual-risk acceptance, a 20%-credit/2026-09-30 stop boundary, and
-  separate fresh approvals for project creation, billing association, API enablement, and
-  build/deploy. No GCP mutation or reminder has occurred.
+  ending 2026-10-07, and is linked to `onlinelearning-484610`. A new dedicated project remains
+  preferable for isolation, but reuse-versus-dedicated total cost is unknown and not proven. The Paid
+  account can charge for credit-ineligible or over-credit/free-tier usage; budgets do not cap spend,
+  Cloud Run maximum instances can briefly be exceeded, taxes are unknown, and Google Cloud provides
+  no credible hard VND/USD 0 cap. The packet is therefore `REJECT FOR CURRENT DEPLOYMENT` under the
+  unchanged zero-fee/no-overage policy. A future owner could supersede that policy only through new
+  explicit risk acceptance; this packet is not authorization. No GCP mutation or reminder occurred.
 
 - Phase 8.4A is integrated through exact normal merge
   `36d4205806597ae14b7306c74e1527c284202023`, tree
@@ -89,9 +88,9 @@ APPROVAL` only with explicit residual-risk acceptance, a 20%-credit/2026-09-30 s
   `bde288112f504c2067ff85499337d9315c30c432`: package identity was not yet bound to the frozen virtual
   store, Windows path/link/output atomicity was incomplete, five-package/exclusion coverage was too
   narrow, and three Phase 8.4B state documents remained stale. This is historical: the additive
-  correction passed independent QA, PR #54 merged through exact current main
-  `73172b7e8e8b02ab9629019eac298b89e02895c2`, and Phase 8.6 records the qualified owner
-  disposition. Current Draft PR #55 is the rights/deployment preflight and remains unmerged; no
+  correction passed independent QA and PR #54 merged through historical main
+  `73172b7e8e8b02ab9629019eac298b89e02895c2`. PR #55 subsequently merged as current main
+  `c7abc652c23b532e90091b377490b27eadd7e084`; Draft PR #56 is the current Phase 8.7 review. No
   artifact is published or deployed.
 
 - Phase 8.2 is integrated as `aa8d120205fdc35298b9ef36c7dd36b38b23e342` through main merge

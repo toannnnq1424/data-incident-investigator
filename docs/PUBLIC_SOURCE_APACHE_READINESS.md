@@ -710,9 +710,12 @@ anything. Those actions retain their own gates.
 
 The approvals are independent. Phase 8.4B consumed the Public authorization and completed through the
 normal merge recorded above; its branch and PR conversation remain retained. PR #54 is the historical
-Phase 8.5 artifact-enforcement work and is merged through current main
-`73172b7e8e8b02ab9629019eac298b89e02895c2`. Current Draft PR #55 is the Phase 8.6
-rights/deployment preflight and does not authorize any other external mutation.
+Phase 8.5 artifact-enforcement work and is merged through historical main
+`73172b7e8e8b02ab9629019eac298b89e02895c2`. PR #55 is the merged historical Phase 8.6
+rights/deployment preflight. Current main is
+`c7abc652c23b532e90091b377490b27eadd7e084`, tree
+`66e90eae74c7065c62a30a14ffeb25ef26974ea4`; Draft PR #56 is the current Phase 8.7 review and
+does not authorize any external mutation.
 
 ## Residual blockers and next evidence
 

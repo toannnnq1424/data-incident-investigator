@@ -6074,7 +6074,8 @@ task/branch/PR.
 
 ### Phase 8.6 — zero-cost rights disposition and deployment preflight
 
-Status: in progress on `codex/phase-8-6-zero-cost-rights-deployment-preflight` from exact fetched
+Status: completed and merged historically through PR #55. It began on
+`codex/phase-8-6-zero-cost-rights-deployment-preflight` from then-current
 `origin/main` `73172b7e8e8b02ab9629019eac298b89e02895c2` (tree
 `a4beb330fb528f4926eee8a538c7d2a79dab1f67`; ordered parents
 `1c32f6c913b196fc4a23055fb7da3b1482b94e5e` then
@@ -6240,13 +6241,14 @@ Acceptance:
   cancellation, and possible 7–21-day visibility in both the provider matrix and ten-field packet.
   Preserve Koyeb `REJECT`: Starter needs a payment method, no spending limit/hard USD 0 cap exists,
   and the minimum alert is USD 5. Remove every contradictory “hold unknown” statement.
-- Make current main consistently
+- Make the then-current Phase 8.6 main consistently
   `73172b7e8e8b02ab9629019eac298b89e02895c2` with tree
   `a4beb330fb528f4926eee8a538c7d2a79dab1f67`; keep
   `1c32f6c913b196fc4a23055fb7da3b1482b94e5e` /
   `5c83d034f30c6d31268109277aaa455a05ff9656` only as clearly historical Phase 8.4B evidence.
   Mark Phase 8.5 correction/QA/PR #54 completed and merged; identify PR #54 as historical and PR #55
-  as the current Draft. State that tag `v1.0.0-rc.1` and its unpublished GitHub Draft Release exist.
+  as that correction's Draft. State that tag `v1.0.0-rc.1` and its unpublished GitHub Draft Release
+  exist.
 - Record `onlinelearning-484610` as an existing reference project, not a required or selected
   deployment target, and record the owner's statement that gifted USD 300 cloud/API credit is
   available without claiming UI verification. Preserve the deterministic no-model boundary and
@@ -6288,8 +6290,8 @@ Status: smallest additive docs-only correction on the same branch and Draft PR #
 Windows QA found one remaining current-state contradiction on exact head
 `c9f6aeb0af14c509dbec0015857a114c567eb53d`.
 
-Objective: in `docs/DEVPOST_REQUIREMENTS.md`, replace the stale Phase 8.4B identity where it is still
-called exact current main with exact current main
+Objective at that time: in `docs/DEVPOST_REQUIREMENTS.md`, replace the stale Phase 8.4B identity where
+it was still called exact current main with then-current main
 `73172b7e8e8b02ab9629019eac298b89e02895c2`, tree
 `a4beb330fb528f4926eee8a538c7d2a79dab1f67`, and label the retained
 `1c32f6c913b196fc4a23055fb7da3b1482b94e5e` /
@@ -6297,8 +6299,8 @@ called exact current main with exact current main
 
 Acceptance: correct only proven stale current-main wording; preserve C11, GCP, Koyeb, distribution,
 deployment, and no-mutation policy; run focused docs formatting/link/EOL/diff/secret scans; create
-one additive commit and normal-push the same branch; retain Draft PR #55 without Ready or merge; and
-require exact-new-head PR CI `SUCCESS`.
+one additive commit and normal-push the same branch; retain the then-Draft PR #55 without Ready or
+merge; and require exact-new-head PR CI `SUCCESS`.
 
 Deferred: all runtime/build/test/artifact/live DataHub/GCP work, external deployment or publication,
 signup/card/trial action, PR Ready transition, merge, and independent Windows QA re-review.
@@ -6327,8 +6329,10 @@ Acceptance:
   has no hard zero-spend cap;
 - record public URL, fixture/data/secret/judging constraints, rollback, artifact cleanup, billing
   detachment, project deletion, safe stop threshold/deadline, and cancellation consequences;
-- label the packet `ACCEPTABLE AFTER OWNER APPROVAL` and enumerate separate fresh approvals for
-  project creation, billing association, API enablement, and build/deploy;
+- label the packet `REJECT FOR CURRENT DEPLOYMENT` under the unchanged zero-fee/no-overage policy;
+  record that a future owner could supersede that policy only through a new explicit risk acceptance,
+  while preserving separate fresh gates for project creation, billing association, API enablement,
+  and build/deploy if policy ever changes;
 - perform no project/API/billing/resource/deploy/card/credential/reminder mutation and change no
   runtime, workflow, manifest, lockfile, version, test, fixture, or asset.
 
@@ -6339,3 +6343,37 @@ against current main, and exact-head PR CI `SUCCESS`.
 
 Deferred: every GCP mutation, runtime/container work, build/test/browser E2E, deployment, reminder,
 publication, Ready transition, merge, and independent QA.
+
+#### Phase 8.7 QA correction — policy, timeout ordering, and current state
+
+Status: smallest additive docs-only correction on the same branch and Draft PR #56 after independent
+Windows QA `FAIL / DO NOT MERGE` on exact head
+`4eab4d516ef94e9477faa7b9386076049a60260f`.
+
+Objective: reject the inspected Google Cloud Paid-account candidate under the unchanged
+zero-fee/no-overage authorization, correct Cloud Run timeout ordering, and replace only stale
+current-state claims while retaining historical identities as historical evidence.
+
+Minimum files: `docs/DEPLOYMENT.md`, this plan, `docs/KNOWN_ISSUES.md`,
+`docs/DEVPOST_REQUIREMENTS.md`, `docs/PUBLIC_SOURCE_APACHE_READINESS.md`,
+`docs/RELEASE_CHECKLIST.md`, and `docs/SESSION_LOG.md`.
+
+Acceptance:
+
+- make the matrix, packet, known issues, plan, and session consistently say
+  `REJECT FOR CURRENT DEPLOYMENT`; budgets/max instances remain risk reducers, not a hard zero cap;
+- state that only a future new explicit owner risk acceptance could supersede the current policy and
+  that this packet is not such authorization;
+- require the platform request timeout to exceed the bounded application/API deadline by a finite
+  response margin, with exact values deferred to a future changed-seam smoke before deployment;
+- record exact current main `c7abc652c23b532e90091b377490b27eadd7e084`, tree
+  `66e90eae74c7065c62a30a14ffeb25ef26974ea4`, and PR #55 as merged historical;
+- recommend dedicated isolation while marking reuse-versus-dedicated total cost unknown/not proven;
+- preserve safely redacted signed-in facts, official citations, uncreated ID candidates, no-model
+  boundary, and zero GCP/GitHub mutation other than the required additive commit/push and existing PR
+  update;
+- run only bounded docs validation, normal-push the same branch, keep only Draft PR #56, and require
+  exact-new-head CI `SUCCESS`.
+
+Deferred: exact timeout margin/config smoke, all runtime/full-suite/build/browser work, every GCP
+mutation, deployment, reminder, publication, Ready transition, merge, and independent QA re-review.

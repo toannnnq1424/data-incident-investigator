@@ -285,17 +285,16 @@ as static hosting, while this product requires a Node API and same-origin `/api`
 No signup was attempted. “Card-free” below means the documented zero-spend path intentionally has no
 payment method on file; it does not mean the provider can never offer paid controls.
 
-| Class               | Provider/service                    | Current official evidence for this architecture                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Cost, lifecycle, and judge risk                                                                                                                                                                                                                                                                                                                                                                          | Disposition                                                                                                                                                                                                                                                                |
-| ------------------- | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Card-free           | Render Hobby / Free web service     | Node web services support build/start commands, environment secrets, health-check paths, one public `onrender.com` HTTPS endpoint, and two prior rollbacks. Free service: 750 workspace hours/month, 500 Hobby build minutes/month, 5 GB outbound bandwidth/month, idle after 15 minutes with about one-minute wake, ephemeral filesystem, no persistent disk. Without a payment method, excess bandwidth suspends free services and exhausted builds stop rather than bill.                                                                                                                                           | Compatible with a single Fastify process serving web plus same-origin `/api` in fixture mode. Cold start and monthly suspension can interrupt judges; free Postgres expires after 30 days and is unnecessary because this app is intentionally in-memory. Account identity, exact build/start commands, Node 24 support, and availability through the judging window remain unvalidated.                 | **Card-free candidate; not selected.** A later packet/approval must name the owner-visible Render identity and prove repository-specific runtime before signup/deploy.                                                                                                     |
-| Card-required       | Koyeb Starter / Free Instance       | Starter requires a valid payment method. Koyeb places a USD 29 pre-authorization hold, cancels it immediately, and says an issuer may leave it visible for 7–21 days; the FAQ also says signup charges the prorated selected plan (its example defaults to Pro) before a later Starter downgrade. One Free Instance is 0.1 vCPU, 512 MB RAM, 2 GB SSD, one region, no Volume, and scales to zero after one idle hour; the free web Service itself is not charged. Paid usage starts when a paid Instance reaches `Starting`; billing is USD plus tax. Alerts have a USD 5 minimum and spending limits are unavailable. | Node/full-stack shape is plausible, but signup can cause a plan charge plus a material temporary hold, a payment method unlocks usage-based paid instances, and there is no hard zero-dollar cap. Included outbound/build quota, deletion retention, and a zero-spend cancellation safeguard are not established.                                                                                        | **REJECT.** The possible signup charge/hold, missing hard zero-dollar control, and unresolved quota/retention facts fail the owner policy.                                                                                                                                 |
-| Card-required trial | Google Cloud Free Trial + Cloud Run | Signup requires a payment method and may place a temporary USD 0–1 authorization. Trial provides USD 300 for 90 days and does not charge unless the owner manually upgrades; without upgrade it auto-closes when time or credit ends, stops resources, and deletes them after a 30-day grace period. Request-based Cloud Run includes 180,000 vCPU-seconds, 360,000 GiB-seconds RAM, and 2 million requests/month based on `us-central1`, plus 1 GiB North America outbound transfer; region changes price. Cloud Build/Artifact Registry have separate quotas/pricing.                                                | Provides a public HTTPS container endpoint, revisions, and Secret Manager integration; minimum zero instances permits scale-to-zero/cold start. Google budgets only alert and do not cap spend. Trial auto-close avoids a service charge while it remains a trial; manual paid-account upgrade is the first possible billable transition. Account/payment-profile retention and card hold are sensitive. | **ACCEPTABLE ONLY AFTER OWNER APPROVAL** for the unupgraded trial, never a Paid billing account. A provider-specific packet and owner-controlled card action are mandatory; safe close deadline is day 83 (seven-day buffer) or earlier if 80% of trial credit is reached. |
+| Class         | Provider/service                | Current official evidence for this architecture                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Cost, lifecycle, and judge risk                                                                                                                                                                                                                                                                                                                                                          | Disposition                                                                                                                                                                                                                                |
+| ------------- | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Card-free     | Render Hobby / Free web service | Node web services support build/start commands, environment secrets, health-check paths, one public `onrender.com` HTTPS endpoint, and two prior rollbacks. Free service: 750 workspace hours/month, 500 Hobby build minutes/month, 5 GB outbound bandwidth/month, idle after 15 minutes with about one-minute wake, ephemeral filesystem, no persistent disk. Without a payment method, excess bandwidth suspends free services and exhausted builds stop rather than bill.                                                                                                                                           | Compatible with a single Fastify process serving web plus same-origin `/api` in fixture mode. Cold start and monthly suspension can interrupt judges; free Postgres expires after 30 days and is unnecessary because this app is intentionally in-memory. Account identity, exact build/start commands, Node 24 support, and availability through the judging window remain unvalidated. | **Card-free candidate; not selected.** A later packet/approval must name the owner-visible Render identity and prove repository-specific runtime before signup/deploy.                                                                     |
+| Card-required | Koyeb Starter / Free Instance   | Starter requires a valid payment method. Koyeb places a USD 29 pre-authorization hold, cancels it immediately, and says an issuer may leave it visible for 7–21 days; the FAQ also says signup charges the prorated selected plan (its example defaults to Pro) before a later Starter downgrade. One Free Instance is 0.1 vCPU, 512 MB RAM, 2 GB SSD, one region, no Volume, and scales to zero after one idle hour; the free web Service itself is not charged. Paid usage starts when a paid Instance reaches `Starting`; billing is USD plus tax. Alerts have a USD 5 minimum and spending limits are unavailable. | Node/full-stack shape is plausible, but signup can cause a plan charge plus a material temporary hold, a payment method unlocks usage-based paid instances, and there is no hard zero-dollar cap. Included outbound/build quota, deletion retention, and a zero-spend cancellation safeguard are not established.                                                                        | **REJECT.** The possible signup charge/hold, missing hard zero-dollar control, and unresolved quota/retention facts fail the owner policy.                                                                                                 |
+| Paid account  | Google Cloud credit + Cloud Run | Read-only Phase 8.7 inspection confirms the candidate account is already Paid and retains time-limited eligible credit. Cloud Run, Cloud Build, Artifact Registry, network, and logging remain metered; credit/free-tier coverage and tax can vary by SKU, region, and account.                                                                                                                                                                                                                                                                                                                                        | Provides the required HTTPS container shape and risk-reducing scale controls, but budgets do not cap spend, maximum instances can briefly overshoot, and the Paid account can charge for uncovered/over-credit usage without another upgrade gate.                                                                                                                                       | **REJECT FOR CURRENT DEPLOYMENT.** The current zero-fee/no-overage authorization requires credible zero-spend containment, which this account does not provide. No project, billing association, API, build, or deploy action is approved. |
 
-Render is the only current card-free candidate in this bounded review; it is not a selected provider
-or an authorization to sign up. Koyeb is rejected. Google Cloud remains merely eligible for a fresh
-owner decision because its unupgraded trial has a documented no-charge close path; if any actual
-signup screen, regional term, tax rule, hold, quota, or conversion behavior differs from this packet,
-stop and refresh the evidence.
+Render remains the only card-free candidate in this bounded review; it is not selected and signup is
+not authorized. Koyeb and the inspected Google Cloud Paid-account candidate are both rejected under
+the current zero-fee/no-overage policy. A future owner could deliberately supersede that policy only
+through a new explicit acceptance of real-money overage risk; this packet is not that authorization.
 
 ### Required provider-specific control packet
 
@@ -338,19 +337,12 @@ Current packet identifiers (not authorization to visit or submit them):
   starts when a paid Instance reaches `Starting`; the minimum billing alert is USD 5 and no spending
   limit/hard USD 0 cap exists. Deactivation is required to remove all payment methods. **REJECT**; no
   signup, hold, plan charge, downgrade, deadline, or card action is authorized.
-- Google Cloud Free Trial / Cloud Run: signup `https://console.cloud.google.com/freetrial`; billing
-  management `https://console.cloud.google.com/billing`. Identity: **owner must name the Google
-  account**. Trial starts at signup, lasts 90 days or until USD 300 is exhausted, does not
-  auto-convert, and stops resources then deletes them after the 30-day grace period if not upgraded.
-  Request-based Cloud Run's monthly free tier is 180,000 vCPU-seconds, 360,000 GiB-seconds RAM, and
-  2 million requests at `us-central1` pricing, with 1 GiB North America outbound transfer; source
-  builds and image storage have separate Cloud Build/Artifact Registry quotas and pricing, so a later
-  pre-submit packet must capture the exact deployment method and region.
-  Card/payment method required; temporary authorization is USD 0–1 and may remain visible for up to
-  one month. Taxes/region/currency depend on the owner account and selected region and must be
-  captured from the actual pre-submit screen. Budgets alert but do not hard-cap. Close the Free Trial
-  billing account by day 83 or at 80% credit, whichever comes first; later deletion/payment-profile
-  retention must follow official account guidance. **ACCEPTABLE ONLY AFTER OWNER APPROVAL**.
+- Google Cloud / Cloud Run: billing management
+  `https://console.cloud.google.com/billing`. The safely redacted signed-in identity and candidate
+  account are recorded in the Phase 8.7 packet below. That account is already Paid; remaining credit
+  does not prevent real-money charges for uncovered or over-credit usage. Budgets alert but do not
+  hard-cap and maximum instances is not an absolute cap. **REJECT FOR CURRENT DEPLOYMENT** under the
+  current zero-fee/no-overage authorization.
 
 ### Current official-source register
 
@@ -465,10 +457,10 @@ official Google Cloud documentation. It authorizes no mutation.
   confirm the exact billing association immediately before deployment.
 - `onlinelearning-484610` is already linked to the candidate billing account. Reuse avoids project
   creation but mixes IAM, quotas, APIs, logs, artifacts, cleanup, and cost attribution with unrelated
-  work. A dedicated project does not add a project fee and shares the same account-level credit/free
-  tier; it gives cleaner isolation and one-action teardown. **Prefer a dedicated project**, subject
-  to fresh owner approval, because it does not increase metered unit prices but does make the same
-  Paid billing account capable of charging after credit/free-tier coverage.
+  work. A dedicated project gives cleaner isolation and one-action teardown, so it remains the
+  architectural preference if policy ever changes. However, the total-cost difference between reuse
+  and a dedicated project is **unknown and not proven**: account-level aggregation does not by itself
+  prove equal cost, and SKU, region, existing usage, shared allowances, and cleanup can differ.
 
 Proposed display name: **Data Incident Investigator Demo**.
 
@@ -489,8 +481,11 @@ domain, database, VPC connector, scheduler, Agent Platform, Vertex AI, Gemini, o
 Initial runtime controls:
 
 - request-based billing, first-generation execution environment;
-- `0.08` vCPU, concurrency `1`, minimum instances `0`, service-level maximum instances `1`, and
-  request timeout no higher than the application's existing bounded timeout;
+- `0.08` vCPU, concurrency `1`, minimum instances `0`, and service-level maximum instances `1`;
+- configure the Cloud Run request timeout to be **strictly greater** than the bounded application/API
+  deadline by a finite response margin, so the application can return its controlled timeout before
+  the platform emits a `504`; the exact margin and configuration remain unproven until a future
+  changed-seam smoke test and are not selected in this docs-only correction;
 - test the first-generation memory ladder `128 MiB` → `256 MiB` → `512 MiB` and select the first
   value that passes cold-start health/readiness and fixture smoke; do not claim a passing size in
   this docs-only slice;
@@ -581,11 +576,15 @@ resource deletion must precede project shutdown.
 
 ### Decision and fresh-approval gates
 
-**ACCEPTABLE AFTER OWNER APPROVAL**, with explicit residual financial risk and no hard zero-spend
-containment. Approval must name the redacted account/billing context, selected display name and exact
-project ID, Bangkok region, safe-stop boundary, and acceptance of Paid-account overage risk.
+**REJECT FOR CURRENT DEPLOYMENT.** The candidate Paid account has no credible hard USD/VND `0`
+spending cap, while the owner authorizes gifted/free credit only and explicitly prohibits fees and
+overage. Budgets, quotas, maximum instances, rate limits, deletion, and the safe-stop boundary reduce
+risk but do not satisfy that policy. Google Cloud is not selected or approved.
 
-Fresh approvals are required separately and immediately before:
+A future owner could deliberately supersede the zero-fee/no-overage policy only through a new,
+explicit acceptance of real-money overage risk. This packet does not grant or request that
+authorization. If such a new policy decision ever occurs, fresh approvals would still be required
+separately and immediately before:
 
 1. `Create Project` with the chosen display name/project ID and no organization;
 2. linking that project to candidate billing account `M*** …D627`;
@@ -595,9 +594,9 @@ Fresh approvals are required separately and immediately before:
    Cloud Run service with the exact limits above.
 
 Any different account, organization, billing account, project, region, API, architecture, paid
-feature, tax/pricing result, secret entry, or credit state invalidates the approval and requires a
-refreshed packet. This slice created no project, API, billing association, resource, deployment,
-credential, card action, or reminder.
+feature, tax/pricing result, secret entry, or credit state would invalidate any future approval and
+require a refreshed packet. This slice created no project, API, billing association, resource,
+deployment, credential, card action, or reminder.
 
 Official sources accessed 2026-07-26:
 

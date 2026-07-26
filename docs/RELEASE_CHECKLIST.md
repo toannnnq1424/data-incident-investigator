@@ -243,7 +243,8 @@ actions below remain separately scoped.
       safety, archive/sidecar rollback, capture preconditions, focused coverage, and stale Phase 8.4B
       state on the same Draft PR #54.
 - [x] Independent Windows QA passed the corrected exact branch head and local artifact evidence; PR
-      #54 then merged through exact main `73172b7e8e8b02ab9629019eac298b89e02895c2`.
+      #54 then merged through then-current main
+      `73172b7e8e8b02ab9629019eac298b89e02895c2`.
 - [x] Phase 8.6 records the legal-owner operational disposition over the captured texts and remaining
       dependency/data/API rights. C11 is `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE`; this is a
       conditional zero-cost authorization, not blanket legal clearance.
@@ -295,11 +296,14 @@ actions below remain separately scoped.
       immediately canceled pre-authorization hold that may remain visible for 7–21 days and a
       prorated selected-plan signup charge. Preserve `REJECT`, the USD 5 minimum alert, and absence
       of a spending limit/hard USD 0 cap; perform no signup.
-- [x] Correct current-state docs to exact main
+- [x] Correct the then-current Phase 8.6 state to historical main
       `73172b7e8e8b02ab9629019eac298b89e02895c2`, tree
-      `a4beb330fb528f4926eee8a538c7d2a79dab1f67`; keep Phase 8.4B identities historical, record PR #54
-      merged and PR #55 current Draft, and preserve the existing `v1.0.0-rc.1` tag/unpublished Draft
-      Release.
+      `a4beb330fb528f4926eee8a538c7d2a79dab1f67`; keep Phase 8.4B identities historical and record PR
+      #54 merged.
+- [x] Record current main
+      `c7abc652c23b532e90091b377490b27eadd7e084`, tree
+      `66e90eae74c7065c62a30a14ffeb25ef26974ea4`; PR #55 is merged historical and Draft PR #56 is the
+      current Phase 8.7 review. Preserve the existing `v1.0.0-rc.1` tag/unpublished Draft Release.
 - [x] Record `onlinelearning-484610` only as a non-mandatory existing Google Cloud reference. A later
       read-only control packet may prefer a dedicated project only if credit applicability and no
       increased fee risk are proven; require fresh owner approval for its exact name, globally unique
@@ -308,6 +312,19 @@ actions below remain separately scoped.
       same-origin service, min `0`/initial max `1`, minimum passing CPU/memory, and unavoidable-only
       Build/Artifact Registry with surplus cleanup. Exclude Agent Platform, Vertex AI, models, and
       every GCP mutation from this correction.
+
+## Phase 8.7 — Google Cloud control-packet QA correction
+
+- [x] Reject the inspected Paid-account candidate under the unchanged zero-fee/no-overage policy;
+      budgets, quotas, and maximum instances are not a hard USD/VND `0` cap.
+- [x] Keep Google Cloud unselected and unapproved. A future owner could supersede the policy only
+      through a new explicit risk acceptance; this packet is not that authorization.
+- [x] Require Cloud Run's request timeout to exceed the bounded application/API deadline by a finite
+      response margin; defer exact values to a future changed-seam smoke before deployment.
+- [x] Recommend dedicated isolation while recording reuse-versus-dedicated total cost as unknown and
+      unproven.
+- [x] Preserve all safely redacted signed-in facts, official citations, uncreated project-ID
+      candidates, and the no-Agent/Vertex/model boundary. Perform no GCP mutation.
 
 ## Phase 8 — `v1.0.0` final (not performed)
 

@@ -5594,7 +5594,8 @@ without any external GCP action.
   `a4beb330fb528f4926eee8a538c7d2a79dab1f67`; retained
   `1c32f6c913b196fc4a23055fb7da3b1482b94e5e` /
   `5c83d034f30c6d31268109277aaa455a05ff9656` only as historical Phase 8.4B evidence. Marked Phase
-  8.5 correction/QA and PR #54 completed/merged; PR #55 is the current Draft. Corrected the changelog
+  8.5 correction/QA and PR #54 completed/merged; PR #55 was the current Draft at that time. Corrected
+  the changelog
   to the existing `v1.0.0-rc.1` tag and unpublished Draft Release.
 - Recorded `onlinelearning-484610` only as a non-mandatory existing reference project and the owner's
   statement that gifted USD 300 cloud/API credit is available, without claiming signed-in
@@ -5710,8 +5711,9 @@ without any Google Cloud mutation.
   overshoot; the Paid account has no credible hard zero-spend cap. Recorded first-charge events,
   Free Tier/build/registry/network/log risks, unknown taxes, rollback/cleanup/deletion consequences,
   and the 20%-credit or 2026-09-30 safe stop boundary.
-- Labeled the packet `ACCEPTABLE AFTER OWNER APPROVAL` and required separate fresh approvals
-  immediately before Create Project, billing association, each API enablement, and build/deploy.
+- Initially labeled the packet `ACCEPTABLE AFTER OWNER APPROVAL`; independent QA later rejected that
+  conclusion because it superseded the owner's unchanged zero-fee/no-overage policy without
+  authority. The additive correction below is controlling.
 
 ### Files changed
 
@@ -5721,7 +5723,8 @@ without any Google Cloud mutation.
 
 The candidate billing account's Paid status invalidates the earlier unupgraded-trial no-charge
 assumption. Dedicated isolation is operationally preferable but does not create a hard cost boundary.
-No GCP action is authorized by this packet.
+The initial acceptance disposition is superseded by the QA correction below. No GCP action is
+authorized by this packet.
 
 ### Validation performed
 
@@ -5747,3 +5750,65 @@ decision; no guess is permitted.
 Complete bounded documentation validation and secret/full-identity review, create one additive
 commit, normal-push, create exactly one Draft PR against current main, require exact-head PR CI
 `SUCCESS`, and stop without merge or Google Cloud mutation.
+
+## 2026-07-26 — Phase 8.7 QA correction: zero-fee policy and timeout ordering
+
+### Objective
+
+Correct the three independent Windows QA blocker groups on the same implementation branch and Draft
+PR #56 without GCP mutation or runtime work.
+
+### Completed
+
+- Changed the inspected Google Cloud Paid-account decision to
+  `REJECT FOR CURRENT DEPLOYMENT`. The owner authorizes gifted/free credit only and no fees/overage;
+  budgets, quotas, maximum instances, rate limits, and teardown reduce risk but do not create a hard
+  USD/VND `0` cap. A future owner could supersede that policy only through a new explicit risk
+  acceptance; this packet is not that authorization.
+- Corrected timeout ordering: Cloud Run's request timeout must be strictly greater than the bounded
+  application/API deadline by a finite response margin, allowing controlled application timeout
+  output before a platform `504`. Exact margin/configuration remains unproven and deferred to a
+  future changed-seam smoke before any deployment.
+- Preserved dedicated-project isolation as the architectural preference but changed the total-cost
+  comparison with reuse to unknown/not proven.
+- Corrected current main/tree to
+  `c7abc652c23b532e90091b377490b27eadd7e084` /
+  `66e90eae74c7065c62a30a14ffeb25ef26974ea4`. PR #55 is merged historical; Draft PR #56 is the
+  current Phase 8.7 review. Older main/tree/run identities remain only as labeled historical
+  evidence.
+- Preserved safe signed-in redactions, official Google citations, three uncreated/unreserved project
+  ID candidates, and the no-Agent Platform/Vertex/model boundary.
+
+### Files changed
+
+`docs/DEPLOYMENT.md`, `docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md`,
+`docs/DEVPOST_REQUIREMENTS.md`, `docs/PUBLIC_SOURCE_APACHE_READINESS.md`,
+`docs/RELEASE_CHECKLIST.md`, and this session log only.
+
+### Decisions
+
+Google Cloud is not selected or approved. The current public-repository fixture quickstart remains
+the zero-fee path. No new task, branch, PR, or external resource is created.
+
+### Validation performed
+
+Changed-file Prettier, `git diff --check`, exact seven-document allowlist, strict
+UTF-8/LF/final-newline/no-BOM, local Markdown links, and added-line secret/full-identity/private-path/
+conflict/debug scans pass. Focused contradiction scans find no controlling acceptance disposition,
+inverted timeout ordering, unqualified cost-equivalence claim, or current-Draft PR #55 claim.
+
+### Validation intentionally deferred
+
+Full/runtime suite, build, changed-seam timeout smoke, browser E2E, live DataHub, and every GCP
+project/API/billing/resource/card/deploy/reminder mutation.
+
+### Known issues
+
+No proven public full-stack provider with hard zero-spend containment exists. Exact Cloud Run timeout
+margin/configuration and reuse-versus-dedicated total cost remain unproven.
+
+### Exact next step
+
+Run bounded docs validation, create one additive commit, normal-push the same branch, keep only Draft
+PR #56, wait for exact-new-head CI `SUCCESS`, update the existing PR body with only that final run/job,
+and return for the same Windows QA re-review without merge or GCP mutation.
