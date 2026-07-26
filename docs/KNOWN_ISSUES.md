@@ -65,8 +65,12 @@ Last updated: 2026-07-26.
   `e4ddbb8277f430ed1da4593c9f19ca89f1aa39fb`. Exact-main CI run `30178465331`, job
   `89731006555`, is `SUCCESS`. C10 remains `PASS`: signed-in GitHub shows `Public`, default `main`,
   enabled private vulnerability reporting, and the retained Phase 8.4B branch/conversation. The RC
-  tag and unpublished Draft Release with zero user-uploaded assets remain retained; Pages is disabled
-  and no deployment is claimed.
+  tag and unpublished Draft Release with zero user-uploaded assets remain retained. At that
+  historical Phase 8.4B GitHub-only checkpoint, GitHub Pages was disabled and no GitHub Pages or
+  GitHub Environment deployment was claimed. GitHub Pages remains disabled; separately, the
+  owner-approved external public Cloud Run deployment now exists from immutable Draft PR source
+  `3653cf6b591eed76ad6276d07b1ea08e88d7fa4f`, remains unmerged/not current main, and is governed by
+  the Phase 8.7 Paid-account cost and shutdown boundaries.
 
   The prior GitHub private-reporting blocker is closed. At 2026-07-26 05:22 ICT, authenticated
   Settings showed the enabled control as `Disable private vulnerability reporting`, Security overview
