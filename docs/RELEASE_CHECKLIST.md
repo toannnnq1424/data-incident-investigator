@@ -242,12 +242,72 @@ actions below remain separately scoped.
       `bde288112f504c2067ff85499337d9315c30c432`; correct frozen identity binding, Windows path/link
       safety, archive/sidecar rollback, capture preconditions, focused coverage, and stale Phase 8.4B
       state on the same Draft PR #54.
-- [ ] Require independent Windows QA over the exact branch head and local artifact evidence.
-- [ ] Obtain a legal-owner disposition over the captured texts and remaining dependency/data/API
-      rights before any artifact publication, attachment, distribution, or Devpost submission. C11
-      remains `PARTIAL` until that owner gate is recorded.
-- [ ] Keep the RC tag immutable, Draft Release unpublished with no user-uploaded assets, and all local
+- [x] Independent Windows QA passed the corrected exact branch head and local artifact evidence; PR
+      #54 then merged through exact main `73172b7e8e8b02ab9629019eac298b89e02895c2`.
+- [x] Phase 8.6 records the legal-owner operational disposition over the captured texts and remaining
+      dependency/data/API rights. C11 is `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE`; this is a
+      conditional zero-cost authorization, not blanket legal clearance.
+- [x] Keep the RC tag immutable, Draft Release unpublished with no user-uploaded assets, and all local
       artifact outputs unuploaded.
+
+## Phase 8.6 — zero-cost rights and deployment preflight
+
+- [x] Start from exact fetched `origin/main`
+      `73172b7e8e8b02ab9629019eac298b89e02895c2`, tree
+      `a4beb330fb528f4926eee8a538c7d2a79dab1f67`, ordered parents
+      `1c32f6c913b196fc4a23055fb7da3b1482b94e5e` then
+      `0b37e8a3235f0db0af8d84cbaaa2fd35cc48ddbd`; verify main CI `30188091600` /
+      `89756253516` `SUCCESS` and PR #54 merged.
+- [x] Reverify Public visibility, enabled Private vulnerability reporting, the unpublished Draft RC
+      with only two automatic source archives, and no deployment environment.
+- [x] Record the owner's no-fee operational authorization and fail closed on paid quota, larger
+      runner, paid storage/package/domain/hosting/DataHub Cloud/API, or model/API fees.
+- [x] Set C11 to `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE`: Phase 8.5 technical attribution passes,
+      and zero-cost distribution is authorized only for the exact verified artifact with deterministic
+      notices/manifest/verifier, synthetic/authorized data, and authorized DataHub/API access. Preserve
+      the non-embedded `abstract-logging@2.0.1` caveat and make no blanket legal conclusion.
+- [x] Preserve fixture mode as the recommended credential-free path; prohibit production/customer/
+      confidential/PII/proprietary metadata, unauthorized endpoints or credentials, paid DataHub
+      Cloud/API, and any `DATAHUB_TOKEN` commit/log.
+- [x] Record official 2026-07-26 DataHub OSS/MCP and GitHub Actions/Pages evidence. Standard runners
+      for the Public repository are free; larger runners are charged. Pages is available on GitHub
+      Free for Public repositories and provides HTTPS static hosting, but cannot run the Fastify API.
+- [x] Select the Public repository plus a later timed fixture quickstart as the immediate zero-cost
+      judge path. Leave public full-stack deployment unselected until a provider-specific zero-spend
+      packet, account identity, HTTPS/same-origin `/api`/probe/rollback/judge-access validation, and
+      fresh owner approval exist.
+- [x] Do not deploy, enable Pages, upload/publish/distribute an artifact, mutate tag/version/Release,
+      enter credentials, change workflows/runtime, or submit in this slice.
+- [x] Correct the earlier “no card ever” shorthand: a card-required genuinely free trial/free tier
+      may be evaluated, but account creation, billing acceptance, card entry/storage, trial start,
+      verification hold, and auto-conversion remain unauthorized until a ten-field provider packet
+      receives fresh explicit owner approval. The owner performs sensitive card entry; agents never
+      handle or capture card/CVV/billing credentials.
+- [x] Separate official-source-backed candidates: Render Free is card-free/fail-closed without a
+      payment method but remains unselected; Koyeb Starter/Free is `REJECT` because it requires a
+      valid payment method without a hard zero-dollar limit; the unupgraded Google Cloud Free Trial
+      is `ACCEPTABLE ONLY AFTER OWNER APPROVAL`, subject to its packet and buffered cancellation
+      deadline. Do not sign up, deploy, or create a reminder in this correction.
+- [x] Preserve C11 `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE`; the expanded hosting-evaluation policy
+      does not authorize paid DataHub/API/runner/storage/domain/hosting, sensitive data, publication,
+      deployment, Ready transition, or merge.
+- [x] Close the Phase 8.6 QA provider finding: Koyeb's official Pricing FAQ records a USD 29
+      immediately canceled pre-authorization hold that may remain visible for 7–21 days and a
+      prorated selected-plan signup charge. Preserve `REJECT`, the USD 5 minimum alert, and absence
+      of a spending limit/hard USD 0 cap; perform no signup.
+- [x] Correct current-state docs to exact main
+      `73172b7e8e8b02ab9629019eac298b89e02895c2`, tree
+      `a4beb330fb528f4926eee8a538c7d2a79dab1f67`; keep Phase 8.4B identities historical, record PR #54
+      merged and PR #55 current Draft, and preserve the existing `v1.0.0-rc.1` tag/unpublished Draft
+      Release.
+- [x] Record `onlinelearning-484610` only as a non-mandatory existing Google Cloud reference. A later
+      read-only control packet may prefer a dedicated project only if credit applicability and no
+      increased fee risk are proven; require fresh owner approval for its exact name, globally unique
+      ID, owning account/organization/billing account, and `Create Project` action.
+- [x] Keep the next-slice Cloud Run recommendation to one request-billed Fastify + built Vite
+      same-origin service, min `0`/initial max `1`, minimum passing CPU/memory, and unavoidable-only
+      Build/Artifact Registry with surplus cleanup. Exclude Agent Platform, Vertex AI, models, and
+      every GCP mutation from this correction.
 
 ## Phase 8 — `v1.0.0` final (not performed)
 

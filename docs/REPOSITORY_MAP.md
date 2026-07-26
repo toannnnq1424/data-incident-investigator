@@ -1,10 +1,11 @@
 # Repository map
 
-Last verified: 2026-07-26 for Phase 8.5 from exact `main`
-`1c32f6c913b196fc4a23055fb7da3b1482b94e5e` (tree
-`5c83d034f30c6d31268109277aaa455a05ff9656`). The directory layout is unchanged; the root and six
+Last verified: 2026-07-26 for Phase 8.6 from exact `main`
+`73172b7e8e8b02ab9629019eac298b89e02895c2` (tree
+`a4beb330fb528f4926eee8a538c7d2a79dab1f67`). The directory layout is unchanged; the root and six
 private workspace manifests remain aligned at candidate version `1.0.0-rc.1` and SPDX
-`Apache-2.0`. Phase 8.5 adds a release-build-only attribution helper under `scripts`.
+`Apache-2.0`. Phase 8.5's release-build-only attribution helper remains under `scripts`; Phase 8.6
+changes only directly relevant compliance/deployment documentation.
 
 ## Directories
 

@@ -6071,3 +6071,234 @@ Deferred: broad product/full suite, evaluation, browser E2E, live DataHub, depen
 manifest/workflow mutation, tag/Release/assets/deployment/submission, legal-owner disposition,
 publication/distribution, Ready transition, merge, branch deletion, history rewrite, and any new
 task/branch/PR.
+
+### Phase 8.6 — zero-cost rights disposition and deployment preflight
+
+Status: in progress on `codex/phase-8-6-zero-cost-rights-deployment-preflight` from exact fetched
+`origin/main` `73172b7e8e8b02ab9629019eac298b89e02895c2` (tree
+`a4beb330fb528f4926eee8a538c7d2a79dab1f67`; ordered parents
+`1c32f6c913b196fc4a23055fb7da3b1482b94e5e` then
+`0b37e8a3235f0db0af8d84cbaaa2fd35cc48ddbd`). Exact main CI run `30188091600`, job
+`89756253516`, is `SUCCESS`; PR #54 is merged. Signed-in GitHub confirms `Public`, enabled Private
+vulnerability reporting, the unpublished Draft RC with only two automatic source archives, and no
+deployment environment.
+
+Objective: convert the repository owner's 2026-07-26 conditional no-fee authorization into an
+auditable operational disposition for exact Phase 8.5 artifact distribution, synthetic/authorized
+data, DataHub access, GitHub/hosting, and the continued no-model product boundary. Decide C11
+precisely without claiming blanket legal clearance, then compare truthful zero-cost deployment
+paths for the current React/Vite static web plus Fastify Node API architecture. This slice performs
+no deployment, publication, upload, service enablement, credential entry, or paid/trial setup.
+
+Minimum files:
+
+- `docs/PUBLIC_SOURCE_APACHE_READINESS.md` for the owner-authorized distribution/data/API disposition,
+  technical attribution result, residual caveats, and fail-closed no-paid/no-sensitive-data policy.
+- `docs/DEVPOST_REQUIREMENTS.md` for the qualified C11 state, rights boundary, Project URL/access
+  implications, and unchanged submission blockers.
+- `docs/DEPLOYMENT.md` for the zero-cost architecture decision matrix, selected preflight path or
+  explicit blocker, secrets/runtime/persistence/HTTPS/health/rollback/judge-access constraints, and
+  dated official-source register.
+- `docs/RELEASE_CHECKLIST.md`, `docs/KNOWN_ISSUES.md`, `docs/REPOSITORY_MAP.md`, this plan,
+  `docs/SESSION_LOG.md`, and `CHANGELOG.md` only where Phase 8.6 current-state, validation, or next
+  action must be recorded.
+- Phase 8.5 attribution/builder/verifier inputs remain read-only unless a direct inconsistency is
+  found. No runtime, test, fixture, workflow, dependency, manifest, lockfile, version, tag, Release,
+  deployment configuration, or GitHub-setting change is planned.
+
+Acceptance criteria:
+
+- Record the owner's authorization exactly as conditional operational authorization, not legal
+  advice: no fee, purchase, payment method, metered overage, paid runner/storage/package/domain/
+  hosting/DataHub Cloud/API, auto-converting trial, or other billable service. Any payment, billing,
+  upgrade, card, or material free-tier expiry/auto-conversion prompt fails closed pending new explicit
+  authorization.
+- Qualify the artifact gate as technical attribution `PASS` plus owner no-fee distribution
+  authorization only for the exact Phase 8.5 artifact with deterministic `THIRD_PARTY_NOTICES.txt`
+  and manifest/verifier enforcement. Preserve the exact five embedded MIT-declared packages and
+  `abstract-logging@2.0.1` non-embedded/missing-legal-file caveat without calling it a legal
+  conclusion or representing its code as distributed.
+- Restrict public demo/artifact data to checked-in synthetic fixtures, project-owned/generated
+  reports/assets, and operator-authorized metadata. Prohibit production/customer/confidential/PII/
+  proprietary metadata, credentials, screenshots, logs, uploads, or redistribution.
+- Authorize credential-free fixture mode and only operator-owned/authorized DataHub OSS/self-
+  controlled or challenge-provided endpoints whose terms permit the demo. Keep `DATAHUB_TOKEN`
+  operator-supplied, secret, least privilege, and unlogged; do not purchase DataHub Cloud/API, scrape
+  an unauthorized demo, or use third-party credentials. Separate Apache-2.0 source terms from
+  instance/data-owner authorization and service cost/terms.
+- Preserve deterministic zero-model behavior and absence of `OPENAI_API_KEY` use. Preserve Public
+  GitHub and standard public-repository hosted runners as authorized only while genuinely free; do
+  not enable Pages or another host in this slice.
+- Produce a dated, official-primary-source-backed matrix for static-only and full-stack options
+  covering Node/secrets needs, same-origin `/api`, persistence, free-tier/card/expiry risk, HTTPS/
+  public URL, readiness, rollback, and Devpost judge access. Recommend a path only when its current
+  zero-cost boundary is proven; otherwise state the exact blocker and fallback.
+- Keep Draft RC/tag/version, assets, environments, Pages, settings, workflows, runtime, and
+  submission unchanged. End with one additive commit, one push, exactly one conflict-free Draft PR,
+  exact-head PR CI `SUCCESS`, and no merge.
+
+Bounded validation:
+
+- Read/cite only current primary official DataHub OSS/licensing/API and GitHub public Actions/Pages/
+  hosting cost sources needed for this decision; record exact URLs and 2026-07-26 access date while
+  distinguishing licence, data-owner permission, service terms, and price.
+- Reuse Phase 8.5 evidence and run its focused contract only; verify exact five-package attribution
+  expectations, `abstract-logging` exclusion, workspace/manifests, installed/repository lock equality,
+  and byte-identical dependency/version/workflow inputs. Do not rebuild an artifact.
+- Run changed-file Markdown/Prettier checks, UTF-8/LF/final-newline/no-BOM, local-link validation,
+  exact changed-path allowlist, `git diff --check`, and added-line secret/private-path/debug/conflict
+  scans.
+- Reverify exact branch/base/HEAD/tree/parent/diff, clean worktree, no task-created outputs, processes,
+  or listeners, and GitHub non-mutation for tag/Draft Release/assets/deployment/settings/version/
+  workflow/runtime before push and handoff.
+
+Deferred: any deploy or Pages enablement; Release asset/artifact upload, publication, attachment, or
+distribution; tag/version/Release mutation; Devpost registration/form/video/submission; credential
+entry; paid or trial service; live DataHub smoke; runtime/product/dependency/workflow change; full
+suite/build/artifact rebuild/evaluation/browser E2E; Ready transition, merge, branch deletion, and
+QA-task creation.
+
+#### Phase 8.6 targeted correction — controlled card-required free-trial policy
+
+Status: additive documentation correction on the existing Phase 8.6 branch and Draft PR #55 after
+the owner's expanded 2026-07-26 authorization. The retained implementation head is
+`2cc7321ccac76e8017796d039c9abc9729a2a98c` (tree
+`0202be87753037832f1ffc54a287732d7e5dffc6`, parent/base
+`73172b7e8e8b02ab9629019eac298b89e02895c2`) with exact-head CI run `30189130287`, job
+`89758950255`, `SUCCESS`.
+
+Objective: replace the over-broad “no card ever” deployment wording with a fail-closed policy under
+which a card-required genuinely free trial/free tier may be evaluated, but no account creation,
+billing-term acceptance, card entry/storage, trial start, verification hold, or auto-conversion is
+authorized. Before any such action, require a provider-specific ten-field control packet and fresh
+explicit owner approval; the owner alone controls any sensitive card entry, and agents never
+request, read, type, copy, log, screenshot, or store card number, CVV, or billing credentials.
+
+Files: update only directly relevant Phase 8.6 disposition, deployment, Devpost, checklist,
+known-issue, session, and changelog documentation. Preserve the qualified C11 disposition and the
+Phase 8.5 artifact evidence unchanged.
+
+Acceptance:
+
+- Separate currently evidenced card-free candidates from card-required trial/free-tier candidates
+  for the actual React/Vite plus Fastify architecture, using only current official provider
+  pricing, terms, and product documentation accessed on 2026-07-26.
+- For every provider requiring signup/card/trial action, require a packet recording the exact
+  service and official signup/billing URL; owner-visible account identity; duration/start trigger
+  and compute/bandwidth/storage/build quotas; card/hold/tax/region/currency facts; conversion,
+  overage, idle, suspension, deletion, and first-billable-event behavior; cancellation/downgrade/
+  deletion steps and buffered safe deadline; budget/cap/alert controls and hard-zero-cap support;
+  retention, HTTPS/public URL, secrets, build/runtime, sleep/cold-start, and judge-access limits;
+  dated official citations; and either `ACCEPTABLE ONLY AFTER OWNER APPROVAL` or `REJECT` with reason.
+- Prefer card-free, non-expiring tiers. Mark a card-required option eligible only when official
+  evidence establishes no unavoidable fee and reliable pre-charge cancellation. Reject unavoidable
+  or non-refundable charges, mandatory paid plans, unclear pricing, uncontrollable conversion, or
+  inability to enforce zero spend.
+- Do not select or start a provider, create an account, accept terms, enter credentials/card data,
+  create a cancellation reminder, deploy, publish, upload, enable Pages, mutate GitHub state beyond
+  the existing Draft PR, or alter product/runtime/dependencies/workflows. A reminder is required only
+  after a specific provider is later approved and before its buffered cancellation deadline.
+- Preserve the existing paid DataHub Cloud/API, paid runner/storage/package/domain/hosting, and
+  OpenAI/model-fee prohibitions. End with one additive docs commit and normal push to the same branch,
+  the same conflict-free Draft PR #55, exact-new-head CI `SUCCESS`, no Ready transition, and no merge.
+
+Validation: changed-file Prettier/Markdown, UTF-8/LF/final-newline/no-BOM, local links, exact
+allowlist, official citation reachability, added-line secret/private-path/debug/conflict scans,
+`git diff --check`, and exact full/correction diff and Git identities. Rely on exact root PR CI for
+unchanged code; do not run the full suite, build, artifact rebuild, browser E2E, or live DataHub.
+
+Deferred: all signup, account identity choice, billing-term acceptance, trial activation, card or
+verification-hold action, reminder creation, deployment/publication, Release/tag/version/assets/
+settings/runtime/workflow mutation, submission, Ready transition, merge, and independent Windows QA.
+
+#### Phase 8.6 QA correction — provider hold and persistent-state truth
+
+Status: smallest additive docs-only correction on the same branch and Draft PR #55 after independent
+Windows QA returned `FAIL / DO NOT MERGE` on exact head
+`7ce7246af35aad12137bdf2bfccb0f7627902dc3` (tree
+`6d0e0b77f36b9f6116a83b05cc5df9aa2fe30b2d`, parent
+`2cc7321ccac76e8017796d039c9abc9729a2a98c`) despite exact-head CI run `30189651010`,
+job `89760450191`, `SUCCESS`.
+
+Objective: close the official Koyeb pre-authorization-hold omission and nearby current-state
+contradictions, then record existing Google Cloud project `onlinelearning-484610` only as a
+non-mandatory reference for a separate read-only control-packet slice. The owner permits a later
+deployment slice to propose a dedicated Data Incident Investigator project when it is cheaper,
+safer, and easier to clean up, but has not approved a specific name, globally unique ID, owning
+account/organization/billing account, or `Create Project` action. This is not authorization to
+open/mutate GCP Console, enable an API, change billing, upgrade a trial, create a project/resource,
+deploy, enter card data, or create a reminder.
+
+Minimum files: this plan; `docs/DEPLOYMENT.md`; `docs/DEVPOST_REQUIREMENTS.md`;
+`docs/KNOWN_ISSUES.md`; `docs/PUBLIC_SOURCE_APACHE_READINESS.md`; `CHANGELOG.md`;
+`docs/RELEASE_CHECKLIST.md`; and `docs/SESSION_LOG.md` only where the QA finding, owner selection,
+current-state truth, validation, and next action must be recorded.
+
+Acceptance:
+
+- Cite the official Koyeb Pricing FAQ and record the USD 29 pre-authorization hold, immediate
+  cancellation, and possible 7–21-day visibility in both the provider matrix and ten-field packet.
+  Preserve Koyeb `REJECT`: Starter needs a payment method, no spending limit/hard USD 0 cap exists,
+  and the minimum alert is USD 5. Remove every contradictory “hold unknown” statement.
+- Make current main consistently
+  `73172b7e8e8b02ab9629019eac298b89e02895c2` with tree
+  `a4beb330fb528f4926eee8a538c7d2a79dab1f67`; keep
+  `1c32f6c913b196fc4a23055fb7da3b1482b94e5e` /
+  `5c83d034f30c6d31268109277aaa455a05ff9656` only as clearly historical Phase 8.4B evidence.
+  Mark Phase 8.5 correction/QA/PR #54 completed and merged; identify PR #54 as historical and PR #55
+  as the current Draft. State that tag `v1.0.0-rc.1` and its unpublished GitHub Draft Release exist.
+- Record `onlinelearning-484610` as an existing reference project, not a required or selected
+  deployment target, and record the owner's statement that gifted USD 300 cloud/API credit is
+  available without claiming UI verification. Preserve the deterministic no-model boundary and
+  exclude Agent Platform, Vertex AI, and model services.
+- Recommend only for the next validation slice: one minimal request-billed Cloud Run service serving
+  Fastify plus built Vite assets and same-origin API, minimum instances 0, maximum 1 initially, and
+  the smallest CPU/memory that passes health/smoke; use Artifact Registry/Cloud Build only when
+  unavoidable and remove surplus images/build artifacts.
+- Require signed-in in-app Browser read-only verification before any GCP mutation: visible account
+  identity; billing/trial/paid status; exact remaining credit/expiry; official region/free-tier
+  eligibility; first billable event and over-credit behavior; non-capping budgets, quotas/caps,
+  cancellation/deletion steps; exact Console URLs; and every API/service to enable. Require fresh
+  owner approval if real-money billing can occur. Never handle or capture card/CVV/billing
+  credentials.
+- Before any project creation, require the packet to propose a non-PII/non-credential display name
+  and globally unique project ID; identify the exact Google account, organization, and billing
+  account that would own it for owner confirmation; prove whether the free-trial credit applies;
+  enumerate minimum APIs, quota/budget/region, and first billable event; compare reuse of
+  `onlinelearning-484610` against a dedicated project for isolation, cleanup, quota, and fee risk;
+  and document resource/project deletion, rollback, and retention effects. Prefer a dedicated project
+  only if official evidence proves credit applicability without increased fee risk; otherwise stop.
+  Obtain fresh explicit approval immediately before `Create Project`.
+- Preserve C11 `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE`; no signup, card/trial action, GCP Console
+  mutation, API enablement, billing change, resource creation, deployment, reminder, publication,
+  Ready transition, merge, reset, amend, rebase, force-push, or duplicate PR.
+
+Validation: changed-file Prettier, UTF-8/LF/final-newline/no-BOM, local links and official citation
+reachability, exact allowlist, secret/private-path/debug/conflict scans, `git diff --check`, and
+full/correction Git identity/diff checks. Rely on exact root PR CI; do not run build, tests, artifact
+rebuild, browser E2E, live DataHub, or GCP Console.
+
+Deferred: the complete signed-in GCP control packet, account/billing/credit verification, all GCP
+mutation, deployment design validation, reminder creation, independent QA re-review, Ready, and
+merge.
+
+#### Phase 8.6 QA re-review correction — Devpost current-main identity
+
+Status: smallest additive docs-only correction on the same branch and Draft PR #55 after independent
+Windows QA found one remaining current-state contradiction on exact head
+`c9f6aeb0af14c509dbec0015857a114c567eb53d`.
+
+Objective: in `docs/DEVPOST_REQUIREMENTS.md`, replace the stale Phase 8.4B identity where it is still
+called exact current main with exact current main
+`73172b7e8e8b02ab9629019eac298b89e02895c2`, tree
+`a4beb330fb528f4926eee8a538c7d2a79dab1f67`, and label the retained
+`1c32f6c913b196fc4a23055fb7da3b1482b94e5e` /
+`5c83d034f30c6d31268109277aaa455a05ff9656` pair explicitly as historical Phase 8.4B evidence.
+
+Acceptance: correct only proven stale current-main wording; preserve C11, GCP, Koyeb, distribution,
+deployment, and no-mutation policy; run focused docs formatting/link/EOL/diff/secret scans; create
+one additive commit and normal-push the same branch; retain Draft PR #55 without Ready or merge; and
+require exact-new-head PR CI `SUCCESS`.
+
+Deferred: all runtime/build/test/artifact/live DataHub/GCP work, external deployment or publication,
+signup/card/trial action, PR Ready transition, merge, and independent Windows QA re-review.

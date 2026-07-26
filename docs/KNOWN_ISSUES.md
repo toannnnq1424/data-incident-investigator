@@ -2,6 +2,35 @@
 
 Last updated: 2026-07-26.
 
+- Phase 8.5 is integrated through exact normal merge
+  `73172b7e8e8b02ab9629019eac298b89e02895c2`, tree
+  `a4beb330fb528f4926eee8a538c7d2a79dab1f67`, with ordered parents
+  `1c32f6c913b196fc4a23055fb7da3b1482b94e5e` then
+  `0b37e8a3235f0db0af8d84cbaaa2fd35cc48ddbd`; exact main CI run `30188091600`, job
+  `89756253516`, is `SUCCESS`. PR #54 is merged. Phase 8.6 records C11 as
+  `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE`: technical attribution passes and the owner authorizes
+  only zero-cost distribution of the exact verified artifact with synthetic/authorized data and
+  authorized zero-cost DataHub/API access. This is operational authorization, not blanket legal
+  clearance. `abstract-logging@2.0.1` remains non-embedded and its missing packaged legal file remains
+  a documented caveat.
+
+  No public full-stack provider is selected. GitHub Pages is available for the Public repository but
+  is static-only and cannot run Fastify or the same-origin `/api` proxy. The immediate zero-cost judge
+  path remains the Public repository plus a later timed credential-free fixture quickstart. Official
+  evidence identifies Render Free as a card-free candidate, rejects Koyeb Starter/Free for lack of a
+  hard zero-dollar cap, and makes the unupgraded Google Cloud Free Trial eligible only after a
+  provider-specific ten-field packet and fresh owner approval. Account identity and repository-
+  specific runtime/judge-window validation remain open. Phase 8.6 performs no signup, card/trial
+  action, reminder, deploy, Pages enablement, credential entry, artifact upload/publication, or
+  submission.
+
+  Koyeb's official Pricing FAQ additionally documents a USD 29 pre-authorization hold that is
+  immediately canceled but may remain visible for 7–21 days, plus a prorated selected-plan charge at
+  signup; Koyeb remains `REJECT`. The owner identifies `onlinelearning-484610` only as an existing
+  Google Cloud reference project and permits a later packet to propose a dedicated project. Neither
+  is selected for mutation. Fresh approval of the exact project name/ID and owning
+  account/organization/billing account is required immediately before any `Create Project` action.
+
 - Phase 8.4A is integrated through exact normal merge
   `36d4205806597ae14b7306c74e1527c284202023`, tree
   `876899895449981f3c4dd3981ef76ba64597d1bd`, with ordered parents
@@ -39,18 +68,20 @@ Last updated: 2026-07-26.
 
   `abstract-logging@2.0.1` is not embedded: the API output preserves external imports and the archive
   excludes `node_modules`. Its missing legal file therefore does not enter the bundled notice, but it
-  remains a broader production-install/C11 legal-owner caveat. C11 and Phase 8.2 remain `PARTIAL`;
-  captured declarations/texts are engineering evidence, not compatibility or legal approval.
-  Artifact publication/distribution remains unauthorized pending independent QA and the legal owner
-  deciding whether the captured evidence resolves the remaining rights/obligation gate. See
+  remains a broader production-install/C11 caveat. Phase 8.2 remains `PARTIAL`; captured
+  declarations/texts are engineering evidence, not compatibility or legal approval. The newer
+  Phase 8.6 qualified owner disposition supersedes the historical C11 `PARTIAL/BLOCKED` state only
+  within its exact zero-cost artifact/data/API scope. See
   [`PUBLIC_SOURCE_APACHE_READINESS.md`](PUBLIC_SOURCE_APACHE_READINESS.md).
 
   Independent Windows QA returned `FAIL / DO NOT MERGE` on Phase 8.5 head
   `bde288112f504c2067ff85499337d9315c30c432`: package identity was not yet bound to the frozen virtual
   store, Windows path/link/output atomicity was incomplete, five-package/exclusion coverage was too
-  narrow, and three Phase 8.4B state documents remained stale. The additive correction is under
-  validation on the same Draft PR #54. No artifact may be published or distributed before the same
-  QA re-review passes and the separate legal-owner disposition is recorded.
+  narrow, and three Phase 8.4B state documents remained stale. This is historical: the additive
+  correction passed independent QA, PR #54 merged through exact current main
+  `73172b7e8e8b02ab9629019eac298b89e02895c2`, and Phase 8.6 records the qualified owner
+  disposition. Current Draft PR #55 is the rights/deployment preflight and remains unmerged; no
+  artifact is published or deployed.
 
 - Phase 8.2 is integrated as `aa8d120205fdc35298b9ef36c7dd36b38b23e342` through main merge
   `7f05888ce7266f51b5028f5ac5ddacd3a91a11aa`; exact main CI run `30161661962`, job

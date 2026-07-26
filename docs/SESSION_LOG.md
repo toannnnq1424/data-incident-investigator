@@ -5425,3 +5425,258 @@ amend/rebase, run exactly one new clean-head local-only artifact build and archi
 repeatability inspection, delete all generated evidence, normal-push the same branch, update Draft PR
 #54, require exact-new-head CI including `test:release-artifact` terminal `SUCCESS`, and return
 `READY FOR SAME WINDOWS QA RE-REVIEW` without merge or publication.
+
+## 2026-07-26 — Phase 8.6 zero-cost rights and deployment preflight
+
+### Objective
+
+Convert the repository owner's conditional no-fee authorization into an auditable disposition for
+the exact Phase 8.5 artifact, public demo data, DataHub/API access, GitHub/hosting, and the continued
+zero-model boundary. Decide C11 without claiming blanket legal clearance and identify the next
+truthful zero-cost path for the current React/Vite plus Fastify architecture without deploying or
+publishing anything.
+
+### Completed
+
+- Ran the tracked Windows bootstrap. Node `24.14.0`, pnpm `11.9.0`, the frozen install, and lock
+  policy check completed; the script's final `pnpm exec` Prettier probe failed because that invocation
+  did not resolve the installed root binary. Direct `node_modules/.bin/prettier.CMD` resolution and
+  changed-file formatting/checks pass. No manifest or lockfile changed.
+- Fetched and verified exact `origin/main`/default main
+  `73172b7e8e8b02ab9629019eac298b89e02895c2`, tree
+  `a4beb330fb528f4926eee8a538c7d2a79dab1f67`, ordered parents
+  `1c32f6c913b196fc4a23055fb7da3b1482b94e5e` then
+  `0b37e8a3235f0db0af8d84cbaaa2fd35cc48ddbd`. Signed-in GitHub confirmed main CI
+  `30188091600` / job `89756253516` `SUCCESS`, PR #54 merged, Public visibility, enabled Private
+  vulnerability reporting, the unpublished Draft RC with only automatic source zip/tar archives,
+  and no deployment environment. Created only
+  `codex/phase-8-6-zero-cost-rights-deployment-preflight` from that exact main.
+- Reused the exact Phase 8.5 engineering evidence. The focused release-artifact contract passes
+  15/15; repository and installed lockfiles are byte-identical at SHA-256
+  `e36baa3fe1899c4f58cc66eeeaea279601e5be271690b6fa215273740e4ac107`; the exact five
+  embedded package roots and separate `abstract-logging@2.0.1` root resolve from the frozen graph.
+- Recorded C11 as `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE`: technical attribution passes and the
+  owner authorizes zero-cost distribution only for the exact verified Phase 8.5 artifact with
+  deterministic `THIRD_PARTY_NOTICES.txt`/manifest/verifier enforcement, synthetic or otherwise
+  authorized data, and authorized zero-cost DataHub/API access. The non-embedded
+  `abstract-logging@2.0.1` missing-legal-file caveat remains; no blanket legal clearance is claimed.
+- Recorded the fail-closed no-fee/no-sensitive-data policy, operator-owned/authorized DataHub
+  instance boundary, secret least-privilege `DATAHUB_TOKEN`, prohibition on paid DataHub Cloud/API
+  and unauthorized demo scraping, and the unchanged zero-model/no-`OPENAI_API_KEY` boundary.
+- Read current primary official DataHub OSS/MCP and GitHub Actions/Pages/HTTPS sources. Source
+  Apache-2.0 terms are separated from instance/data-owner permission and service cost. Standard
+  GitHub-hosted runners for the Public repository are free while larger runners are charged; Pages
+  is available for Public repositories on GitHub Free but is static-only.
+- Added the architecture decision matrix. The immediate zero-cost judge path is the already-Public
+  repository plus a later timed credential-free fixture quickstart. Pages alone cannot run Fastify
+  or same-origin `/api`; no full-stack public host is selected until card-free, non-expiring/
+  non-metered operation, HTTPS, probes, rollback, and access through judging are proven.
+
+### Files changed
+
+`CHANGELOG.md`; `docs/DEPLOYMENT.md`; `docs/DEVPOST_REQUIREMENTS.md`;
+`docs/IMPLEMENTATION_PLAN.md`; `docs/KNOWN_ISSUES.md`;
+`docs/PUBLIC_SOURCE_APACHE_READINESS.md`; `docs/RELEASE_CHECKLIST.md`;
+`docs/REPOSITORY_MAP.md`; and this session log only.
+
+### Decisions
+
+Owner authorization is operational and conditional on zero fee; it is not legal advice. C11's new
+qualified state applies only to the exact artifact/data/API scope and does not replace C12
+entrant/contributor/asset ownership attestations or authorize arbitrary data, endpoints, paid
+services, deployment, publication, or submission.
+
+No currently proven zero-cost public full-stack deployment exists. The repository quickstart is
+truthful and Devpost-permitted as a Project URL path, while GitHub Pages is insufficient for the
+current product. A full-stack Node host remains the preferred future topology only after a separate
+provider/account/cost and deployment authorization gate.
+
+### Validation performed
+
+Focused Node release-artifact contracts `15/15`; installed/repository lock equality; seven manifests
+all `1.0.0-rc.1`, `private: true`, `Apache-2.0`; unchanged runtime/workflow/test/fixture/script/
+manifest/lock inputs; changed-file Prettier; `git diff --check`; exact changed-path allowlist; strict
+UTF-8/LF/final-newline/no-BOM; local Markdown links; added-line secret/private-path/debug/conflict
+scan; no `outputs/release`; no listeners on `3001`/`5173`; and full documentation diff review.
+Final signed-in GitHub non-mutation checks reconfirmed Public, enabled Private vulnerability
+reporting, Pages disabled with source `None`, no deployment environment, and the Draft RC unchanged.
+
+### Validation intentionally deferred
+
+No full suite, build, artifact rebuild, evaluation, browser E2E, live DataHub smoke, deployment,
+Pages enablement, Release asset upload, artifact publication/distribution, credential entry,
+version/tag/Release/submission/workflow/runtime mutation, Ready transition, merge, or QA task
+creation is performed.
+
+### Known issues
+
+The tracked bootstrap's final Prettier lookup remains an environment/tool-resolution issue despite
+the successful frozen install and direct binary validation. C12 ownership/asset attestations,
+live/judge named DataHub integration evidence, a timed clean judge quickstart, final video/form
+materials, and a proven zero-cost full-stack host remain open. `abstract-logging@2.0.1` remains a
+documented non-embedded missing-legal-file caveat.
+
+### Exact next step
+
+Complete final non-mutation/state checks, mark the Phase 8.6 no-mutation checklist item complete,
+create one conventional documentation commit, normal-push the branch, create exactly one Draft PR
+against current `main`, require exact-head PR CI `SUCCESS`, confirm conflict-free/no duplicate/no
+external mutation, and return `READY FOR INDEPENDENT WINDOWS QA` for controller reuse of QA task
+`019f8401-5db4-7bd3-b4df-f8ff379d07dc`.
+
+## 2026-07-26 — Phase 8.6 controlled-card policy correction
+
+### Objective and retained state
+
+Continue the same implementation branch and Draft PR #55 from exact head
+`2cc7321ccac76e8017796d039c9abc9729a2a98c`, tree
+`0202be87753037832f1ffc54a287732d7e5dffc6`, parent/base
+`73172b7e8e8b02ab9629019eac298b89e02895c2`; retained exact CI run `30189130287`,
+job `89758950255`, was `SUCCESS`. Correct only the earlier “no card ever” shorthand after the
+owner expanded authorization, without changing C11, selecting a provider, or performing any
+signup/card/trial/deployment action.
+
+### Completed
+
+- Recorded that a card-required genuinely free trial/free tier may be considered, but account
+  creation, billing-term acceptance, card entry/storage, trial start, verification hold, and
+  auto-conversion require a provider-specific ten-field control packet and fresh explicit owner
+  approval. The owner alone performs sensitive card entry; agents never handle or capture card,
+  CVV, or billing credentials.
+- Added the mandatory provider packet fields, fail-closed acceptance/rejection rules, and the later
+  reminder requirement. No reminder was created because no provider was selected or approved.
+- Reviewed only current official provider sources accessed 2026-07-26. Render Free is a card-free
+  candidate whose no-payment-method path suspends/stops on overage rather than billing; it remains
+  unselected pending named account identity and repository-specific validation. Koyeb Starter/Free
+  is `REJECT` because a valid payment method is required and no hard zero-dollar spending limit
+  exists. The unupgraded Google Cloud Free Trial is `ACCEPTABLE ONLY AFTER OWNER APPROVAL`: it has a
+  documented USD 300/90-day non-converting trial and USD 0–1 temporary authorization, but budgets do
+  not cap spending and any paid-account upgrade remains prohibited.
+- Preserved the already-Public repository plus later timed fixture quickstart as the immediate
+  zero-cost judge path. Preserved C11 `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE`, all data/API/secret
+  boundaries, paid DataHub/runner/storage/domain/hosting prohibitions, and the no-model boundary.
+
+### Files changed
+
+`CHANGELOG.md`; `docs/DEPLOYMENT.md`; `docs/DEVPOST_REQUIREMENTS.md`;
+`docs/IMPLEMENTATION_PLAN.md`; `docs/KNOWN_ISSUES.md`;
+`docs/PUBLIC_SOURCE_APACHE_READINESS.md`; `docs/RELEASE_CHECKLIST.md`; and this session log only.
+
+### Validation boundary and next step
+
+This is a documentation-only additive correction. Changed-file Prettier, strict UTF-8/LF/final-
+newline/no-BOM, local-link and official-citation reachability, secret/private-path/debug/conflict,
+exact allowlist, and `git diff --check` validations pass. Full diff review confirms eight allowed
+documentation files only. The full suite, build, artifact rebuild, evaluation, browser E2E, and live
+DataHub are intentionally not run. Next create one additive commit, normal-push the same branch,
+update only Draft PR #55, and require exact-new-head CI `SUCCESS`; do not Ready, merge, deploy,
+publish, sign up, enter a card, or create a cancellation reminder.
+
+## 2026-07-26 — Phase 8.6 QA provider/state correction
+
+### Objective
+
+Close independent Windows QA `FAIL / DO NOT MERGE` findings on exact head
+`7ce7246af35aad12137bdf2bfccb0f7627902dc3`, tree
+`6d0e0b77f36b9f6116a83b05cc5df9aa2fe30b2d`, while preserving its successful CI run
+`30189651010` / job `89760450191`, the same branch, and Draft PR #55. Correct the Koyeb hold,
+nearby persistent-state contradictions, and record the owner's clarified Google Cloud direction
+without any external GCP action.
+
+### Completed
+
+- Corrected Koyeb from “hold unknown” to the official USD 29 pre-authorization hold, immediate
+  cancellation, and possible 7–21-day issuer visibility. Also recorded the official prorated
+  selected-plan signup charge. Koyeb remains `REJECT`: valid payment method required, no spending
+  limit/hard USD 0 cap, and minimum alert USD 5. No signup occurred.
+- Corrected current main/tree to
+  `73172b7e8e8b02ab9629019eac298b89e02895c2` /
+  `a4beb330fb528f4926eee8a538c7d2a79dab1f67`; retained
+  `1c32f6c913b196fc4a23055fb7da3b1482b94e5e` /
+  `5c83d034f30c6d31268109277aaa455a05ff9656` only as historical Phase 8.4B evidence. Marked Phase
+  8.5 correction/QA and PR #54 completed/merged; PR #55 is the current Draft. Corrected the changelog
+  to the existing `v1.0.0-rc.1` tag and unpublished Draft Release.
+- Recorded `onlinelearning-484610` only as a non-mandatory existing reference project and the owner's
+  statement that gifted USD 300 cloud/API credit is available, without claiming signed-in
+  verification. A later packet may propose a dedicated project if official evidence proves credit
+  applicability without increased fee risk.
+- Required the next read-only control packet to name a non-PII/non-credential project display name
+  and globally unique ID, exact owning Google account/organization/billing account, credit linkage,
+  minimum APIs, region/quota/budget/first-billable-event facts, reuse-versus-dedicated isolation/
+  cleanup/quota/fee comparison, and deletion/rollback/retention effects. Fresh owner approval remains
+  mandatory immediately before `Create Project`.
+- Preserved the next-slice technical recommendation: one minimal request-billed Cloud Run service
+  serving Fastify plus built Vite assets/same-origin API, min instances `0`, initial max `1`, smallest
+  passing CPU/memory, and unavoidable-only Cloud Build/Artifact Registry with surplus cleanup.
+  Agent Platform, Vertex AI, and model services remain excluded.
+
+### Files changed
+
+`CHANGELOG.md`; `docs/DEPLOYMENT.md`; `docs/DEVPOST_REQUIREMENTS.md`;
+`docs/IMPLEMENTATION_PLAN.md`; `docs/KNOWN_ISSUES.md`;
+`docs/PUBLIC_SOURCE_APACHE_READINESS.md`; `docs/RELEASE_CHECKLIST.md`; and this session log.
+
+### Decisions
+
+C11 remains `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE`. Permission in principle to consider a
+dedicated project is not approval of a concrete name/ID/account or project creation. This correction
+does not access or mutate GCP Console, enable an API, change billing/trial state, create a
+project/resource, enter card data, deploy, or create a reminder.
+
+### Validation performed
+
+Changed-file Prettier, UTF-8/LF/final-newline/no-BOM, local links, official Koyeb citation
+reachability, exact eight-path allowlist, added-line secret/private-path/debug/conflict scans, full
+diff review, and `git diff --check` pass. Targeted contradiction scans find no remaining “Koyeb hold
+unknown”, current Draft PR #54, or absent RC tag/Release claim in current Phase 8 documentation.
+
+### Validation intentionally deferred
+
+Full suite, build, artifact rebuild, evaluation, browser E2E, live DataHub, signed-in GCP read-only
+packet, every GCP mutation, deployment, and independent QA re-review.
+
+### Known issues
+
+The exact Google account/organization/billing identity, Free Trial versus Paid state, remaining
+credit/expiry, new-project credit applicability, region/free-tier eligibility, first billable event,
+hard-cap absence, and reuse-versus-dedicated choice remain unverified until the authorized next
+read-only Browser slice.
+
+### Exact next step
+
+Pass docs/static validation, create one additive commit, normal-push the same branch, update only
+Draft PR #55, require exact-new-head CI `SUCCESS`, and return for the same independent Windows QA
+re-review without Ready or merge.
+
+## 2026-07-26 — Phase 8.6 QA re-review current-main correction
+
+### Summary
+
+On the same implementation branch and Draft PR #55, corrected the only remaining Devpost
+current-state contradiction reported by independent Windows QA on exact head
+`c9f6aeb0af14c509dbec0015857a114c567eb53d`.
+
+### Files changed
+
+`docs/DEVPOST_REQUIREMENTS.md`, `docs/IMPLEMENTATION_PLAN.md`, and this session log.
+
+### Decisions
+
+- The current main identity in the product-facts block is now
+  `73172b7e8e8b02ab9629019eac298b89e02895c2`, tree
+  `a4beb330fb528f4926eee8a538c7d2a79dab1f67`.
+- The retained `1c32f6c913b196fc4a23055fb7da3b1482b94e5e` /
+  `5c83d034f30c6d31268109277aaa455a05ff9656` identity is explicitly historical Phase 8.4B
+  evidence, not current main.
+- C11, GCP, Koyeb, distribution, deployment, and fail-closed no-mutation policy are unchanged.
+
+### Validation performed
+
+Focused changed-file Prettier, UTF-8/LF/final-newline/no-BOM, local-link, exact-path allowlist,
+secret/private-path/debug/conflict scans, stale-current-main search, full diff review, and
+`git diff --check`. No build, tests, artifact rebuild, browser E2E, live DataHub, or GCP access.
+
+### Exact next step
+
+Create one additive commit, normal-push the same branch, keep Draft PR #55 Draft/unmerged, require
+exact-new-head PR CI `SUCCESS`, and return for the same independent Windows QA re-review.
