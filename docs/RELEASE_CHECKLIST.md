@@ -6,7 +6,8 @@ actions below remain separately scoped.
 
 ## Repository
 
-- [ ] GitHub repository is public and default branch is protected as appropriate.
+- [x] GitHub repository is Public and default branch remains `main`.
+- [ ] Default branch protection is configured as appropriate.
 - [x] README setup works from a clean dependency baseline through the tracked frozen bootstrap.
 - [x] Apache-2.0 licence, contributing guide, architecture, and known limitations are integrated on
       exact `main`; GitHub detects `Apache-2.0` and exact-main CI is successful.
@@ -91,8 +92,8 @@ actions below remain separately scoped.
       judge-accessible endpoint/auth plan; named-integration compliance remains `PARTIAL` until then.
 - [x] The user explicitly authorized Apache-2.0 on 2026-07-25; Phase 8.4A is integrated on exact main
       with successful exact-main CI and GitHub detected-license evidence.
-- [ ] The independently approved Public mutation remains in Phase 8.4B Stage 1 preflight. Change
-      visibility only after independent QA and explicit same-task continuation.
+- [x] The independently approved Public transition is integrated; authenticated GitHub confirms
+      Public visibility and enabled Private vulnerability reporting on exact current `main`.
 - [ ] An entrant gate verifies eligibility, team/representative mode, registration, live form fields,
       disclosures, consent, and final submission receipt.
 - [ ] A judge-access gate supplies a free testable Project URL/path through
@@ -148,9 +149,9 @@ actions below remain separately scoped.
 - [x] Correct the attribution boundary: the archive omits the `node_modules` directory but includes
       complete `apps/web/dist` with bundled third-party runtime code; 0 dependency NOTICE files does
       not settle MIT/ISC/BSD notice obligations.
-- [ ] Before publishing or distributing a release artifact, determine packages actually embedded in
-      the exact web output, capture required copyright/permission notices with upstream provenance,
-      and add a third-party attribution file plus builder/verifier/test enforcement only if justified.
+- [x] Phase 8.5 determines the exact positive rendered package/module contributions, captures
+      package/source/legal-file provenance, and adds deterministic `THIRD_PARTY_NOTICES.txt` plus
+      builder/verifier/test enforcement.
 - [x] Independent QA, normal merge, exact-main CI success, and GitHub Apache-2.0 detection are
       complete; C09 is `PASS`.
 - [x] Phase 8.4A kept C10 Public `OPEN`, C11 `PARTIAL`, and Phase 8.2 `PARTIAL`; it executed no
@@ -211,6 +212,32 @@ actions below remain separately scoped.
 - [ ] Verify exact merge SHA/tree/ordered parents, `origin/main`, and default `main` equal that merge;
       require exact merge-head main CI `SUCCESS`; finally confirm the repository remains `Public` and
       the task branch/conversation remain retained.
+
+## Phase 8.5 — exact bundled-output attribution
+
+- [x] Start from exact fetched `origin/main`
+      `1c32f6c913b196fc4a23055fb7da3b1482b94e5e`; verify main CI run `30178465331`, job
+      `89731006555`, `SUCCESS`, Public visibility, default `main`, and enabled Private vulnerability
+      reporting.
+- [x] Require the installed pnpm lock to byte-match repository `pnpm-lock.yaml` before the release
+      build.
+- [x] Record exact positive rendered-module provenance from Vite/Rollup and fail closed on unknown
+      virtual modules, missing/ambiguous package legal files, or potential unattributed
+      non-JavaScript asset contributions.
+- [x] Attribute the exact web output to `react@19.2.7`, `react-dom@19.2.7`,
+      `scheduler@0.27.0`, `vite@7.3.6`, and `zod@4.4.3`; all five declare MIT and have one verified
+      top-level licence file with no top-level NOTICE.
+- [x] Prove `abstract-logging@2.0.1` is absent from the bundled output. Its missing package legal file
+      remains a non-bundled production-install/C11 legal-owner caveat.
+- [x] Generate deterministic `THIRD_PARTY_NOTICES.txt`; bind exact package/module/output/source/legal
+      provenance and hashes into manifest schema v2; enforce exact content and membership for archive
+      and extracted-directory verification.
+- [ ] Require independent Windows QA over the exact branch head and local artifact evidence.
+- [ ] Obtain a legal-owner disposition over the captured texts and remaining dependency/data/API
+      rights before any artifact publication, attachment, distribution, or Devpost submission. C11
+      remains `PARTIAL` until that owner gate is recorded.
+- [ ] Keep the RC tag immutable, Draft Release unpublished with no user-uploaded assets, and all local
+      artifact outputs unuploaded.
 
 ## Phase 8 — `v1.0.0` final (not performed)
 

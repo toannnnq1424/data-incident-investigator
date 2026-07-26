@@ -5,8 +5,11 @@ import { pathToFileURL } from 'node:url';
 import { gunzipSync } from 'node:zlib';
 
 const manifestName = 'RELEASE-MANIFEST.json';
+const noticeFileName = 'THIRD_PARTY_NOTICES.txt';
 const sha256Pattern = /^[0-9a-f]{64}$/;
 const commitPattern = /^[0-9a-f]{40}$/;
+const packageNamePattern =
+  /^(?:@[a-z0-9](?:[a-z0-9._-]*[a-z0-9])?\/)?[a-z0-9](?:[a-z0-9._-]*[a-z0-9])?$/;
 const semverPattern =
   /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-(?:0|[1-9A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9A-Za-z-][0-9A-Za-z-]*))*)?$/;
 const artifactNamePattern =
@@ -30,6 +33,7 @@ const requiredStaticFiles = [
   '.env.example',
   'LICENSE',
   'README.md',
+  noticeFileName,
   'package.json',
   'pnpm-lock.yaml',
   'pnpm-workspace.yaml',
@@ -113,6 +117,232 @@ export function isAllowedPayloadPath(filePath) {
   if (filePath.startsWith('apps/api/dist/')) return filePath.endsWith('.js');
   if (filePath.startsWith('apps/web/dist/')) return true;
   return false;
+}
+
+function isSafeRelativeEvidencePath(value) {
+  return (
+    typeof value === 'string' &&
+    value.length > 0 &&
+    !value.includes('\\') &&
+    !value.includes('\0') &&
+    !value.startsWith('/') &&
+    !/^[A-Za-z]:/.test(value) &&
+    value.split('/').every((segment) => segment.length > 0 && segment !== '.' && segment !== '..')
+  );
+}
+
+function isSafeInstalledEvidencePath(value) {
+  return (
+    isSafeRelativeEvidencePath(value) &&
+    (value.startsWith('node_modules/') || value.includes('/node_modules/'))
+  );
+}
+
+function isSafeModuleReference(value) {
+  return (
+    typeof value === 'string' &&
+    value.length > 0 &&
+    value.length <= 500 &&
+    !value.includes('\\') &&
+    !value.includes('\0') &&
+    !value.startsWith('/') &&
+    !/^[A-Za-z]:/.test(value) &&
+    !value.split(/[/?]/).some((segment) => segment === '.' || segment === '..')
+  );
+}
+
+function renderLegalFile(legalFile) {
+  const textWithFinalNewline = legalFile.text.endsWith('\n')
+    ? legalFile.text
+    : `${legalFile.text}\n`;
+  return [
+    `Upstream ${legalFile.kind} file: ${legalFile.path}`,
+    `Upstream ${legalFile.kind} file SHA-256: ${legalFile.sha256}`,
+    `----- BEGIN UPSTREAM ${legalFile.kind.toUpperCase()} FILE -----`,
+    textWithFinalNewline,
+    `----- END UPSTREAM ${legalFile.kind.toUpperCase()} FILE -----`,
+  ].join('\n');
+}
+
+export function createThirdPartyNotice(attribution) {
+  const sections = [
+    'THIRD-PARTY ATTRIBUTION EVIDENCE',
+    '',
+    'This file is generated deterministically from the exact rendered-module provenance of the',
+    'packaged Vite output and the installed frozen package graph. It reproduces upstream legal-file',
+    'evidence without adding legal compatibility conclusions, invented holders, or invented dates.',
+    '',
+    `Provenance method: ${attribution.method}`,
+    `Attributed package count: ${attribution.packages.length}`,
+  ];
+
+  for (const packageEntry of attribution.packages) {
+    sections.push(
+      '',
+      '='.repeat(80),
+      `${packageEntry.name}@${packageEntry.version}`,
+      `Declared license metadata: ${packageEntry.declaredLicense}`,
+      `Package manifest: ${packageEntry.packageManifest.path}`,
+      `Package manifest SHA-256: ${packageEntry.packageManifest.sha256}`,
+      'Rendered bundle contributions:',
+    );
+    for (const contribution of packageEntry.contributions) {
+      sections.push(`- ${contribution.bundlePath}`);
+      for (const module of contribution.modules) {
+        sections.push(
+          `  - ${module.path} | rendered bytes: ${module.renderedBytes} | source: ${module.sourcePath} | source SHA-256: ${module.sourceSha256}`,
+        );
+      }
+    }
+    for (const legalFile of packageEntry.legalFiles) {
+      sections.push('', renderLegalFile(legalFile));
+    }
+  }
+  sections.push('');
+  return Buffer.from(`${sections.join('\n')}\n`, 'utf8');
+}
+
+function validateThirdPartyAttribution(attribution) {
+  exactKeys(attribution, ['method', 'noticeFile', 'packages'], 'manifest thirdPartyAttribution');
+  assert(
+    attribution.method === 'vite-rollup-rendered-modules-v1',
+    'unexpected third-party attribution method',
+  );
+  assert(attribution.noticeFile === noticeFileName, 'unexpected third-party notice path');
+  assert(
+    Array.isArray(attribution.packages) && attribution.packages.length > 0,
+    'third-party package attribution must be nonempty',
+  );
+
+  let priorIdentity = '';
+  const packageManifestPaths = new Set();
+  for (const packageEntry of attribution.packages) {
+    exactKeys(
+      packageEntry,
+      ['contributions', 'declaredLicense', 'legalFiles', 'name', 'packageManifest', 'version'],
+      'third-party package attribution',
+    );
+    assert(packageNamePattern.test(packageEntry.name), 'third-party package name is invalid');
+    assert(semverPattern.test(packageEntry.version), 'third-party package version is invalid');
+    const identity = `${packageEntry.name}@${packageEntry.version}`;
+    assert(identity > priorIdentity, 'third-party packages are not uniquely sorted');
+    priorIdentity = identity;
+    assert(
+      typeof packageEntry.declaredLicense === 'string' &&
+        packageEntry.declaredLicense.trim() === packageEntry.declaredLicense &&
+        packageEntry.declaredLicense.length > 0 &&
+        packageEntry.declaredLicense.length <= 200,
+      `${identity} declared license metadata is invalid`,
+    );
+
+    exactKeys(packageEntry.packageManifest, ['path', 'sha256'], `${identity} package manifest`);
+    assert(
+      isSafeInstalledEvidencePath(packageEntry.packageManifest.path) &&
+        packageEntry.packageManifest.path.endsWith('/package.json'),
+      `${identity} package manifest provenance path is invalid`,
+    );
+    assert(
+      !packageManifestPaths.has(packageEntry.packageManifest.path),
+      `${identity} package manifest provenance is duplicated`,
+    );
+    packageManifestPaths.add(packageEntry.packageManifest.path);
+    assert(
+      sha256Pattern.test(packageEntry.packageManifest.sha256),
+      `${identity} package manifest SHA-256 is invalid`,
+    );
+
+    assert(
+      Array.isArray(packageEntry.legalFiles) && packageEntry.legalFiles.length > 0,
+      `${identity} legal-file evidence is empty`,
+    );
+    let priorLegalKey = '';
+    let licenseCount = 0;
+    for (const legalFile of packageEntry.legalFiles) {
+      exactKeys(legalFile, ['kind', 'path', 'sha256', 'text'], `${identity} legal file`);
+      assert(
+        legalFile.kind === 'license' || legalFile.kind === 'notice',
+        `${identity} legal-file kind is invalid`,
+      );
+      if (legalFile.kind === 'license') licenseCount += 1;
+      const legalKey = `${legalFile.kind === 'license' ? '0' : '1'}:${legalFile.path}`;
+      assert(legalKey > priorLegalKey, `${identity} legal files are not uniquely sorted`);
+      priorLegalKey = legalKey;
+      assert(
+        isSafeInstalledEvidencePath(legalFile.path),
+        `${identity} legal-file provenance path is invalid`,
+      );
+      assert(sha256Pattern.test(legalFile.sha256), `${identity} legal-file SHA-256 is invalid`);
+      assert(
+        typeof legalFile.text === 'string' &&
+          legalFile.text.length > 0 &&
+          !legalFile.text.includes('\0') &&
+          Buffer.from(legalFile.text, 'utf8').toString('utf8') === legalFile.text,
+        `${identity} legal-file text is invalid`,
+      );
+      assert(
+        sha256(Buffer.from(legalFile.text, 'utf8')) === legalFile.sha256,
+        `${identity} legal-file text differs from its SHA-256`,
+      );
+    }
+    assert(licenseCount === 1, `${identity} must have exactly one license file`);
+
+    assert(
+      Array.isArray(packageEntry.contributions) && packageEntry.contributions.length > 0,
+      `${identity} rendered contributions are empty`,
+    );
+    let priorBundlePath = '';
+    for (const contribution of packageEntry.contributions) {
+      exactKeys(contribution, ['bundlePath', 'modules'], `${identity} contribution`);
+      assert(
+        isSafeReleasePath(contribution.bundlePath) &&
+          contribution.bundlePath.startsWith('apps/web/dist/') &&
+          contribution.bundlePath.endsWith('.js'),
+        `${identity} bundle contribution path is invalid`,
+      );
+      assert(
+        contribution.bundlePath > priorBundlePath,
+        `${identity} bundle contributions are not uniquely sorted`,
+      );
+      priorBundlePath = contribution.bundlePath;
+      assert(
+        Array.isArray(contribution.modules) && contribution.modules.length > 0,
+        `${identity} bundle contribution modules are empty`,
+      );
+      let priorModulePath = '';
+      for (const module of contribution.modules) {
+        exactKeys(
+          module,
+          ['path', 'renderedBytes', 'sourcePath', 'sourceSha256'],
+          `${identity} module contribution`,
+        );
+        assert(
+          isSafeModuleReference(module.path) && module.path > priorModulePath,
+          `${identity} module contributions are not uniquely sorted or safe`,
+        );
+        priorModulePath = module.path;
+        assert(
+          Number.isSafeInteger(module.renderedBytes) && module.renderedBytes > 0,
+          `${identity} module rendered-byte evidence is invalid`,
+        );
+        assert(
+          isSafeRelativeEvidencePath(module.sourcePath),
+          `${identity} module source path is invalid`,
+        );
+        assert(
+          sha256Pattern.test(module.sourceSha256),
+          `${identity} module source SHA-256 is invalid`,
+        );
+      }
+    }
+  }
+}
+
+export function validateThirdPartyNotice(noticeBuffer, attribution) {
+  validateThirdPartyAttribution(attribution);
+  assert(
+    Buffer.isBuffer(noticeBuffer) && noticeBuffer.equals(createThirdPartyNotice(attribution)),
+    `${noticeFileName} content is not canonical for its manifest provenance`,
+  );
 }
 
 function readTarString(header, offset, length) {
@@ -239,11 +469,12 @@ function parseManifest(buffer) {
       'runtime',
       'schemaVersion',
       'source',
+      'thirdPartyAttribution',
       'toolchain',
     ],
     manifestName,
   );
-  assert(manifest.schemaVersion === 1, 'unsupported manifest schemaVersion');
+  assert(manifest.schemaVersion === 2, 'unsupported manifest schemaVersion');
   exactKeys(manifest.product, ['name', 'version'], 'manifest product');
   assert(manifest.product.name === 'data-incident-investigator', 'unexpected product name');
   assert(semverPattern.test(manifest.product.version), 'product version is not SemVer');
@@ -292,6 +523,7 @@ function parseManifest(buffer) {
     Array.isArray(manifest.files) && manifest.files.length > 0,
     'manifest files must be nonempty',
   );
+  validateThirdPartyAttribution(manifest.thirdPartyAttribution);
 
   let priorPath = '';
   for (const file of manifest.files) {
@@ -347,6 +579,18 @@ function validateReleaseFiles(files, manifest, context) {
   }
   for (const requiredPath of requiredStaticFiles) {
     assert(files.has(requiredPath), `${context} is missing required file ${requiredPath}`);
+  }
+  const noticeBuffer = files.get(manifest.thirdPartyAttribution.noticeFile);
+  assert(noticeBuffer, `${context} is missing ${manifest.thirdPartyAttribution.noticeFile}`);
+  validateThirdPartyNotice(noticeBuffer, manifest.thirdPartyAttribution);
+  const manifestedPaths = new Set(manifest.files.map((file) => file.path));
+  for (const packageEntry of manifest.thirdPartyAttribution.packages) {
+    for (const contribution of packageEntry.contributions) {
+      assert(
+        manifestedPaths.has(contribution.bundlePath) && files.has(contribution.bundlePath),
+        `attributed bundle path is missing from ${context}: ${contribution.bundlePath}`,
+      );
+    }
   }
 
   const rootManifest = files.get('package.json');

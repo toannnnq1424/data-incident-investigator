@@ -5237,3 +5237,102 @@ an optional governance follow-up rather than a proven Public-source blocker.
 Finish focused validation and diff review, create one additive conventional security-doc commit,
 normal-push the same branch, update Draft PR #53 with exact Git/diff/CI evidence, require exact-new-head
 PR CI `SUCCESS`, and return the still-Draft PR to the same QA task for QA2 re-review.
+
+## 2026-07-26 — Phase 8.5 exact bundled-output attribution implementation
+
+### Objective
+
+Close the technical C11 release-bundle inventory gap from exact main
+`1c32f6c913b196fc4a23055fb7da3b1482b94e5e`: identify the exact package/version code rendered into
+`apps/web/dist`, bind it to frozen installed-package and legal-file evidence, and enforce one
+deterministic attribution file through the existing release builder/verifier seam. Keep every
+artifact local-only and retain the separate legal-owner distribution decision.
+
+### Completed
+
+- Reused the tracked Windows bootstrap and verified Node `24.14.0`, pnpm `11.9.0`, frozen install,
+  exact main/base/HEAD, successful prior main CI run `30178465331` job `89731006555`, Public
+  visibility, default `main`, and enabled Private vulnerability reporting. Created only
+  `codex/phase-8-5-bundle-attribution` from that exact main.
+- Added a release-only Vite/Rollup provenance plugin. It captures deterministic chunk/module IDs and
+  positive rendered lengths, explicitly maps known Vite runtime virtual modules, rejects unknown
+  virtual modules and potential zero-rendered non-JavaScript asset contributions, and removes its
+  temporary provenance directory even when the build fails. Ordinary development/non-release builds
+  emit no provenance file.
+- Require repository and installed pnpm locks to be byte-identical. Map every positive third-party
+  contribution to its installed package manifest, declared licence, exact module source, one required
+  top-level licence file, optional top-level NOTICE files, and SHA-256 evidence. Missing or ambiguous
+  legal evidence fails the release build.
+- Generate canonical `THIRD_PARTY_NOTICES.txt` directly from captured upstream legal texts without an
+  invented holder/year, compatibility conclusion, or generic project `NOTICE`. Release-manifest
+  schema v2 binds the exact notice path/content, package/module/output paths, rendered-byte counts,
+  source hashes, manifest hashes, legal-file paths/hashes, and texts. Archive and extracted-directory
+  verification require exact content/membership and reject unsafe, malformed, reordered, or tampered
+  evidence.
+- Added focused contract coverage for deterministic reordered-input mapping, Vite virtual runtime
+  attribution, notice tampering, missing `abstract-logging@2.0.1` legal evidence, unknown virtual
+  modules, possible non-JavaScript asset contribution, exact-output cleanup, linked-root rejection,
+  and malformed archives. Added that Node contract to root `validate`, because PR CI previously did
+  not execute this `.mjs` test; no dependency, version, privacy, licence, engine, or workspace value
+  changed.
+- The adjacent web-only audit transformed 109 modules and produced
+  `apps/web/dist/assets/index-DHLGe_T9.js`. Exactly five package versions have positive rendered
+  contributions: `react@19.2.7`, `react-dom@19.2.7`, `scheduler@0.27.0`, `vite@7.3.6`, and
+  `zod@4.4.3`. All five declare MIT and have one captured top-level licence file; none has a top-level
+  NOTICE. Vite contributes its 1,168-byte module-preload runtime polyfill.
+- `abstract-logging@2.0.1` is absent from rendered web provenance. API TypeScript output preserves
+  external imports and the archive excludes `node_modules`, so its absent package legal file is not
+  embedded or reproduced in the bundle notice. It remains a broader non-bundled production-install/
+  C11 legal-owner caveat.
+
+### Files changed
+
+`README.md`; `package.json`; `apps/web/vite.config.ts`; new `scripts/bundle-attribution.mjs` and
+`scripts/bundle-attribution.d.mts`; `scripts/build-release-artifact.mjs`;
+`scripts/verify-release-artifact.mjs`; `tests/release-artifact.contract.mjs`;
+`docs/REPOSITORY_MAP.md`; `docs/DEPLOYMENT.md`; `docs/PUBLIC_SOURCE_APACHE_READINESS.md`;
+`docs/DEVPOST_REQUIREMENTS.md`; `docs/KNOWN_ISSUES.md`; `docs/RELEASE_CHECKLIST.md`;
+`docs/IMPLEMENTATION_PLAN.md`; and this session log.
+
+### Decisions
+
+The exact five-package mapping and reproduced upstream texts are engineering provenance, not legal
+advice, an Apache-compatibility conclusion, or permission to publish. C09/C10 remain `PASS`; C11 and
+Phase 8.2 remain `PARTIAL`. Artifact publication/distribution remains unauthorized pending
+independent Windows QA and a recorded legal-owner disposition over the captured texts plus remaining
+non-bundled dependency/data/API rights.
+
+The missing `abstract-logging@2.0.1` legal file does not fail the bundled-output gate because no bytes
+from that package enter the artifact; it is not erased from the broader production graph evidence.
+The root `validate` script is the only manifest change and is necessary for exact-head PR CI to run
+the newly relevant contract. No workflow, dependency, runtime behavior, tag, Release, deployment,
+submission, credential, or GitHub setting changes are authorized.
+
+### Validation performed
+
+Preliminary working-tree validation passed: focused release-artifact contracts 8/8, web typecheck,
+focused ESLint, Prettier after edits, and `git diff --check`. The adjacent web build/audit succeeded;
+its temporary provenance directory was removed. No release archive has yet been built, uploaded,
+attached, published, distributed, or deployed.
+
+### Validation intentionally deferred
+
+Broad product/full-suite, evaluation, browser E2E, live DataHub smoke, publication/distribution,
+version/tag/Release/deployment/submission mutation, Ready transition, merge, branch deletion, history
+rewrite, and independent Windows QA are not run in this implementation task. Prior unchanged greens
+are reused; exact-head PR CI will run the repository validation after push.
+
+### Known issues
+
+C11 remains `PARTIAL`: `abstract-logging@2.0.1` still lacks package legal-file evidence for the
+non-bundled production-install case, and no legal owner has yet accepted the captured licence texts
+and remaining dependency/data/API rights for distribution/submission. The local release artifact
+must remain unpublished and be deleted after evidence capture.
+
+### Exact next step
+
+Complete Node 24 focused validation, formatting/encoding/allowlist/invariant/full-diff review, create
+one additive implementation commit, build/inspect/verify exactly one clean-head artifact locally,
+remove every task-created artifact/build residue, normal-push the same branch, create exactly one
+Draft PR, require exact-head PR CI and the release-artifact contract to reach terminal `SUCCESS`, and
+return `READY FOR INDEPENDENT WINDOWS QA` without merge or publication.

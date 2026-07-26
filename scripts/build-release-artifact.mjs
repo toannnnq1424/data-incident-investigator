@@ -4,6 +4,7 @@ import {
   access,
   lstat,
   mkdir,
+  mkdtemp,
   readFile,
   readdir,
   realpath,
@@ -11,11 +12,22 @@ import {
   stat,
   writeFile,
 } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { gzipSync } from 'node:zlib';
 
-import { isSafeReleasePath, sha256 } from './verify-release-artifact.mjs';
+import {
+  bundleAttributionOutputVariable,
+  createBundleAttribution,
+  readRawBundleAttribution,
+} from './bundle-attribution.mjs';
+import {
+  createThirdPartyNotice,
+  isSafeReleasePath,
+  sha256,
+  validateThirdPartyNotice,
+} from './verify-release-artifact.mjs';
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const expectedNodeVersion = '24.14.0';
@@ -169,7 +181,7 @@ function pnpmCommand(arguments_, options = {}) {
   const result = spawnSync(command, commandArguments, {
     cwd: repositoryRoot,
     encoding: options.capture ? 'utf8' : undefined,
-    env: { ...process.env, VITE_API_BASE_URL: '/api' },
+    env: { ...process.env, VITE_API_BASE_URL: '/api', ...options.env },
     stdio: options.capture ? ['ignore', 'pipe', 'pipe'] : 'inherit',
   });
   if (result.error) fail(`could not run pnpm: ${result.error.message}`);
@@ -327,6 +339,14 @@ async function main() {
     manifests.every(({ value }) => value.private === true && value.version === rootPackage.version),
     'all seven private manifest versions must be aligned',
   );
+  const repositoryLockfile = await readFile(path.join(repositoryRoot, 'pnpm-lock.yaml'));
+  const installedLockfile = await readFile(
+    path.join(repositoryRoot, 'node_modules', '.pnpm', 'lock.yaml'),
+  );
+  assert(
+    repositoryLockfile.equals(installedLockfile),
+    'installed package graph does not byte-match pnpm-lock.yaml',
+  );
 
   const artifactStem = `${rootPackage.name}-v${rootPackage.version}-${commit.slice(0, 12)}`;
   const artifactFileName = `${artifactStem}.tar.gz`;
@@ -338,12 +358,28 @@ async function main() {
   console.log('Cleaning exact release build output roots');
   await cleanReleaseBuildOutputs();
 
-  console.log('Building release inputs with VITE_API_BASE_URL=/api');
-  pnpmCommand(['build']);
+  const attributionTemporaryDirectory = await mkdtemp(
+    path.join(tmpdir(), 'dii-bundle-attribution-'),
+  );
+  const attributionOutputPath = path.join(attributionTemporaryDirectory, 'vite-provenance.json');
+  let rawBundleAttribution;
+  try {
+    console.log('Building release inputs with VITE_API_BASE_URL=/api');
+    pnpmCommand(['build'], {
+      env: { [bundleAttributionOutputVariable]: attributionOutputPath },
+    });
+    rawBundleAttribution = readRawBundleAttribution(attributionOutputPath);
+  } finally {
+    await rm(attributionTemporaryDirectory, { force: true, recursive: true });
+  }
+  const thirdPartyAttribution = await createBundleAttribution(rawBundleAttribution, repositoryRoot);
+  const thirdPartyNotice = createThirdPartyNotice(thirdPartyAttribution);
+  validateThirdPartyNotice(thirdPartyNotice, thirdPartyAttribution);
 
   await access(path.join(repositoryRoot, 'apps/api/dist/index.js'), constants.R_OK);
   await access(path.join(repositoryRoot, 'apps/web/dist/index.html'), constants.R_OK);
   const selectedPaths = new Set(staticFiles);
+  selectedPaths.add(thirdPartyAttribution.noticeFile);
   for (const selection of directorySelections) {
     for (const filePath of await collectFiles(selection.directory, selection.include)) {
       selectedPaths.add(filePath);
@@ -389,16 +425,18 @@ async function main() {
   for (const relativePath of sortedPaths) {
     files.set(
       relativePath,
-      runtimePackageManifestPaths.has(relativePath)
-        ? createRuntimePackageManifest(relativePath, manifestsByPath.get(relativePath))
-        : await readFile(path.join(repositoryRoot, ...relativePath.split('/'))),
+      relativePath === thirdPartyAttribution.noticeFile
+        ? thirdPartyNotice
+        : runtimePackageManifestPaths.has(relativePath)
+          ? createRuntimePackageManifest(relativePath, manifestsByPath.get(relativePath))
+          : await readFile(path.join(repositoryRoot, ...relativePath.split('/'))),
     );
   }
   const lockfile = files.get('pnpm-lock.yaml');
   assert(lockfile, 'pnpm-lock.yaml is missing from selection');
 
   const manifest = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     product: { name: rootPackage.name, version: rootPackage.version },
     source: { commit, tree },
     artifact: {
@@ -424,6 +462,7 @@ async function main() {
       const content = files.get(relativePath);
       return { path: relativePath, sha256: sha256(content), size: content.length };
     }),
+    thirdPartyAttribution,
   };
   const manifestBuffer = Buffer.from(`${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
   files.set(manifestName, manifestBuffer);
@@ -454,6 +493,7 @@ async function main() {
   console.log(
     JSON.stringify({
       artifact: artifactRelativePath,
+      attributedPackages: thirdPartyAttribution.packages.length,
       commit,
       files: files.size,
       sha256: archiveSha256,
