@@ -41,15 +41,33 @@ frozen lockfile inventory, and the size and SHA-256 of every other file. The bun
   the archived copies of the three runtime workspace manifests point only to those compiled files;
 - the canonical removed-schema-column metadata and incident fixtures;
 - root `package.json`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`, blank `.env.example`, and `LICENSE`;
-- this deployment runbook, the rollback/security/known-issue documents, `README.md`, and the standalone
-  artifact verifier.
+- deterministic `THIRD_PARTY_NOTICES.txt`, generated from exact positive rendered-module
+  contributions in the Vite JavaScript output and their verified installed package legal files;
+- this deployment runbook, the rollback/security/known-issue documents, `README.md`, the standalone
+  artifact verifier, and its exact path-safety/pnpm-lock identity helpers.
 
 It intentionally excludes `.env`, credentials, `node_modules`, pnpm stores, caches, tests, coverage,
 logs, source maps, all runtime/evaluation/dev source, the prompt-injection test fixture, and unrelated
 repo files. The builder does not change repository package exports: it deterministically rewrites only
 the three archived runtime manifest copies from `src/index.ts` to `dist/index.js`/`dist/index.d.ts`.
-`pnpm-lock.yaml` plus the included package manifests is the dependency inventory; no separately
-generated SBOM is claimed.
+`pnpm-lock.yaml` plus the included package manifests remains the dependency inventory; no separately
+generated SBOM is claimed. Before the release build, the builder requires the installed pnpm lock to
+byte-match the repository lock. Vite then records every output-chunk module and rendered length. The
+builder excludes first-party and zero-rendered JavaScript modules, fails closed on unknown virtual or
+potential non-JavaScript asset contributions, and maps every positive third-party contribution to an
+exact pnpm lock package/snapshot, canonical virtual-store root, package/version, normalized module
+and output path, rendered-byte count, source hash, package-manifest hash, declared licence metadata,
+and top-level licence/NOTICE evidence. The current exact audit resolves five MIT-declared embedded
+packages: `react@19.2.7`, `react-dom@19.2.7`,
+`scheduler@0.27.0`, `vite@7.3.6`, and `zod@4.4.3`. Vite is included because its module-preload
+polyfill contributes runtime bytes even though Vite itself is a build dependency.
+
+That exact set does not include `abstract-logging@2.0.1`. Its missing package legal file therefore
+does not enter the bundled notice: the server build preserves external package imports, and the
+archive excludes `node_modules`. It remains a separate production-install/C11 legal-owner caveat.
+This engineering inventory and reproduced upstream text are not a compatibility ruling or legal
+approval. Artifact publication, attachment, and distribution remain unauthorized until independent
+QA and the recorded legal-owner disposition.
 
 Verify the archive before extraction, supplying the approved full commit and version from release
 coordination rather than trusting the filename:
@@ -60,11 +78,17 @@ pnpm release:verify -- --artifact outputs/release/data-incident-investigator-v<V
 ```
 
 The verifier requires the adjacent sidecar, canonical gzip/ustar metadata, a single safe root, only
-regular files, exact provenance/naming, and exact manifest membership, sizes, and hashes. It rejects
-absolute/traversal paths, links, duplicates, forbidden cache/test paths, more than 500 files, an
-archive over 25 MiB, an expanded tar over 50 MiB, and any mismatch. Record the actual byte size from
-the one Phase 7.6/7.7 build as part of release evidence; these caps are safety bounds, not expected
-release-size claims.
+regular files, exact provenance/naming, and exact manifest membership, sizes, and hashes. Manifest
+schema v3 additionally reconstructs every attributed identity from the archived pnpm lock, binds its
+canonical virtual-store root, requires the exact third-party mapping/source/legal hashes and legal
+text, reconstructs `THIRD_PARTY_NOTICES.txt` byte-for-byte, and requires every attributed bundle path
+to be present and hashed. One shared Windows-safe validator rejects reserved devices, ADS, trailing
+dots/spaces, control characters, noncanonical separators, case collisions, and absolute/traversal
+paths. Canonical lstat/realpath checks reject links, junctions, reparse escapes, unsafe verification
+roots, and unsafe archive inputs. The builder publishes archive and sidecar as one rollback-safe
+transaction. The verifier also rejects forbidden cache/test paths, more than 500 files, an archive
+over 25 MiB, an expanded tar over 50 MiB, and any mismatch. Record the actual byte size from the
+exact build as release evidence; these caps are safety bounds, not expected release-size claims.
 
 ## Staging and install
 

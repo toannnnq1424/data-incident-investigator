@@ -1,12 +1,25 @@
 import { createHash } from 'node:crypto';
-import { readFile, readdir, stat } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { gunzipSync } from 'node:zlib';
 
+import { parsePnpmLockGraph, resolvePnpmPackageRootIdentity } from './pnpm-lock-identity.mjs';
+import {
+  assertCanonicalContainedPath,
+  assertCanonicalStandalonePath,
+  assertUniquePortablePaths,
+  isPortablePathSegment,
+  isPortableRelativePath,
+  portablePathKey,
+} from './release-path-safety.mjs';
+
 const manifestName = 'RELEASE-MANIFEST.json';
+const noticeFileName = 'THIRD_PARTY_NOTICES.txt';
 const sha256Pattern = /^[0-9a-f]{64}$/;
 const commitPattern = /^[0-9a-f]{40}$/;
+const packageNamePattern =
+  /^(?:@[a-z0-9](?:[a-z0-9._-]*[a-z0-9])?\/)?[a-z0-9](?:[a-z0-9._-]*[a-z0-9])?$/;
 const semverPattern =
   /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-(?:0|[1-9A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9A-Za-z-][0-9A-Za-z-]*))*)?$/;
 const artifactNamePattern =
@@ -30,6 +43,7 @@ const requiredStaticFiles = [
   '.env.example',
   'LICENSE',
   'README.md',
+  noticeFileName,
   'package.json',
   'pnpm-lock.yaml',
   'pnpm-workspace.yaml',
@@ -53,6 +67,8 @@ const requiredStaticFiles = [
   'packages/shared-types/dist/index.js',
   'packages/shared-types/package.json',
   'scripts/verify-release-artifact.mjs',
+  'scripts/pnpm-lock-identity.mjs',
+  'scripts/release-path-safety.mjs',
 ];
 const exactDependencyManifests = [
   'apps/api/package.json',
@@ -81,16 +97,7 @@ export function sha256(value) {
 }
 
 export function isSafeReleasePath(value) {
-  if (
-    typeof value !== 'string' ||
-    value.length === 0 ||
-    value.includes('\\') ||
-    value.includes('\0') ||
-    value.startsWith('/') ||
-    /^[A-Za-z]:/.test(value)
-  ) {
-    return false;
-  }
+  if (!isPortableRelativePath(value)) return false;
 
   const segments = value.split('/');
   return segments.every((segment) => {
@@ -113,6 +120,277 @@ export function isAllowedPayloadPath(filePath) {
   if (filePath.startsWith('apps/api/dist/')) return filePath.endsWith('.js');
   if (filePath.startsWith('apps/web/dist/')) return true;
   return false;
+}
+
+function isSafeRelativeEvidencePath(value) {
+  return isPortableRelativePath(value);
+}
+
+function isSafeInstalledEvidencePath(value) {
+  return (
+    isSafeRelativeEvidencePath(value) &&
+    (value.startsWith('node_modules/') || value.includes('/node_modules/'))
+  );
+}
+
+function isSafeModuleReference(value) {
+  return (
+    typeof value === 'string' &&
+    value.length > 0 &&
+    value.length <= 500 &&
+    !value.includes('\\') &&
+    !value.includes('\0') &&
+    !value.startsWith('/') &&
+    !/^[A-Za-z]:/.test(value) &&
+    !value.split(/[/?]/).some((segment) => segment === '.' || segment === '..')
+  );
+}
+
+function renderLegalFile(legalFile) {
+  const textWithFinalNewline = legalFile.text.endsWith('\n')
+    ? legalFile.text
+    : `${legalFile.text}\n`;
+  return [
+    `Upstream ${legalFile.kind} file: ${legalFile.path}`,
+    `Upstream ${legalFile.kind} file SHA-256: ${legalFile.sha256}`,
+    `----- BEGIN UPSTREAM ${legalFile.kind.toUpperCase()} FILE -----`,
+    textWithFinalNewline,
+    `----- END UPSTREAM ${legalFile.kind.toUpperCase()} FILE -----`,
+  ].join('\n');
+}
+
+export function createThirdPartyNotice(attribution) {
+  const sections = [
+    'THIRD-PARTY ATTRIBUTION EVIDENCE',
+    '',
+    'This file is generated deterministically from the exact rendered-module provenance of the',
+    'packaged Vite output and the installed frozen package graph. It reproduces upstream legal-file',
+    'evidence without adding legal compatibility conclusions, invented holders, or invented dates.',
+    '',
+    `Provenance method: ${attribution.method}`,
+    `Attributed package count: ${attribution.packages.length}`,
+  ];
+
+  for (const packageEntry of attribution.packages) {
+    sections.push(
+      '',
+      '='.repeat(80),
+      `${packageEntry.name}@${packageEntry.version}`,
+      `Declared license metadata: ${packageEntry.declaredLicense}`,
+      `Package manifest: ${packageEntry.packageManifest.path}`,
+      `Package manifest SHA-256: ${packageEntry.packageManifest.sha256}`,
+      `Canonical package root: ${packageEntry.packageRoot}`,
+      `Frozen lock package: ${packageEntry.lockPackage}`,
+      `Frozen lock snapshot: ${packageEntry.lockSnapshot}`,
+      'Rendered bundle contributions:',
+    );
+    for (const contribution of packageEntry.contributions) {
+      sections.push(`- ${contribution.bundlePath}`);
+      for (const module of contribution.modules) {
+        sections.push(
+          `  - ${module.path} | rendered bytes: ${module.renderedBytes} | source: ${module.sourcePath} | source SHA-256: ${module.sourceSha256}`,
+        );
+      }
+    }
+    for (const legalFile of packageEntry.legalFiles) {
+      sections.push('', renderLegalFile(legalFile));
+    }
+  }
+  sections.push('');
+  return Buffer.from(`${sections.join('\n')}\n`, 'utf8');
+}
+
+function validateThirdPartyAttributionStructure(attribution) {
+  exactKeys(attribution, ['method', 'noticeFile', 'packages'], 'manifest thirdPartyAttribution');
+  assert(
+    attribution.method === 'vite-rollup-rendered-modules-v1',
+    'unexpected third-party attribution method',
+  );
+  assert(attribution.noticeFile === noticeFileName, 'unexpected third-party notice path');
+  assert(
+    Array.isArray(attribution.packages) && attribution.packages.length > 0,
+    'third-party package attribution must be nonempty',
+  );
+
+  let priorPackage;
+  const packageManifestPaths = new Set();
+  for (const packageEntry of attribution.packages) {
+    exactKeys(
+      packageEntry,
+      [
+        'contributions',
+        'declaredLicense',
+        'legalFiles',
+        'lockPackage',
+        'lockSnapshot',
+        'name',
+        'packageManifest',
+        'packageRoot',
+        'version',
+      ],
+      'third-party package attribution',
+    );
+    assert(packageNamePattern.test(packageEntry.name), 'third-party package name is invalid');
+    assert(semverPattern.test(packageEntry.version), 'third-party package version is invalid');
+    const identity = `${packageEntry.name}@${packageEntry.version}`;
+    assert(
+      !priorPackage ||
+        packageEntry.name > priorPackage.name ||
+        (packageEntry.name === priorPackage.name && packageEntry.version > priorPackage.version),
+      'third-party packages are not uniquely sorted by name and version',
+    );
+    priorPackage = packageEntry;
+    assert(
+      isSafeInstalledEvidencePath(packageEntry.packageRoot),
+      `${identity} canonical package root is invalid`,
+    );
+    assert(
+      typeof packageEntry.lockPackage === 'string' && packageEntry.lockPackage.length > 0,
+      `${identity} frozen lock package is invalid`,
+    );
+    assert(
+      typeof packageEntry.lockSnapshot === 'string' && packageEntry.lockSnapshot.length > 0,
+      `${identity} frozen lock snapshot is invalid`,
+    );
+    assert(
+      typeof packageEntry.declaredLicense === 'string' &&
+        packageEntry.declaredLicense.trim() === packageEntry.declaredLicense &&
+        packageEntry.declaredLicense.length > 0 &&
+        packageEntry.declaredLicense.length <= 200,
+      `${identity} declared license metadata is invalid`,
+    );
+
+    exactKeys(packageEntry.packageManifest, ['path', 'sha256'], `${identity} package manifest`);
+    assert(
+      isSafeInstalledEvidencePath(packageEntry.packageManifest.path) &&
+        packageEntry.packageManifest.path === `${packageEntry.packageRoot}/package.json`,
+      `${identity} package manifest provenance path is invalid`,
+    );
+    assert(
+      !packageManifestPaths.has(packageEntry.packageManifest.path),
+      `${identity} package manifest provenance is duplicated`,
+    );
+    packageManifestPaths.add(packageEntry.packageManifest.path);
+    assert(
+      sha256Pattern.test(packageEntry.packageManifest.sha256),
+      `${identity} package manifest SHA-256 is invalid`,
+    );
+
+    assert(
+      Array.isArray(packageEntry.legalFiles) && packageEntry.legalFiles.length > 0,
+      `${identity} legal-file evidence is empty`,
+    );
+    let priorLegalKey = '';
+    let licenseCount = 0;
+    for (const legalFile of packageEntry.legalFiles) {
+      exactKeys(legalFile, ['kind', 'path', 'sha256', 'text'], `${identity} legal file`);
+      assert(
+        legalFile.kind === 'license' || legalFile.kind === 'notice',
+        `${identity} legal-file kind is invalid`,
+      );
+      if (legalFile.kind === 'license') licenseCount += 1;
+      const legalKey = `${legalFile.kind === 'license' ? '0' : '1'}:${legalFile.path}`;
+      assert(legalKey > priorLegalKey, `${identity} legal files are not uniquely sorted`);
+      priorLegalKey = legalKey;
+      assert(
+        isSafeInstalledEvidencePath(legalFile.path) &&
+          path.posix.dirname(legalFile.path) === packageEntry.packageRoot &&
+          isPortablePathSegment(path.posix.basename(legalFile.path)),
+        `${identity} legal-file provenance path is invalid`,
+      );
+      assert(sha256Pattern.test(legalFile.sha256), `${identity} legal-file SHA-256 is invalid`);
+      assert(
+        typeof legalFile.text === 'string' &&
+          legalFile.text.length > 0 &&
+          !legalFile.text.includes('\0') &&
+          Buffer.from(legalFile.text, 'utf8').toString('utf8') === legalFile.text,
+        `${identity} legal-file text is invalid`,
+      );
+      assert(
+        sha256(Buffer.from(legalFile.text, 'utf8')) === legalFile.sha256,
+        `${identity} legal-file text differs from its SHA-256`,
+      );
+    }
+    assert(licenseCount === 1, `${identity} must have exactly one license file`);
+
+    assert(
+      Array.isArray(packageEntry.contributions) && packageEntry.contributions.length > 0,
+      `${identity} rendered contributions are empty`,
+    );
+    let priorBundlePath = '';
+    for (const contribution of packageEntry.contributions) {
+      exactKeys(contribution, ['bundlePath', 'modules'], `${identity} contribution`);
+      assert(
+        isSafeReleasePath(contribution.bundlePath) &&
+          contribution.bundlePath.startsWith('apps/web/dist/') &&
+          contribution.bundlePath.endsWith('.js'),
+        `${identity} bundle contribution path is invalid`,
+      );
+      assert(
+        contribution.bundlePath > priorBundlePath,
+        `${identity} bundle contributions are not uniquely sorted`,
+      );
+      priorBundlePath = contribution.bundlePath;
+      assert(
+        Array.isArray(contribution.modules) && contribution.modules.length > 0,
+        `${identity} bundle contribution modules are empty`,
+      );
+      let priorModulePath = '';
+      for (const module of contribution.modules) {
+        exactKeys(
+          module,
+          ['path', 'renderedBytes', 'sourcePath', 'sourceSha256'],
+          `${identity} module contribution`,
+        );
+        assert(
+          isSafeModuleReference(module.path) && module.path > priorModulePath,
+          `${identity} module contributions are not uniquely sorted or safe`,
+        );
+        priorModulePath = module.path;
+        assert(
+          Number.isSafeInteger(module.renderedBytes) && module.renderedBytes > 0,
+          `${identity} module rendered-byte evidence is invalid`,
+        );
+        assert(
+          isSafeRelativeEvidencePath(module.sourcePath) &&
+            isSafeInstalledEvidencePath(`${packageEntry.packageRoot}/${module.sourcePath}`),
+          `${identity} module source path is invalid`,
+        );
+        assert(
+          sha256Pattern.test(module.sourceSha256),
+          `${identity} module source SHA-256 is invalid`,
+        );
+      }
+    }
+  }
+}
+
+export function validateThirdPartyAttribution(attribution, lockfileText) {
+  validateThirdPartyAttributionStructure(attribution);
+  const graph = parsePnpmLockGraph(lockfileText);
+  const packageRoots = new Set();
+  for (const packageEntry of attribution.packages) {
+    const identity = `${packageEntry.name}@${packageEntry.version}`;
+    const packageRootKey = portablePathKey(packageEntry.packageRoot);
+    assert(!packageRoots.has(packageRootKey), `${identity} canonical package root is duplicated`);
+    packageRoots.add(packageRootKey);
+    const frozenIdentity = resolvePnpmPackageRootIdentity(packageEntry.packageRoot, graph);
+    assert(
+      frozenIdentity.name === packageEntry.name &&
+        frozenIdentity.version === packageEntry.version &&
+        frozenIdentity.lockPackage === packageEntry.lockPackage &&
+        frozenIdentity.lockSnapshot === packageEntry.lockSnapshot,
+      `${identity} differs from its frozen pnpm graph identity`,
+    );
+  }
+}
+
+export function validateThirdPartyNotice(noticeBuffer, attribution, lockfileText) {
+  validateThirdPartyAttribution(attribution, lockfileText);
+  assert(
+    Buffer.isBuffer(noticeBuffer) && noticeBuffer.equals(createThirdPartyNotice(attribution)),
+    `${noticeFileName} content is not canonical for its manifest provenance`,
+  );
 }
 
 function readTarString(header, offset, length) {
@@ -162,6 +440,7 @@ export function parseReleaseArchive(archiveBuffer) {
   assert(tarBuffer.length % 512 === 0, 'tar payload is not block aligned');
   assert(tarBuffer.length <= maxPayloadBytes, 'tar payload exceeds the 50 MiB limit');
   const entries = new Map();
+  const windowsEntryKeys = new Set();
   let offset = 0;
   let sawTrailer = false;
   let priorEntryName = '';
@@ -185,6 +464,9 @@ export function parseReleaseArchive(archiveBuffer) {
     assert(tarChecksum(header) === storedChecksum, `${name || 'unnamed entry'} checksum mismatch`);
     assert(isSafeReleasePath(name), `unsafe or forbidden archive path ${JSON.stringify(name)}`);
     assert(!entries.has(name), `duplicate archive path ${name}`);
+    const windowsEntryKey = portablePathKey(name);
+    assert(!windowsEntryKeys.has(windowsEntryKey), `Windows-ambiguous archive path ${name}`);
+    windowsEntryKeys.add(windowsEntryKey);
     assert(name > priorEntryName, 'archive entries are not uniquely sorted');
     assert(entries.size < maxPayloadFiles, 'archive exceeds the 500-file limit');
     assert(readTarOctal(header, 100, 8, `${name} mode`) === 0o644, `${name} mode is not 0644`);
@@ -239,11 +521,12 @@ function parseManifest(buffer) {
       'runtime',
       'schemaVersion',
       'source',
+      'thirdPartyAttribution',
       'toolchain',
     ],
     manifestName,
   );
-  assert(manifest.schemaVersion === 1, 'unsupported manifest schemaVersion');
+  assert(manifest.schemaVersion === 3, 'unsupported manifest schemaVersion');
   exactKeys(manifest.product, ['name', 'version'], 'manifest product');
   assert(manifest.product.name === 'data-incident-investigator', 'unexpected product name');
   assert(semverPattern.test(manifest.product.version), 'product version is not SemVer');
@@ -292,8 +575,13 @@ function parseManifest(buffer) {
     Array.isArray(manifest.files) && manifest.files.length > 0,
     'manifest files must be nonempty',
   );
+  validateThirdPartyAttributionStructure(manifest.thirdPartyAttribution);
 
   let priorPath = '';
+  assertUniquePortablePaths(
+    manifest.files.map((file) => file?.path),
+    'manifest files',
+  );
   for (const file of manifest.files) {
     exactKeys(file, ['path', 'sha256', 'size'], `manifest file ${JSON.stringify(file?.path)}`);
     assert(
@@ -312,6 +600,7 @@ function parseManifest(buffer) {
   }
 
   let priorManifest = '';
+  assertUniquePortablePaths(manifest.dependencyInventory.manifests, 'dependency manifests');
   for (const manifestPath of manifest.dependencyInventory.manifests) {
     assert(isSafeReleasePath(manifestPath), `unsafe dependency manifest path ${manifestPath}`);
     assert(
@@ -348,6 +637,15 @@ function validateReleaseFiles(files, manifest, context) {
   for (const requiredPath of requiredStaticFiles) {
     assert(files.has(requiredPath), `${context} is missing required file ${requiredPath}`);
   }
+  const manifestedPaths = new Set(manifest.files.map((file) => file.path));
+  for (const packageEntry of manifest.thirdPartyAttribution.packages) {
+    for (const contribution of packageEntry.contributions) {
+      assert(
+        manifestedPaths.has(contribution.bundlePath) && files.has(contribution.bundlePath),
+        `attributed bundle path is missing from ${context}: ${contribution.bundlePath}`,
+      );
+    }
+  }
 
   const rootManifest = files.get('package.json');
   assert(rootManifest, 'root package.json is missing');
@@ -369,6 +667,15 @@ function validateReleaseFiles(files, manifest, context) {
     sha256(lockfile) === manifest.dependencyInventory.lockfileSha256,
     'dependency lockfile SHA-256 differs from inventory',
   );
+  const lockfileText = lockfile.toString('utf8');
+  assert(
+    Buffer.from(lockfileText, 'utf8').equals(lockfile),
+    'dependency lockfile is not canonical UTF-8 text',
+  );
+  validateThirdPartyAttribution(manifest.thirdPartyAttribution, lockfileText);
+  const noticeBuffer = files.get(manifest.thirdPartyAttribution.noticeFile);
+  assert(noticeBuffer, `${context} is missing ${manifest.thirdPartyAttribution.noticeFile}`);
+  validateThirdPartyNotice(noticeBuffer, manifest.thirdPartyAttribution, lockfileText);
   const environmentExample = files.get('.env.example');
   assert(environmentExample, '.env.example is missing');
   const environmentText = environmentExample.toString('utf8');
@@ -443,9 +750,19 @@ function validateIdentity(manifest, expected = {}) {
 
 export async function verifyArtifact(artifactPath, expected = {}) {
   const resolvedArtifact = path.resolve(artifactPath);
-  const archiveBuffer = await readFile(resolvedArtifact);
+  assert(isPortablePathSegment(path.basename(resolvedArtifact)), 'artifact filename is unsafe');
+  const canonicalArtifact = await assertCanonicalStandalonePath(resolvedArtifact, {
+    label: 'release artifact input',
+    type: 'file',
+  });
+  const archiveBuffer = await readFile(canonicalArtifact);
   const sidecarPath = `${resolvedArtifact}.sha256`;
-  const sidecar = await readFile(sidecarPath, 'utf8');
+  assert(isPortablePathSegment(path.basename(sidecarPath)), 'artifact sidecar filename is unsafe');
+  const canonicalSidecar = await assertCanonicalStandalonePath(sidecarPath, {
+    label: 'release sidecar input',
+    type: 'file',
+  });
+  const sidecar = await readFile(canonicalSidecar, 'utf8');
   const expectedSidecar = `${sha256(archiveBuffer)}  ${path.basename(resolvedArtifact)}\n`;
   assert(sidecar === expectedSidecar, 'SHA-256 sidecar does not match archive bytes and filename');
 
@@ -478,17 +795,34 @@ export async function verifyArtifact(artifactPath, expected = {}) {
 }
 
 async function listDirectoryFiles(root, relative = '') {
-  const entries = await readdir(path.join(root, relative), { withFileTypes: true });
+  const directory = relative
+    ? await assertCanonicalContainedPath(root, relative, { label: relative, type: 'directory' })
+    : root;
+  const entries = await readdir(directory, { withFileTypes: true });
+  assertUniquePortablePaths(
+    entries.map((entry) => (relative ? `${relative}/${entry.name}` : entry.name)),
+    `directory entries under ${relative || '<root>'}`,
+  );
   const files = new Map();
-  for (const entry of entries.sort((left, right) => left.name.localeCompare(right.name, 'en'))) {
+  for (const entry of entries.sort((left, right) =>
+    left.name < right.name ? -1 : left.name > right.name ? 1 : 0,
+  )) {
     const childRelative = relative ? `${relative}/${entry.name}` : entry.name;
     assert(isSafeReleasePath(childRelative), `unsafe or forbidden extracted path ${childRelative}`);
     if (entry.isSymbolicLink()) fail(`extracted path is a symbolic link: ${childRelative}`);
     if (entry.isDirectory()) {
+      await assertCanonicalContainedPath(root, childRelative, {
+        label: childRelative,
+        type: 'directory',
+      });
       const descendants = await listDirectoryFiles(root, childRelative);
       for (const [filePath, content] of descendants) files.set(filePath, content);
     } else if (entry.isFile()) {
-      files.set(childRelative, await readFile(path.join(root, ...childRelative.split('/'))));
+      const childPath = await assertCanonicalContainedPath(root, childRelative, {
+        label: childRelative,
+        type: 'file',
+      });
+      files.set(childRelative, await readFile(childPath));
     } else {
       fail(`extracted path is not a regular file: ${childRelative}`);
     }
@@ -498,13 +832,20 @@ async function listDirectoryFiles(root, relative = '') {
 
 export async function verifyDirectory(directoryPath, expected = {}) {
   const resolvedDirectory = path.resolve(directoryPath);
-  assert((await stat(resolvedDirectory)).isDirectory(), 'verification path is not a directory');
-  const files = await listDirectoryFiles(resolvedDirectory);
+  assert(
+    isPortablePathSegment(path.basename(resolvedDirectory)),
+    'verification directory name is unsafe',
+  );
+  const canonicalDirectory = await assertCanonicalStandalonePath(resolvedDirectory, {
+    label: 'verification directory root',
+    type: 'directory',
+  });
+  const files = await listDirectoryFiles(canonicalDirectory);
   const manifestBuffer = files.get(manifestName);
   assert(manifestBuffer, `${manifestName} is missing`);
   const manifest = parseManifest(manifestBuffer);
   assert(
-    path.basename(resolvedDirectory) === manifest.artifact.rootDirectory,
+    path.basename(canonicalDirectory) === manifest.artifact.rootDirectory,
     'directory name differs from manifest',
   );
   validateIdentity(manifest, expected);

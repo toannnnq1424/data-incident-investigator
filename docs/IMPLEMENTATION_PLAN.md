@@ -5868,3 +5868,206 @@ reporting`; Security overview shows `Private vulnerability reporting • Enabled
 Deferred: Ready/merge until same-QA QA2 re-review returns `PASS / MERGE` and an explicit publication
 continuation; every other GitHub setting; full tests/build/E2E/live DataHub; artifact publication or
 distribution; version/tag/Release/deployment/submission.
+
+### Phase 8.5 — exact bundled-output attribution audit and enforcement
+
+Status: implementation and adjacent web attribution audit complete; focused/final artifact
+validation in progress on `codex/phase-8-5-bundle-attribution` from exact fetched
+`origin/main` `1c32f6c913b196fc4a23055fb7da3b1482b94e5e`. Exact main CI run
+`30178465331`, job `89731006555`, is `SUCCESS`. The official signed-in in-app Browser confirms the
+repository remains `Public`, default `main` resolves to that exact commit, and Private vulnerability
+reporting remains enabled.
+
+Objective: close the release-artifact attribution evidence gap by deriving the exact third-party
+package/version set that contributes rendered modules to the deterministic `apps/web/dist` output,
+binding each package to frozen package metadata and an upstream legal-file hash, and enforcing the
+resulting human-readable attribution through the existing release builder, manifest, verifier, and
+focused contract tests. This is local artifact-readiness only; no artifact may be uploaded,
+published, attached, distributed, or deployed.
+
+Minimum files:
+
+- `apps/web/vite.config.ts` and one focused build-only attribution helper for deterministic
+  Vite/Rollup rendered-module provenance with fail-closed handling of unclassified third-party or
+  virtual modules.
+- `scripts/build-release-artifact.mjs` for verified frozen package/legal-file inputs, deterministic
+  notice generation, archive inclusion, manifest provenance, and checksums.
+- `scripts/verify-release-artifact.mjs` for strict notice/provenance schema, exact content, hash,
+  membership, and archive/directory enforcement.
+- `tests/release-artifact.contract.mjs` for focused mapping, notice, manifest, missing/legal-file,
+  unclassified-module, and tamper rejection.
+- Root `package.json` only to add the focused release-artifact contract to the existing `validate`
+  command, because exact-head PR CI otherwise never executes this `.mjs` Node test. This preserves
+  all version, privacy, licence, dependency, package-manager, engine, and workspace values.
+- `README.md`, `docs/REPOSITORY_MAP.md`, `docs/DEPLOYMENT.md`, `docs/PUBLIC_SOURCE_APACHE_READINESS.md`,
+  `docs/DEVPOST_REQUIREMENTS.md`, `docs/KNOWN_ISSUES.md`, `docs/RELEASE_CHECKLIST.md`, this plan, and
+  `docs/SESSION_LOG.md` only where exact artifact/compliance/state evidence changes.
+- No runtime product behavior, DataHub provider behavior, UI feature, model/LLM, dependency,
+  workspace, lockfile, version, tag, Release, deployment, submission, credential, workflow, or
+  GitHub-setting change. The root-manifest validation-script addition is the sole narrow exception.
+
+Acceptance criteria:
+
+- Build the deterministic release artifact locally exactly once after the coherent implementation
+  commit; permit only one adjacent rebuild if the first exact build exposes a classification or
+  enforcement defect. Never upload or distribute either output.
+- Attribute every third-party module with positive rendered contribution in each exact web JavaScript
+  chunk to a unique package name/version from the installed graph that matches `pnpm-lock.yaml`.
+  Record normalized package-relative module paths, exact bundled archive paths, rendered-byte
+  evidence, declared license metadata, package-manifest hash, legal-file provenance, and legal-file
+  SHA-256. Reject unknown modules, duplicate identities, missing metadata, missing or ambiguous legal
+  files, unsafe paths, or graph/version drift.
+- Treat build-tool virtual runtime modules conservatively and map them only through explicit,
+  tested source provenance. Do not count source-only, tree-shaken zero-byte, first-party workspace,
+  declaration, development-only, or server-install-only code as embedded web package code.
+- Resolve `abstract-logging@2.0.1` specifically: prove from exact rendered-module provenance whether
+  it is embedded. If absent, record that its missing package legal file does not enter the bundled
+  notice while retaining the broader C11 legal-owner caveat; if present, fail the artifact gate.
+- Generate one deterministic human-readable third-party notice from the verified legal texts without
+  inventing holders, years, compatibility conclusions, or a generic Apache project `NOTICE`.
+  Include it in the archive and bind its exact path/content, package mapping, provenance method, and
+  checksums in `RELEASE-MANIFEST.json`.
+- The standalone verifier must reject missing, extra, reordered, malformed, unsafe, or tampered
+  attribution metadata/content and any notice/legal-text checksum mismatch for both archive and
+  extracted-directory verification. Existing archive path/symlink/junk/secret constraints remain
+  intact.
+- C11 becomes `PASS` only if repository/package evidence proves every explicit condition. Otherwise
+  retain `PARTIAL`/`BLOCKED` and name the residual legal owner/action precisely. Do not state legal
+  advice or Apache compatibility beyond recorded package/legal evidence.
+- Preserve all seven manifests at `1.0.0-rc.1`, `private: true`, and `Apache-2.0`; preserve workspace
+  membership and byte-identical `pnpm-lock.yaml`. Preserve Public visibility, enabled private
+  vulnerability reporting, workflows, the immutable RC tag, and the unpublished Draft Release with
+  only automatic source archives.
+
+Bounded validation:
+
+- Focused Node contract tests for the Vite attribution mapper and release builder/verifier seam,
+  including missing legal evidence, unknown virtual/runtime modules, exact notice regeneration, and
+  archive/directory tampering.
+- One exact clean-head `pnpm release:artifact`, standalone archive verification with separately
+  supplied full commit/version, exact archive/member/manifest/notice/provenance/checksum inspection,
+  and a non-rebuild repeatability check over the deterministic attribution inputs/output.
+- Changed-file Prettier and ESLint as applicable, web/package-scoped typecheck for the Vite config,
+  `git diff --check`, strict UTF-8/LF/final-newline/no-BOM, exact changed-path allowlist, added-line
+  secret/private-path/debug/conflict scans, and full diff review.
+- Recheck seven manifest/workspace/lock invariants; archive path/link/junk/secret exclusions; exact
+  tag/Draft Release/assets/deployment/settings non-mutation through signed-in GitHub UI; and clean
+  task-created output/process/port/worktree residue after local evidence capture.
+- Reuse prior unchanged product, evaluation, browser E2E, live DataHub, and broad full-suite greens.
+  Do not run those gates.
+
+Implementation evidence before the exact clean-head artifact build:
+
+- The release-only Vite/Rollup capture, frozen installed-lock equality check, package/module/source/
+  legal-file mapper, deterministic notice, schema-v2 manifest, archive/directory verifier, and
+  focused fail-closed contracts are implemented. Temporary provenance is removed in `finally`, and
+  ordinary web builds do not create it.
+- An adjacent web-only audit transformed 109 modules and produced one JavaScript chunk,
+  `apps/web/dist/assets/index-DHLGe_T9.js`. Positive rendered contributions map exactly to
+  `react@19.2.7`, `react-dom@19.2.7`, `scheduler@0.27.0`, `vite@7.3.6`, and `zod@4.4.3`. All five
+  declare MIT, have exactly one captured top-level licence file, and have no top-level NOTICE file.
+  Vite is included because its explicit module-preload virtual runtime contributes 1,168 rendered
+  bytes.
+- `abstract-logging@2.0.1` has no rendered web contribution. API compilation leaves package imports
+  external and the release selection excludes `node_modules`, so its absent legal file does not enter
+  the bundled notice; it remains a broader non-bundled production-install/C11 legal-owner caveat.
+- The first focused contract run passed 8/8, web typecheck passed, and focused ESLint passed after one
+  unused local helper was removed. These are preliminary working-tree checks; Node 24 focused reruns,
+  exact committed artifact evidence, formatting/invariant scans, and exact-head PR CI remain below.
+- The first clean-head artifact attempt reached the completed six-workspace build, then stopped before
+  writing an archive because the mapper sorted package tuples while the verifier compared concatenated
+  `name@version` strings; `react`/`react-dom` exposed the mismatch. No archive or sidecar was created,
+  temporary provenance was removed, and no listener remained. The permitted adjacent correction makes
+  the verifier use the mapper's explicit `(name, version)` ordering and adds that prefix-name case to
+  the deterministic mapping test; exactly one adjacent rebuild remains authorized.
+
+Deferred: any artifact publication/distribution/upload, version/tag/Release mutation, deployment,
+Devpost form/video/assets/submission, live DataHub smoke, dependency upgrade, legal advice or
+owner-rights decision, branch deletion, history rewrite, Ready transition, merge, and independent
+Windows QA.
+
+#### Independent Windows QA correction — frozen identity and Windows-safe artifact boundaries
+
+Status: independent Windows QA returned `FAIL / DO NOT MERGE` on exact head
+`bde288112f504c2067ff85499337d9315c30c432` (tree
+`71275218f99754e6e9cd7a6a54de535235f0e191`) despite exact-head PR CI run `30183062632`, job
+`89742881595`, being `SUCCESS`. Continue only on the same branch and Draft PR #54 with additive
+history. Artifact publication/distribution remains `BLOCKED`; C11 remains `PARTIAL`.
+
+Objective: bind every attributed package to its exact pnpm lock snapshot and canonical virtual-store
+root instead of trusting installed `package.json`; make builder and verifier independently enforce
+that identity; replace scattered path checks with one shared Windows-safe validator plus canonical
+filesystem containment; and make archive/sidecar publication rollback-safe. Correct directly stale
+Phase 8.4B current-state documentation without changing runtime behavior or external state.
+
+Minimum files:
+
+- New `scripts/release-path-safety.mjs` for one portable/Windows-safe path-segment validator,
+  case-insensitive duplicate detection, and lstat/realpath non-link containment used by builder and
+  verifier.
+- `scripts/bundle-attribution.mjs` for strict pnpm lock/snapshot parsing, virtual-store identity
+  binding, canonical manifest/legal/module evidence roots, and required release-capture precondition.
+- `scripts/build-release-artifact.mjs` for guarded output creation, canonical archive inputs,
+  schema-v3 graph provenance, and rollback-safe archive/sidecar writes.
+- `scripts/verify-release-artifact.mjs` for independent lock/snapshot/root reconstruction, shared path
+  validation, non-following archive/directory inputs, and exact provenance enforcement.
+- `tests/release-artifact.contract.mjs` for graph/package mismatch, cross-root evidence, Windows
+  device/ADS/trailing-name rejection, symlink/junction escape, missing capture, exact five-package plus
+  `abstract-logging` exclusion evidence, and output rollback regressions.
+- `docs/RELEASE_CHECKLIST.md`, `docs/DEVPOST_REQUIREMENTS.md`,
+  `docs/PUBLIC_SOURCE_APACHE_READINESS.md`, `docs/KNOWN_ISSUES.md`, this plan, and
+  `docs/SESSION_LOG.md` only where QA/current-state evidence changes; other Phase 8.5 public/release
+  docs only if schema/path wording becomes directly stale.
+
+Acceptance criteria:
+
+- Parse only the supported pnpm lockfile v9 package/snapshot key grammar. Require each canonical
+  `node_modules/.pnpm/<virtual-store>/node_modules/<package>` root to encode exactly one snapshot in
+  both `packages` and `snapshots`; reject name/version drift, ambiguous keys, malformed or unsupported
+  peer suffixes, and any package-manifest/legal/module evidence outside that exact root.
+- Builder proves canonical regular files/directories through lstat, realpath equality, ancestor
+  non-link checks, and containment. Verifier independently reconstructs package root/identity from
+  archived lock bytes and provenance paths instead of accepting internally consistent manifest text.
+- One shared path validator rejects absolute, UNC, drive, backslash, dot-segment, empty,
+  control/NUL, ADS-colon, trailing-dot/space, Windows reserved-device-with-extension, noncanonical
+  separator, and unsafe case-collision paths. Builder and verifier use it for selected/generated,
+  archive, evidence, and extracted-directory paths.
+- Guard `outputs/release` and every final/temporary generated path before creation. Any archive,
+  sidecar, write, or rename failure removes both final outputs and all transaction temporary files.
+  Directory verification lstat-rejects linked/reparse roots before reading them.
+- Release capture is mandatory for the release builder and fails closed when the environment/plugin
+  output is absent. Focused coverage pins all five exact embedded package identities and separately
+  demonstrates that `abstract-logging@2.0.1` is in the frozen graph but absent from rendered
+  provenance.
+- Update Phase 8.4B completed state to normal merge
+  `1c32f6c913b196fc4a23055fb7da3b1482b94e5e`, tree
+  `5c83d034f30c6d31268109277aaa455a05ff9656`, ordered parents
+  `36d4205806597ae14b7306c74e1527c284202023` then
+  `e4ddbb8277f430ed1da4593c9f19ca89f1aa39fb`, and exact-main CI `30178465331` / `89731006555`
+  `SUCCESS`. Preserve C10 `PASS`, Public visibility, enabled private reporting, and retained branch.
+
+Bounded validation: Node 24 focused contracts; affected script/config ESLint and web typecheck;
+changed-file Prettier; strict diff/EOL/link/secret/allowlist/invariant checks; Windows path,
+symlink/junction, and atomic rollback regressions. After all tests pass and correction commits are
+clean, run exactly one new local-only artifact build plus archive/directory verification, exact
+member/package/notice/hash inspection, and non-rebuild repeatability. Permit one adjacent rebuild only
+for a newly exposed coherent implementation defect. Delete all generated evidence, normal-push the
+same branch, update only Draft PR #54, and require exact-new-head CI including
+`test:release-artifact` terminal `SUCCESS`.
+
+Implementation evidence before the clean-head artifact build:
+
+- Focused Node 24 contracts pass 15/15. Direct regressions cover five-package provenance plus frozen
+  `abstract-logging` exclusion, virtual-store `1.0.0` versus manifest `9.9.9`, cross-root
+  manifest/legal evidence, unknown virtual and asset modules, missing capture, Windows reserved/ADS/
+  trailing/control paths, case collisions, linked output/evidence/verification roots, and both
+  sidecar-write and sidecar-rename rollback.
+- Read-only parsing of the installed exact graph independently resolves `react`, `react-dom`,
+  `scheduler`, `vite`, `zod`, and `abstract-logging` to their expected package/snapshot and canonical
+  virtual-store roots. Affected ESLint, web typecheck, changed-file Prettier, and `git diff --check`
+  pass. No release build or archive has been run in this correction yet.
+
+Deferred: broad product/full suite, evaluation, browser E2E, live DataHub, dependency/lock/version/
+manifest/workflow mutation, tag/Release/assets/deployment/submission, legal-owner disposition,
+publication/distribution, Ready transition, merge, branch deletion, history rewrite, and any new
+task/branch/PR.

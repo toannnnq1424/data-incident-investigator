@@ -9,13 +9,15 @@ Last updated: 2026-07-26.
   `7154b8ce036ec97adb87ed76d8483727746e4501`. Exact main CI run `30172556907`,
   job `89715980644`, is `SUCCESS`, and signed-in GitHub detects `Apache-2.0`. C09 is `PASS`.
 
-  Phase 8.4B Stage 2 verified the owner's externally completed visibility change at 2026-07-26 04:48
-  ICT. Authenticated GitHub and unsigned HTTPS reads show `Public`; credential-helper-disabled
-  `ls-remote` resolves default `main` to exact
-  `36d4205806597ae14b7306c74e1527c284202023`. C10 is `PASS`. All 47 branches, 43 closed PR
-  conversations plus Draft PR #53, 2 open/7 closed issues, the 125-run pre-evidence Actions history,
-  the RC tag, and the unpublished Draft Release with zero user-uploaded assets remain retained. Pages
-  is disabled and no deployment is claimed.
+  Phase 8.4B completed through normal merge
+  `1c32f6c913b196fc4a23055fb7da3b1482b94e5e`, tree
+  `5c83d034f30c6d31268109277aaa455a05ff9656`, with ordered parents
+  `36d4205806597ae14b7306c74e1527c284202023` then
+  `e4ddbb8277f430ed1da4593c9f19ca89f1aa39fb`. Exact-main CI run `30178465331`, job
+  `89731006555`, is `SUCCESS`. C10 remains `PASS`: signed-in GitHub shows `Public`, default `main`,
+  enabled private vulnerability reporting, and the retained Phase 8.4B branch/conversation. The RC
+  tag and unpublished Draft Release with zero user-uploaded assets remain retained; Pages is disabled
+  and no deployment is claimed.
 
   The prior GitHub private-reporting blocker is closed. At 2026-07-26 05:22 ICT, authenticated
   Settings showed the enabled control as `Disable private vulnerability reporting`, Security overview
@@ -26,15 +28,29 @@ Last updated: 2026-07-26.
 
   The reused frozen production graph remains 138 external package-version nodes/132 names/7
   importers, with declared licenses 122 MIT, 10 ISC, 5 BSD-3-Clause, and 1 BSD-2-Clause; 137 legal
-  files; 0 NOTICE files; and a missing legal file for declared-MIT `abstract-logging@2.0.1`. No generic
-  project NOTICE is added, but 0 dependency NOTICE files does not settle the attribution obligations
-  for bundled MIT/ISC/BSD code. The archive does not copy the `node_modules` directory; it does copy
-  complete `apps/web/dist`, whose Vite application bundle includes third-party runtime code. The exact
-  embedded-package and required-notice inventory remains incomplete. Artifact publication or
-  distribution is `BLOCKED` until the exact bundled-output attribution audit captures required
-  notices with provenance and, if justified, adds enforced third-party attribution. C11 and Phase 8.2
-  remain `PARTIAL`. See
+  files; 0 NOTICE files; and a missing legal file for declared-MIT `abstract-logging@2.0.1`. Phase 8.5
+  closes the technical bundled-output gap with exact Vite/Rollup positive-rendered-module provenance,
+  lock/package/source/legal-file hashes, a deterministic `THIRD_PARTY_NOTICES.txt`, manifest schema v3,
+  and archive/directory verifier enforcement. Schema v3 binds each package to the exact pnpm lock
+  package/snapshot and canonical virtual-store root; shared Windows-safe path checks and rollback-safe
+  archive/sidecar writes close the linked-path and partial-output gaps. The current exact web output attributes five
+  MIT-declared packages: `react@19.2.7`, `react-dom@19.2.7`, `scheduler@0.27.0`, `vite@7.3.6`, and
+  `zod@4.4.3`; Vite contributes its runtime module-preload polyfill.
+
+  `abstract-logging@2.0.1` is not embedded: the API output preserves external imports and the archive
+  excludes `node_modules`. Its missing legal file therefore does not enter the bundled notice, but it
+  remains a broader production-install/C11 legal-owner caveat. C11 and Phase 8.2 remain `PARTIAL`;
+  captured declarations/texts are engineering evidence, not compatibility or legal approval.
+  Artifact publication/distribution remains unauthorized pending independent QA and the legal owner
+  deciding whether the captured evidence resolves the remaining rights/obligation gate. See
   [`PUBLIC_SOURCE_APACHE_READINESS.md`](PUBLIC_SOURCE_APACHE_READINESS.md).
+
+  Independent Windows QA returned `FAIL / DO NOT MERGE` on Phase 8.5 head
+  `bde288112f504c2067ff85499337d9315c30c432`: package identity was not yet bound to the frozen virtual
+  store, Windows path/link/output atomicity was incomplete, five-package/exclusion coverage was too
+  narrow, and three Phase 8.4B state documents remained stale. The additive correction is under
+  validation on the same Draft PR #54. No artifact may be published or distributed before the same
+  QA re-review passes and the separate legal-owner disposition is recorded.
 
 - Phase 8.2 is integrated as `aa8d120205fdc35298b9ef36c7dd36b38b23e342` through main merge
   `7f05888ce7266f51b5028f5ac5ddacd3a91a11aa`; exact main CI run `30161661962`, job
@@ -351,8 +367,9 @@ Last updated: 2026-07-26.
   `submit -> processing -> completed -> full evidence display` in `32.400s`, with real evidence
   references and clean-console assertions. Post-run probes found zero listeners and zero
   launcher-related process leaks.
-- The GitHub repository is Public. Apache-2.0 is integrated and detected on exact main; authenticated
-  and unsigned Phase 8.4B evidence makes C10 `PASS`. Draft PR #53 remains unmerged pending QA2.
+- The GitHub repository is Public. Apache-2.0 is integrated and detected on exact main; Phase 8.4B
+  normal merge `1c32f6c913b196fc4a23055fb7da3b1482b94e5e` and exact-main CI make C10 `PASS`. Its branch and
+  PR #53 conversation remain retained after merge.
 - Slice 1.2 stores incident lifecycle and completed reports only in API process memory. Restarting the
   API removes existing incident IDs; durable persistence remains deferred.
 - The UI exposes seven guided presets, but only `removed-schema-column` has the rich checked-in

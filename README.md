@@ -80,9 +80,12 @@ version-and-commit-named deterministic archive plus SHA-256 sidecar under ignore
 `outputs/release/`. Verify it with `pnpm release:verify -- --artifact <archive>` and the separately
 approved full commit/version before extraction.
 
-Artifact publication or distribution is currently **blocked**. The web output bundles third-party
-runtime code, and the exact embedded-package/required-notice attribution audit is incomplete. Public
-source visibility does not authorize publishing, attaching, or distributing the release archive.
+The release builder now derives the exact packages with positive rendered contributions to the Vite
+JavaScript output, binds their package/module/legal-file provenance into `RELEASE-MANIFEST.json`, and
+includes a deterministic `THIRD_PARTY_NOTICES.txt` that the standalone verifier enforces. This closes
+the technical bundled-output inventory gap; it is evidence, not legal advice. Publication,
+attachment, or distribution remains unauthorized pending independent QA and the recorded C11
+legal-owner disposition.
 
 The supported deployment boundary is a generic Node 24 host with a static web host and same-origin
 `/api` reverse proxy. No Docker/cloud/public deployment is currently claimed. See

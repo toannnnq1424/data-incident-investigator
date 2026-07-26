@@ -1,21 +1,31 @@
 import { execFileSync, spawnSync } from 'node:child_process';
 import { constants } from 'node:fs';
-import {
-  access,
-  lstat,
-  mkdir,
-  readFile,
-  readdir,
-  realpath,
-  rm,
-  stat,
-  writeFile,
-} from 'node:fs/promises';
+import { access, lstat, mkdtemp, readFile, readdir, rename, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { gzipSync } from 'node:zlib';
 
-import { isSafeReleasePath, sha256 } from './verify-release-artifact.mjs';
+import {
+  bundleAttributionOutputVariable,
+  createBundleAttribution,
+  readRawBundleAttribution,
+  releaseArtifactBuildVariable,
+} from './bundle-attribution.mjs';
+import {
+  assertCanonicalContainedPath,
+  assertCanonicalRoot,
+  assertCanonicalStandalonePath,
+  assertUniquePortablePaths,
+  ensureCanonicalContainedDirectory,
+  isPortableRelativePath,
+} from './release-path-safety.mjs';
+import {
+  createThirdPartyNotice,
+  isSafeReleasePath,
+  sha256,
+  validateThirdPartyNotice,
+} from './verify-release-artifact.mjs';
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const expectedNodeVersion = '24.14.0';
@@ -58,6 +68,8 @@ const staticFiles = [
   'fixtures/incidents/removed-schema-column.json',
   'fixtures/metadata/removed-schema-column.json',
   'scripts/verify-release-artifact.mjs',
+  'scripts/pnpm-lock-identity.mjs',
+  'scripts/release-path-safety.mjs',
 ];
 export const releaseBuildOutputRoots = Object.freeze([
   'apps/api/dist',
@@ -88,11 +100,6 @@ function assert(condition, message) {
   if (!condition) fail(message);
 }
 
-function comparablePath(value) {
-  const normalized = path.normalize(value);
-  return process.platform === 'win32' ? normalized.toLowerCase() : normalized;
-}
-
 async function lstatIfPresent(absolutePath) {
   try {
     return await lstat(absolutePath);
@@ -104,11 +111,7 @@ async function lstatIfPresent(absolutePath) {
 
 export async function cleanReleaseBuildOutputs(root = repositoryRoot) {
   const resolvedRoot = path.resolve(root);
-  const canonicalRoot = await realpath(resolvedRoot);
-  assert(
-    comparablePath(canonicalRoot) === comparablePath(resolvedRoot),
-    'repository root must be a canonical, non-linked directory',
-  );
+  const canonicalRoot = await assertCanonicalRoot(resolvedRoot, 'repository root');
   assert(
     buildOutputIncludes.size === releaseBuildOutputRoots.length &&
       directorySelections.every(({ include }) => typeof include === 'function'),
@@ -117,27 +120,15 @@ export async function cleanReleaseBuildOutputs(root = repositoryRoot) {
 
   const existingTargets = [];
   for (const relativeRoot of releaseBuildOutputRoots) {
-    const absoluteTarget = path.resolve(resolvedRoot, ...relativeRoot.split('/'));
-    const expectedRelative = relativeRoot.split('/').join(path.sep);
-    assert(
-      path.relative(resolvedRoot, absoluteTarget) === expectedRelative,
-      `${relativeRoot} does not resolve to its exact repository path`,
-    );
+    assert(isPortableRelativePath(relativeRoot), `${relativeRoot} is not a portable output root`);
+    const absoluteTarget = path.join(canonicalRoot, ...relativeRoot.split('/'));
 
     const targetStat = await lstatIfPresent(absoluteTarget);
     if (!targetStat) continue;
-    assert(
-      targetStat.isDirectory() && !targetStat.isSymbolicLink(),
-      `${relativeRoot} must be a real directory, not a link or reparse target`,
-    );
-
-    const canonicalTarget = await realpath(absoluteTarget);
-    const expectedCanonicalTarget = path.resolve(canonicalRoot, ...relativeRoot.split('/'));
-    assert(
-      comparablePath(canonicalTarget) === comparablePath(absoluteTarget) &&
-        comparablePath(canonicalTarget) === comparablePath(expectedCanonicalTarget),
-      `${relativeRoot} must remain canonical and inside the repository`,
-    );
+    await assertCanonicalContainedPath(canonicalRoot, relativeRoot, {
+      label: relativeRoot,
+      type: 'directory',
+    });
     existingTargets.push({ absoluteTarget, relativeRoot });
   }
 
@@ -169,7 +160,7 @@ function pnpmCommand(arguments_, options = {}) {
   const result = spawnSync(command, commandArguments, {
     cwd: repositoryRoot,
     encoding: options.capture ? 'utf8' : undefined,
-    env: { ...process.env, VITE_API_BASE_URL: '/api' },
+    env: { ...process.env, VITE_API_BASE_URL: '/api', ...options.env },
     stdio: options.capture ? ['ignore', 'pipe', 'pipe'] : 'inherit',
   });
   if (result.error) fail(`could not run pnpm: ${result.error.message}`);
@@ -181,32 +172,45 @@ function pnpmCommand(arguments_, options = {}) {
 }
 
 async function readJson(relativePath) {
+  const content = await readCanonicalRepositoryFile(relativePath);
   try {
-    return JSON.parse(
-      await readFile(path.join(repositoryRoot, ...relativePath.split('/')), 'utf8'),
-    );
+    return JSON.parse(content.toString('utf8'));
   } catch {
     fail(`${relativePath} is not valid JSON`);
   }
 }
 
+async function readCanonicalRepositoryFile(relativePath) {
+  const canonicalPath = await assertCanonicalContainedPath(repositoryRoot, relativePath, {
+    label: relativePath,
+    type: 'file',
+  });
+  return readFile(canonicalPath);
+}
+
 async function collectFiles(relativeDirectory, include) {
-  const absoluteDirectory = path.join(repositoryRoot, ...relativeDirectory.split('/'));
-  const directoryStat = await stat(absoluteDirectory);
-  assert(directoryStat.isDirectory(), `${relativeDirectory} is not a directory`);
+  await assertCanonicalContainedPath(repositoryRoot, relativeDirectory, {
+    label: relativeDirectory,
+    type: 'directory',
+  });
   const collected = [];
 
   async function walk(currentRelative) {
-    const currentAbsolute = path.join(repositoryRoot, ...currentRelative.split('/'));
+    const currentAbsolute = await assertCanonicalContainedPath(repositoryRoot, currentRelative, {
+      label: currentRelative,
+      type: 'directory',
+    });
     const entries = await readdir(currentAbsolute, { withFileTypes: true });
     for (const entry of entries.sort((left, right) =>
       left.name < right.name ? -1 : left.name > right.name ? 1 : 0,
     )) {
       const child = `${currentRelative}/${entry.name}`;
+      assert(isPortableRelativePath(child), `build output path is unsafe: ${child}`);
       if (entry.isSymbolicLink()) fail(`symbolic links are not allowed: ${child}`);
       if (entry.isDirectory()) {
         await walk(child);
       } else if (entry.isFile()) {
+        await assertCanonicalContainedPath(repositoryRoot, child, { label: child, type: 'file' });
         if (include(child)) collected.push(child);
       } else {
         fail(`non-regular build output is not allowed: ${child}`);
@@ -286,14 +290,79 @@ function createTar(entries) {
   return Buffer.concat(chunks);
 }
 
-async function ensureAbsent(relativePath) {
+async function ensureAbsent(root, relativePath) {
+  assert(isPortableRelativePath(relativePath), `${relativePath} is not a safe generated path`);
+  const absolutePath = path.join(root, ...relativePath.split('/'));
+  const entryStat = await lstatIfPresent(absolutePath);
+  assert(!entryStat, `${relativePath} already exists; refuse to overwrite an artifact`);
+}
+
+export async function writeArtifactTransaction(
+  root,
+  archiveRelativePath,
+  sidecarRelativePath,
+  archiveBuffer,
+  sidecarText,
+  operations = {},
+) {
+  const canonicalRoot = await assertCanonicalRoot(root, 'artifact transaction root');
+  assert(
+    sidecarRelativePath === `${archiveRelativePath}.sha256`,
+    'artifact sidecar path must be derived from the archive path',
+  );
+  assertUniquePortablePaths(
+    [archiveRelativePath, sidecarRelativePath],
+    'artifact transaction paths',
+  );
+  const outputRelativeDirectory = path.posix.dirname(archiveRelativePath);
+  assert(
+    outputRelativeDirectory !== '.' &&
+      path.posix.dirname(sidecarRelativePath) === outputRelativeDirectory,
+    'artifact and sidecar must share one output directory',
+  );
+  const outputRoot = await ensureCanonicalContainedDirectory(
+    canonicalRoot,
+    outputRelativeDirectory,
+    'release output root',
+  );
+  await ensureAbsent(canonicalRoot, archiveRelativePath);
+  await ensureAbsent(canonicalRoot, sidecarRelativePath);
+
+  const transactionDirectory = await mkdtemp(path.join(outputRoot, '.release-write-'));
+  await assertCanonicalStandalonePath(transactionDirectory, {
+    label: 'artifact transaction directory',
+    type: 'directory',
+  });
+  const archivePath = path.join(canonicalRoot, ...archiveRelativePath.split('/'));
+  const sidecarPath = path.join(canonicalRoot, ...sidecarRelativePath.split('/'));
+  const temporaryArchivePath = path.join(transactionDirectory, path.basename(archivePath));
+  const temporarySidecarPath = path.join(transactionDirectory, path.basename(sidecarPath));
+  const write = operations.writeFile ?? writeFile;
+  const move = operations.rename ?? rename;
+
   try {
-    await access(path.join(repositoryRoot, ...relativePath.split('/')), constants.F_OK);
-    fail(`${relativePath} already exists; refuse to overwrite an artifact`);
+    await write(temporaryArchivePath, archiveBuffer, { flag: 'wx' });
+    await write(temporarySidecarPath, sidecarText, { encoding: 'utf8', flag: 'wx' });
+    await move(temporaryArchivePath, archivePath);
+    await move(temporarySidecarPath, sidecarPath);
+    await rm(transactionDirectory, { force: false, recursive: true });
+    await assertCanonicalContainedPath(canonicalRoot, archiveRelativePath, {
+      label: 'release archive',
+      type: 'file',
+    });
+    await assertCanonicalContainedPath(canonicalRoot, sidecarRelativePath, {
+      label: 'release sidecar',
+      type: 'file',
+    });
   } catch (error) {
-    if (error instanceof Error && error.message.startsWith('Release artifact build failed:'))
-      throw error;
-    if (!error || typeof error !== 'object' || error.code !== 'ENOENT') throw error;
+    await Promise.allSettled([
+      rm(temporaryArchivePath, { force: true }),
+      rm(temporarySidecarPath, { force: true }),
+      rm(archivePath, { force: true }),
+      rm(sidecarPath, { force: true }),
+      rm(transactionDirectory, { force: true, recursive: true }),
+    ]);
+    throw error;
   }
 }
 
@@ -327,23 +396,62 @@ async function main() {
     manifests.every(({ value }) => value.private === true && value.version === rootPackage.version),
     'all seven private manifest versions must be aligned',
   );
+  const repositoryLockfile = await readCanonicalRepositoryFile('pnpm-lock.yaml');
+  const installedLockfilePath = await assertCanonicalContainedPath(
+    repositoryRoot,
+    'node_modules/.pnpm/lock.yaml',
+    { label: 'installed pnpm lock', type: 'file' },
+  );
+  const installedLockfile = await readFile(installedLockfilePath);
+  assert(
+    repositoryLockfile.equals(installedLockfile),
+    'installed package graph does not byte-match pnpm-lock.yaml',
+  );
 
   const artifactStem = `${rootPackage.name}-v${rootPackage.version}-${commit.slice(0, 12)}`;
   const artifactFileName = `${artifactStem}.tar.gz`;
   const artifactRelativePath = `${outputDirectory}/${artifactFileName}`;
   const sidecarRelativePath = `${artifactRelativePath}.sha256`;
-  await ensureAbsent(artifactRelativePath);
-  await ensureAbsent(sidecarRelativePath);
+  await ensureCanonicalContainedDirectory(repositoryRoot, outputDirectory, 'release output root');
+  await ensureAbsent(repositoryRoot, artifactRelativePath);
+  await ensureAbsent(repositoryRoot, sidecarRelativePath);
 
   console.log('Cleaning exact release build output roots');
   await cleanReleaseBuildOutputs();
 
-  console.log('Building release inputs with VITE_API_BASE_URL=/api');
-  pnpmCommand(['build']);
+  const attributionTemporaryDirectory = await mkdtemp(
+    path.join(tmpdir(), 'dii-bundle-attribution-'),
+  );
+  await assertCanonicalStandalonePath(attributionTemporaryDirectory, {
+    label: 'bundle attribution temporary directory',
+    type: 'directory',
+  });
+  const attributionOutputPath = path.join(attributionTemporaryDirectory, 'vite-provenance.json');
+  let rawBundleAttribution;
+  try {
+    console.log('Building release inputs with VITE_API_BASE_URL=/api');
+    pnpmCommand(['build'], {
+      env: {
+        [bundleAttributionOutputVariable]: attributionOutputPath,
+        [releaseArtifactBuildVariable]: '1',
+      },
+    });
+    rawBundleAttribution = readRawBundleAttribution(attributionOutputPath);
+  } finally {
+    await rm(attributionTemporaryDirectory, { force: true, recursive: true });
+  }
+  const thirdPartyAttribution = await createBundleAttribution(rawBundleAttribution, repositoryRoot);
+  const thirdPartyNotice = createThirdPartyNotice(thirdPartyAttribution);
+  validateThirdPartyNotice(
+    thirdPartyNotice,
+    thirdPartyAttribution,
+    repositoryLockfile.toString('utf8'),
+  );
 
   await access(path.join(repositoryRoot, 'apps/api/dist/index.js'), constants.R_OK);
   await access(path.join(repositoryRoot, 'apps/web/dist/index.html'), constants.R_OK);
   const selectedPaths = new Set(staticFiles);
+  selectedPaths.add(thirdPartyAttribution.noticeFile);
   for (const selection of directorySelections) {
     for (const filePath of await collectFiles(selection.directory, selection.include)) {
       selectedPaths.add(filePath);
@@ -352,6 +460,7 @@ async function main() {
 
   const sortedPaths = [...selectedPaths].sort();
   assert(sortedPaths.length === selectedPaths.size, 'release file selection contains duplicates');
+  assertUniquePortablePaths(sortedPaths, 'release file selection');
   assert(sortedPaths.length < 500, 'release file selection exceeds the 500-file limit');
   assert(sortedPaths.every(isSafeReleasePath), 'release file selection contains an unsafe path');
   assert(
@@ -389,16 +498,18 @@ async function main() {
   for (const relativePath of sortedPaths) {
     files.set(
       relativePath,
-      runtimePackageManifestPaths.has(relativePath)
-        ? createRuntimePackageManifest(relativePath, manifestsByPath.get(relativePath))
-        : await readFile(path.join(repositoryRoot, ...relativePath.split('/'))),
+      relativePath === thirdPartyAttribution.noticeFile
+        ? thirdPartyNotice
+        : runtimePackageManifestPaths.has(relativePath)
+          ? createRuntimePackageManifest(relativePath, manifestsByPath.get(relativePath))
+          : await readCanonicalRepositoryFile(relativePath),
     );
   }
   const lockfile = files.get('pnpm-lock.yaml');
   assert(lockfile, 'pnpm-lock.yaml is missing from selection');
 
   const manifest = {
-    schemaVersion: 1,
+    schemaVersion: 3,
     product: { name: rootPackage.name, version: rootPackage.version },
     source: { commit, tree },
     artifact: {
@@ -424,6 +535,7 @@ async function main() {
       const content = files.get(relativePath);
       return { path: relativePath, sha256: sha256(content), size: content.length };
     }),
+    thirdPartyAttribution,
   };
   const manifestBuffer = Buffer.from(`${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
   files.set(manifestName, manifestBuffer);
@@ -431,6 +543,10 @@ async function main() {
   const archiveEntries = [...files.entries()]
     .map(([relativePath, content]) => [`${artifactStem}/${relativePath}`, content])
     .sort(([left], [right]) => (left < right ? -1 : left > right ? 1 : 0));
+  assertUniquePortablePaths(
+    archiveEntries.map(([entryPath]) => entryPath),
+    'release archive entries',
+  );
   const tarBuffer = createTar(archiveEntries);
   assert(tarBuffer.length <= 50 * 1024 * 1024, 'tar payload exceeds the 50 MiB limit');
   const archiveBuffer = gzipSync(tarBuffer, { level: 9, mtime: 0 });
@@ -441,19 +557,18 @@ async function main() {
   assert(archiveBuffer.length <= 25 * 1024 * 1024, 'gzip archive exceeds the 25 MiB limit');
   const archiveSha256 = sha256(archiveBuffer);
 
-  await mkdir(path.join(repositoryRoot, ...outputDirectory.split('/')), { recursive: true });
-  await writeFile(path.join(repositoryRoot, ...artifactRelativePath.split('/')), archiveBuffer, {
-    flag: 'wx',
-  });
-  await writeFile(
-    path.join(repositoryRoot, ...sidecarRelativePath.split('/')),
+  await writeArtifactTransaction(
+    repositoryRoot,
+    artifactRelativePath,
+    sidecarRelativePath,
+    archiveBuffer,
     `${archiveSha256}  ${artifactFileName}\n`,
-    { encoding: 'utf8', flag: 'wx' },
   );
 
   console.log(
     JSON.stringify({
       artifact: artifactRelativePath,
+      attributedPackages: thirdPartyAttribution.packages.length,
       commit,
       files: files.size,
       sha256: archiveSha256,

@@ -1,28 +1,29 @@
 # Repository map
 
-Last verified: 2026-07-25 on the Phase 8.4A branch from exact integrated Phase 8.3 `main`
-`a13448fb3e25885410a10f3c8e5efdea6b6b5429` (tree
-`25e661474e888b18252f331844aa066831276f89`). The repository layout is unchanged; the root and six
-private workspace manifests align at candidate version `1.0.0-rc.1` and SPDX `Apache-2.0`.
+Last verified: 2026-07-26 for Phase 8.5 from exact `main`
+`1c32f6c913b196fc4a23055fb7da3b1482b94e5e` (tree
+`5c83d034f30c6d31268109277aaa455a05ff9656`). The directory layout is unchanged; the root and six
+private workspace manifests remain aligned at candidate version `1.0.0-rc.1` and SPDX
+`Apache-2.0`. Phase 8.5 adds a release-build-only attribution helper under `scripts`.
 
 ## Directories
 
-| Path                      | Responsibility                                                    | Important entrypoints                                                                              |
-| ------------------------- | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `apps/web`                | React/Vite user interface                                         | `src/App.tsx`, `src/main.tsx`, `vite.config.ts`                                                    |
-| `apps/api`                | Fastify HTTP API                                                  | `src/index.ts`                                                                                     |
-| `packages/shared-types`   | Zod schemas and shared types                                      | `src/index.ts`                                                                                     |
-| `packages/datahub-client` | Provider-neutral contract plus fixture, GraphQL, and MCP adapters | `src/index.ts`, `src/datahub-mcp.ts`                                                               |
-| `packages/agent-core`     | Bounded deterministic investigation orchestration                 | `src/index.ts`                                                                                     |
-| `packages/evaluation`     | Canonical evaluation cases, runner, metrics, and reporters        | `src/index.ts`, `src/cli.ts`                                                                       |
-| `fixtures`                | Deterministic metadata, incidents, and demo data                  | `metadata/removed-schema-column.json`, `incidents/removed-schema-column.json`                      |
-| `tests/integration`       | Cross-package contract, safety, provider, and report tests        | `contracts.test.ts`, `incidents-api.test.ts`, `markdown-export.test.ts`                            |
-| `tests/smoke`             | Primary health and build smoke tests                              | `health.test.ts`                                                                                   |
-| `tests/e2e`               | Browser flows                                                     | `report-display.spec.mjs`                                                                          |
-| `scripts`                 | Bootstrap, smoke, and deterministic release-artifact operations   | `bootstrap-worktree.ps1`, `smoke.mjs`, `build-release-artifact.mjs`, `verify-release-artifact.mjs` |
-| `docs`                    | Product, architecture, plan, memory, and release docs             | see list below                                                                                     |
-| `.github`                 | Collaboration intake plus scoped repository validation            | `ISSUE_TEMPLATE/`, `pull_request_template.md`, `workflows/`                                        |
-| `.codex`                  | Trusted project-scoped Codex settings without secrets             | `config.toml`                                                                                      |
+| Path                      | Responsibility                                                    | Important entrypoints                                                                                                                                                             |
+| ------------------------- | ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/web`                | React/Vite user interface                                         | `src/App.tsx`, `src/main.tsx`, `vite.config.ts`                                                                                                                                   |
+| `apps/api`                | Fastify HTTP API                                                  | `src/index.ts`                                                                                                                                                                    |
+| `packages/shared-types`   | Zod schemas and shared types                                      | `src/index.ts`                                                                                                                                                                    |
+| `packages/datahub-client` | Provider-neutral contract plus fixture, GraphQL, and MCP adapters | `src/index.ts`, `src/datahub-mcp.ts`                                                                                                                                              |
+| `packages/agent-core`     | Bounded deterministic investigation orchestration                 | `src/index.ts`                                                                                                                                                                    |
+| `packages/evaluation`     | Canonical evaluation cases, runner, metrics, and reporters        | `src/index.ts`, `src/cli.ts`                                                                                                                                                      |
+| `fixtures`                | Deterministic metadata, incidents, and demo data                  | `metadata/removed-schema-column.json`, `incidents/removed-schema-column.json`                                                                                                     |
+| `tests/integration`       | Cross-package contract, safety, provider, and report tests        | `contracts.test.ts`, `incidents-api.test.ts`, `markdown-export.test.ts`                                                                                                           |
+| `tests/smoke`             | Primary health and build smoke tests                              | `health.test.ts`                                                                                                                                                                  |
+| `tests/e2e`               | Browser flows                                                     | `report-display.spec.mjs`                                                                                                                                                         |
+| `scripts`                 | Bootstrap, smoke, and deterministic release-artifact operations   | `bootstrap-worktree.ps1`, `smoke.mjs`, `release-path-safety.mjs`, `pnpm-lock-identity.mjs`, `bundle-attribution.mjs`, `build-release-artifact.mjs`, `verify-release-artifact.mjs` |
+| `docs`                    | Product, architecture, plan, memory, and release docs             | see list below                                                                                                                                                                    |
+| `.github`                 | Collaboration intake plus scoped repository validation            | `ISSUE_TEMPLATE/`, `pull_request_template.md`, `workflows/`                                                                                                                       |
+| `.codex`                  | Trusted project-scoped Codex settings without secrets             | `config.toml`                                                                                                                                                                     |
 
 ## Root configuration
 
@@ -69,6 +70,7 @@ private workspace manifests align at candidate version `1.0.0-rc.1` and SPDX `Ap
 | `pnpm typecheck`                                                | Recursive workspace type check.                                             |
 | `pnpm test`                                                     | Vitest unit/integration/smoke tests.                                        |
 | `pnpm test:e2e:report`                                          | Canonical fixture report browser flow.                                      |
+| `pnpm test:release-artifact`                                    | Focused Node contracts for release cleanup, attribution, and verification.  |
 | `pnpm --filter @dii/evaluation evaluate -- --output-dir <path>` | Write validated canonical JSON and Markdown evaluation reports after build. |
 | `pnpm build`                                                    | Build packages and apps.                                                    |
 | `pnpm release:artifact`                                         | Build once and create the deterministic clean-commit host artifact.         |
@@ -98,6 +100,14 @@ that artifact-only boundary.
 
 The web uses the same shared incident schemas as the API. In development, Vite proxies browser calls
 from `/api/*` to the Fastify service and removes the `/api` prefix.
+
+For release builds only, `apps/web/vite.config.ts` enables `scripts/bundle-attribution.mjs` when the
+builder supplies its private output path. The plugin records exact Rollup rendered-module lengths;
+the builder maps positive third-party contributions to exact pnpm lock snapshots and canonical
+virtual-store roots plus upstream legal files, emits deterministic `THIRD_PARTY_NOTICES.txt`, and
+binds the evidence into release-manifest schema v3. Builder and verifier share one Windows-safe path
+validator, while the verifier independently reconstructs every attributed identity from the archived
+lockfile. Ordinary development and non-release Vite builds emit no provenance file.
 
 ## Documentation index
 

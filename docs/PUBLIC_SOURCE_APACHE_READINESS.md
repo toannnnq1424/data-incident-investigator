@@ -1,7 +1,8 @@
 # Public-source and Apache-2.0 readiness decision packet
 
-Status: `PHASE 8.4B STAGE 2 — POST-MUTATION EVIDENCE`; Apache-2.0 is integrated on exact `main`,
-the repository is `Public`, C10 is `PASS`, and Draft PR #53 remains unmerged pending independent QA2.
+Status: `PHASE 8.5 — EXACT BUNDLED-OUTPUT ATTRIBUTION`; Apache-2.0 and Public visibility are
+integrated, Private vulnerability reporting is enabled, the technical release-bundle inventory is
+enforced, and C11 remains `PARTIAL` pending the legal-owner disposition described below.
 
 This document prepares two independent decisions for Data Incident Investigator:
 
@@ -228,14 +229,22 @@ Pages, deployment, merge, branch-retention, or release-setting drift was observe
 QA2 security follow-up enabled only private vulnerability reporting; no other setting changed.
 
 Public source access and the exact unsigned read evidence make C10 `PASS`. C09 remains `PASS`; C11
-and Phase 8.2 remain `PARTIAL`. Artifact publication/distribution remains `BLOCKED` pending the exact
-bundled-output attribution audit. Public visibility does not claim a deployment, video, Devpost
-submission, published Release, or distributable artifact.
+and Phase 8.2 remain `PARTIAL`. Phase 8.5 closes the technical bundled-output attribution gap, but
+artifact publication/distribution remains unauthorized pending independent QA and a legal-owner
+disposition. Public visibility does not claim a deployment, video, Devpost submission, published
+Release, or legally approved distributable artifact.
 
 The residual exposure remains irreversible: a later visibility rollback cannot recall forks, clones,
-caches, or copies. Any rollback would be containment/escalation, not erasure. This evidence commit
-must receive exact-new-head PR CI `SUCCESS`, then Draft PR #53 returns to the same QA task for QA2;
-this continuation does not mark Ready or merge.
+caches, or copies. Any rollback would be containment/escalation, not erasure.
+
+Phase 8.4B is now complete through normal merge
+`1c32f6c913b196fc4a23055fb7da3b1482b94e5e`, tree
+`5c83d034f30c6d31268109277aaa455a05ff9656`, with ordered parents
+`36d4205806597ae14b7306c74e1527c284202023` then
+`e4ddbb8277f430ed1da4593c9f19ca89f1aa39fb`. Exact-main CI run `30178465331`, job
+`89731006555`, is `SUCCESS`. GitHub remains `Public`; private vulnerability reporting remains
+enabled; the Phase 8.4B branch and PR #53 conversation remain retained. C10 remains `PASS` as a
+preservation/reverification result. No Phase 8.5 work reopens or repeats that completed mutation.
 
 ## Audited baseline and method
 
@@ -577,18 +586,47 @@ produces an application bundle for static hosting. `pnpm-lock.yaml` resolves Rea
 attribution-review boundary, not a complete inventory of packages actually embedded in the exact
 output.
 
-The authorized source relicense to Apache-2.0 can proceed independently. Release artifact
-publication or distribution is `BLOCKED` until a scoped audit determines which packages are actually
-embedded in the exact `apps/web/dist`, maps every applicable copyright and permission notice to its
-upstream legal file with provenance, and decides whether a traceable third-party attribution file is
-required. Only after that evidence exists should the artifact builder, verifier, and tests be updated
-to include and enforce such a file. Adding an invented holder, year, generic dependency list, or
-unverified `NOTICE` now would not satisfy that gate.
+Phase 8.5 supplies that scoped technical evidence and enforcement without adding a generic project
+`NOTICE`, invented holder, invented year, compatibility conclusion, or unverified dependency list.
+The residual legal-owner decision remains separate from the engineering proof below.
 
-This correction does not erase the missing `abstract-logging@2.0.1` legal file or turn declared
-metadata into legal approval. C11 remains `PARTIAL`. Preserve every upstream copyright, patent,
-trademark, attribution, and licence record; never delete bundled or vendored provenance to simplify
-packaging.
+### Phase 8.5 exact rendered-module and legal-file evidence
+
+The release-only Vite plugin records every output chunk module and its rendered length. The builder
+requires the installed pnpm lock to byte-match repository `pnpm-lock.yaml`, rejects unknown virtual
+modules and potential zero-rendered non-JavaScript asset contributions, and maps each positive
+third-party contribution to its exact installed package, module source hash, package-manifest hash,
+declared licence metadata, and top-level licence/NOTICE files. First-party workspace modules and
+zero-rendered JavaScript are excluded from the embedded-code claim.
+
+The exact web audit identifies one JavaScript output,
+`apps/web/dist/assets/index-DHLGe_T9.js`, with these five package identities:
+
+| Embedded package   | Declared metadata | Upstream legal file | Legal-file SHA-256                                                 |
+| ------------------ | ----------------- | ------------------- | ------------------------------------------------------------------ |
+| `react@19.2.7`     | MIT               | `LICENSE`           | `da6d3703ed11cbe42bd212c725957c98da23cbff1998c05fa4b3d976d1a58e93` |
+| `react-dom@19.2.7` | MIT               | `LICENSE`           | `da6d3703ed11cbe42bd212c725957c98da23cbff1998c05fa4b3d976d1a58e93` |
+| `scheduler@0.27.0` | MIT               | `LICENSE`           | `da6d3703ed11cbe42bd212c725957c98da23cbff1998c05fa4b3d976d1a58e93` |
+| `vite@7.3.6`       | MIT               | `LICENSE.md`        | `a77a1c089806b39ad339535bdf3677f636c91d96693e8ad7b11fe733f650ea64` |
+| `zod@4.4.3`        | MIT               | `LICENSE`           | `3f1189b28e3866e0d979968d466b78f813f76827cfdca1fbb124cc0a5c8841f8` |
+
+Vite appears because its module-preload polyfill contributes 1,168 rendered bytes at runtime; it is
+not omitted merely because Vite is a build dependency. None of the five installed package roots has
+a top-level NOTICE file. The manifest retains the exact normalized contributing module/output paths,
+rendered-byte counts, source hashes, package-manifest paths/hashes, legal-file paths/hashes, and
+upstream legal text. Deterministic `THIRD_PARTY_NOTICES.txt` reproduces that evidence. Manifest schema
+v3 binds each package to its exact pnpm lock package/snapshot and canonical virtual-store root. The
+standalone verifier independently reconstructs that identity from the archived lockfile, requires
+the notice byte-for-byte for both archive and extracted-tree verification, and rejects missing,
+extra, reordered, malformed, unsafe, cross-root, linked, or tampered evidence. Shared Windows-safe
+path validation and rollback-safe archive/sidecar writes are engineering controls, not legal advice.
+
+`abstract-logging@2.0.1` has no positive rendered-module contribution. The API TypeScript output
+preserves external imports and the archive excludes `node_modules`, so this package is not embedded
+or distributed in the archive and its absent legal file is not inserted into the bundled notice. It
+still remains a broader production-install and C11 legal-owner caveat. The five declared MIT values
+and reproduced texts are package evidence, not a legal compatibility ruling, authorization decision,
+or legal advice.
 
 ### Relicensing authority is separate from dependency compatibility
 
@@ -609,20 +647,23 @@ authority does not resolve dependency obligations.
 - [x] **Authorize GitHub repository Public visibility.** Explicitly approved independently by the
       user on 2026-07-25; reserved and not consumed by Phase 8.4A.
 
-The approvals are independent. This Draft PR must remain Draft and unmerged for independent QA.
-Merging it does not press the visibility control or authorize any other external mutation.
+The approvals are independent. Phase 8.4B consumed the Public authorization and completed through the
+normal merge recorded above; its branch and PR conversation remain retained. Current Draft PR #54 is
+only the Phase 8.5 artifact-enforcement work and does not authorize any other external mutation.
 
 ## Residual blockers and next evidence
 
 1. Apache-2.0 is integrated on exact `main`, exact-main CI is successful, and GitHub detects the
    license. C09 is `PASS`; no license mutation remains in Phase 8.4B.
 2. All 138 external production package-version nodes have declared-license metadata, and 137 have a
-   legal file. `abstract-logging@2.0.1` lacks a legal file. This does not block the current source
-   relicense, but C11 stays `PARTIAL`. The release archive already includes bundled third-party
-   runtime code in `apps/web/dist`; publication/distribution is blocked until the exact bundled-output
-   attribution audit and any justified artifact attribution-file enforcement are complete.
-3. GitHub is `Public`. Authenticated and unsigned access plus credential-helper-disabled Git read
-   evidence make C10 `PASS`; preserve and reverify that state through QA2 and the normal merge.
+   legal file. Phase 8.5 closes the technical bundle audit/enforcement gap for the exact five embedded
+   packages and proves `abstract-logging@2.0.1` is not embedded. Its absent legal file and the broader
+   authorization/rights review keep C11 `PARTIAL`. Artifact publication/distribution remains
+   unauthorized until independent QA passes and the legal owner records whether the captured
+   upstream texts and remaining dependency/data/API evidence satisfy the distribution/submission
+   obligations.
+3. GitHub is `Public`. Authenticated and unsigned access, the completed Phase 8.4B normal merge, and
+   exact-main CI make C10 `PASS`; preserve and reverify that state through later work.
 4. Phase 8.2 remains `PARTIAL` pending live/judge DataHub credentials and validation; this packet does
    not change that independent readiness condition.
 5. The prior private-reporting blocker is closed. At 2026-07-26 05:22 ICT
