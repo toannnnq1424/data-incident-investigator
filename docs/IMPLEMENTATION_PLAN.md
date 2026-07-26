@@ -6531,3 +6531,51 @@ Corrected redeploy result:
   incident (`81% · high`), 9,221-byte Markdown download, empty warn/error console, accessible names,
   and desktop/narrow overflow checks. The later evidence-only commit is not the source commit for the
   running revision.
+
+#### Phase 8.7 QA correction — fail-closed runtime evidence verification
+
+Status: canonical QA returned `FAIL / DO NOT MERGE` on exact verifier/evidence head
+`9ee04c7f5cbccca56fb6fb165686f7cff803f96e`. The proven live revision remains the immutable image
+built from source commit `3653cf6b591eed76ad6276d07b1ea08e88d7fa4f`; this correction is a later
+tooling/evidence head and must not be described as the live image source.
+
+Objective: make the runtime-attribution contract part of canonical `pnpm validate`, reject linked,
+escaped, extra, missing, or tampered runtime/legal inputs fail-closed, bind legal files and rewritten
+workspace manifests by content, and correct only the four stale current-state documentation claims
+identified by QA.
+
+Minimum files:
+
+- root `package.json` to add the existing direct Node contract to canonical validation;
+- `scripts/runtime-attribution.mjs`, `scripts/prepare-runtime-manifests.mjs`, the canonical runtime
+  attribution manifest, and `tests/runtime-attribution.contract.mjs` for safe containment, exact file
+  set, content binding, and focused negative cases;
+- `docs/DEVPOST_REQUIREMENTS.md`, `docs/PUBLIC_SOURCE_APACHE_READINESS.md`, and
+  `docs/RELEASE_CHECKLIST.md` for the exact stale claims;
+- this plan and `docs/SESSION_LOG.md` for current correction state, plus only directly affected
+  repository-map or PR evidence if required for truthfulness.
+
+Acceptance:
+
+- canonical `pnpm validate` executes `pnpm test:runtime-attribution`; Vitest remains distinct and
+  does not indirectly collect the `.contract.mjs` Node test;
+- one shared path-safety routine rejects symlinks, Windows junction/reparse targets, noncanonical
+  paths, and containment escapes before runtime attribution reads any manifest, legal, or runtime
+  child;
+- runtime verification recollects and byte-compares the complete expected runtime file evidence, so
+  an unexpected file, missing file, size change, or hash change fails;
+- required Apache/project/third-party legal files and all rewritten runtime workspace manifests are
+  bound by deterministic SHA-256 evidence and verified by content, while installed package
+  manifests/legal files retain their existing frozen-graph hashes;
+- focused direct contracts cover portable symlink/junction escape, explicit cross-root path,
+  unexpected runtime file, runtime/manifest/legal tamper, and missing legal evidence without scanning
+  outside the fixture root;
+- correct the current-main boundary, exact matrix totals, consumed GCP owner approval, and historical
+  `00001-jst` rollback wording without rewriting append-only historical evidence;
+- run the direct contract, changed-file formatting/static checks, canonical `pnpm validate`, bounded
+  path/EOL/secret/diff checks, one additive commit and normal push, then require exact-new-head PR CI
+  `SUCCESS` and update only existing Draft PR #56 through the official in-app GitHub Browser.
+
+Deferred: every GCP mutation, image rebuild, redeploy, resource/API/billing change, public incident or
+smoke, live DataHub/model work, tag, Release, Devpost submission, PR Ready transition, merge, history
+rewrite, and force-push.

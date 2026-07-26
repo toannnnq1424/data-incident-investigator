@@ -103,6 +103,10 @@ Last updated: 2026-07-26.
   Phase 8.6 qualified owner disposition supersedes the historical C11 `PARTIAL/BLOCKED` state only
   within its exact zero-cost artifact/data/API scope. See
   [`PUBLIC_SOURCE_APACHE_READINESS.md`](PUBLIC_SOURCE_APACHE_READINESS.md).
+  The eight-file/schema-v1 statement is immutable evidence from live-image source commit
+  `3653cf6b591eed76ad6276d07b1ea08e88d7fa4f`. The later Draft PR verifier head binds the complete
+  23-file build-output set, required legal-file content, and rewritten workspace manifests under
+  schema v2, but it was not rebuilt or redeployed and is not the source of the running image.
 
   Independent Windows QA returned `FAIL / DO NOT MERGE` on Phase 8.5 head
   `bde288112f504c2067ff85499337d9315c30c432`: package identity was not yet bound to the frozen virtual

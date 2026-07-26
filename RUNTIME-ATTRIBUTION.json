@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "method": "cloud-run-runtime-attribution-v1",
+  "schemaVersion": 2,
+  "method": "cloud-run-runtime-attribution-v2",
   "baseImage": "node:24-bookworm-slim@sha256:6f7b03f7c2c8e2e784dcf9295400527b9b1270fd37b7e9a7285cf83b6951452d",
   "lockfile": {
     "path": "pnpm-lock.yaml",
@@ -3845,9 +3845,24 @@
   },
   "runtimeFiles": [
     {
+      "path": "apps/api/dist/index.d.ts",
+      "sha256": "8430ab5945d9a842a711a17182ea2715d719c9920d7be7320361d69fb188a240",
+      "size": 2782
+    },
+    {
+      "path": "apps/api/dist/index.d.ts.map",
+      "sha256": "edad1bf75664a80c22f5b0456fff1a18c2f9b6f7fbebf17d558ff10806f558e9",
+      "size": 1706
+    },
+    {
       "path": "apps/api/dist/index.js",
       "sha256": "18a9fb2974595bc6786c717232cd4b3b6d9f3de6fa3e63cbb3aee933799c9ce7",
       "size": 79789
+    },
+    {
+      "path": "apps/api/dist/index.js.map",
+      "sha256": "1bfd6489bda146e576595fbf9ae9d7463cc1ca58d90e3ca11cd067de1ee08d99",
+      "size": 53690
     },
     {
       "path": "apps/web/dist/assets/index-CT34O9fC.css",
@@ -3865,9 +3880,34 @@
       "size": 542
     },
     {
+      "path": "packages/agent-core/dist/index.d.ts",
+      "sha256": "300de3bcbea9f8928278f7a7c68a28bde80fed7c2f05f4775ee8315761f59540",
+      "size": 6772
+    },
+    {
+      "path": "packages/agent-core/dist/index.d.ts.map",
+      "sha256": "6c0b821d0f928fb74b4fe1c25bcd3f9458c6475cb5eb31abd467f73d2bade3b3",
+      "size": 4478
+    },
+    {
       "path": "packages/agent-core/dist/index.js",
       "sha256": "4156ee20664b2c4a2d563cb5da2450e1ad76a2654837925750c281764176f8ee",
       "size": 77598
+    },
+    {
+      "path": "packages/agent-core/dist/index.js.map",
+      "sha256": "93b607eee9e0bfbbda98263927cd04b899d2712da140e659ffe524daf87e9447",
+      "size": 61388
+    },
+    {
+      "path": "packages/datahub-client/dist/datahub-mcp.d.ts",
+      "sha256": "51a8d27cefe1f0b3d018e96c3016422334ef31333e8fa3d27d93f9f41910e135",
+      "size": 2402
+    },
+    {
+      "path": "packages/datahub-client/dist/datahub-mcp.d.ts.map",
+      "sha256": "88f1738476f025f9ed2986432c341c5c2e7148797ff04fae74480793aaa2b6f7",
+      "size": 1804
     },
     {
       "path": "packages/datahub-client/dist/datahub-mcp.js",
@@ -3875,20 +3915,83 @@
       "size": 28500
     },
     {
+      "path": "packages/datahub-client/dist/datahub-mcp.js.map",
+      "sha256": "4d1ea305bb335835d1f2609cab3331d0f2ef3819998cbb491fe5647667850ac8",
+      "size": 27051
+    },
+    {
+      "path": "packages/datahub-client/dist/index.d.ts",
+      "sha256": "81eb1c6845d4241a5e91b1aeb1c48a31de02abc1a42050b678be43da611b929f",
+      "size": 5664
+    },
+    {
+      "path": "packages/datahub-client/dist/index.d.ts.map",
+      "sha256": "3bc739e03ac76ca897fb922ff2f1661f080a123d82f95efb183427e4037fb7db",
+      "size": 4156
+    },
+    {
       "path": "packages/datahub-client/dist/index.js",
       "sha256": "932763854cbcce0713665012328a1b8ac34df3bc941d8aecba48145dc7728a38",
       "size": 49432
     },
     {
+      "path": "packages/datahub-client/dist/index.js.map",
+      "sha256": "266e0d0fde6b311ad18f74afdb318a02baf973970bc3fe683b5eb882f9e9edac",
+      "size": 44779
+    },
+    {
+      "path": "packages/shared-types/dist/index.d.ts",
+      "sha256": "5ac978ac44c7a3afea5996002d4cc49885e308ae6dfa9bb8b4bcac00fbe0fae7",
+      "size": 485493
+    },
+    {
+      "path": "packages/shared-types/dist/index.d.ts.map",
+      "sha256": "2f8f17c9ec7a9d04151ad762f25b48524d52c5c1cb906b5fff278d5a61998548",
+      "size": 24440
+    },
+    {
       "path": "packages/shared-types/dist/index.js",
       "sha256": "86ffda5ff1535be1b31f731e26f0ee2ef2c404201731dd6ed475c4121f2e6fec",
       "size": 192153
+    },
+    {
+      "path": "packages/shared-types/dist/index.js.map",
+      "sha256": "a0c156cdc3740484cdce12624954c3d4af1f90d9e85b7de7e908377c4c45ba57",
+      "size": 159150
     }
   ],
   "requiredLegalFiles": [
-    "LICENSE",
-    "NOTICE",
-    "THIRD_PARTY_NOTICES.txt",
-    "RUNTIME-ATTRIBUTION.json"
+    {
+      "path": "LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "size": 11358
+    },
+    {
+      "path": "NOTICE",
+      "sha256": "4c3019e13c96e2906eddd3e8fa35d4ef0d4e13826d2398551d8a9796fac82d1f",
+      "size": 286
+    },
+    {
+      "path": "THIRD_PARTY_NOTICES.txt",
+      "sha256": "9cc0b8b55f4a78435cf4d25b7f7f5aa05a981ee041963d38ab82e2afdcebccab",
+      "size": 402446
+    }
+  ],
+  "runtimeWorkspaceManifests": [
+    {
+      "path": "packages/agent-core/package.json",
+      "sha256": "27c023c132cd7ec7fbff25edc895980d14306b8c6132890338e58cc7a95808ae",
+      "size": 427
+    },
+    {
+      "path": "packages/datahub-client/package.json",
+      "sha256": "ee5c9f4a5aa7dab034cc9463cab7d7cb7bf047c16b1c6f2ce9752a3d0f8ff298",
+      "size": 453
+    },
+    {
+      "path": "packages/shared-types/package.json",
+      "sha256": "2a9fb5ec460933b2f9c29776ad791a17e7739a92ff5df0a9ba3b72e3489bcd6d",
+      "size": 368
+    }
   ]
 }

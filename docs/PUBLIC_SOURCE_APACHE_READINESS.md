@@ -664,9 +664,11 @@ blanket legal clearance, or make budgets/max instances a hard spending cap.
 Card-free, non-expiring tiers remain preferred. A card-required trial is eligible only if current
 official evidence establishes no unavoidable fee and a reliable pre-charge cancellation path. Any
 unavoidable or non-refundable charge, mandatory paid plan, unclear price, uncontrollable
-auto-conversion, or inability to enforce zero spend is `REJECT`. If a later provider is approved, a
-reminder/automation must be created before the buffered safe cancellation deadline; none is created
-in this preflight because no provider is selected or approved.
+auto-conversion, or inability to enforce zero spend is `REJECT`. The historical preflight proposed a
+reminder/automation if a provider were later approved. Phase 8.7 then consumed the owner's separate
+explicit risk acceptance and deployed the approved GCP fixture service without creating a reminder.
+The recorded 2026-08-10 or 20%-remaining-credit stop, delete, and billing-detach boundary therefore
+remains a manual operator control rather than a hard spending cap.
 
 Within that fail-closed cost boundary, the owner records this operational disposition:
 
@@ -745,6 +747,12 @@ hashes, as did the immutable base, lock identity, five Vite identities, notices,
 and project `NOTICE`. C11 is therefore
 **QUALIFIED PASS — OWNER-AUTHORIZED SCOPE** for this exact digest and the documented
 synthetic/authorized-data boundary.
+
+That eight-file verification and manifest schema v1 remain evidence inside immutable source commit
+`3653cf6b591eed76ad6276d07b1ea08e88d7fa4f` and the live digest above. The later Draft PR verifier
+head upgrades tracked source evidence to schema v2, binds the complete 23-file build-output set plus
+required legal files and rewritten workspace manifests, and is not the live image source. No image
+rebuild, redeploy, or duplicate public smoke is implied by that tooling-only correction.
 
 ## Independent human decision checklist
 

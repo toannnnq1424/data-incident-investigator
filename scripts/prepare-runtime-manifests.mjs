@@ -3,7 +3,7 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const runtimePackages = [
+export const runtimeManifestPaths = [
   'packages/agent-core/package.json',
   'packages/datahub-client/package.json',
   'packages/shared-types/package.json',
@@ -33,7 +33,7 @@ export function createRuntimeManifest(manifest, manifestPath) {
 }
 
 async function main() {
-  for (const manifestPath of runtimePackages) {
+  for (const manifestPath of runtimeManifestPaths) {
     const absolutePath = path.join(repositoryRoot, ...manifestPath.split('/'));
     const manifest = JSON.parse(await readFile(absolutePath, 'utf8'));
     const runtimeManifest = createRuntimeManifest(manifest, manifestPath);

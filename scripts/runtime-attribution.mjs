@@ -1,6 +1,6 @@
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { readFile, readdir, realpath, stat, writeFile } from 'node:fs/promises';
+import { readFile, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -10,12 +10,28 @@ import {
   parsePnpmSnapshotKey,
   resolvePnpmPackageRootIdentity,
 } from './pnpm-lock-identity.mjs';
+import { createRuntimeManifest, runtimeManifestPaths } from './prepare-runtime-manifests.mjs';
+import {
+  assertCanonicalContainedPath,
+  assertCanonicalRoot,
+  assertCanonicalStandalonePath,
+  assertUniquePortablePaths,
+  isPortableRelativePath,
+} from './release-path-safety.mjs';
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const attributionFileName = 'RUNTIME-ATTRIBUTION.json';
 const noticeFileName = 'THIRD_PARTY_NOTICES.txt';
 const baseImage =
   'node:24-bookworm-slim@sha256:6f7b03f7c2c8e2e784dcf9295400527b9b1270fd37b7e9a7285cf83b6951452d';
+export const runtimeOutputRoots = [
+  'apps/api/dist',
+  'apps/web/dist',
+  'packages/agent-core/dist',
+  'packages/datahub-client/dist',
+  'packages/shared-types/dist',
+];
+const requiredLegalFilePaths = ['LICENSE', 'NOTICE', noticeFileName];
 const legalFilePattern = /^(?:licen[cs]e|copying)(?:[._-].+)?$/i;
 const noticeFilePattern = /^notice(?:[._-].+)?$/i;
 const fallbackLegalEvidence = new Map([
@@ -52,11 +68,63 @@ function portableRelative(root, absolutePath, label) {
       relative !== '..' &&
       !relative.startsWith('../') &&
       !path.isAbsolute(relative) &&
-      !relative.includes('\\') &&
-      !relative.includes('\0'),
-    `${label} is outside the repository`,
+      isPortableRelativePath(relative),
+    `${label} is outside its containment root`,
   );
   return relative;
+}
+
+async function containedPath(root, relativePath, label, type = 'file') {
+  try {
+    return await assertCanonicalContainedPath(root, relativePath, { label, type });
+  } catch (error) {
+    if (error && typeof error === 'object' && error.code === 'ENOENT') {
+      fail(`${label} is missing`);
+    }
+    fail(`${label} is unsafe: ${error instanceof Error ? error.message : 'unknown path error'}`);
+  }
+}
+
+async function readContainedFile(root, relativePath, label) {
+  return readFile(await containedPath(root, relativePath, label));
+}
+
+function fileEvidence(relativePath, buffer) {
+  return {
+    path: relativePath,
+    sha256: sha256(buffer),
+    size: buffer.length,
+  };
+}
+
+function assertFileEvidence(entries, label) {
+  assert(Array.isArray(entries) && entries.length > 0, `${label} must be a non-empty array`);
+  assertUniquePortablePaths(
+    entries.map((entry) => entry?.path),
+    label,
+  );
+  for (const entry of entries) {
+    assert(
+      Number.isSafeInteger(entry.size) &&
+        entry.size >= 0 &&
+        typeof entry.sha256 === 'string' &&
+        /^[0-9a-f]{64}$/.test(entry.sha256),
+      `${label} contains invalid content evidence`,
+    );
+  }
+  const sorted = [...entries].sort((left, right) => compareText(left.path, right.path));
+  assert(JSON.stringify(entries) === JSON.stringify(sorted), `${label} must be sorted by path`);
+}
+
+async function verifyBoundFiles(root, expected, label) {
+  assertFileEvidence(expected, label);
+  for (const entry of expected) {
+    const buffer = await readContainedFile(root, entry.path, `${label} ${entry.path}`);
+    assert(
+      buffer.length === entry.size && sha256(buffer) === entry.sha256,
+      `${entry.path} content differs from attribution`,
+    );
+  }
 }
 
 function pnpm(arguments_) {
@@ -136,13 +204,32 @@ async function readCanonicalUtf8(absolutePath, label) {
   return { buffer, text };
 }
 
-async function packageEvidence(dependency, lockGraph) {
-  const packageRoot = await realpath(dependency.path);
-  const packageRootRelative = portableRelative(repositoryRoot, packageRoot, 'package root');
+async function readCanonicalContainedUtf8(root, relativePath, label) {
+  return readCanonicalUtf8(await containedPath(root, relativePath, label), label);
+}
+
+async function packageEvidence(dependency, lockGraph, canonicalRepositoryRoot) {
+  const requestedPackageRoot = path.resolve(dependency.path);
+  const requestedPackageRootRelative = portableRelative(
+    canonicalRepositoryRoot,
+    requestedPackageRoot,
+    'package root',
+  );
+  const packageRoot = await containedPath(
+    canonicalRepositoryRoot,
+    requestedPackageRootRelative,
+    'package root',
+    'directory',
+  );
+  const packageRootRelative = portableRelative(
+    canonicalRepositoryRoot,
+    packageRoot,
+    'package root',
+  );
   const frozen = resolvePnpmPackageRootIdentity(packageRootRelative, lockGraph);
-  const packageManifestPath = path.join(packageRoot, 'package.json');
-  const packageManifestEvidence = await readCanonicalUtf8(
-    packageManifestPath,
+  const packageManifestEvidence = await readCanonicalContainedUtf8(
+    packageRoot,
+    'package.json',
     `${frozen.lockSnapshot} package.json`,
   );
   let packageManifest;
@@ -169,8 +256,11 @@ async function packageEvidence(dependency, lockGraph) {
     ['notice', noticeNames],
   ]) {
     for (const fileName of selectedNames) {
-      const legalPath = path.join(packageRoot, fileName);
-      const evidence = await readCanonicalUtf8(legalPath, `${frozen.lockSnapshot}/${fileName}`);
+      const evidence = await readCanonicalContainedUtf8(
+        packageRoot,
+        fileName,
+        `${frozen.lockSnapshot}/${fileName}`,
+      );
       legalFiles.push({
         kind,
         path: `${packageRootRelative}/${fileName}`,
@@ -185,8 +275,11 @@ async function packageEvidence(dependency, lockGraph) {
   if (licenseNames.length === 0) {
     const fallback = fallbackLegalEvidence.get(identity);
     assert(fallback, `${identity} has no packaged licence file or approved fallback`);
-    const fallbackPath = path.join(repositoryRoot, ...fallback.path.split('/'));
-    const evidence = await readCanonicalUtf8(fallbackPath, fallback.path);
+    const evidence = await readCanonicalContainedUtf8(
+      canonicalRepositoryRoot,
+      fallback.path,
+      fallback.path,
+    );
     legalFiles.unshift({
       kind: 'license',
       path: fallback.path,
@@ -217,47 +310,112 @@ async function packageEvidence(dependency, lockGraph) {
   };
 }
 
-async function collectPackageEvidence(dependencies, lockGraph) {
-  return Promise.all(dependencies.map((dependency) => packageEvidence(dependency, lockGraph))).then(
-    (packages) =>
-      packages.sort(
-        (left, right) =>
-          compareText(left.name, right.name) ||
-          compareText(left.version, right.version) ||
-          compareText(left.packageRoot, right.packageRoot),
-      ),
+async function collectPackageEvidence(dependencies, lockGraph, canonicalRepositoryRoot) {
+  return Promise.all(
+    dependencies.map((dependency) =>
+      packageEvidence(dependency, lockGraph, canonicalRepositoryRoot),
+    ),
+  ).then((packages) =>
+    packages.sort(
+      (left, right) =>
+        compareText(left.name, right.name) ||
+        compareText(left.version, right.version) ||
+        compareText(left.packageRoot, right.packageRoot),
+    ),
   );
 }
 
-async function collectRuntimeFiles() {
-  const roots = [
-    'apps/api/dist',
-    'apps/web/dist',
-    'packages/agent-core/dist',
-    'packages/datahub-client/dist',
-    'packages/shared-types/dist',
-  ];
+export async function collectRuntimeFiles(rootPath = repositoryRoot) {
+  const canonicalRoot = await assertCanonicalRoot(rootPath, 'runtime filesystem root');
   const files = [];
 
   async function walk(relativeDirectory) {
-    const absoluteDirectory = path.join(repositoryRoot, ...relativeDirectory.split('/'));
+    const absoluteDirectory = await containedPath(
+      canonicalRoot,
+      relativeDirectory,
+      `runtime output ${relativeDirectory}`,
+      'directory',
+    );
     const entries = await readdir(absoluteDirectory, { withFileTypes: true });
     for (const entry of entries.sort((left, right) => compareText(left.name, right.name))) {
       const child = `${relativeDirectory}/${entry.name}`;
       if (entry.isDirectory()) {
+        await containedPath(canonicalRoot, child, `runtime output ${child}`, 'directory');
         await walk(child);
       } else if (entry.isFile()) {
-        if (child.endsWith('.map') || child.endsWith('.d.ts')) continue;
-        const buffer = await readFile(path.join(repositoryRoot, ...child.split('/')));
-        files.push({ path: child, sha256: sha256(buffer), size: buffer.length });
+        const buffer = await readContainedFile(canonicalRoot, child, `runtime output ${child}`);
+        files.push(fileEvidence(child, buffer));
       } else {
         fail(`runtime output contains a non-regular path: ${child}`);
       }
     }
   }
 
-  for (const root of roots) await walk(root);
+  for (const root of runtimeOutputRoots) await walk(root);
   return files.sort((left, right) => compareText(left.path, right.path));
+}
+
+async function collectRequiredLegalFiles(canonicalRepositoryRoot) {
+  const evidence = [];
+  for (const relativePath of requiredLegalFilePaths) {
+    const buffer = await readContainedFile(
+      canonicalRepositoryRoot,
+      relativePath,
+      `required legal file ${relativePath}`,
+    );
+    evidence.push(fileEvidence(relativePath, buffer));
+  }
+  return evidence.sort((left, right) => compareText(left.path, right.path));
+}
+
+async function collectRewrittenRuntimeManifests(canonicalRepositoryRoot) {
+  const evidence = [];
+  for (const manifestPath of runtimeManifestPaths) {
+    const source = await readCanonicalContainedUtf8(
+      canonicalRepositoryRoot,
+      manifestPath,
+      manifestPath,
+    );
+    let manifest;
+    try {
+      manifest = JSON.parse(source.text);
+    } catch {
+      fail(`${manifestPath} is invalid JSON`);
+    }
+    const runtimeManifest = Buffer.from(
+      `${JSON.stringify(createRuntimeManifest(manifest, manifestPath), null, 2)}\n`,
+      'utf8',
+    );
+    evidence.push(fileEvidence(manifestPath, runtimeManifest));
+  }
+  return evidence.sort((left, right) => compareText(left.path, right.path));
+}
+
+export async function verifyRuntimeFilesystemEvidence(rootPath, attribution) {
+  const canonicalRoot = await assertCanonicalRoot(rootPath, 'runtime filesystem root');
+  assert(
+    attribution?.schemaVersion === 2 && attribution?.method === 'cloud-run-runtime-attribution-v2',
+    'runtime attribution schema or method is unsupported',
+  );
+  assertFileEvidence(attribution.runtimeFiles, 'runtime files');
+  assert(
+    attribution.runtimeFiles.every((entry) =>
+      runtimeOutputRoots.some((root) => entry.path === root || entry.path.startsWith(`${root}/`)),
+    ),
+    'runtime file evidence contains a path outside the approved output roots',
+  );
+  await verifyBoundFiles(canonicalRoot, attribution.requiredLegalFiles, 'required legal files');
+  await verifyBoundFiles(
+    canonicalRoot,
+    attribution.runtimeWorkspaceManifests,
+    'runtime workspace manifests',
+  );
+  const actualRuntimeFiles = await collectRuntimeFiles(canonicalRoot);
+  assert(
+    JSON.stringify(actualRuntimeFiles) === JSON.stringify(attribution.runtimeFiles),
+    'runtime file set or content differs from attribution',
+  );
+  return actualRuntimeFiles;
 }
 
 function uniqueIdentities(packages) {
@@ -273,9 +431,9 @@ function packageIdentityFromLockKey(packageKey) {
   return `${parsed.name}@${parsed.version}`;
 }
 
-async function assertDockerfilePin() {
+async function assertDockerfilePin(canonicalRepositoryRoot) {
   const dockerfile = (
-    await readCanonicalUtf8(path.join(repositoryRoot, 'Dockerfile'), 'Dockerfile')
+    await readCanonicalContainedUtf8(canonicalRepositoryRoot, 'Dockerfile', 'Dockerfile')
   ).text;
   const fromLines = dockerfile
     .split('\n')
@@ -289,27 +447,43 @@ async function assertDockerfilePin() {
 }
 
 async function buildAttribution(bundleProvenancePath) {
-  await assertDockerfilePin();
-  const lockfileEvidence = await readCanonicalUtf8(
-    path.join(repositoryRoot, 'pnpm-lock.yaml'),
+  const canonicalRepositoryRoot = await assertCanonicalRoot(repositoryRoot, 'repository root');
+  await assertCanonicalStandalonePath(bundleProvenancePath, {
+    label: 'bundle provenance',
+    type: 'file',
+  });
+  await assertDockerfilePin(canonicalRepositoryRoot);
+  const lockfileEvidence = await readCanonicalContainedUtf8(
+    canonicalRepositoryRoot,
+    'pnpm-lock.yaml',
     'pnpm-lock.yaml',
   );
   const lockGraph = parsePnpmLockGraph(lockfileEvidence.text);
   const allProductionDependencies = collectExternalDependencies(productionList(true));
   const runtimeDependencies = collectExternalDependencies(productionList(false));
-  const [runtimePackages, bundledWeb, runtimeFiles] = await Promise.all([
-    collectPackageEvidence(runtimeDependencies, lockGraph),
-    createBundleAttribution(readRawBundleAttribution(bundleProvenancePath), repositoryRoot),
-    collectRuntimeFiles(),
-  ]);
-  const allProductionPackages = await collectPackageEvidence(allProductionDependencies, lockGraph);
+  const [runtimePackages, bundledWeb, runtimeFiles, requiredLegalFiles, runtimeWorkspaceManifests] =
+    await Promise.all([
+      collectPackageEvidence(runtimeDependencies, lockGraph, canonicalRepositoryRoot),
+      createBundleAttribution(
+        readRawBundleAttribution(bundleProvenancePath),
+        canonicalRepositoryRoot,
+      ),
+      collectRuntimeFiles(canonicalRepositoryRoot),
+      collectRequiredLegalFiles(canonicalRepositoryRoot),
+      collectRewrittenRuntimeManifests(canonicalRepositoryRoot),
+    ]);
+  const allProductionPackages = await collectPackageEvidence(
+    allProductionDependencies,
+    lockGraph,
+    canonicalRepositoryRoot,
+  );
   const allProductionIdentities = uniqueIdentities(allProductionPackages);
   const runtimeIdentities = uniqueIdentities(runtimePackages);
   const lockIdentities = [...lockGraph.packages].map(packageIdentityFromLockKey).sort(compareText);
 
   return {
-    schemaVersion: 1,
-    method: 'cloud-run-runtime-attribution-v1',
+    schemaVersion: 2,
+    method: 'cloud-run-runtime-attribution-v2',
     baseImage,
     lockfile: {
       path: 'pnpm-lock.yaml',
@@ -332,7 +506,8 @@ async function buildAttribution(bundleProvenancePath) {
     },
     bundledWeb,
     runtimeFiles,
-    requiredLegalFiles: ['LICENSE', 'NOTICE', noticeFileName, attributionFileName],
+    requiredLegalFiles,
+    runtimeWorkspaceManifests,
   };
 }
 
@@ -416,8 +591,13 @@ function canonicalManifest(attribution) {
   return Buffer.from(`${JSON.stringify(attribution, null, 2)}\n`, 'utf8');
 }
 
-async function readTrackedEvidence() {
-  const manifestBuffer = await readFile(path.join(repositoryRoot, attributionFileName));
+async function readTrackedEvidence(rootPath = repositoryRoot) {
+  const canonicalRoot = await assertCanonicalRoot(rootPath, 'runtime evidence root');
+  const manifestBuffer = await readContainedFile(
+    canonicalRoot,
+    attributionFileName,
+    attributionFileName,
+  );
   let manifest;
   try {
     manifest = JSON.parse(manifestBuffer.toString('utf8'));
@@ -428,18 +608,25 @@ async function readTrackedEvidence() {
     manifestBuffer.equals(canonicalManifest(manifest)),
     `${attributionFileName} is not canonical`,
   );
-  const noticeBuffer = await readFile(path.join(repositoryRoot, noticeFileName));
+  const noticeBuffer = await readContainedFile(canonicalRoot, noticeFileName, noticeFileName);
   assert(
     noticeBuffer.equals(createRuntimeNotice(manifest)),
     `${noticeFileName} differs from its attribution manifest`,
   );
-  return { manifest, manifestBuffer, noticeBuffer };
+  return { canonicalRoot, manifest, manifestBuffer, noticeBuffer };
 }
 
 async function generate(bundleProvenancePath) {
   const attribution = await buildAttribution(bundleProvenancePath);
-  await writeFile(path.join(repositoryRoot, attributionFileName), canonicalManifest(attribution));
-  await writeFile(path.join(repositoryRoot, noticeFileName), createRuntimeNotice(attribution));
+  const canonicalRepositoryRoot = await assertCanonicalRoot(repositoryRoot, 'repository root');
+  const attributionPath = await containedPath(
+    canonicalRepositoryRoot,
+    attributionFileName,
+    attributionFileName,
+  );
+  const noticePath = await containedPath(canonicalRepositoryRoot, noticeFileName, noticeFileName);
+  await writeFile(attributionPath, canonicalManifest(attribution));
+  await writeFile(noticePath, createRuntimeNotice(attribution));
   return attribution;
 }
 
@@ -455,35 +642,28 @@ async function verifySource(bundleProvenancePath) {
 
 async function verifyRuntime() {
   const tracked = await readTrackedEvidence();
-  const lockfile = await readFile(path.join(repositoryRoot, 'pnpm-lock.yaml'));
+  const lockfile = await readContainedFile(
+    tracked.canonicalRoot,
+    'pnpm-lock.yaml',
+    'pnpm-lock.yaml',
+  );
   assert(
     sha256(lockfile) === tracked.manifest.lockfile.sha256,
     'runtime lockfile differs from attribution',
   );
   const lockGraph = parsePnpmLockGraph(lockfile.toString('utf8'));
   const runtimeDependencies = collectExternalDependencies(productionList(false));
-  const runtimePackages = await collectPackageEvidence(runtimeDependencies, lockGraph);
+  const runtimePackages = await collectPackageEvidence(
+    runtimeDependencies,
+    lockGraph,
+    tracked.canonicalRoot,
+  );
   assert(
     JSON.stringify(runtimePackages) ===
       JSON.stringify(tracked.manifest.deployedRuntimeClosure.packages),
     'installed runtime package/legal closure differs from attribution',
   );
-  for (const runtimeFile of tracked.manifest.runtimeFiles) {
-    const absolutePath = path.join(repositoryRoot, ...runtimeFile.path.split('/'));
-    const fileStat = await stat(absolutePath);
-    assert(
-      fileStat.isFile() && fileStat.size === runtimeFile.size,
-      `${runtimeFile.path} size differs`,
-    );
-    assert(
-      sha256(await readFile(absolutePath)) === runtimeFile.sha256,
-      `${runtimeFile.path} SHA-256 differs`,
-    );
-  }
-  for (const requiredFile of tracked.manifest.requiredLegalFiles) {
-    const absolutePath = path.join(repositoryRoot, requiredFile);
-    assert((await stat(absolutePath)).isFile(), `${requiredFile} is missing`);
-  }
+  await verifyRuntimeFilesystemEvidence(tracked.canonicalRoot, tracked.manifest);
   return tracked.manifest;
 }
 

@@ -6029,3 +6029,100 @@ mutation, image/archive cleanup, card/payment access, secret/model/DataHub crede
 tag, Release, Devpost submission, PR Ready transition, merge, amend, rebase, or force-push occurred.
 The Paid account still has no hard VND/USD zero cap. Preserve shutdown/delete/detach by 2026-08-10 or
 20% reported credit remaining, whichever occurs first; this remains earlier than the judging end.
+
+## 2026-07-26 — Phase 8.7 QA correction: fail-closed runtime evidence verifier
+
+### Objective
+
+Close the canonical QA blockers on exact evidence head
+`9ee04c7f5cbccca56fb6fb165686f7cff803f96e` without changing the proven Cloud Run deployment. Make
+the existing direct runtime-attribution contract part of canonical validation, enforce safe contained
+filesystem reads and exact content/file-set identity, and correct the four specified stale
+current-state document claims.
+
+### Completed
+
+- Added `pnpm test:runtime-attribution` to canonical `pnpm validate`. A focused Vitest list filtered
+  to `tests/runtime-attribution.contract.mjs` returned no collected test, confirming that the direct
+  Node contract was not previously executed indirectly by Vitest.
+- Reused the repository's shared release-path safety contract for canonical-root, `lstat`,
+  symlink/junction/reparse rejection, portable relative paths, and realpath containment. Runtime
+  package manifests, package legal files, fallback legal evidence, compiled-output children,
+  project legal files, rewritten workspace manifests, lockfile, Dockerfile, and tracked evidence now
+  pass through contained/canonical reads.
+- Upgraded tracked runtime attribution to schema v2. It binds the exact complete 23-file output set,
+  three required legal files, and three rewritten runtime workspace manifests by path, byte length,
+  and SHA-256. Runtime verification recollects and compares the full sorted output evidence, so
+  missing, extra, linked, escaped, or tampered content fails.
+- Added focused positive and negative contracts for exact evidence, extra file, runtime tamper,
+  legal tamper, missing legal file, rewritten-manifest tamper, explicit cross-root path, and portable
+  symlink/junction/reparse escape. The external sentinel in the link test remains outside the
+  verifier's scan.
+- Corrected the exact-current-main boundary and matrix totals to
+  `3 PASS / 1 QUALIFIED PASS — OWNER-AUTHORIZED SCOPE / 11 PARTIAL / 14 OPEN / 8 NOT REQUIRED`;
+  recorded the consumed owner-approved GCP selection; and relabeled `00001-jst` as a historical
+  rollback candidate while retaining `src-3653cf6b591e` as the proven live revision.
+- Preserved two-layer provenance. The live digest and schema-v1/eight-file evidence remain bound to
+  immutable source commit `3653cf6b591eed76ad6276d07b1ea08e88d7fa4f`. This later verifier/docs
+  head, its schema-v2 23-file evidence, and its CI are not the image source.
+
+### Files changed
+
+`package.json`; `scripts/prepare-runtime-manifests.mjs`; `scripts/runtime-attribution.mjs`;
+`tests/runtime-attribution.contract.mjs`; `RUNTIME-ATTRIBUTION.json`;
+`docs/DEVPOST_REQUIREMENTS.md`; `docs/IMPLEMENTATION_PLAN.md`; `docs/KNOWN_ISSUES.md`;
+`docs/PUBLIC_SOURCE_APACHE_READINESS.md`; `docs/RELEASE_CHECKLIST.md`;
+`docs/REPOSITORY_MAP.md`; and this session log.
+
+### Decisions
+
+Use the existing shared path-safety module rather than introduce a second filesystem policy. Treat
+all emitted files under the five runtime output roots, including declarations and source maps, as
+the exact expected set. Bind project legal content and the deterministic post-rewrite workspace
+manifest bytes in schema v2 while preserving the package-manifest/legal hashes already derived from
+the frozen graph.
+
+Do not rebuild or redeploy the live image merely to incorporate the stricter verifier. The next
+commit is a verifier/evidence/docs head only; exact live-image evidence remains immutable and
+separately labeled.
+
+### Validation performed
+
+- Node `24.14.0`, pnpm `11.9.0`.
+- Direct `pnpm test:runtime-attribution`: 10/10 pass, including all new negative cases.
+- Vitest filtered list for `tests/runtime-attribution.contract.mjs`: zero collected tests.
+- Changed-seam build plus attribution generation: five workspace projects built; schema v2 generated
+  with lock SHA `eeec795d5a09d5e8865b54bfbd95fb3557cce421c5369d99b6e2f89a472484b2`,
+  152 full-production identities, 149 runtime identities/roots, five bundled packages, 23 runtime
+  output files, three legal files, and three rewritten manifests.
+- Canonical `pnpm validate`: format and lint pass; six-workspace typecheck passes; Vitest 40 files /
+  380 tests passes; release-artifact contract 15/15 passes; runtime-attribution contract 10/10 passes
+  from the canonical chain; all six workspace builds and smoke pass.
+- Legal hashes remain unchanged:
+  `THIRD_PARTY_NOTICES.txt`
+  `9cc0b8b55f4a78435cf4d25b7f7f5aa05a981ee041963d38ab82e2afdcebccab`,
+  `LICENSE` `cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30`,
+  and `NOTICE` `4c3019e13c96e2906eddd3e8fa35d4ef0d4e13826d2398551d8a9796fac82d1f`.
+- Exact 12-path allowlist, changed-file Prettier, `git diff --check`, strict
+  UTF-8/LF/final-newline/no-BOM, local Markdown links, added-line sensitive/private-path/full-email,
+  conflict, and debug scans pass with zero findings. Runtime schema/count/content and unchanged lock
+  hash checks pass.
+
+### Validation intentionally deferred
+
+Every image rebuild, GCP build/redeploy/mutation, public incident/smoke, API/resource/billing change,
+live DataHub/model check, tag, Release, Devpost submission, PR Ready transition, and merge.
+
+### Known issues
+
+The live image does not contain the later schema-v2 verifier; its already-proven immutable
+schema-v1/runtime/legal evidence remains the controlling evidence for that digest. Paid-account
+residual risk, the 2026-08-10 or 20%-credit stop boundary, and the judging-uptime mismatch remain
+unchanged.
+
+### Exact next step
+
+Run bounded changed-file format, diff, link/path, strict UTF-8/LF/final-newline/no-BOM, secret,
+conflict, and debug checks. Create one additive commit, normal-push the same branch, wait for exact
+new-head PR CI `SUCCESS`, then update only existing Draft PR #56 through the official in-app GitHub
+Browser with the new verifier/docs identities while preserving the immutable image-source boundary.

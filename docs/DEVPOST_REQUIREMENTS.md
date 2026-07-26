@@ -356,9 +356,10 @@ DataHub validation. Live/judge-access evidence remains credential/service-gated.
 
 ## Corrected current product facts
 
-These are repository facts on exact current `main`
+Repository facts in this section are bounded to exact current `main`
 `c7abc652c23b532e90091b377490b27eadd7e084` (tree
-`66e90eae74c7065c62a30a14ffeb25ef26974ea4`), not competition claims:
+`66e90eae74c7065c62a30a14ffeb25ef26974ea4`). The separately labeled external deployment and Draft
+PR #56 evidence are not current-main contents and are not competition claims:
 
 - Fixture-mode selection, investigation, scoring, report composition, and Markdown rendering are
   deterministic. Live DataHub mode depends on external metadata and timeline state, so its returned
@@ -377,9 +378,11 @@ These are repository facts on exact current `main`
 - The exact direct API Markdown endpoint is
   **`GET /incidents/:incidentId/report.md`**. Browser traffic uses the `/api` prefix through its web
   boundary. See [API contracts](API_CONTRACTS.md).
-- The supported target is a generic Node 24 host serving static web output with a same-origin `/api`
-  boundary. Phase 8.7 adds and publicly smokes the concrete Docker/Cloud Run fixture deployment
-  recorded in [deployment](DEPLOYMENT.md); it does not add live DataHub credentials or a model API.
+- Exact current `main` documents a generic Node 24 host but does not contain the Draft PR #56
+  Docker/Cloud Run production-host seam. Separately, the external live fixture deployment was built
+  from immutable Draft PR source commit `3653cf6b591eed76ad6276d07b1ea08e88d7fa4f`; it provides the
+  same-origin `/api` boundary and public smoke recorded in [deployment](DEPLOYMENT.md). Neither layer
+  adds live DataHub credentials or a model API.
 - The bounded direct GraphQL adapter remains backward compatible. Phase 8.2 adds a distinct
   `datahub-mcp` provider using the official MCP SDK and exact read-only `search`/`get_lineage`
   allowlist, with startup validation, bounded/sanitized failure behavior, explicit unsupported
@@ -449,7 +452,7 @@ Every source link in the matrix was accessed at the 2026-07-24 checkpoint in the
 | C37 | [O](https://datahub.devpost.com/), [R §§6, 8](https://datahub.devpost.com/rules)                       | Feedback survey for the $50 bonus.                                                                                                          | Optional and not entered.                                                                                                                                                                                                                                                                                                                                    | NOT REQUIRED                            | Entrant / optional      | Consider only with separate authorization; one complete actionable feedback submission per entrant.                                                          |
 
 Current matrix totals during the Phase 8.7 deployed-state correction are
-**4 PASS / 11 PARTIAL / 14 OPEN / 0 BLOCKED / 8 NOT REQUIRED**
+**3 PASS / 1 QUALIFIED PASS — OWNER-AUTHORIZED SCOPE / 11 PARTIAL / 14 OPEN / 8 NOT REQUIRED**
 across 37 rows.
 
 ## Open blockers and verification questions

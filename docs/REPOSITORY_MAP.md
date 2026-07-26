@@ -86,7 +86,7 @@ container-only production/legal boundary.
 | `pnpm release:artifact`                                         | Build once and create the deterministic clean-commit host artifact.         |
 | `pnpm release:verify -- --artifact <path>`                      | Verify artifact sidecar, provenance, archive safety, and exact contents.    |
 | `pnpm smoke`                                                    | Verify API and web build artifacts.                                         |
-| `pnpm validate`                                                 | Full Phase 0/phase/release validation.                                      |
+| `pnpm validate`                                                 | Full validation, including both direct Node artifact contracts.             |
 
 ## Shared contracts
 
@@ -124,9 +124,11 @@ lockfile. Ordinary development and non-release Vite builds emit no provenance fi
 The Cloud Run Docker build uses the same rendered-module evidence and frozen-lock identity helpers,
 then records the exact full-production and deployed external runtime closures in
 `RUNTIME-ATTRIBUTION.json`. `runtime-attribution.mjs` generates/enforces the paired
-`THIRD_PARTY_NOTICES.txt` and compiled-output hashes. The production-dependency stage verifies the
-installed runtime/legal closure before the final image removes audit scripts and starts compiled
-Node output as the unprivileged `node` user.
+`THIRD_PARTY_NOTICES.txt`, the complete compiled-output file set, required legal-file content, and
+rewritten runtime workspace manifests. Its shared containment routine rejects links/reparse targets,
+noncanonical or cross-root reads, unexpected files, missing files, and content tamper. The
+production-dependency stage verifies that installed runtime/legal closure before the final image
+removes audit scripts and starts compiled Node output as the unprivileged `node` user.
 
 ## Documentation index
 

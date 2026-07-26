@@ -402,8 +402,11 @@ The execution checklist above is historical and was found incomplete by independ
 - [x] Web artifact uses the same-origin production `/api` boundary.
 - [x] Public fixture demo completes end-to-end.
 - [x] Timeout/provider error states are user-friendly.
-- [x] Previous immutable revision `data-incident-investigator-00001-jst` is retained as the
-      last-known-good rollback target.
+- [x] Current proven live revision `data-incident-investigator-src-3653cf6b591e`, built from
+      immutable source commit `3653cf6b591eed76ad6276d07b1ea08e88d7fa4f`, receives 100% traffic.
+- [x] Previous immutable revision `data-incident-investigator-00001-jst` is retained only as a
+      historical rollback candidate; it is not the current proven live or “last-known-good”
+      revision.
 
 ## Submission
 
