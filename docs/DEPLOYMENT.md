@@ -8,9 +8,14 @@ credential-free deployment and demo path. Direct GraphQL and DataHub MCP Server 
 host layout but are ready only when their selected authorized, read-only external dependency passes
 the bounded readiness check.
 
-The repository has no supported Docker image, Compose file, Kubernetes manifest, cloud-provider
-configuration, public URL, TLS termination, or managed persistent store. Do not infer those targets
-from this host runbook or add guessed credentials/endpoints. Phase 7.6 does not deploy externally.
+Draft PR #56 now contains a supported source-build `Dockerfile`, and the exact clean source commit
+identified in the Phase 8.7 evidence below is deployed as a credential-free fixture service at
+<https://data-incident-investigator-1071683558688.asia-southeast1.run.app>. Google terminates TLS;
+there is still no Compose/Kubernetes manifest, managed persistent store, live DataHub credential, or
+durable incident storage. Current `main` remains
+`c7abc652c23b532e90091b377490b27eadd7e084` and does not contain Draft PR #56 changes. The earlier
+Phase 7.6 no-Docker/no-public-URL statement is historical; do not infer any broader provider,
+credential, persistence, or production-support promise from the bounded fixture deployment.
 
 ## Release artifact contract
 
@@ -241,7 +246,10 @@ server-side Markdown report store to back up or restore. DataHub access is read-
 allowlist excludes every mutation, user, document, shell, and model operation, and the product never
 mutates provider state. See [`ROLLBACK.md`](ROLLBACK.md) before replacing an active release.
 
-## Phase 8.6 zero-cost deployment preflight
+## Phase 8.6 zero-cost deployment preflight (historical)
+
+This section records the policy before the owner's later Phase 8.7 risk acceptance. The controlling
+current state is the deployed Google Cloud execution record below.
 
 ### Non-billable policy
 
@@ -285,17 +293,16 @@ as static hosting, while this product requires a Node API and same-origin `/api`
 No signup was attempted. “Card-free” below means the documented zero-spend path intentionally has no
 payment method on file; it does not mean the provider can never offer paid controls.
 
-| Class               | Provider/service                    | Current official evidence for this architecture                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Cost, lifecycle, and judge risk                                                                                                                                                                                                                                                                                                                                                                          | Disposition                                                                                                                                                                                                                                                                |
-| ------------------- | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Card-free           | Render Hobby / Free web service     | Node web services support build/start commands, environment secrets, health-check paths, one public `onrender.com` HTTPS endpoint, and two prior rollbacks. Free service: 750 workspace hours/month, 500 Hobby build minutes/month, 5 GB outbound bandwidth/month, idle after 15 minutes with about one-minute wake, ephemeral filesystem, no persistent disk. Without a payment method, excess bandwidth suspends free services and exhausted builds stop rather than bill.                                                                                                                                           | Compatible with a single Fastify process serving web plus same-origin `/api` in fixture mode. Cold start and monthly suspension can interrupt judges; free Postgres expires after 30 days and is unnecessary because this app is intentionally in-memory. Account identity, exact build/start commands, Node 24 support, and availability through the judging window remain unvalidated.                 | **Card-free candidate; not selected.** A later packet/approval must name the owner-visible Render identity and prove repository-specific runtime before signup/deploy.                                                                                                     |
-| Card-required       | Koyeb Starter / Free Instance       | Starter requires a valid payment method. Koyeb places a USD 29 pre-authorization hold, cancels it immediately, and says an issuer may leave it visible for 7–21 days; the FAQ also says signup charges the prorated selected plan (its example defaults to Pro) before a later Starter downgrade. One Free Instance is 0.1 vCPU, 512 MB RAM, 2 GB SSD, one region, no Volume, and scales to zero after one idle hour; the free web Service itself is not charged. Paid usage starts when a paid Instance reaches `Starting`; billing is USD plus tax. Alerts have a USD 5 minimum and spending limits are unavailable. | Node/full-stack shape is plausible, but signup can cause a plan charge plus a material temporary hold, a payment method unlocks usage-based paid instances, and there is no hard zero-dollar cap. Included outbound/build quota, deletion retention, and a zero-spend cancellation safeguard are not established.                                                                                        | **REJECT.** The possible signup charge/hold, missing hard zero-dollar control, and unresolved quota/retention facts fail the owner policy.                                                                                                                                 |
-| Card-required trial | Google Cloud Free Trial + Cloud Run | Signup requires a payment method and may place a temporary USD 0–1 authorization. Trial provides USD 300 for 90 days and does not charge unless the owner manually upgrades; without upgrade it auto-closes when time or credit ends, stops resources, and deletes them after a 30-day grace period. Request-based Cloud Run includes 180,000 vCPU-seconds, 360,000 GiB-seconds RAM, and 2 million requests/month based on `us-central1`, plus 1 GiB North America outbound transfer; region changes price. Cloud Build/Artifact Registry have separate quotas/pricing.                                                | Provides a public HTTPS container endpoint, revisions, and Secret Manager integration; minimum zero instances permits scale-to-zero/cold start. Google budgets only alert and do not cap spend. Trial auto-close avoids a service charge while it remains a trial; manual paid-account upgrade is the first possible billable transition. Account/payment-profile retention and card hold are sensitive. | **ACCEPTABLE ONLY AFTER OWNER APPROVAL** for the unupgraded trial, never a Paid billing account. A provider-specific packet and owner-controlled card action are mandatory; safe close deadline is day 83 (seven-day buffer) or earlier if 80% of trial credit is reached. |
+| Class         | Provider/service                | Current official evidence for this architecture                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Cost, lifecycle, and judge risk                                                                                                                                                                                                                                                                                                                                                          | Disposition                                                                                                                                                                                                                                                     |
+| ------------- | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Card-free     | Render Hobby / Free web service | Node web services support build/start commands, environment secrets, health-check paths, one public `onrender.com` HTTPS endpoint, and two prior rollbacks. Free service: 750 workspace hours/month, 500 Hobby build minutes/month, 5 GB outbound bandwidth/month, idle after 15 minutes with about one-minute wake, ephemeral filesystem, no persistent disk. Without a payment method, excess bandwidth suspends free services and exhausted builds stop rather than bill.                                                                                                                                           | Compatible with a single Fastify process serving web plus same-origin `/api` in fixture mode. Cold start and monthly suspension can interrupt judges; free Postgres expires after 30 days and is unnecessary because this app is intentionally in-memory. Account identity, exact build/start commands, Node 24 support, and availability through the judging window remain unvalidated. | **Card-free candidate; not selected.** A later packet/approval must name the owner-visible Render identity and prove repository-specific runtime before signup/deploy.                                                                                          |
+| Card-required | Koyeb Starter / Free Instance   | Starter requires a valid payment method. Koyeb places a USD 29 pre-authorization hold, cancels it immediately, and says an issuer may leave it visible for 7–21 days; the FAQ also says signup charges the prorated selected plan (its example defaults to Pro) before a later Starter downgrade. One Free Instance is 0.1 vCPU, 512 MB RAM, 2 GB SSD, one region, no Volume, and scales to zero after one idle hour; the free web Service itself is not charged. Paid usage starts when a paid Instance reaches `Starting`; billing is USD plus tax. Alerts have a USD 5 minimum and spending limits are unavailable. | Node/full-stack shape is plausible, but signup can cause a plan charge plus a material temporary hold, a payment method unlocks usage-based paid instances, and there is no hard zero-dollar cap. Included outbound/build quota, deletion retention, and a zero-spend cancellation safeguard are not established.                                                                        | **REJECT.** The possible signup charge/hold, missing hard zero-dollar control, and unresolved quota/retention facts fail the owner policy.                                                                                                                      |
+| Paid account  | Google Cloud credit + Cloud Run | Read-only Phase 8.7 inspection confirmed the candidate account is already Paid and retains time-limited eligible credit. Cloud Run, Cloud Build, Artifact Registry, network, and logging remain metered; credit/free-tier coverage and tax can vary by SKU, region, and account.                                                                                                                                                                                                                                                                                                                                       | Provides the required HTTPS container shape and risk-reducing scale controls, but budgets do not cap spend, maximum instances can briefly overshoot, and the Paid account can charge for uncovered/over-credit usage without another upgrade gate.                                                                                                                                       | **OWNER-APPROVED WITH RESIDUAL PAID-ACCOUNT RISK — DEPLOYED.** The owner explicitly superseded the earlier zero-fee/no-overage rejection, accepted this residual risk, authorized the exact mutations, and later chose to retain the working Singapore service. |
 
-Render is the only current card-free candidate in this bounded review; it is not a selected provider
-or an authorization to sign up. Koyeb is rejected. Google Cloud remains merely eligible for a fresh
-owner decision because its unupgraded trial has a documented no-charge close path; if any actual
-signup screen, regional term, tax rule, hold, quota, or conversion behavior differs from this packet,
-stop and refresh the evidence.
+Render remains the only card-free candidate in the historical bounded review; it was not selected
+and signup was not attempted. Koyeb remains rejected. The Google Cloud rejection was superseded when
+the owner explicitly accepted real-money overage risk and authorized the Phase 8.7 deployment; that
+approval does not create a hard spending cap.
 
 ### Required provider-specific control packet
 
@@ -338,19 +345,12 @@ Current packet identifiers (not authorization to visit or submit them):
   starts when a paid Instance reaches `Starting`; the minimum billing alert is USD 5 and no spending
   limit/hard USD 0 cap exists. Deactivation is required to remove all payment methods. **REJECT**; no
   signup, hold, plan charge, downgrade, deadline, or card action is authorized.
-- Google Cloud Free Trial / Cloud Run: signup `https://console.cloud.google.com/freetrial`; billing
-  management `https://console.cloud.google.com/billing`. Identity: **owner must name the Google
-  account**. Trial starts at signup, lasts 90 days or until USD 300 is exhausted, does not
-  auto-convert, and stops resources then deletes them after the 30-day grace period if not upgraded.
-  Request-based Cloud Run's monthly free tier is 180,000 vCPU-seconds, 360,000 GiB-seconds RAM, and
-  2 million requests at `us-central1` pricing, with 1 GiB North America outbound transfer; source
-  builds and image storage have separate Cloud Build/Artifact Registry quotas and pricing, so a later
-  pre-submit packet must capture the exact deployment method and region.
-  Card/payment method required; temporary authorization is USD 0–1 and may remain visible for up to
-  one month. Taxes/region/currency depend on the owner account and selected region and must be
-  captured from the actual pre-submit screen. Budgets alert but do not hard-cap. Close the Free Trial
-  billing account by day 83 or at 80% credit, whichever comes first; later deletion/payment-profile
-  retention must follow official account guidance. **ACCEPTABLE ONLY AFTER OWNER APPROVAL**.
+- Google Cloud / Cloud Run: billing management
+  `https://console.cloud.google.com/billing`. The safely redacted signed-in identity and candidate
+  account are recorded in the Phase 8.7 packet below. That account is already Paid; remaining credit
+  does not prevent real-money charges for uncovered or over-credit usage. Budgets alert but do not
+  hard-cap and maximum instances is not an absolute cap. The owner later explicitly accepted that
+  residual risk and authorized the exact deployment recorded below.
 
 ### Current official-source register
 
@@ -395,7 +395,10 @@ Accessed 2026-07-26:
   non-conversion/stop/deletion behavior, regional usage pricing, non-capping budgets, and account
   closure/retention limits.
 
-### Owner-authorized Google Cloud direction for the next slice
+### Owner-authorized Google Cloud direction for the next slice (historical)
+
+The direction below was the pre-execution gate. It was later satisfied and superseded by the
+Phase 8.7 execution record.
 
 The owner reports that existing project `onlinelearning-484610` and gifted USD 300 free cloud/API
 credit are available as references. This has not been verified in signed-in Console and the existing
@@ -433,3 +436,307 @@ an un-upgraded Free Trial and official UI confirms no automatic post-credit char
 before expiry; if it is upgraded or overage can reach real money without a hard cap, stop for a
 zero-risk configuration packet and fresh approval. This correction performs no Console access or
 mutation, project/API/resource creation, billing/trial change, card action, deployment, or reminder.
+
+## Phase 8.7 Google Cloud deployment control packet and execution record
+
+Access date: **2026-07-26**. This packet began as read-only signed-in Console inspection plus current
+official Google Cloud documentation. The owner then explicitly accepted the residual Paid-account
+overage risk and authorized project creation, billing association, minimum API enablement, build,
+and deployment. No card or payment-method page was opened.
+
+### Provider, account, billing, and credit facts
+
+- Provider/runtime: Google Cloud, one Cloud Run service. Official entry points:
+  [Cloud Console](https://console.cloud.google.com/),
+  [Cloud Billing](https://console.cloud.google.com/billing),
+  [Cloud Run](https://console.cloud.google.com/run),
+  [API Library](https://console.cloud.google.com/apis/library), and
+  [Manage resources](https://console.cloud.google.com/cloud-resource-manager).
+- Signed-in identity: a personal Google account, recorded only as `t***@gmail.com`. No Google Cloud
+  organization is selected; Console reports **No organization**.
+- Candidate billing account: active Direct account `M***`, identifier recorded only as `…D627`.
+  Console labels it **Paid account**. No payment method, card, payment profile, invoice, or tax
+  identity was opened or recorded.
+- The candidate account has an **Available** one-time Free Trial credit scoped to eligible usage,
+  with approximately **VND 7.886 million** of approximately **VND 7.890 million** remaining, ending
+  **2026-10-07**. Console showed VND 3,606 used when inspected. Reporting can lag, so this is not a
+  real-time hard balance.
+- The official Free Program documentation says an upgraded Paid account keeps unused Welcome credit
+  until the original 90-day expiry, and bills usage not covered by credit or Free Tier. Cloud Run
+  Free Tier and Artifact Registry limits are aggregated across projects by billing account. The
+  Console credit row is billing-account scoped and does not show a project restriction. Therefore,
+  a newly created project linked to `M*** …D627` is expected to consume eligible remaining credit.
+  This remains a documented inference, not a guarantee that every SKU is credit-eligible. The exact
+  billing association was then verified: the new project was the candidate account's only linked
+  project at the post-deploy checkpoint.
+- Billing was disabled on `onlinelearning-484610` and the other prior test/reference project under
+  the owner's explicit instruction. The new dedicated project is the only project linked to the
+  candidate billing account at the post-deploy checkpoint. Dedicated isolation keeps IAM, quotas,
+  APIs, logs, artifacts, cleanup, and cost attribution separate. The total-cost difference from
+  reuse remains **unknown and not proven**.
+
+Created display name: **Data Incident Investigator**. The original proposed name exceeded the
+provider's 30-character display-name limit.
+
+Project-ID candidates proposed before mutation:
+
+1. `data-incident-investigator-26`
+2. `dii-judge-demo-20260726`
+3. `dii-cloudrun-demo-26-a7c9` — selected and created
+
+### Cheapest truthful deployment shape
+
+The deployed service is one public, request-based Cloud Run service in `asia-southeast1`
+(Singapore), serving the built Vite assets from Fastify with same-origin `/api`. Bangkok
+(`asia-southeast3`) has lower Tier 1 compute rates and Cloud Build support, but after verifying that
+fact the owner explicitly chose to retain the already healthy Singapore deployment rather than
+migrate it. Singapore is therefore the accepted stable deployment, not the lowest published
+regional unit price. No load balancer, custom domain, database, VPC connector, scheduler, Agent
+Platform, Vertex AI, Gemini, or model API exists.
+
+Approved runtime controls:
+
+- request-based billing, first-generation execution environment;
+- `0.08` vCPU, `256 MiB`, concurrency `1`, minimum instances `0`, and both service-level and
+  revision-level maximum instances `1`;
+- Cloud Run request timeout `100s`, strictly greater than the bounded `90s` application deadline by
+  a finite `10s` response margin;
+- CPU throttling enabled and startup CPU boost disabled;
+- unauthenticated public invocation only for the fixture demo; keep the existing application rate
+  limit conservative and expose only synthetic fixture data;
+- public static-root, readiness, and canonical fixture investigation smoke passed at `256 MiB`.
+  Increase CPU or memory only if later measured health/smoke evidence shows the current size is
+  inadequate; the owner permits a proportionate upgrade for demo smoothness, not broad scaling.
+
+The implemented path is `gcloud run deploy --source` with the repository's explicit, locally
+validated Dockerfile. Source deploy used Cloud Build and automatically created the co-located
+Artifact Registry repository `cloud-run-source-deploy`. Direct image deploy would still require a
+registry and a build. The Preview no-build source path was not selected.
+
+APIs explicitly enabled for the source-build path:
+
+1. Cloud Run Admin API: `run.googleapis.com`;
+2. Cloud Build API: `cloudbuild.googleapis.com`;
+3. Artifact Registry API: `artifactregistry.googleapis.com`.
+
+A read-only post-deploy inventory found 29 enabled Google services/APIs in total. In addition to the
+three explicitly enabled deployment APIs above, 26 Google/default/transitive services are present:
+`analyticshub`, `bigqueryconnection`, `bigquerydatapolicy`, `bigquerydatatransfer`, `bigquery`,
+`bigquerymigration`, `bigqueryreservation`, `bigquerystorage`, `cloudapis`, `cloudtrace`,
+`containerregistry`, `dataform`, `dataplex`, `datastore`, `iamcredentials`, `iam`, `logging`,
+`monitoring`, `pubsub`, `servicemanagement`, `serviceusage`, `sql-component`, `storage-api`,
+`storage-component`, `storage`, and `telemetry`. This packet does not prove which were project
+defaults versus source-deploy transitive enablement. Do not blindly disable them; first prove that a
+service is not Google-managed, default, or required by the live service/build/registry path.
+
+Secret Manager was not enabled for fixture mode. A later authorized live-DataHub deployment would add
+`secretmanager.googleapis.com`, create a least-privilege secret reference for `DATAHUB_TOKEN`, and
+never put the token in source, image, CLI history, logs, or a client bundle. That is a separate
+credential and mutation approval.
+
+### Price, quota, and charge boundary
+
+- Cloud Run charges request-based CPU/RAM during startup, shutdown, and request handling, rounded to
+  100 ms. Free Tier is account-aggregated and price-based using `us-central1` Tier 1 rates. Consult
+  the live pricing/SKU page immediately before deployment because regional/currency conversion and
+  allowances can change.
+- Cloud Build currently includes 2,500 free `e2-standard-2` default-pool build-minutes per billing
+  account per month; partial minutes are billed by seconds and network/log/storage charges can be
+  separate.
+- Artifact Registry currently includes 0.5 GiB-month storage per billing account. Excess storage,
+  cross-region transfer, optional vulnerability scanning, or retained old images can charge. Keep
+  registry and Cloud Run co-located, disable paid scanning, retain only the deployed image plus one
+  rollback image, then delete surplus tags/digests.
+- Cloud Run resource quotas vary by region. The service maximum of `1`, not the much larger regional
+  quota, is the intended operational limit. Admin API quotas are unrelated to public request volume.
+  Do not request quota increases.
+- Billing currency shown by Console is VND. USD reference prices convert through Google Cloud SKUs;
+  taxes and the payments-profile tax treatment were not safely inspectable and remain **unknown**.
+  This is a mandatory pre-deploy reconfirmation item.
+- First real-money event: any eligible usage after the credit expires or is exhausted, any usage not
+  covered by the credit, or any Free Tier/build/storage/network/logging usage above its allowance.
+  The account is already Paid, so there is no protective trial auto-close and no additional upgrade
+  gate.
+
+### Hard controls, alerts, and residual risk
+
+Hard or enforceable controls are limited to minimum instances `0`, service-level maximum instances
+`1`, fractional CPU/memory, concurrency `1`, short application/request timeouts, no quota increase,
+application rate limiting, deletion of the public service, deletion of surplus images, billing
+detachment, and project shutdown. Maximum instances can be exceeded briefly during spikes or
+revision transitions, so even `1` is not an absolute monetary cap.
+
+Budgets and alerts **do not cap usage or spending**. Product quotas constrain individual resources,
+not total currency spend. Automated budget shutdown needs additional Pub/Sub/automation resources,
+has reporting delay, and can itself fail or cost money; it is not selected in this minimal packet.
+There is no credible provider-native hard VND/USD 0 spending cap on this Paid account. Public traffic,
+cold starts, logs, builds, registry retention, egress, delayed usage reporting, regional conversion,
+tax, brief max-instance overshoot, and credit-ineligible SKUs remain residual charge risks.
+
+Safe stop boundary: remove public traffic, delete the service and surplus images, detach billing,
+and request project shutdown by **2026-08-10** or immediately when reported credit remaining reaches
+20%, whichever occurs first. The deadline intentionally precedes the 2026-10-07 credit expiry but
+does not guarantee judge access through 2026-08-31. No reminder or scheduler was created.
+
+### Data, judging, secrets, rollback, and deletion
+
+The public Google-managed HTTPS endpoint is
+<https://data-incident-investigator-1071683558688.asia-southeast1.run.app>. Fixture mode is
+credential-free, process-local, and synthetic; incidents disappear on restart/scale-to-zero. Judges
+must tolerate a cold start and must not expect durable incident URLs. Live DataHub is excluded until
+an authorized endpoint and server-side secret are separately approved. Do not expose
+production/customer data, PII, private metadata, tokens, raw provider payloads, or billing identity.
+
+Historical revision `data-incident-investigator-00002-pdq` previously received 100% of traffic, but
+independent QA disproved its documented service-level maximum: the service annotation is
+`maxScale=100` while the revision template is `maxScale=1`; the template timeout read back as `100s`.
+It is therefore not the corrected known-good target. The previous immutable revision
+`data-incident-investigator-00001-jst` is retained only as a historical rollback candidate.
+Rollback means route 100% traffic to an explicitly verified immutable revision, then repeat public
+smoke.
+Deletion means first remove public access/traffic, delete the Cloud Run service, delete unused
+Artifact Registry images/repository, verify no builds/resources remain, detach billing, and finally
+request project shutdown. Deleting a revision does not delete its image. Project shutdown disconnects
+billing and enters a 30-day recovery period; some resources can disappear sooner, restoration can
+take up to 36 hours, billing is not automatically reattached, and a project ID is never reusable.
+Google warns that charges can continue through the current billing cycle, so billing detachment and
+resource deletion must precede project shutdown.
+
+### Decision and consumed approval gates
+
+**OWNER-APPROVED WITH RESIDUAL PAID-ACCOUNT RISK — DEPLOYED.** The owner explicitly superseded the
+earlier zero-fee/no-overage rejection, accepted that the Paid account has no credible hard USD/VND
+`0` cap, and authorized the project, billing, API, build, and deploy mutations. The following gates
+were consumed:
+
+1. created project `dii-cloudrun-demo-26-a7c9`, display name `Data Incident Investigator`, with no
+   organization;
+2. linked only that project to candidate billing account `M*** …D627`;
+3. enabled only `run.googleapis.com`, `cloudbuild.googleapis.com`, and
+   `artifactregistry.googleapis.com`;
+4. built from the repository Dockerfile and deployed public service
+   `data-incident-investigator` with the exact controls above.
+
+Historical public smoke passed after revision `data-incident-investigator-00002-pdq`: static UI loaded,
+fixture metadata became ready, the canonical Removed schema column investigation completed, the
+report showed `81% · high`, and the browser console had zero warnings/errors. Billing alerts were
+not treated as a cap. No secret, credential, card/payment data, model API, reminder, custom domain,
+database, or unrelated paid feature was created or entered.
+
+Any different account, billing account, project, region, API, architecture, paid feature, secret, or
+material capacity increase requires a refreshed cost/risk check and explicit owner direction.
+
+### Deployed-state QA correction: verified redeploy evidence
+
+Independent QA returned `FAIL / DO NOT MERGE` on deployed repository head
+`d1d67b13642b40edf570e79106493309b7df05c0`. The existing public URL and Docker deployment are real;
+all earlier Phase 8.7 no-mutation/preflight wording is historical. Current `main` remains
+`c7abc652c23b532e90091b377490b27eadd7e084`; Draft PR #56 changes are not current main.
+QA reported a `240s` timeout at its checkpoint; the correction's later read-only reinspection found
+the historical revision template at `100s`. The corrected redeploy sets and verifies the request
+timeout at `100s` explicitly; the platform-created startup probe separately reports `240s` and is
+not the request timeout.
+
+The corrected clean source pins every Docker stage to
+`node:24-bookworm-slim@sha256:6f7b03f7c2c8e2e784dcf9295400527b9b1270fd37b7e9a7285cf83b6951452d`,
+builds API/workspace/Vite output, installs only the API production closure, rewrites only runtime
+workspace exports to `dist`, starts `node apps/api/dist/index.js` as the unprivileged `node` user,
+and keeps only the required compiled output, one fixture metadata file, production dependencies, and
+legal/provenance evidence. Local final-image audit found no API source, `tsx`, tests, docs, audit
+scripts, or extra fixture scenarios; Node 24 production root, `/health`, and `/ready` all passed.
+The final local image is 86,183,068 bytes and, under `0.08` CPU / `256 MiB`, also passed same-origin
+canonical incident completion plus a 9,221-byte Markdown report with renderer version and `81%`
+high-confidence evidence.
+
+Exact source-side attribution evidence:
+
+- `pnpm-lock.yaml` SHA-256
+  `eeec795d5a09d5e8865b54bfbd95fb3557cce421c5369d99b6e2f89a472484b2`;
+- 397 lock package entries, 397 snapshots, and 377 distinct lock package names;
+- 152 full-production package identities / 145 names;
+- 149 deployed external runtime identities / 142 names / 149 canonical package roots;
+- five exact Vite bundled identities: `react@19.2.7`, `react-dom@19.2.7`,
+  `scheduler@0.27.0`, `vite@7.3.6`, and `zod@4.4.3`;
+- deterministic `RUNTIME-ATTRIBUTION.json` and `THIRD_PARTY_NOTICES.txt`, plus Apache `LICENSE`,
+  project `NOTICE`, and the required reproduced third-party legal evidence;
+- `abstract-logging@2.0.1` truthfully records that neither the npm package nor exact upstream tag
+  contains a legal file. Its declared-MIT README links the author-controlled legal page; the tracked
+  fallback records the exact upstream tag commit
+  `80dfaef91ee87008f4ed2b6e78921d383bccd406`, URL, capture date, text, and SHA-256 without claiming
+  it came from the package.
+
+Final-image SHA-256 values are
+`d343d34681cf92e1d7c9a3bf834251c2a2db98a3b1b6614a365c382da769c6b1` for
+`RUNTIME-ATTRIBUTION.json`,
+`9cc0b8b55f4a78435cf4d25b7f7f5aa05a981ee041963d38ab82e2afdcebccab` for
+`THIRD_PARTY_NOTICES.txt`,
+`cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30` for `LICENSE`, and
+`4c3019e13c96e2906eddd3e8fa35d4ef0d4e13826d2398551d8a9796fac82d1f` for `NOTICE`.
+
+Source verification and production-only image verification both pass under the immutable Node 24
+base. Exact source commit `3653cf6b591eed76ad6276d07b1ea08e88d7fa4f` passed PR CI run
+`30208678827`, job `89811104840`. A deterministic `git archive` from that commit had SHA-256
+`7b8636db0dba88973bd82f4079a81fbdd71ca2975d56cc2fd90b21da17dc4cea`; Cloud Shell reproduced both
+the hash and embedded commit identity before extraction. Regional Cloud Build
+`7ad5ea5d-c7f2-4999-ada4-175b94d56fd9` completed `SUCCESS` and produced immutable image digest
+`sha256:fe56a3dc7c8c4fb6e11b329adb107fb7efd8e4de0bece8820027f324d4f36afd`.
+
+Revision `data-incident-investigator-src-3653cf6b591e` is labeled
+`source-commit=3653cf6b591eed76ad6276d07b1ea08e88d7fa4f` and receives 100% traffic. Read-back service and
+revision evidence verifies service maximum `1`, revision maximum `1`, minimum `0` by absent/default
+min-scale annotations, concurrency `1`, request timeout `100s`, `0.08` vCPU, `256 MiB`, CPU
+throttling on, startup CPU boost off, first-generation execution, `APP_MODE=fixture`, and Singapore.
+The service-level `run.googleapis.com/maxScale` annotation is now exactly `1`.
+
+The exact running digest was pulled read-only and executed under `0.08` CPU / `256 MiB` for a second
+content-addressed audit. All 8 compiled runtime files, 149 package manifests/roots, and 149 package
+legal files matched the tracked hashes; the base-image digest, lock SHA, five rendered Vite
+identities, `RUNTIME-ATTRIBUTION.json`, `THIRD_PARTY_NOTICES.txt`, Apache `LICENSE`, and project
+`NOTICE` also matched. C11 is therefore restored to
+**QUALIFIED PASS — OWNER-AUTHORIZED SCOPE** for this exact live digest and the already documented
+synthetic/authorized-data boundary. This is not blanket legal clearance.
+
+Post-redeploy resource inventory:
+
+- 29 enabled services remain: only `run.googleapis.com`, `cloudbuild.googleapis.com`, and
+  `artifactregistry.googleapis.com` were explicitly enabled for deployment; the other 26 are
+  Google/default/transitive services with unproven causal origin and were not blindly disabled;
+- source bucket `run-sources-dii-cloudrun-demo-26-a7c9-asia-southeast1` now has two source ZIPs
+  totaling 1,596,294 bytes; the new build-source object is 850,872 bytes and the historical object is
+  745,422 bytes;
+- standard Docker repository `cloud-run-source-deploy`, Singapore, Google-managed encryption and
+  scanning disabled, reports 119.176 MB;
+- the live image is the `fe56a3dc…36afd` digest above, tagged `latest`, with Artifact Registry size
+  87,097,921 bytes; historical rollback digest `410fdef2…5b707` remains untagged at 113,273,631
+  bytes. Shared layers explain why repository size is not the sum of displayed image sizes.
+
+Exactly one post-redeploy public smoke verified HTTP 200 `{"status":"ok"}` at `/health`, HTTP 200
+fixture readiness at `/ready`, the static UI, one canonical Removed schema column incident,
+completed report `81% · high`, a 9,221-byte Markdown download, zero browser console warnings/errors,
+zero unnamed interactive controls, and no horizontal overflow at desktop or narrowed viewport.
+Direct browser navigation to response-only `/ready` and `.md` resources was blocked by the browser
+client, so readiness was checked once with public `curl` and Markdown through the visible UI download;
+the incident was not rerun.
+
+The bucket archives, repository, both images, and build history are real storage/resource inventory
+and remain in cost, rollback, and cleanup gates. Nothing was deleted in this correction. Keep only
+the live image and one proven rollback image if needed; remove surplus source archives/images only
+under a separate exact cleanup check, then preserve the 2026-08-10 or 20%-remaining-credit
+stop/delete/detach boundary. Any later documentation-only commit records evidence only: the running
+revision remains bound to source commit `3653cf6b…7fa4f`, not that later repository HEAD.
+
+Official sources accessed 2026-07-26:
+
+- [Google Cloud Free Program](https://docs.cloud.google.com/free/docs/free-cloud-features)
+- [Cloud Run pricing](https://cloud.google.com/run/pricing)
+- [Cloud Run locations](https://docs.cloud.google.com/run/docs/locations)
+- [Cloud Run source deployment](https://docs.cloud.google.com/run/docs/deploying-source-code)
+- [Cloud Run CPU](https://docs.cloud.google.com/run/docs/configuring/services/cpu) and
+  [memory](https://docs.cloud.google.com/run/docs/configuring/services/memory-limits)
+- [Cloud Run maximum instances](https://docs.cloud.google.com/run/docs/configuring/max-instances)
+  and [quotas](https://docs.cloud.google.com/run/quotas)
+- [Cloud Build pricing](https://cloud.google.com/build/pricing)
+- [Artifact Registry pricing](https://cloud.google.com/artifact-registry/pricing)
+- [Cloud Billing budgets](https://docs.cloud.google.com/billing/docs/how-to/budgets)
+- [Project deletion and restoration](https://docs.cloud.google.com/resource-manager/docs/delete-restore-projects)
+- [Cloud Run revision management](https://docs.cloud.google.com/run/docs/managing/revisions)

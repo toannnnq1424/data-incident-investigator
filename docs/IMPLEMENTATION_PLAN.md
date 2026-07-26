@@ -6074,7 +6074,8 @@ task/branch/PR.
 
 ### Phase 8.6 — zero-cost rights disposition and deployment preflight
 
-Status: in progress on `codex/phase-8-6-zero-cost-rights-deployment-preflight` from exact fetched
+Status: completed and merged historically through PR #55. It began on
+`codex/phase-8-6-zero-cost-rights-deployment-preflight` from then-current
 `origin/main` `73172b7e8e8b02ab9629019eac298b89e02895c2` (tree
 `a4beb330fb528f4926eee8a538c7d2a79dab1f67`; ordered parents
 `1c32f6c913b196fc4a23055fb7da3b1482b94e5e` then
@@ -6240,13 +6241,14 @@ Acceptance:
   cancellation, and possible 7–21-day visibility in both the provider matrix and ten-field packet.
   Preserve Koyeb `REJECT`: Starter needs a payment method, no spending limit/hard USD 0 cap exists,
   and the minimum alert is USD 5. Remove every contradictory “hold unknown” statement.
-- Make current main consistently
+- Make the then-current Phase 8.6 main consistently
   `73172b7e8e8b02ab9629019eac298b89e02895c2` with tree
   `a4beb330fb528f4926eee8a538c7d2a79dab1f67`; keep
   `1c32f6c913b196fc4a23055fb7da3b1482b94e5e` /
   `5c83d034f30c6d31268109277aaa455a05ff9656` only as clearly historical Phase 8.4B evidence.
   Mark Phase 8.5 correction/QA/PR #54 completed and merged; identify PR #54 as historical and PR #55
-  as the current Draft. State that tag `v1.0.0-rc.1` and its unpublished GitHub Draft Release exist.
+  as that correction's Draft. State that tag `v1.0.0-rc.1` and its unpublished GitHub Draft Release
+  exist.
 - Record `onlinelearning-484610` as an existing reference project, not a required or selected
   deployment target, and record the owner's statement that gifted USD 300 cloud/API credit is
   available without claiming UI verification. Preserve the deterministic no-model boundary and
@@ -6288,8 +6290,8 @@ Status: smallest additive docs-only correction on the same branch and Draft PR #
 Windows QA found one remaining current-state contradiction on exact head
 `c9f6aeb0af14c509dbec0015857a114c567eb53d`.
 
-Objective: in `docs/DEVPOST_REQUIREMENTS.md`, replace the stale Phase 8.4B identity where it is still
-called exact current main with exact current main
+Objective at that time: in `docs/DEVPOST_REQUIREMENTS.md`, replace the stale Phase 8.4B identity where
+it was still called exact current main with then-current main
 `73172b7e8e8b02ab9629019eac298b89e02895c2`, tree
 `a4beb330fb528f4926eee8a538c7d2a79dab1f67`, and label the retained
 `1c32f6c913b196fc4a23055fb7da3b1482b94e5e` /
@@ -6297,8 +6299,283 @@ called exact current main with exact current main
 
 Acceptance: correct only proven stale current-main wording; preserve C11, GCP, Koyeb, distribution,
 deployment, and no-mutation policy; run focused docs formatting/link/EOL/diff/secret scans; create
-one additive commit and normal-push the same branch; retain Draft PR #55 without Ready or merge; and
-require exact-new-head PR CI `SUCCESS`.
+one additive commit and normal-push the same branch; retain the then-Draft PR #55 without Ready or
+merge; and require exact-new-head PR CI `SUCCESS`.
 
 Deferred: all runtime/build/test/artifact/live DataHub/GCP work, external deployment or publication,
 signup/card/trial action, PR Ready transition, merge, and independent Windows QA re-review.
+
+### Phase 8.7 — Google Cloud deployment control packet
+
+Status: historical documentation-only read-only preflight from exact main
+`c7abc652c23b532e90091b377490b27eadd7e084`; superseded by the owner-approved execution below.
+
+Objective: use signed-in Console read-only evidence and current official Google Cloud documentation
+to produce an account/project-specific cheapest truthful Cloud Run control packet without any GCP
+mutation.
+
+Minimum files: `docs/DEPLOYMENT.md`, this plan, `docs/KNOWN_ISSUES.md`, and
+`docs/SESSION_LOG.md`.
+
+Acceptance:
+
+- record only redacted account, organization, billing, credit, expiry, and currency facts;
+- compare `onlinelearning-484610` with an uncreated dedicated project and propose one display name
+  plus three unreserved project-ID candidates;
+- specify one request-based same-origin Cloud Run service, minimum `0`, maximum `1`, smallest
+  health/smoke-gated CPU/RAM, minimum APIs, region, source-build path, quotas, Free Tier/credit and
+  first-charge boundaries;
+- distinguish enforceable controls from non-capping budgets/alerts and flag that this Paid account
+  has no hard zero-spend cap;
+- record public URL, fixture/data/secret/judging constraints, rollback, artifact cleanup, billing
+  detachment, project deletion, safe stop threshold/deadline, and cancellation consequences;
+- historically label the packet `REJECT FOR CURRENT DEPLOYMENT` under the then-unchanged
+  zero-fee/no-overage policy; the owner later superseded that decision through the explicit risk
+  acceptance recorded in the execution section below;
+- perform no project/API/billing/resource/deploy/card/credential/reminder mutation and change no
+  runtime, workflow, manifest, lockfile, version, test, fixture, or asset.
+
+Validation: changed-file Prettier, Markdown/local-link checks, UTF-8/LF/final-newline/no-BOM,
+`git diff --check`, exact docs-only allowlist, added-line secret/private-identity/conflict/debug scan,
+official citation reachability, full diff review, one additive commit/push, exactly one Draft PR
+against current main, and exact-head PR CI `SUCCESS`.
+
+Deferred: every GCP mutation, runtime/container work, build/test/browser E2E, deployment, reminder,
+publication, Ready transition, merge, and independent QA.
+
+#### Phase 8.7 QA correction — policy, timeout ordering, and current state
+
+Status: historical additive docs-only correction on the same branch and Draft PR #56 after
+independent Windows QA `FAIL / DO NOT MERGE` on exact head
+`4eab4d516ef94e9477faa7b9386076049a60260f`; its rejection was later superseded by the owner's
+explicit risk acceptance.
+
+Objective: reject the inspected Google Cloud Paid-account candidate under the unchanged
+zero-fee/no-overage authorization, correct Cloud Run timeout ordering, and replace only stale
+current-state claims while retaining historical identities as historical evidence.
+
+Minimum files: `docs/DEPLOYMENT.md`, this plan, `docs/KNOWN_ISSUES.md`,
+`docs/DEVPOST_REQUIREMENTS.md`, `docs/PUBLIC_SOURCE_APACHE_READINESS.md`,
+`docs/RELEASE_CHECKLIST.md`, and `docs/SESSION_LOG.md`.
+
+Acceptance:
+
+- historically make the matrix, packet, known issues, plan, and session consistently say
+  `REJECT FOR CURRENT DEPLOYMENT`; that correction is superseded, while its budgets/max-instances
+  risk finding remains current;
+- state that only a future new explicit owner risk acceptance could supersede the current policy and
+  that this packet is not such authorization;
+- require the platform request timeout to exceed the bounded application/API deadline by a finite
+  response margin, with exact values deferred to a future changed-seam smoke before deployment;
+- record exact current main `c7abc652c23b532e90091b377490b27eadd7e084`, tree
+  `66e90eae74c7065c62a30a14ffeb25ef26974ea4`, and PR #55 as merged historical;
+- recommend dedicated isolation while marking reuse-versus-dedicated total cost unknown/not proven;
+- preserve safely redacted signed-in facts, official citations, uncreated ID candidates, no-model
+  boundary, and zero GCP/GitHub mutation other than the required additive commit/push and existing PR
+  update;
+- run only bounded docs validation, normal-push the same branch, keep only Draft PR #56, and require
+  exact-new-head CI `SUCCESS`.
+
+Deferred: exact timeout margin/config smoke, all runtime/full-suite/build/browser work, every GCP
+mutation, deployment, reminder, publication, Ready transition, merge, and independent QA re-review.
+
+#### Phase 8.7 deployment execution — owner risk acceptance
+
+Status: implementation and public smoke complete on the same branch and Draft PR #56 after the owner
+explicitly accepted the residual Paid-account overage risk and authorized project creation, billing
+association, minimum API enablement, build, and deployment.
+
+Objective: deploy the existing credential-free fixture demo to one isolated Google Cloud project as
+the cheapest practical Devpost-sized public service, then prove health, readiness, the canonical
+incident flow, exact runtime controls, and the post-deploy credit/billing state.
+
+Minimum files: `Dockerfile`, `.dockerignore`, `apps/api/package.json`,
+`apps/api/src/index.ts`, one focused production-host integration test, `docs/DEPLOYMENT.md`, this
+plan, `docs/KNOWN_ISSUES.md`, `docs/REPOSITORY_MAP.md`, and `docs/SESSION_LOG.md`. Lockfile changes
+are allowed only for the exact static-serving runtime dependency.
+
+Acceptance:
+
+- keep `onlinelearning-484610` billing-disabled; under the owner's explicit instruction, disable
+  billing on the other prior test/reference project so the new isolated project is the candidate
+  billing account's only linked project;
+- create one dedicated project owned by the already verified redacted personal account with no
+  organization, and associate only the verified active Paid billing account containing the remaining
+  Welcome credit;
+- enable only Cloud Run, Cloud Build, and Artifact Registry APIs required by source deployment;
+- serve the built Vite application and Fastify API from one same-origin container, accept Cloud
+  Run's `PORT`, retain existing local-development behavior, and add no secret/model/DataHub
+  credential;
+- start with request-based billing, first-generation execution, `0.08` vCPU, `256 MiB`, concurrency
+  `1`, minimum instances `0`, service maximum instances `1`, and a `100s` platform timeout above the
+  bounded `90s` application deadline; enable CPU throttling, disable startup CPU boost, and raise only
+  memory/CPU one step if later measured smoke evidence proves the initial setting inadequate;
+- require public `/health`, `/ready`, static-root, and canonical fixture investigation smoke before
+  declaring success; verify the deployed configuration and current credit/billing summary without
+  viewing payment-method details;
+- preserve the fixed 2026-08-10 teardown deadline and explicitly retain that budgets/alerts and
+  maximum instances reduce but do not eliminate overage risk.
+
+Deferred: DataHub/live credentials, Vertex AI, Agent Platform, model APIs, databases, VPC, custom
+domain, scheduler/reminder, multi-instance scaling, production SLO work, Devpost submission, PR Ready,
+and merge.
+
+Execution result:
+
+- created project `dii-cloudrun-demo-26-a7c9` with display name `Data Incident Investigator`, no
+  organization, and only the safely redacted candidate billing association;
+- enabled exactly Cloud Run, Cloud Build, and Artifact Registry APIs; source deploy built the
+  repository Dockerfile and auto-created co-located repository `cloud-run-source-deploy`;
+- deployed service `data-incident-investigator` in `asia-southeast1` (Singapore), revision
+  `data-incident-investigator-00002-pdq`, with 100% traffic and public URL
+  <https://data-incident-investigator-1071683558688.asia-southeast1.run.app>;
+- verified exact runtime controls: first generation, request-based billing, `0.08` vCPU, `256 MiB`,
+  concurrency `1`, minimum instances `0`, maximum instances `1`, timeout `100s`, CPU throttling on,
+  startup CPU boost off, and `APP_MODE=fixture`;
+- passed public static-root/readiness/canonical Removed schema column smoke after the final revision,
+  including completed report `81% · high` and zero browser console warnings/errors;
+- official recheck found Bangkok has lower Tier 1 unit pricing and supports Cloud Build, but the owner
+  explicitly chose to keep the already healthy Singapore deployment. The record therefore does not
+  claim Singapore has the lowest regional unit price;
+- retained the 2026-08-10 or 20%-remaining-credit stop boundary and no-hard-cap warning. No card,
+  payment-method detail, secret, DataHub credential, Agent/Vertex/model API, scheduler, reminder,
+  database, VPC, or custom domain was created or entered.
+
+#### Phase 8.7 deployed-state QA correction — controls, legal evidence, and provenance
+
+Status: corrected source, clean-archive redeploy, exact live-image audit, and one public smoke are
+complete on the same branch and Draft PR #56 after independent Windows QA `FAIL / DO NOT MERGE` on
+deployed head `d1d67b13642b40edf570e79106493309b7df05c0`. The later evidence-only documentation commit does
+not become the running image's source; exact-final-head CI is recorded in the mutable PR body to
+avoid circular evidence.
+
+Objective: replace the non-reproducible dirty-worktree deployment with one bounded Cloud Run revision
+built from an immutable clean commit/archive, correct the live service to the approved cheapest
+controls, and bind the runtime image to exact dependency/legal/provenance evidence.
+
+Minimum files: `Dockerfile`, `.dockerignore`, root package scripts, one container-attribution script
+and focused contract test, `NOTICE`, `THIRD_PARTY_NOTICES.txt`, one exact runtime-attribution
+manifest, the single verified upstream fallback legal text for `abstract-logging@2.0.1`, and only
+affected persistent deployment/licence/state documents.
+
+Acceptance:
+
+- pin every Node 24 Docker stage to one immutable `node:24-bookworm-slim` digest;
+- build compiled API/workspace output and built Vite assets, install only the API production
+  dependency closure, start with `node apps/api/dist/index.js`, and exclude source/dev/test/docs/junk
+  from the final runtime image except required licence/provenance evidence;
+- recompute exact lock SHA and full-production/deployed-runtime package identity/name counts;
+  deterministically generate and enforce `THIRD_PARTY_NOTICES.txt` from exact Vite rendered-module
+  evidence plus the exact external Node runtime closure; include Apache `LICENSE`, project `NOTICE`,
+  the attribution manifest, and every verified package legal file in the final image;
+- treat C11 as blocked until source-side generation, clean container verification, and final image
+  evidence all pass; record the `abstract-logging@2.0.1` npm-package omission and exact author-linked
+  upstream fallback provenance without claiming that the npm tarball contained a legal file;
+- create and push one additive source commit, require its exact-head PR CI success, build only from a
+  deterministic archive of that clean commit, label the Cloud Run revision with that full source
+  commit, and use a deterministic revision suffix when supported;
+- correct and verify live Singapore controls: min `0`, max `1`, concurrency `1`, timeout `100s`,
+  `0.08` vCPU, `256 MiB`, CPU boost off, CPU throttling on, fixture mode, and 100% traffic; do not
+  change region or broaden resources;
+- inventory actual enabled services, clearly separating the three explicitly enabled deployment APIs
+  from Google/default/transitive services; inventory the run-sources bucket, Artifact Registry
+  repository/image, build ID, immutable image digest, source archive SHA-256, revision, labels, and
+  rollback/cleanup boundaries without disabling or deleting anything;
+- after corrected deploy, run exactly one bounded public smoke covering UI, `/health`, `/ready`,
+  one canonical fixture incident, Markdown when supported, console, accessibility, and
+  overflow; earlier public smoke remains historical only;
+- if post-deploy evidence requires a later documentation commit, state exactly that the running
+  revision maps to the earlier labeled source commit and never claim it maps to the later docs-only
+  HEAD; update only the existing Draft PR #56 and wait for final-head CI.
+
+Validation: changed-file Prettier/lint/typecheck; focused production-host and attribution contracts;
+affected build/smoke; deterministic attribution generate/verify; pinned container build, inventory,
+licence/provenance, file allowlist, no-secret/junk, constrained health/readiness/canonical/Markdown
+smoke; clean archive SHA; exact-source-head CI before deploy; one post-deploy public smoke; bounded
+docs/link/EOL/path/secret/conflict checks; exact-final-head PR CI.
+
+Deferred: region migration, resource increase, live DataHub/secret/model work, unrelated API/resource
+mutation, billing/project deletion, reminder, full suite, tag, Release, Devpost submission, PR Ready,
+and merge.
+
+Corrected redeploy result:
+
+- historical read-only inventory proved service-level `maxScale=100`, revision-level `maxScale=1`,
+  request timeout `100s`, and 100% traffic to revision `00002-pdq`; that historical mismatch is
+  superseded by the corrected live revision below;
+- pinned the Node 24 base by immutable digest; changed the final image to compiled production start
+  under user `node`; excluded source/dev/test/docs/audit scripts and surplus fixtures;
+- generated exact runtime attribution for lock SHA `eeec795d...84b2`, 152 full-production
+  identities, 149 deployed-runtime identities/roots, and five Vite identities; added deterministic
+  notices/project NOTICE and explicit `abstract-logging@2.0.1` upstream fallback evidence;
+- focused contracts, source generation/verification, immutable-base Docker build, production-only
+  closure verification, final-image legal/junk audit, and local root/health/readiness smoke pass;
+- exact source commit `3653cf6b591eed76ad6276d07b1ea08e88d7fa4f` passed PR CI run
+  `30208678827`, job `89811104840`; its deterministic archive SHA-256 is
+  `7b8636db0dba88973bd82f4079a81fbdd71ca2975d56cc2fd90b21da17dc4cea`, with both the hash and
+  embedded commit identity reproduced in Cloud Shell before build;
+- regional build `7ad5ea5d-c7f2-4999-ada4-175b94d56fd9` completed `SUCCESS` and produced immutable
+  image digest `sha256:fe56a3dc7c8c4fb6e11b329adb107fb7efd8e4de0bece8820027f324d4f36afd`;
+- live revision `data-incident-investigator-src-3653cf6b591e`, labeled with the full source commit,
+  receives 100% traffic. Read-back service/revision state verifies service max `1`, revision max
+  `1`, min `0`, concurrency `1`, request timeout `100s`, `0.08` vCPU, `256 MiB`, CPU throttling on,
+  startup boost off, fixture mode, first generation, and Singapore;
+- current inventory remains 29 enabled services. The run-sources bucket has two objects totaling
+  1,596,294 bytes; Artifact Registry reports a 119.176 MB repository, live 87,097,921-byte image and
+  retained historical 113,273,631-byte rollback image. Nothing was disabled or deleted;
+- a content-addressed pull/run of the live digest reverified all 8 runtime files, 149 package
+  manifests/roots, 149 legal files, exact notices/legal hashes, lock identity, base digest, and five
+  rendered Vite identities. C11 is restored to
+  `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE` for this exact digest without blanket legal clearance;
+- exactly one public post-redeploy smoke passed `/health`, `/ready`, UI, one canonical fixture
+  incident (`81% · high`), 9,221-byte Markdown download, empty warn/error console, accessible names,
+  and desktop/narrow overflow checks. The later evidence-only commit is not the source commit for the
+  running revision.
+
+#### Phase 8.7 QA correction — fail-closed runtime evidence verification
+
+Status: canonical QA returned `FAIL / DO NOT MERGE` on exact verifier/evidence head
+`9ee04c7f5cbccca56fb6fb165686f7cff803f96e`. The proven live revision remains the immutable image
+built from source commit `3653cf6b591eed76ad6276d07b1ea08e88d7fa4f`; this correction is a later
+tooling/evidence head and must not be described as the live image source.
+
+Objective: make the runtime-attribution contract part of canonical `pnpm validate`, reject linked,
+escaped, extra, missing, or tampered runtime/legal inputs fail-closed, bind legal files and rewritten
+workspace manifests by content, and correct only the four stale current-state documentation claims
+identified by QA.
+
+Minimum files:
+
+- root `package.json` to add the existing direct Node contract to canonical validation;
+- `scripts/runtime-attribution.mjs`, `scripts/prepare-runtime-manifests.mjs`, the canonical runtime
+  attribution manifest, and `tests/runtime-attribution.contract.mjs` for safe containment, exact file
+  set, content binding, and focused negative cases;
+- `docs/DEVPOST_REQUIREMENTS.md`, `docs/PUBLIC_SOURCE_APACHE_READINESS.md`, and
+  `docs/RELEASE_CHECKLIST.md` for the exact stale claims;
+- this plan and `docs/SESSION_LOG.md` for current correction state, plus only directly affected
+  repository-map or PR evidence if required for truthfulness.
+
+Acceptance:
+
+- canonical `pnpm validate` executes `pnpm test:runtime-attribution`; Vitest remains distinct and
+  does not indirectly collect the `.contract.mjs` Node test;
+- one shared path-safety routine rejects symlinks, Windows junction/reparse targets, noncanonical
+  paths, and containment escapes before runtime attribution reads any manifest, legal, or runtime
+  child;
+- runtime verification recollects and byte-compares the complete expected runtime file evidence, so
+  an unexpected file, missing file, size change, or hash change fails;
+- required Apache/project/third-party legal files and all rewritten runtime workspace manifests are
+  bound by deterministic SHA-256 evidence and verified by content, while installed package
+  manifests/legal files retain their existing frozen-graph hashes;
+- focused direct contracts cover portable symlink/junction escape, explicit cross-root path,
+  unexpected runtime file, runtime/manifest/legal tamper, and missing legal evidence without scanning
+  outside the fixture root;
+- correct the current-main boundary, exact matrix totals, consumed GCP owner approval, and historical
+  `00001-jst` rollback wording without rewriting append-only historical evidence;
+- run the direct contract, changed-file formatting/static checks, canonical `pnpm validate`, bounded
+  path/EOL/secret/diff checks, one additive commit and normal push, then require exact-new-head PR CI
+  `SUCCESS` and update only existing Draft PR #56 through the official in-app GitHub Browser.
+
+Deferred: every GCP mutation, image rebuild, redeploy, resource/API/billing change, public incident or
+smoke, live DataHub/model work, tag, Release, Devpost submission, PR Ready transition, merge, history
+rewrite, and force-push.

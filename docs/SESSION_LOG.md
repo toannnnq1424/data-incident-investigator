@@ -5594,7 +5594,8 @@ without any external GCP action.
   `a4beb330fb528f4926eee8a538c7d2a79dab1f67`; retained
   `1c32f6c913b196fc4a23055fb7da3b1482b94e5e` /
   `5c83d034f30c6d31268109277aaa455a05ff9656` only as historical Phase 8.4B evidence. Marked Phase
-  8.5 correction/QA and PR #54 completed/merged; PR #55 is the current Draft. Corrected the changelog
+  8.5 correction/QA and PR #54 completed/merged; PR #55 was the current Draft at that time. Corrected
+  the changelog
   to the existing `v1.0.0-rc.1` tag and unpublished Draft Release.
 - Recorded `onlinelearning-484610` only as a non-mandatory existing reference project and the owner's
   statement that gifted USD 300 cloud/API credit is available, without claiming signed-in
@@ -5680,3 +5681,448 @@ secret/private-path/debug/conflict scans, stale-current-main search, full diff r
 
 Create one additive commit, normal-push the same branch, keep Draft PR #55 Draft/unmerged, require
 exact-new-head PR CI `SUCCESS`, and return for the same independent Windows QA re-review.
+
+## 2026-07-26 — Phase 8.7 Google Cloud deployment control packet
+
+### Objective
+
+Prepare the provider/account/project-specific Google Cloud deployment control packet and cheapest
+truthful deployment plan using read-only signed-in Console evidence and current official sources,
+without any Google Cloud mutation.
+
+### Completed
+
+- Verified exact starting main `c7abc652c23b532e90091b377490b27eadd7e084` and created only
+  `codex/phase-8-7-gcp-deployment-control-packet`.
+- Read-only Console inspection confirmed a redacted personal Google identity, no organization, an
+  active Direct Paid billing account, and Available account-scoped Free Trial credit of approximately
+  VND 7.886 million ending 2026-10-07. `onlinelearning-484610` is linked to that billing account.
+  No payment method/profile/card or full identity/account ID was opened or recorded.
+- Preferred an uncreated dedicated project for isolation; proposed one display name and three
+  unreserved IDs. Recorded the inference that eligible new-project usage linked to the same billing
+  account can consume its remaining credit, while explicitly preserving SKU eligibility and
+  overage uncertainty.
+- Specified one public request-based Cloud Run service in Bangkok serving Fastify plus built Vite
+  same-origin, minimum `0`, maximum `1`, initial `0.08` vCPU/concurrency `1`, a
+  `128 MiB`/`256 MiB`/`512 MiB` smoke-tested memory ladder, and only the three source-build APIs.
+  Excluded Agent Platform, Vertex AI, model APIs, database, VPC, scheduler, custom domain, and Secret
+  Manager in fixture mode.
+- Distinguished hard controls from alerts. Budgets do not cap spend; maximum instances may briefly
+  overshoot; the Paid account has no credible hard zero-spend cap. Recorded first-charge events,
+  Free Tier/build/registry/network/log risks, unknown taxes, rollback/cleanup/deletion consequences,
+  and the historical pre-execution 20%-credit or 2026-09-30 safe stop boundary. The later execution
+  entry replaces that date with 2026-08-10.
+- Initially labeled the packet `ACCEPTABLE AFTER OWNER APPROVAL`; independent QA later rejected that
+  conclusion because it superseded the owner's unchanged zero-fee/no-overage policy without
+  authority. The additive correction below is controlling.
+
+### Files changed
+
+`docs/DEPLOYMENT.md`, `docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md`, and this session log only.
+
+### Decisions
+
+The candidate billing account's Paid status invalidates the earlier unupgraded-trial no-charge
+assumption. Dedicated isolation is operationally preferable but does not create a hard cost boundary.
+The initial acceptance disposition is superseded by the QA correction below. No GCP action is
+authorized by this packet.
+
+### Validation performed
+
+Read-only in-app Browser inspection and current official Google Cloud documentation review;
+changed-file Prettier; `git diff --check`; exact four-document allowlist; strict
+UTF-8/LF/final-newline/no-BOM; local Markdown links; official citation reachability; and added-line
+secret, full-identity, private-path, conflict, and debug scans pass. Full diff review confirms only
+the four planned documentation files.
+
+### Validation intentionally deferred
+
+Every GCP mutation; runtime/container/workflow/manifest/lock/version/source/test/asset change; build,
+test, browser E2E, deploy, reminder, publication, Ready transition, merge, and independent QA.
+
+### Known issues
+
+Project-ID availability, exact live SKU/tax conversion, credit eligibility for every SKU, and a hard
+zero-spend containment remain unresolved. They require a refreshed pre-mutation check and owner
+decision; no guess is permitted.
+
+### Exact next step
+
+Complete bounded documentation validation and secret/full-identity review, create one additive
+commit, normal-push, create exactly one Draft PR against current main, require exact-head PR CI
+`SUCCESS`, and stop without merge or Google Cloud mutation.
+
+## 2026-07-26 — Phase 8.7 QA correction: zero-fee policy and timeout ordering
+
+### Objective
+
+Correct the three independent Windows QA blocker groups on the same implementation branch and Draft
+PR #56 without GCP mutation or runtime work.
+
+This is a historical correction entry. The owner's later explicit risk acceptance and completed
+deployment in the next entry supersede its rejection/no-mutation decision.
+
+### Completed
+
+- Changed the inspected Google Cloud Paid-account decision to
+  `REJECT FOR CURRENT DEPLOYMENT`. The owner authorizes gifted/free credit only and no fees/overage;
+  budgets, quotas, maximum instances, rate limits, and teardown reduce risk but do not create a hard
+  USD/VND `0` cap. A future owner could supersede that policy only through a new explicit risk
+  acceptance; this packet is not that authorization.
+- Corrected timeout ordering: Cloud Run's request timeout must be strictly greater than the bounded
+  application/API deadline by a finite response margin, allowing controlled application timeout
+  output before a platform `504`. Exact margin/configuration remains unproven and deferred to a
+  future changed-seam smoke before any deployment.
+- Preserved dedicated-project isolation as the architectural preference but changed the total-cost
+  comparison with reuse to unknown/not proven.
+- Corrected current main/tree to
+  `c7abc652c23b532e90091b377490b27eadd7e084` /
+  `66e90eae74c7065c62a30a14ffeb25ef26974ea4`. PR #55 is merged historical; Draft PR #56 is the
+  current Phase 8.7 review. Older main/tree/run identities remain only as labeled historical
+  evidence.
+- Preserved safe signed-in redactions, official Google citations, three uncreated/unreserved project
+  ID candidates, and the no-Agent Platform/Vertex/model boundary.
+
+### Files changed
+
+`docs/DEPLOYMENT.md`, `docs/IMPLEMENTATION_PLAN.md`, `docs/KNOWN_ISSUES.md`,
+`docs/DEVPOST_REQUIREMENTS.md`, `docs/PUBLIC_SOURCE_APACHE_READINESS.md`,
+`docs/RELEASE_CHECKLIST.md`, and this session log only.
+
+### Decisions
+
+Historically, Google Cloud was not selected or approved and the Public-repository fixture quickstart
+remained the zero-fee path. The next entry records the later owner-authorized external resources.
+
+### Validation performed
+
+Changed-file Prettier, `git diff --check`, exact seven-document allowlist, strict
+UTF-8/LF/final-newline/no-BOM, local Markdown links, and added-line secret/full-identity/private-path/
+conflict/debug scans pass. Focused contradiction scans find no controlling acceptance disposition,
+inverted timeout ordering, unqualified cost-equivalence claim, or current-Draft PR #55 claim.
+
+### Validation intentionally deferred
+
+Full/runtime suite, build, changed-seam timeout smoke, browser E2E, live DataHub, and every GCP
+project/API/billing/resource/card/deploy/reminder mutation.
+
+### Known issues
+
+No proven public full-stack provider with hard zero-spend containment exists. Exact Cloud Run timeout
+margin/configuration and reuse-versus-dedicated total cost remain unproven.
+
+### Exact next step
+
+Run bounded docs validation, create one additive commit, normal-push the same branch, keep only Draft
+PR #56, wait for exact-new-head CI `SUCCESS`, update the existing PR body with only that final run/job,
+and return for the same Windows QA re-review without merge or GCP mutation.
+
+## 2026-07-26 — Phase 8.7 owner-approved Cloud Run deployment execution
+
+### Objective
+
+Resume the same branch and Draft PR #56 after the owner explicitly superseded the earlier
+zero-fee/no-overage rejection, accepted the residual Paid-account risk, and authorized the exact
+project, billing, minimum API, build, and deployment actions. Deliver the smallest practical public
+Devpost fixture service and retain bounded rollback/stop controls.
+
+### Completed
+
+- Safely reverified signed-in account `t***@gmail.com`, no organization, active Direct Paid billing
+  account `M*** …D627`, and approximately VND 7.886 million of account-scoped Welcome credit
+  remaining through 2026-10-07. No payment method, card, payment profile, invoice, tax identity, or
+  sensitive billing page was opened or recorded.
+- Disabled billing on `onlinelearning-484610` and the other prior test/reference project under the
+  owner's explicit instruction. The new project is the candidate billing account's only linked
+  project at the post-deploy checkpoint.
+- Created project `dii-cloudrun-demo-26-a7c9`, display name `Data Incident Investigator`, with no
+  organization. The two other proposed project IDs remained uncreated.
+- Enabled only `run.googleapis.com`, `cloudbuild.googleapis.com`, and
+  `artifactregistry.googleapis.com`. No Secret Manager, Agent Platform, Vertex AI, Gemini, model API,
+  database, VPC, custom domain, scheduler, or reminder was enabled or created.
+- Added one production-host seam: Fastify serves built Vite assets and same-origin `/api`, accepts
+  Cloud Run `PORT`/`0.0.0.0`, and preserves local defaults. Added `@fastify/static@10.1.2`, a focused
+  integration test, `Dockerfile`, and `.dockerignore`.
+- Created the exact source archive from tracked plus non-ignored working-tree files, with no `.env`,
+  credential, token, or `node_modules`, and used `gcloud run deploy --source`. Cloud Build built the
+  Dockerfile and source deploy auto-created co-located Artifact Registry repository
+  `cloud-run-source-deploy`.
+- Deployed public service `data-incident-investigator` in `asia-southeast1` (Singapore). At that
+  historical checkpoint, revision `data-incident-investigator-00002-pdq` received 100% traffic at
+  <https://data-incident-investigator-1071683558688.asia-southeast1.run.app>.
+- Verified request-based billing, first-generation execution, `0.08` vCPU, `256 MiB`, concurrency
+  `1`, minimum instances `0`, service maximum instances `1`, timeout `100s` above the bounded `90s`
+  application deadline, CPU throttling on, startup CPU boost off, public invocation, and
+  `APP_MODE=fixture`.
+- Public smoke passed after the final revision: static UI loaded, fixture metadata became ready, the
+  canonical Removed schema column investigation completed, report confidence showed `81% · high`,
+  and the browser console had zero warnings/errors.
+- Official current pricing/location recheck proved Bangkok (`asia-southeast3`) has lower Tier 1
+  unit pricing and Cloud Build support. The owner then explicitly chose to retain the already healthy
+  Singapore service. The record therefore does not claim Singapore is the cheapest region.
+- Preserved stop/delete/billing-detach deadline 2026-08-10 or 20% reported credit remaining,
+  whichever occurs first. Budgets/alerts and maximum instances remain risk reducers, not hard
+  currency caps. Availability through the 2026-08-31 judging end remains unresolved.
+
+### Local validation performed
+
+- Changed production-host source passed Prettier, API typecheck, focused production-host/health
+  Vitest (`2` files / `4` tests), affected workspace builds, and `pnpm smoke`.
+- Local same-origin UI canonical browser smoke passed with clean console.
+- Local Docker image built and passed root, health, readiness, and canonical incident requests under
+  `256 MiB` / `0.08` CPU limits before source deployment.
+- Public final-revision browser smoke passed as recorded above.
+
+### Files changed
+
+`.dockerignore`, `Dockerfile`, `apps/api/package.json`, `apps/api/src/index.ts`, `pnpm-lock.yaml`,
+`tests/integration/production-host.test.ts`, `docs/DEPLOYMENT.md`, `docs/IMPLEMENTATION_PLAN.md`,
+`docs/KNOWN_ISSUES.md`, `docs/REPOSITORY_MAP.md`, `docs/DEVPOST_REQUIREMENTS.md`,
+`docs/PUBLIC_SOURCE_APACHE_READINESS.md`, `docs/RELEASE_CHECKLIST.md`, and this session log.
+
+### Known issues and boundaries
+
+The Paid account still has no credible hard VND/USD `0` cap; credit reporting can lag, taxes remain
+unknown, and maximum instances may briefly overshoot. The source-built container is distinct from
+the verified RC archive and includes installed runtime dependencies, so the documented
+`abstract-logging@2.0.1` packaged-legal-file caveat remains. Fixture data is synthetic and
+process-local. No live DataHub judge credential/path exists. No tag, GitHub Release, Devpost
+submission, PR Ready transition, merge, card/payment action, secret, or reminder occurred.
+
+### Exact next step
+
+Run bounded changed-file formatting, focused runtime seam checks, link/EOL/diff/path/secret/conflict
+scans, and full diff review. Create one additive commit, normal-push the same branch, update only
+Draft PR #56, wait for exact-new-head PR CI `SUCCESS`, record only that final run/job, and return for
+the same Windows QA re-review without merge.
+
+## 2026-07-26 — Phase 8.7 deployed-state QA correction: clean source candidate
+
+### Objective
+
+Close the independent QA blockers on deployed head
+`d1d67b13642b40edf570e79106493309b7df05c0` using the same branch and Draft PR #56: correct live
+service controls, inventory real Google resources/APIs, enforce complete container legal evidence,
+and redeploy only from a clean immutable commit/archive with explicit provenance.
+
+### Pre-redeploy findings
+
+- Read-only Cloud Run describe found historical revision
+  `data-incident-investigator-00002-pdq` at 100% traffic, revision `maxScale=1`, timeout `100s`,
+  `0.08` CPU, `256 MiB`, concurrency `1`, fixture mode, CPU throttling on, and boost off. The
+  service-level annotation is still `maxScale=100`; the earlier fully bounded/final claim is false.
+- Enabled-service inventory found 29 entries. Only `run.googleapis.com`,
+  `cloudbuild.googleapis.com`, and `artifactregistry.googleapis.com` were explicit deployment
+  enablements; the 26 additional Google/default/transitive services have unproven causal origin and
+  were not disabled.
+- The Singapore run-sources bucket has one source ZIP totaling 745,422 bytes. The standard
+  `cloud-run-source-deploy` Docker repository reports 113.275 MB, scanning disabled, one old image
+  digest `sha256:410fdef2cda022f9e8f977b5300adeed9470bb632b5f5d9cee86918dc9d5b707`,
+  and one historical successful build `53c336af-d3dc-449f-8366-5f527810dcfe`. Nothing was deleted.
+
+### Source correction prepared
+
+- Pinned all Docker stages to
+  `node:24-bookworm-slim@sha256:6f7b03f7c2c8e2e784dcf9295400527b9b1270fd37b7e9a7285cf83b6951452d`.
+  The production image now runs compiled Node output as the unprivileged `node` user, installs only
+  the API production closure, rewrites only runtime workspace exports to `dist`, and includes only
+  compiled output, one required fixture metadata file, runtime dependencies, and legal/provenance
+  evidence.
+- Added deterministic `RUNTIME-ATTRIBUTION.json`/`THIRD_PARTY_NOTICES.txt`, project `NOTICE`,
+  focused attribution/manifest contracts, and tracked explicit upstream fallback evidence for
+  `abstract-logging@2.0.1`. The fallback records that neither the npm package nor exact tag contains
+  a legal file and binds the author-linked source to exact tag commit
+  `80dfaef91ee87008f4ed2b6e78921d383bccd406`.
+- Exact lock SHA is `eeec795d5a09d5e8865b54bfbd95fb3557cce421c5369d99b6e2f89a472484b2`;
+  lock inventory is 397 packages/397 snapshots/377 names; full-production inventory is 152
+  identities/145 names; deployed runtime is 149 identities/142 names/149 roots; exact Vite bundle
+  inventory remains five identities.
+- Focused contracts pass 3/3. Exact source generation, Node 24 source verification, production-only
+  installed-closure verification, final-image legal/junk checks, and local production
+  root/health/readiness smoke pass. The final local image contains no API source, `tsx`, tests, docs,
+  audit scripts, or surplus fixtures. It is 86,183,068 bytes. Under exact `0.08` CPU / `256 MiB`,
+  same-origin canonical incident completion and the 9,221-byte Markdown renderer output also pass.
+  Final-image legal hashes are `d343d346...c6b1` (runtime manifest), `9cc0b8b5...ccab` (notices),
+  `cfc7749b...3d30` (Apache LICENSE), and `4c3019e...2d1f` (project NOTICE).
+
+### Historical gate before corrected redeploy
+
+At this pre-redeploy checkpoint, C11 was blocked for the then-current Cloud Run distribution because
+the live image predated the new evidence. No corrected deployment was claimed in that checkpoint.
+The next section records completion without treating its later docs-only HEAD as the deployed source
+commit.
+
+## 2026-07-26 — Phase 8.7 corrected clean-commit redeploy evidence
+
+### Source and CI provenance
+
+- Source commit `3653cf6b591eed76ad6276d07b1ea08e88d7fa4f`, tree
+  `432eae7beeb3d79edc7ac0582a5f114e8be4d47d`, parent
+  `bd9f7afe934078a3f3bd5b7d3228eebf6d427ba1`, passed PR CI run `30208678827`, job
+  `89811104840`.
+- `git archive` from exactly that commit produced
+  `data-incident-investigator-3653cf6b591e.tar.gz`, 775,567 bytes, SHA-256
+  `7b8636db0dba88973bd82f4079a81fbdd71ca2975d56cc2fd90b21da17dc4cea`. Cloud Shell reproduced the
+  SHA-256 and embedded Git commit identity before extraction into a new directory.
+- The running revision remains bound to that source commit. This later evidence-only documentation
+  commit is not the source of the image; exact-final-head CI belongs in the mutable Draft PR #56
+  body to avoid a circular evidence commit.
+
+### Build, image, and live configuration
+
+- Regional Cloud Build `7ad5ea5d-c7f2-4999-ada4-175b94d56fd9` completed `SUCCESS` from the
+  Cloud Run source object and produced immutable digest
+  `sha256:fe56a3dc7c8c4fb6e11b329adb107fb7efd8e4de0bece8820027f324d4f36afd`.
+- Revision `data-incident-investigator-src-3653cf6b591e` has label
+  `source-commit=3653cf6b591eed76ad6276d07b1ea08e88d7fa4f` and receives 100% traffic at the existing public URL.
+  Read-back service/revision state verifies service max `1`, revision max `1`, min `0` by default/
+  absent min-scale annotations, concurrency `1`, request timeout `100s`, `0.08` vCPU, `256 MiB`, CPU
+  throttling on, startup CPU boost off, first-generation execution, fixture mode, and Singapore.
+  The platform-created startup probe separately reports `240s`; that is not the request timeout.
+- Current main remains `c7abc652c23b532e90091b377490b27eadd7e084`, tree
+  `66e90eae74c7065c62a30a14ffeb25ef26974ea4`. Draft PR #56 remains current, Draft, and unmerged;
+  its changes are not current main.
+
+### API/resource and legal inventory
+
+- Enabled-service count remains 29. The three explicit deployment enablements are Cloud Run, Cloud
+  Build, and Artifact Registry; the other 26 Google/default/transitive services retain unproven
+  causal origin and were not blindly disabled.
+- The Singapore run-sources bucket has two ZIP objects totaling 1,596,294 bytes: historical 745,422
+  bytes and corrected-build 850,872 bytes. `cloud-run-source-deploy` remains a standard,
+  Google-managed-key Docker repository with scanning disabled and reported size 119.176 MB. It
+  contains live `latest` digest `fe56a3dc…36afd` at 87,097,921 bytes and retained untagged historical
+  digest `410fdef2…5b707` at 113,273,631 bytes. Nothing was deleted.
+- The exact live digest was pulled read-only and executed under `0.08` CPU / `256 MiB`. All 8
+  compiled runtime files, 149 package manifests/roots, and 149 package legal files matched the
+  manifest. The immutable Node base, lock SHA, 152 full-production identities, 149 runtime
+  identities, five rendered Vite identities, and required legal files matched.
+- Live-image hashes are `d343d34681cf92e1d7c9a3bf834251c2a2db98a3b1b6614a365c382da769c6b1`
+  (`RUNTIME-ATTRIBUTION.json`),
+  `9cc0b8b55f4a78435cf4d25b7f7f5aa05a981ee041963d38ab82e2afdcebccab`
+  (`THIRD_PARTY_NOTICES.txt`),
+  `cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30` (`LICENSE`), and
+  `4c3019e13c96e2906eddd3e8fa35d4ef0d4e13826d2398551d8a9796fac82d1f` (`NOTICE`). C11 is restored
+  to `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE` only for this exact digest and bounded
+  synthetic/authorized-data use; no blanket legal clearance is claimed.
+
+### Single corrected public smoke
+
+Exactly one post-redeploy smoke verified:
+
+- public `/health` HTTP 200 with `{"status":"ok"}` and `/ready` HTTP 200 with fixture assets ready;
+- the static UI and one canonical Removed schema column incident completed at `81% · high`;
+- visible UI Markdown download produced 9,221 bytes, SHA-256
+  `f258d2b0e84fe730312bfe74048f9b00101d88ec3e73fdb1a1cd7c2ee85711a9`, with completed incident,
+  six stages, nine tool calls, and deterministic evidence content;
+- browser console had zero warnings/errors, every interactive control had an accessible name, one
+  H1/main landmark was present, and desktop/narrowed views had no horizontal overflow.
+
+Direct browser navigation to response-only `/ready` and `.md` resources was client-blocked, so the
+same bounded smoke checked readiness once via public `curl` and Markdown via the visible UI download;
+the incident was not rerun.
+
+### Boundaries
+
+No region/resource increase, billing/project deletion, billing association change, unrelated API
+mutation, image/archive cleanup, card/payment access, secret/model/DataHub credential, reminder,
+tag, Release, Devpost submission, PR Ready transition, merge, amend, rebase, or force-push occurred.
+The Paid account still has no hard VND/USD zero cap. Preserve shutdown/delete/detach by 2026-08-10 or
+20% reported credit remaining, whichever occurs first; this remains earlier than the judging end.
+
+## 2026-07-26 — Phase 8.7 QA correction: fail-closed runtime evidence verifier
+
+### Objective
+
+Close the canonical QA blockers on exact evidence head
+`9ee04c7f5cbccca56fb6fb165686f7cff803f96e` without changing the proven Cloud Run deployment. Make
+the existing direct runtime-attribution contract part of canonical validation, enforce safe contained
+filesystem reads and exact content/file-set identity, and correct the four specified stale
+current-state document claims.
+
+### Completed
+
+- Added `pnpm test:runtime-attribution` to canonical `pnpm validate`. A focused Vitest list filtered
+  to `tests/runtime-attribution.contract.mjs` returned no collected test, confirming that the direct
+  Node contract was not previously executed indirectly by Vitest.
+- Reused the repository's shared release-path safety contract for canonical-root, `lstat`,
+  symlink/junction/reparse rejection, portable relative paths, and realpath containment. Runtime
+  package manifests, package legal files, fallback legal evidence, compiled-output children,
+  project legal files, rewritten workspace manifests, lockfile, Dockerfile, and tracked evidence now
+  pass through contained/canonical reads.
+- Upgraded tracked runtime attribution to schema v2. It binds the exact complete 23-file output set,
+  three required legal files, and three rewritten runtime workspace manifests by path, byte length,
+  and SHA-256. Runtime verification recollects and compares the full sorted output evidence, so
+  missing, extra, linked, escaped, or tampered content fails.
+- Added focused positive and negative contracts for exact evidence, extra file, runtime tamper,
+  legal tamper, missing legal file, rewritten-manifest tamper, explicit cross-root path, and portable
+  symlink/junction/reparse escape. The external sentinel in the link test remains outside the
+  verifier's scan.
+- Corrected the exact-current-main boundary and matrix totals to
+  `3 PASS / 1 QUALIFIED PASS — OWNER-AUTHORIZED SCOPE / 11 PARTIAL / 14 OPEN / 8 NOT REQUIRED`;
+  recorded the consumed owner-approved GCP selection; and relabeled `00001-jst` as a historical
+  rollback candidate while retaining `src-3653cf6b591e` as the proven live revision.
+- Preserved two-layer provenance. The live digest and schema-v1/eight-file evidence remain bound to
+  immutable source commit `3653cf6b591eed76ad6276d07b1ea08e88d7fa4f`. This later verifier/docs
+  head, its schema-v2 23-file evidence, and its CI are not the image source.
+
+### Files changed
+
+`package.json`; `scripts/prepare-runtime-manifests.mjs`; `scripts/runtime-attribution.mjs`;
+`tests/runtime-attribution.contract.mjs`; `RUNTIME-ATTRIBUTION.json`;
+`docs/DEVPOST_REQUIREMENTS.md`; `docs/IMPLEMENTATION_PLAN.md`; `docs/KNOWN_ISSUES.md`;
+`docs/PUBLIC_SOURCE_APACHE_READINESS.md`; `docs/RELEASE_CHECKLIST.md`;
+`docs/REPOSITORY_MAP.md`; and this session log.
+
+### Decisions
+
+Use the existing shared path-safety module rather than introduce a second filesystem policy. Treat
+all emitted files under the five runtime output roots, including declarations and source maps, as
+the exact expected set. Bind project legal content and the deterministic post-rewrite workspace
+manifest bytes in schema v2 while preserving the package-manifest/legal hashes already derived from
+the frozen graph.
+
+Do not rebuild or redeploy the live image merely to incorporate the stricter verifier. The next
+commit is a verifier/evidence/docs head only; exact live-image evidence remains immutable and
+separately labeled.
+
+### Validation performed
+
+- Node `24.14.0`, pnpm `11.9.0`.
+- Direct `pnpm test:runtime-attribution`: 10/10 pass, including all new negative cases.
+- Vitest filtered list for `tests/runtime-attribution.contract.mjs`: zero collected tests.
+- Changed-seam build plus attribution generation: five workspace projects built; schema v2 generated
+  with lock SHA `eeec795d5a09d5e8865b54bfbd95fb3557cce421c5369d99b6e2f89a472484b2`,
+  152 full-production identities, 149 runtime identities/roots, five bundled packages, 23 runtime
+  output files, three legal files, and three rewritten manifests.
+- Canonical `pnpm validate`: format and lint pass; six-workspace typecheck passes; Vitest 40 files /
+  380 tests passes; release-artifact contract 15/15 passes; runtime-attribution contract 10/10 passes
+  from the canonical chain; all six workspace builds and smoke pass.
+- Legal hashes remain unchanged:
+  `THIRD_PARTY_NOTICES.txt`
+  `9cc0b8b55f4a78435cf4d25b7f7f5aa05a981ee041963d38ab82e2afdcebccab`,
+  `LICENSE` `cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30`,
+  and `NOTICE` `4c3019e13c96e2906eddd3e8fa35d4ef0d4e13826d2398551d8a9796fac82d1f`.
+- Exact 12-path allowlist, changed-file Prettier, `git diff --check`, strict
+  UTF-8/LF/final-newline/no-BOM, local Markdown links, added-line sensitive/private-path/full-email,
+  conflict, and debug scans pass with zero findings. Runtime schema/count/content and unchanged lock
+  hash checks pass.
+
+### Validation intentionally deferred
+
+Every image rebuild, GCP build/redeploy/mutation, public incident/smoke, API/resource/billing change,
+live DataHub/model check, tag, Release, Devpost submission, PR Ready transition, and merge.
+
+### Known issues
+
+The live image does not contain the later schema-v2 verifier; its already-proven immutable
+schema-v1/runtime/legal evidence remains the controlling evidence for that digest. Paid-account
+residual risk, the 2026-08-10 or 20%-credit stop boundary, and the judging-uptime mismatch remain
+unchanged.
+
+### Exact next step
+
+Run bounded changed-file format, diff, link/path, strict UTF-8/LF/final-newline/no-BOM, secret,
+conflict, and debug checks. Create one additive commit, normal-push the same branch, wait for exact
+new-head PR CI `SUCCESS`, then update only existing Draft PR #56 through the official in-app GitHub
+Browser with the new verifier/docs identities while preserving the immutable image-source boundary.

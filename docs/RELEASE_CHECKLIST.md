@@ -243,7 +243,8 @@ actions below remain separately scoped.
       safety, archive/sidecar rollback, capture preconditions, focused coverage, and stale Phase 8.4B
       state on the same Draft PR #54.
 - [x] Independent Windows QA passed the corrected exact branch head and local artifact evidence; PR
-      #54 then merged through exact main `73172b7e8e8b02ab9629019eac298b89e02895c2`.
+      #54 then merged through then-current main
+      `73172b7e8e8b02ab9629019eac298b89e02895c2`.
 - [x] Phase 8.6 records the legal-owner operational disposition over the captured texts and remaining
       dependency/data/API rights. C11 is `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE`; this is a
       conditional zero-cost authorization, not blanket legal clearance.
@@ -295,11 +296,14 @@ actions below remain separately scoped.
       immediately canceled pre-authorization hold that may remain visible for 7–21 days and a
       prorated selected-plan signup charge. Preserve `REJECT`, the USD 5 minimum alert, and absence
       of a spending limit/hard USD 0 cap; perform no signup.
-- [x] Correct current-state docs to exact main
+- [x] Correct the then-current Phase 8.6 state to historical main
       `73172b7e8e8b02ab9629019eac298b89e02895c2`, tree
-      `a4beb330fb528f4926eee8a538c7d2a79dab1f67`; keep Phase 8.4B identities historical, record PR #54
-      merged and PR #55 current Draft, and preserve the existing `v1.0.0-rc.1` tag/unpublished Draft
-      Release.
+      `a4beb330fb528f4926eee8a538c7d2a79dab1f67`; keep Phase 8.4B identities historical and record PR
+      #54 merged.
+- [x] Record current main
+      `c7abc652c23b532e90091b377490b27eadd7e084`, tree
+      `66e90eae74c7065c62a30a14ffeb25ef26974ea4`; PR #55 is merged historical and Draft PR #56 is the
+      current Phase 8.7 review. Preserve the existing `v1.0.0-rc.1` tag/unpublished Draft Release.
 - [x] Record `onlinelearning-484610` only as a non-mandatory existing Google Cloud reference. A later
       read-only control packet may prefer a dedicated project only if credit applicability and no
       increased fee risk are proven; require fresh owner approval for its exact name, globally unique
@@ -308,6 +312,77 @@ actions below remain separately scoped.
       same-origin service, min `0`/initial max `1`, minimum passing CPU/memory, and unavoidable-only
       Build/Artifact Registry with surplus cleanup. Exclude Agent Platform, Vertex AI, models, and
       every GCP mutation from this correction.
+
+## Phase 8.7 — Google Cloud control-packet QA correction
+
+- [x] Reject the inspected Paid-account candidate under the unchanged zero-fee/no-overage policy;
+      budgets, quotas, and maximum instances are not a hard USD/VND `0` cap.
+- [x] Keep Google Cloud unselected and unapproved. A future owner could supersede the policy only
+      through a new explicit risk acceptance; this packet is not that authorization.
+- [x] Require Cloud Run's request timeout to exceed the bounded application/API deadline by a finite
+      response margin; defer exact values to a future changed-seam smoke before deployment.
+- [x] Recommend dedicated isolation while recording reuse-versus-dedicated total cost as unknown and
+      unproven.
+- [x] Preserve all safely redacted signed-in facts, official citations, uncreated project-ID
+      candidates, and the no-Agent/Vertex/model boundary. Perform no GCP mutation.
+
+The checklist above is historical. The owner subsequently and explicitly superseded its rejection,
+accepted the residual Paid-account risk, and authorized the exact execution below.
+
+## Phase 8.7 — owner-approved Google Cloud deployment execution
+
+- [x] Disable billing on both prior test/reference projects and verify the new dedicated project is
+      the candidate billing account's only linked project.
+- [x] Create `dii-cloudrun-demo-26-a7c9` (`Data Incident Investigator`, no organization) and enable
+      Cloud Run, Cloud Build, and Artifact Registry APIs explicitly. A later read-only inventory
+      found 26 additional Google/default/transitive enabled services whose exact origin is not
+      proven; do not blindly disable them.
+- [x] Add the narrow Docker/same-origin production host seam and focused integration coverage; add no
+      secret, model, DataHub credential, database, VPC, custom domain, scheduler, or reminder.
+- [x] Deploy `data-incident-investigator` in `asia-southeast1` with request-based billing, first
+      generation, `0.08` vCPU, `256 MiB`, concurrency `1`, minimum `0`, maximum `1`, timeout `100s`,
+      CPU throttling on, and startup CPU boost off.
+- [x] Verify final revision `data-incident-investigator-00002-pdq`, 100% traffic, public static UI,
+      readiness, canonical Removed schema column investigation, report `81% · high`, and zero browser
+      console warnings/errors.
+- [x] Record that Bangkok has lower Tier 1 unit pricing; after that verification, retain Singapore
+      under the owner's explicit instruction. Do not claim Singapore is the lowest-price region.
+- [x] Preserve the hard-risk warning: budgets do not cap spend and maximum instances is not an
+      absolute monetary cap. Stop/delete/detach billing by 2026-08-10 or at 20% reported credit
+      remaining, whichever occurs first.
+
+The execution checklist above is historical and was found incomplete by independent QA.
+
+## Phase 8.7 — deployed-state controls, legal, and provenance correction
+
+- [x] Reproduce the live mismatch read-only: revision maximum `1` and timeout `100s`, but
+      service-level `maxScale=100`; classify revision `00002-pdq` and its smoke as historical.
+- [x] Inventory 29 enabled services total, separating the three explicitly enabled deployment APIs
+      from 26 Google/default/transitive services with unproven origin. Inventory one 745,422-byte
+      run-sources ZIP, the 113.275 MB Artifact Registry repository, one old image/digest, and one
+      successful historical build.
+- [x] Pin all Node Docker stages to immutable digest
+      `sha256:6f7b03f7c2c8e2e784dcf9295400527b9b1270fd37b7e9a7285cf83b6951452d`;
+      use compiled production start as unprivileged `node`; exclude source/dev/test/docs/audit junk.
+- [x] Generate and source/local-image verify exact runtime attribution: lock SHA
+      `eeec795d5a09d5e8865b54bfbd95fb3557cce421c5369d99b6e2f89a472484b2`, 152 full-production
+      identities, 149 runtime identities/roots, five Vite identities, deterministic runtime
+      manifest/notices, Apache `LICENSE`, project `NOTICE`, and explicit
+      `abstract-logging@2.0.1` upstream fallback evidence.
+- [x] Keep C11 blocked for the historical Cloud Run distribution until the exact clean source commit
+      passed CI, was archived and deployed, and its live digest/legal evidence passed; restore only
+      the bounded qualified disposition after those exact gates.
+- [x] Push clean source commit `3653cf6b…7fa4f`; exact-source-head PR CI run `30208678827`, job
+      `89811104840`, succeeded.
+- [x] Deploy only its immutable archive with source label/revision suffix and both service
+      `--max=1` and revision `--max-instances=1`, plus min `0`, concurrency `1`, timeout `100s`,
+      `0.08` CPU, `256 MiB`, CPU throttling on, CPU boost off, fixture mode, and Singapore.
+- [x] Verify exact build/archive/image/revision/config/API/resource/legal provenance, then run exactly
+      one corrected public UI/health/readiness/canonical/Markdown/console/accessibility/overflow
+      smoke.
+- [x] Record this later docs-only evidence commit without claiming the running revision was built
+      from it. Record exact-final-head CI only in the mutable Draft PR #56 body to avoid circular
+      evidence; keep the PR Draft and unmerged.
 
 ## Phase 8 — `v1.0.0` final (not performed)
 
@@ -324,10 +399,14 @@ actions below remain separately scoped.
 ## Deployment
 
 - [x] Production API starts and `/health` succeeds.
-- [ ] Web artifact points to the production API.
-- [ ] Public fixture demo completes end-to-end.
+- [x] Web artifact uses the same-origin production `/api` boundary.
+- [x] Public fixture demo completes end-to-end.
 - [x] Timeout/provider error states are user-friendly.
-- [ ] A distinct deployed last-known-good rollback artifact is identified and retained.
+- [x] Current proven live revision `data-incident-investigator-src-3653cf6b591e`, built from
+      immutable source commit `3653cf6b591eed76ad6276d07b1ea08e88d7fa4f`, receives 100% traffic.
+- [x] Previous immutable revision `data-incident-investigator-00001-jst` is retained only as a
+      historical rollback candidate; it is not the current proven live or “last-known-good”
+      revision.
 
 ## Submission
 

@@ -2,34 +2,54 @@
 
 Last updated: 2026-07-26.
 
-- Phase 8.5 is integrated through exact normal merge
-  `73172b7e8e8b02ab9629019eac298b89e02895c2`, tree
-  `a4beb330fb528f4926eee8a538c7d2a79dab1f67`, with ordered parents
-  `1c32f6c913b196fc4a23055fb7da3b1482b94e5e` then
-  `0b37e8a3235f0db0af8d84cbaaa2fd35cc48ddbd`; exact main CI run `30188091600`, job
-  `89756253516`, is `SUCCESS`. PR #54 is merged. Phase 8.6 records C11 as
+- Current main is exact normal merge
+  `c7abc652c23b532e90091b377490b27eadd7e084`, tree
+  `66e90eae74c7065c62a30a14ffeb25ef26974ea4`, with ordered parents
+  `73172b7e8e8b02ab9629019eac298b89e02895c2` then
+  `91c52ae69b335b2b3122c8d5e1a95a997bc49ec5`. PR #55 is merged historical. Its
+  parent `73172b7e8e8b02ab9629019eac298b89e02895c2`, main CI run `30188091600`, and job
+  `89756253516` remain historical Phase 8.5 evidence. Phase 8.6 records C11 as
   `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE`: technical attribution passes and the owner authorizes
   only zero-cost distribution of the exact verified artifact with synthetic/authorized data and
   authorized zero-cost DataHub/API access. This is operational authorization, not blanket legal
   clearance. `abstract-logging@2.0.1` remains non-embedded and its missing packaged legal file remains
   a documented caveat.
 
-  No public full-stack provider is selected. GitHub Pages is available for the Public repository but
-  is static-only and cannot run Fastify or the same-origin `/api` proxy. The immediate zero-cost judge
-  path remains the Public repository plus a later timed credential-free fixture quickstart. Official
-  evidence identifies Render Free as a card-free candidate, rejects Koyeb Starter/Free for lack of a
-  hard zero-dollar cap, and makes the unupgraded Google Cloud Free Trial eligible only after a
-  provider-specific ten-field packet and fresh owner approval. Account identity and repository-
-  specific runtime/judge-window validation remain open. Phase 8.6 performs no signup, card/trial
-  action, reminder, deploy, Pages enablement, credential entry, artifact upload/publication, or
-  submission.
+  Phase 8.6 historically selected no public full-stack provider. The owner later explicitly
+  superseded the zero-fee/no-overage rejection, accepted the residual Google Cloud Paid-account risk,
+  and authorized Phase 8.7 deployment. A public fixture-only Cloud Run service now exists; Koyeb
+  remains rejected and Render remains unselected. No card/payment data, live credential, model API,
+  reminder, Devpost submission, or GitHub Release asset was created or entered.
 
   Koyeb's official Pricing FAQ additionally documents a USD 29 pre-authorization hold that is
   immediately canceled but may remain visible for 7–21 days, plus a prorated selected-plan charge at
-  signup; Koyeb remains `REJECT`. The owner identifies `onlinelearning-484610` only as an existing
-  Google Cloud reference project and permits a later packet to propose a dedicated project. Neither
-  is selected for mutation. Fresh approval of the exact project name/ID and owning
-  account/organization/billing account is required immediately before any `Create Project` action.
+  signup; Koyeb remains `REJECT`. `onlinelearning-484610` is a billing-disabled historical reference
+  project. The owner later approved and consumed the exact project/billing/API/build/deploy gates for
+  dedicated project `dii-cloudrun-demo-26-a7c9`; that approval does not authorize a different project,
+  billing association, region, API, paid feature, or material capacity increase.
+
+  Phase 8.7 inspection confirmed the candidate billing account is already **Paid**, with
+  approximately VND 7.886 million of account-scoped Free Trial credit remaining and expiry
+  2026-10-07. Billing was disabled on both prior test/reference projects; dedicated project
+  `dii-cloudrun-demo-26-a7c9` is the only project linked at the post-deploy checkpoint.
+  Reuse-versus-dedicated total cost remains unknown and unproven. The owner accepted that budgets do
+  not cap spend, Cloud Run maximum instances can briefly be exceeded, taxes remain unknown, and
+  Google Cloud provides no credible hard VND/USD 0 cap.
+
+  Public service `data-incident-investigator` now runs in `asia-southeast1` (Singapore) at
+  <https://data-incident-investigator-1071683558688.asia-southeast1.run.app>. Historical revision
+  `data-incident-investigator-00002-pdq` and its smoke are superseded because independent QA found
+  service-level `maxScale=100`. Corrected revision
+  `data-incident-investigator-src-3653cf6b591e` receives 100% traffic and is labeled with source
+  commit `3653cf6b591eed76ad6276d07b1ea08e88d7fa4f`. Live read-back verifies request-based billing,
+  first-generation execution, `0.08` vCPU, `256 MiB`, concurrency `1`, minimum instances `0`, both
+  service and revision maximum instances `1`, request timeout `100s` above the `90s` application
+  deadline, CPU throttling on, startup CPU boost off, and fixture mode. Build
+  `7ad5ea5d-c7f2-4999-ada4-175b94d56fd9` produced immutable digest
+  `sha256:fe56a3dc7c8c4fb6e11b329adb107fb7efd8e4de0bece8820027f324d4f36afd`.
+  Bangkok has a lower published Tier 1 unit price, but the owner explicitly chose to keep the healthy
+  Singapore service. Stop/delete/detach billing by 2026-08-10 or at 20% reported credit remaining,
+  whichever occurs first. This does not guarantee access through the 2026-08-31 judging end.
 
 - Phase 8.4A is integrated through exact normal merge
   `36d4205806597ae14b7306c74e1527c284202023`, tree
@@ -45,8 +65,12 @@ Last updated: 2026-07-26.
   `e4ddbb8277f430ed1da4593c9f19ca89f1aa39fb`. Exact-main CI run `30178465331`, job
   `89731006555`, is `SUCCESS`. C10 remains `PASS`: signed-in GitHub shows `Public`, default `main`,
   enabled private vulnerability reporting, and the retained Phase 8.4B branch/conversation. The RC
-  tag and unpublished Draft Release with zero user-uploaded assets remain retained; Pages is disabled
-  and no deployment is claimed.
+  tag and unpublished Draft Release with zero user-uploaded assets remain retained. At that
+  historical Phase 8.4B GitHub-only checkpoint, GitHub Pages was disabled and no GitHub Pages or
+  GitHub Environment deployment was claimed. GitHub Pages remains disabled; separately, the
+  owner-approved external public Cloud Run deployment now exists from immutable Draft PR source
+  `3653cf6b591eed76ad6276d07b1ea08e88d7fa4f`, remains unmerged/not current main, and is governed by
+  the Phase 8.7 Paid-account cost and shutdown boundaries.
 
   The prior GitHub private-reporting blocker is closed. At 2026-07-26 05:22 ICT, authenticated
   Settings showed the enabled control as `Disable private vulnerability reporting`, Security overview
@@ -55,9 +79,10 @@ Last updated: 2026-07-26.
   account was used, and public issue disclosure remains prohibited. No Code of Conduct is tracked;
   this is an optional governance follow-up, not a proven Public-source blocker.
 
-  The reused frozen production graph remains 138 external package-version nodes/132 names/7
-  importers, with declared licenses 122 MIT, 10 ISC, 5 BSD-3-Clause, and 1 BSD-2-Clause; 137 legal
-  files; 0 NOTICE files; and a missing legal file for declared-MIT `abstract-logging@2.0.1`. Phase 8.5
+  The historical Phase 8.5 release-archive graph contained 138 external package-version nodes/132
+  names/7 importers, with declared licenses 122 MIT, 10 ISC, 5 BSD-3-Clause, and 1 BSD-2-Clause; 137
+  legal files; 0 NOTICE files; and a missing legal file for declared-MIT
+  `abstract-logging@2.0.1`. Phase 8.5
   closes the technical bundled-output gap with exact Vite/Rollup positive-rendered-module provenance,
   lock/package/source/legal-file hashes, a deterministic `THIRD_PARTY_NOTICES.txt`, manifest schema v3,
   and archive/directory verifier enforcement. Schema v3 binds each package to the exact pnpm lock
@@ -66,22 +91,36 @@ Last updated: 2026-07-26.
   MIT-declared packages: `react@19.2.7`, `react-dom@19.2.7`, `scheduler@0.27.0`, `vite@7.3.6`, and
   `zod@4.4.3`; Vite contributes its runtime module-preload polyfill.
 
-  `abstract-logging@2.0.1` is not embedded: the API output preserves external imports and the archive
-  excludes `node_modules`. Its missing legal file therefore does not enter the bundled notice, but it
-  remains a broader production-install/C11 caveat. Phase 8.2 remains `PARTIAL`; captured
-  declarations/texts are engineering evidence, not compatibility or legal approval. The newer
+  `abstract-logging@2.0.1` is not embedded in the verified RC archive: the API output preserves
+  external imports and that archive excludes `node_modules`. The Cloud Run container does install
+  runtime dependencies. The corrected live distribution records lock SHA
+  `eeec795d5a09d5e8865b54bfbd95fb3557cce421c5369d99b6e2f89a472484b2`, 152 full-production
+  identities, 149 runtime identities/roots, 5 exact Vite identities, deterministic
+  `RUNTIME-ATTRIBUTION.json`/`THIRD_PARTY_NOTICES.txt`, Apache `LICENSE`, project `NOTICE`, and a
+  truthfully labeled upstream fallback for `abstract-logging@2.0.1` at exact tag commit
+  `80dfaef91ee87008f4ed2b6e78921d383bccd406`. Source, local production-image, and exact live-digest
+  verification pass: all 8 runtime files, 149 package manifests/roots, and 149 package legal files
+  matched the tracked evidence. C11 is restored to
+  `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE` for the exact `fe56a3dc…36afd` live digest. Phase 8.2
+  remains `PARTIAL`; captured declarations/texts are engineering evidence, not compatibility or
+  legal approval. The newer
   Phase 8.6 qualified owner disposition supersedes the historical C11 `PARTIAL/BLOCKED` state only
   within its exact zero-cost artifact/data/API scope. See
   [`PUBLIC_SOURCE_APACHE_READINESS.md`](PUBLIC_SOURCE_APACHE_READINESS.md).
+  The eight-file/schema-v1 statement is immutable evidence from live-image source commit
+  `3653cf6b591eed76ad6276d07b1ea08e88d7fa4f`. The later Draft PR verifier head binds the complete
+  23-file build-output set, required legal-file content, and rewritten workspace manifests under
+  schema v2, but it was not rebuilt or redeployed and is not the source of the running image.
 
   Independent Windows QA returned `FAIL / DO NOT MERGE` on Phase 8.5 head
   `bde288112f504c2067ff85499337d9315c30c432`: package identity was not yet bound to the frozen virtual
   store, Windows path/link/output atomicity was incomplete, five-package/exclusion coverage was too
   narrow, and three Phase 8.4B state documents remained stale. This is historical: the additive
-  correction passed independent QA, PR #54 merged through exact current main
-  `73172b7e8e8b02ab9629019eac298b89e02895c2`, and Phase 8.6 records the qualified owner
-  disposition. Current Draft PR #55 is the rights/deployment preflight and remains unmerged; no
-  artifact is published or deployed.
+  correction passed independent QA and PR #54 merged through historical main
+  `73172b7e8e8b02ab9629019eac298b89e02895c2`. PR #55 subsequently merged as current main
+  `c7abc652c23b532e90091b377490b27eadd7e084`; Draft PR #56 is the current Phase 8.7 review. The
+  verified RC archive remains unpublished, while the separate Cloud Run fixture demo described
+  above is deployed.
 
 - Phase 8.2 is integrated as `aa8d120205fdc35298b9ef36c7dd36b38b23e342` through main merge
   `7f05888ce7266f51b5028f5ac5ddacd3a91a11aa`; exact main CI run `30161661962`, job

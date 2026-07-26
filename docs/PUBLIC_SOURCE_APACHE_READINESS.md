@@ -222,7 +222,7 @@ official signed-in in-app Browser and independent unsigned reads established thi
 | Branches and PRs            | all 47 branches retained; 1 open/43 closed pull requests; Draft PR #53 remains open, `Not ready`, conflict-free, unmerged, with its branch and conversation retained                                                              |
 | Issues and Actions          | 2 open/7 closed issues retained; 125 workflow runs existed before the evidence push, including accepted run `30175050395`; histories/logs remain visible                                                                          |
 | Tag/Release                 | one `v1.0.0-rc.1` tag retained at `c4e33f7af3707f604d35b1220a18e4e83f491be3`; Draft Release remains unpublished with zero user-uploaded assets and only two automatic source archives                                             |
-| Pages/deployments           | Pages remains disabled with source `None`; no public deployment is configured or claimed                                                                                                                                          |
+| Pages/deployments           | Pages remains disabled with source `None`; no GitHub deployment was configured at this historical checkpoint. Phase 8.7 later added a separate external Cloud Run fixture deployment.                                             |
 | Security reporting          | enabled at 2026-07-26 05:22 ICT; Settings shows `Disable private vulnerability reporting`, Security overview shows `Enabled`, and unsigned `/security` exposes `Report a vulnerability`; the report route requires GitHub sign-in |
 
 No branch, conversation, issue, Actions history, tag, Release, or user-uploaded asset was deleted,
@@ -643,7 +643,7 @@ Separately, every production dependency must have compatible license and notice 
 dependency compatibility does not establish the right to relicense project-owned code, and owner
 authority does not resolve dependency obligations.
 
-## Phase 8.6 owner zero-cost rights disposition
+## Phase 8.6 owner zero-cost rights disposition (historical cost policy)
 
 On 2026-07-26, the repository owner authorized proceeding only when no fee is incurred. No purchase,
 paid subscription, metered overage, paid or larger runner, paid storage/package/domain/hosting,
@@ -655,12 +655,20 @@ control packet in [`DEPLOYMENT.md`](DEPLOYMENT.md) and fresh explicit owner appr
 The owner controls/performs any sensitive card entry; agents never request, read, type, copy, log,
 screenshot, or store card number, CVV, or billing credentials.
 
+Later in Phase 8.7, the owner explicitly superseded only the zero-fee/no-overage hosting policy,
+accepted the residual Google Cloud Paid-account risk, and authorized the exact project, billing, API,
+source-build, and fixture deployment actions recorded in [`DEPLOYMENT.md`](DEPLOYMENT.md). That
+operational approval does not expand data rights, authorize secrets/live DataHub/model APIs, provide
+blanket legal clearance, or make budgets/max instances a hard spending cap.
+
 Card-free, non-expiring tiers remain preferred. A card-required trial is eligible only if current
 official evidence establishes no unavoidable fee and a reliable pre-charge cancellation path. Any
 unavoidable or non-refundable charge, mandatory paid plan, unclear price, uncontrollable
-auto-conversion, or inability to enforce zero spend is `REJECT`. If a later provider is approved, a
-reminder/automation must be created before the buffered safe cancellation deadline; none is created
-in this preflight because no provider is selected or approved.
+auto-conversion, or inability to enforce zero spend is `REJECT`. The historical preflight proposed a
+reminder/automation if a provider were later approved. Phase 8.7 then consumed the owner's separate
+explicit risk acceptance and deployed the approved GCP fixture service without creating a reminder.
+The recorded 2026-08-10 or 20%-remaining-credit stop, delete, and billing-detach boundary therefore
+remains a manual operator control rather than a hard spending cap.
 
 Within that fail-closed cost boundary, the owner records this operational disposition:
 
@@ -685,21 +693,66 @@ Within that fail-closed cost boundary, the owner records this operational dispos
    source and the official MCP server are recorded as Apache-2.0; those source terms do not grant
    access to an instance or its metadata, so separate instance/data-owner authorization remains
    mandatory.
-4. **GitHub and hosting.** The Public GitHub repository, standard GitHub-hosted runners for the
-   Public repository, and a genuinely free Pages/hosting tier are authorized. Larger runners,
-   paid Actions/storage/packages/Codespaces, a paid domain, and paid hosting are not. A
-   card-required genuinely free trial may only pass the separate packet/fresh-approval gate above.
-   This disposition does not enable Pages, select a provider, create an account, start a trial, or
-   deploy anything.
+4. **GitHub and hosting.** Historically, only the Public GitHub repository, standard GitHub-hosted
+   runners for the Public repository, and a genuinely free Pages/hosting tier were authorized.
+   Phase 8.7 later consumed the separate owner risk acceptance for the exact Google Cloud fixture
+   deployment. Larger runners, paid Actions/storage/packages/Codespaces, a paid domain, and unrelated
+   paid hosting remain unauthorized.
 5. **No model fee.** The current deterministic product makes no LLM/OpenAI API call.
    `OPENAI_API_KEY` remains unnecessary and must not be introduced by this disposition.
 
-The C11 release-artifact gate therefore moves from `PARTIAL/BLOCKED` to
-`QUALIFIED PASS — OWNER-AUTHORIZED SCOPE`: Phase 8.5 technical attribution is `PASS`, and the owner
-authorizes zero-cost distribution only inside the exact artifact/data/API boundary above. This does
-not resolve entrant/contributor ownership attestations under C12, authorize arbitrary data or
-endpoints, approve a paid service, or permit this slice to publish, attach, upload, deploy, or submit
-anything. Those actions retain their own gates.
+The historical C11 release-archive gate moved from `PARTIAL/BLOCKED` to
+`QUALIFIED PASS — OWNER-AUTHORIZED SCOPE` for the exact Phase 8.5 archive only. That disposition did
+not cover the Cloud Run container, because the container installs external runtime dependencies.
+Independent QA therefore returned C11 to **BLOCKED FOR THE HISTORICAL CLOUD RUN DISTRIBUTION** until
+the exact clean immutable source commit was deployed and its final image digest, production closure,
+legal files, notices, and compiled-output hashes passed. The corrected live evidence below closes
+that deployment-specific block. This does not resolve entrant/contributor ownership attestations
+under C12, authorize arbitrary data or endpoints, or provide blanket legal clearance.
+
+### Phase 8.7 runtime-container attribution correction
+
+The corrected live distribution pins all Docker stages to immutable
+`node:24-bookworm-slim@sha256:6f7b03f7c2c8e2e784dcf9295400527b9b1270fd37b7e9a7285cf83b6951452d`.
+Its exact frozen evidence is:
+
+- lock SHA-256 `eeec795d5a09d5e8865b54bfbd95fb3557cce421c5369d99b6e2f89a472484b2`,
+  397 package entries, 397 snapshots, and 377 distinct names;
+- 152 full-production package identities / 145 names;
+- 149 installed deployed-runtime identities / 142 names / 149 canonical roots;
+- the same five exact Vite bundled identities already listed above;
+- deterministic `RUNTIME-ATTRIBUTION.json` and `THIRD_PARTY_NOTICES.txt`, Apache `LICENSE`, a
+  project `NOTICE`, and every required reproduced legal text in the final image.
+
+`abstract-logging@2.0.1` still has no `LICENSE`, `LICENCE`, or `COPYING` file in its npm package or
+exact upstream tag. Its README declares MIT and links to the author's legal page. The correction
+tracks that page's captured legal text as explicit upstream fallback evidence, bound to exact tag
+commit `80dfaef91ee87008f4ed2b6e78921d383bccd406`, source URL, capture date, and SHA-256. It never
+represents that fallback as npm-package content.
+
+Focused contracts, exact source regeneration, immutable-base Docker build, production-only install
+verification, final-image legal-file checks, and local production root/health/readiness smoke pass.
+The final image contains compiled API/workspace/Vite output, one required synthetic fixture file,
+production dependencies, and legal/provenance evidence; it contains no API source, `tsx`, tests,
+docs, or audit scripts.
+
+Exact source commit `3653cf6b591eed76ad6276d07b1ea08e88d7fa4f` passed PR CI run
+`30208678827`, job `89811104840`; deterministic archive SHA-256
+`7b8636db0dba88973bd82f4079a81fbdd71ca2975d56cc2fd90b21da17dc4cea` reproduced both its hash and
+embedded commit identity before build. Build `7ad5ea5d-c7f2-4999-ada4-175b94d56fd9` produced live
+digest `sha256:fe56a3dc7c8c4fb6e11b329adb107fb7efd8e4de0bece8820027f324d4f36afd`.
+The exact digest was pulled and executed read-only under the approved CPU/memory limits: all 8
+compiled runtime files, 149 package manifests/roots, and 149 package legal files matched the tracked
+hashes, as did the immutable base, lock identity, five Vite identities, notices, Apache `LICENSE`,
+and project `NOTICE`. C11 is therefore
+**QUALIFIED PASS — OWNER-AUTHORIZED SCOPE** for this exact digest and the documented
+synthetic/authorized-data boundary.
+
+That eight-file verification and manifest schema v1 remain evidence inside immutable source commit
+`3653cf6b591eed76ad6276d07b1ea08e88d7fa4f` and the live digest above. The later Draft PR verifier
+head upgrades tracked source evidence to schema v2, binds the complete 23-file build-output set plus
+required legal files and rewritten workspace manifests, and is not the live image source. No image
+rebuild, redeploy, or duplicate public smoke is implied by that tooling-only correction.
 
 ## Independent human decision checklist
 
@@ -710,20 +763,25 @@ anything. Those actions retain their own gates.
 
 The approvals are independent. Phase 8.4B consumed the Public authorization and completed through the
 normal merge recorded above; its branch and PR conversation remain retained. PR #54 is the historical
-Phase 8.5 artifact-enforcement work and is merged through current main
-`73172b7e8e8b02ab9629019eac298b89e02895c2`. Current Draft PR #55 is the Phase 8.6
-rights/deployment preflight and does not authorize any other external mutation.
+Phase 8.5 artifact-enforcement work and is merged through historical main
+`73172b7e8e8b02ab9629019eac298b89e02895c2`. PR #55 is the merged historical Phase 8.6
+rights/deployment preflight. Current main is
+`c7abc652c23b532e90091b377490b27eadd7e084`, tree
+`66e90eae74c7065c62a30a14ffeb25ef26974ea4`; Draft PR #56 is the current Phase 8.7 review. The
+owner's separate explicit instructions—not the PR itself—authorized the exact external Google Cloud
+mutations now recorded. No additional external mutation is implied.
 
 ## Residual blockers and next evidence
 
 1. Apache-2.0 is integrated on exact `main`, exact-main CI is successful, and GitHub detects the
    license. C09 is `PASS`; no license mutation remains in Phase 8.4B.
-2. All 138 external production package-version nodes have declared-license metadata, and 137 have a
-   legal file. Phase 8.5 closes the technical bundle audit/enforcement gap for the exact five embedded
-   packages and proves `abstract-logging@2.0.1` is not embedded. Phase 8.6 records the owner's
-   conditional zero-cost disposition, so C11 is `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE`; the missing
-   non-embedded legal file remains a caveat and no blanket legal conclusion is claimed. This slice
-   still performs no artifact publication or distribution.
+2. The historical Phase 8.5 graph had 138 external production package identities and 137 packaged
+   legal files. The current container correction recomputes the new lock/runtime graph and supplies
+   the exact evidence above, including the truthfully labeled `abstract-logging@2.0.1` upstream
+   fallback. The exact current live digest passes the clean-source, compiled-output, runtime-closure,
+   notice, and legal-file verification gates, so C11 is
+   `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE` for that bounded distribution. No blanket legal
+   conclusion is claimed.
 3. GitHub is `Public`. Authenticated and unsigned access, the completed Phase 8.4B normal merge, and
    exact-main CI make C10 `PASS`; preserve and reverify that state through later work.
 4. Phase 8.2 remains `PARTIAL` pending live/judge DataHub credentials and validation; this packet does
