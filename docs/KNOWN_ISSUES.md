@@ -2,6 +2,26 @@
 
 Last updated: 2026-07-26.
 
+- Phase 8.5 is integrated through exact normal merge
+  `73172b7e8e8b02ab9629019eac298b89e02895c2`, tree
+  `a4beb330fb528f4926eee8a538c7d2a79dab1f67`, with ordered parents
+  `1c32f6c913b196fc4a23055fb7da3b1482b94e5e` then
+  `0b37e8a3235f0db0af8d84cbaaa2fd35cc48ddbd`; exact main CI run `30188091600`, job
+  `89756253516`, is `SUCCESS`. PR #54 is merged. Phase 8.6 records C11 as
+  `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE`: technical attribution passes and the owner authorizes
+  only zero-cost distribution of the exact verified artifact with synthetic/authorized data and
+  authorized zero-cost DataHub/API access. This is operational authorization, not blanket legal
+  clearance. `abstract-logging@2.0.1` remains non-embedded and its missing packaged legal file remains
+  a documented caveat.
+
+  No current zero-cost public full-stack deployment target is proven. GitHub Pages is available for
+  the Public repository but is static-only and cannot run Fastify or the same-origin `/api` proxy.
+  The immediate zero-cost judge path is the Public repository plus a later timed credential-free
+  fixture quickstart. A hosted app remains blocked until an operator proves a card-free,
+  non-expiring/non-metered Node host with HTTPS, probes, rollback, and access through judging. Phase
+  8.6 performs no deploy, Pages enablement, credential entry, artifact upload/publication, or
+  submission.
+
 - Phase 8.4A is integrated through exact normal merge
   `36d4205806597ae14b7306c74e1527c284202023`, tree
   `876899895449981f3c4dd3981ef76ba64597d1bd`, with ordered parents
@@ -39,10 +59,10 @@ Last updated: 2026-07-26.
 
   `abstract-logging@2.0.1` is not embedded: the API output preserves external imports and the archive
   excludes `node_modules`. Its missing legal file therefore does not enter the bundled notice, but it
-  remains a broader production-install/C11 legal-owner caveat. C11 and Phase 8.2 remain `PARTIAL`;
-  captured declarations/texts are engineering evidence, not compatibility or legal approval.
-  Artifact publication/distribution remains unauthorized pending independent QA and the legal owner
-  deciding whether the captured evidence resolves the remaining rights/obligation gate. See
+  remains a broader production-install/C11 caveat. Phase 8.2 remains `PARTIAL`; captured
+  declarations/texts are engineering evidence, not compatibility or legal approval. The newer
+  Phase 8.6 qualified owner disposition supersedes the historical C11 `PARTIAL/BLOCKED` state only
+  within its exact zero-cost artifact/data/API scope. See
   [`PUBLIC_SOURCE_APACHE_READINESS.md`](PUBLIC_SOURCE_APACHE_READINESS.md).
 
   Independent Windows QA returned `FAIL / DO NOT MERGE` on Phase 8.5 head

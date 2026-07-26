@@ -1,8 +1,10 @@
 # Public-source and Apache-2.0 readiness decision packet
 
-Status: `PHASE 8.5 — EXACT BUNDLED-OUTPUT ATTRIBUTION`; Apache-2.0 and Public visibility are
+Status: `PHASE 8.6 — QUALIFIED ZERO-COST OWNER DISPOSITION`; Apache-2.0 and Public visibility are
 integrated, Private vulnerability reporting is enabled, the technical release-bundle inventory is
-enforced, and C11 remains `PARTIAL` pending the legal-owner disposition described below.
+enforced, and C11 is `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE` under the exact limitations below.
+This is an operational authorization and engineering record, not legal advice or blanket legal
+clearance.
 
 This document prepares two independent decisions for Data Incident Investigator:
 
@@ -640,6 +642,52 @@ Separately, every production dependency must have compatible license and notice 
 dependency compatibility does not establish the right to relicense project-owned code, and owner
 authority does not resolve dependency obligations.
 
+## Phase 8.6 owner zero-cost rights disposition
+
+On 2026-07-26, the repository owner authorized proceeding only when no fee is incurred. No purchase,
+paid subscription, payment method or card entry, metered overage, paid or larger runner, paid
+storage/package/domain/hosting, paid DataHub Cloud/API, or other billable service may be enabled. Any
+payment, billing-account, card, upgrade, paid-quota, or trial that can auto-convert prompt is a stop
+condition requiring new explicit authorization. A materially expiring free tier is likewise not
+accepted without a separate owner decision.
+
+Within that fail-closed cost boundary, the owner records this operational disposition:
+
+1. **Exact artifact distribution.** Distribution is owner-authorized only for the exact Phase 8.5
+   artifact contract when deterministic `THIRD_PARTY_NOTICES.txt`, manifest schema v3, and standalone
+   verifier enforcement are present and pass. The embedded runtime set is exactly
+   `react@19.2.7`, `react-dom@19.2.7`, `scheduler@0.27.0`, `vite@7.3.6`, and `zod@4.4.3`; each is
+   recorded as MIT-declared with captured legal evidence. The broader frozen graph retains its
+   recorded MIT/ISC/BSD-3-Clause/BSD-2-Clause declarations and required notices/conditions.
+   `abstract-logging@2.0.1` remains a declared-MIT package-metadata caveat with no packaged legal
+   file: it has zero rendered contribution, `node_modules` is excluded, and its code must not be
+   represented as embedded or distributed. This is a documented caveat, not a legal conclusion.
+2. **Data.** Public demos and artifacts may contain only checked-in synthetic/fixture data,
+   project-owned or generated reports/assets, and metadata the operator is authorized to expose.
+   Production, customer, confidential, PII, proprietary metadata, credentials, and unauthorized
+   screenshots/logs must not be used, uploaded, recorded, or redistributed.
+3. **DataHub and APIs.** Fixture mode is authorized and credential-free. Live access is authorized
+   only to an operator-owned/authorized DataHub OSS or self-controlled instance, or a
+   challenge-provided endpoint whose permitted use covers this demo. Paid DataHub Cloud/API,
+   unauthorized public-demo scraping, and third-party credentials are prohibited. `DATAHUB_TOKEN`
+   remains operator-supplied, least-privilege, secret, and never committed or logged. DataHub OSS
+   source and the official MCP server are recorded as Apache-2.0; those source terms do not grant
+   access to an instance or its metadata, so separate instance/data-owner authorization remains
+   mandatory.
+4. **GitHub and hosting.** The Public GitHub repository, standard GitHub-hosted runners for the
+   Public repository, and a genuinely free Pages/hosting tier are authorized. Larger runners,
+   paid Actions/storage/packages/Codespaces, a paid domain, paid hosting, or any payment-method
+   requirement are not. This disposition does not enable Pages or deploy anything.
+5. **No model fee.** The current deterministic product makes no LLM/OpenAI API call.
+   `OPENAI_API_KEY` remains unnecessary and must not be introduced by this disposition.
+
+The C11 release-artifact gate therefore moves from `PARTIAL/BLOCKED` to
+`QUALIFIED PASS — OWNER-AUTHORIZED SCOPE`: Phase 8.5 technical attribution is `PASS`, and the owner
+authorizes zero-cost distribution only inside the exact artifact/data/API boundary above. This does
+not resolve entrant/contributor ownership attestations under C12, authorize arbitrary data or
+endpoints, approve a paid service, or permit this slice to publish, attach, upload, deploy, or submit
+anything. Those actions retain their own gates.
+
 ## Independent human decision checklist
 
 - [x] **Authorize Apache-2.0 project relicense.** Explicitly approved by the user on 2026-07-25 and
@@ -657,11 +705,10 @@ only the Phase 8.5 artifact-enforcement work and does not authorize any other ex
    license. C09 is `PASS`; no license mutation remains in Phase 8.4B.
 2. All 138 external production package-version nodes have declared-license metadata, and 137 have a
    legal file. Phase 8.5 closes the technical bundle audit/enforcement gap for the exact five embedded
-   packages and proves `abstract-logging@2.0.1` is not embedded. Its absent legal file and the broader
-   authorization/rights review keep C11 `PARTIAL`. Artifact publication/distribution remains
-   unauthorized until independent QA passes and the legal owner records whether the captured
-   upstream texts and remaining dependency/data/API evidence satisfy the distribution/submission
-   obligations.
+   packages and proves `abstract-logging@2.0.1` is not embedded. Phase 8.6 records the owner's
+   conditional zero-cost disposition, so C11 is `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE`; the missing
+   non-embedded legal file remains a caveat and no blanket legal conclusion is claimed. This slice
+   still performs no artifact publication or distribution.
 3. GitHub is `Public`. Authenticated and unsigned access, the completed Phase 8.4B normal merge, and
    exact-main CI make C10 `PASS`; preserve and reverify that state through later work.
 4. Phase 8.2 remains `PARTIAL` pending live/judge DataHub credentials and validation; this packet does
@@ -685,3 +732,13 @@ and NOTICE condition were rechecked 2026-07-25 23:54 ICT (2026-07-25 16:54 UTC):
 - [Apache Software Foundation: Applying the Apache license, version 2.0](https://www.apache.org/legal/apply-license.html)
 - [Apache Software Foundation: Third-party license policy](https://www.apache.org/legal/resolved.html)
 - [Vite: Building for Production](https://vite.dev/guide/build)
+- [DataHub OSS repository and Apache-2.0 licence](https://github.com/datahub-project/datahub)
+- [Official DataHub MCP Server repository and Apache-2.0 licence](https://github.com/acryldata/mcp-server-datahub)
+- [DataHub MCP Server: managed and self-hosted boundaries](https://docs.datahub.com/docs/features/feature-guides/mcp)
+- [GitHub Actions billing](https://docs.github.com/en/billing/concepts/product-billing/github-actions)
+- [GitHub Pages: static hosting and plan availability](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages)
+- [GitHub Pages HTTPS](https://docs.github.com/en/pages/getting-started-with-github-pages/securing-your-github-pages-site-with-https)
+
+The Phase 8.6 additions above were accessed on 2026-07-26. They support only the recorded source-
+licence, service/API boundary, and GitHub cost/hosting facts; owner/data permission is supplied by the
+separate operational disposition, not inferred from those pages.

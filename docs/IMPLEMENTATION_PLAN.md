@@ -6071,3 +6071,89 @@ Deferred: broad product/full suite, evaluation, browser E2E, live DataHub, depen
 manifest/workflow mutation, tag/Release/assets/deployment/submission, legal-owner disposition,
 publication/distribution, Ready transition, merge, branch deletion, history rewrite, and any new
 task/branch/PR.
+
+### Phase 8.6 — zero-cost rights disposition and deployment preflight
+
+Status: in progress on `codex/phase-8-6-zero-cost-rights-deployment-preflight` from exact fetched
+`origin/main` `73172b7e8e8b02ab9629019eac298b89e02895c2` (tree
+`a4beb330fb528f4926eee8a538c7d2a79dab1f67`; ordered parents
+`1c32f6c913b196fc4a23055fb7da3b1482b94e5e` then
+`0b37e8a3235f0db0af8d84cbaaa2fd35cc48ddbd`). Exact main CI run `30188091600`, job
+`89756253516`, is `SUCCESS`; PR #54 is merged. Signed-in GitHub confirms `Public`, enabled Private
+vulnerability reporting, the unpublished Draft RC with only two automatic source archives, and no
+deployment environment.
+
+Objective: convert the repository owner's 2026-07-26 conditional no-fee authorization into an
+auditable operational disposition for exact Phase 8.5 artifact distribution, synthetic/authorized
+data, DataHub access, GitHub/hosting, and the continued no-model product boundary. Decide C11
+precisely without claiming blanket legal clearance, then compare truthful zero-cost deployment
+paths for the current React/Vite static web plus Fastify Node API architecture. This slice performs
+no deployment, publication, upload, service enablement, credential entry, or paid/trial setup.
+
+Minimum files:
+
+- `docs/PUBLIC_SOURCE_APACHE_READINESS.md` for the owner-authorized distribution/data/API disposition,
+  technical attribution result, residual caveats, and fail-closed no-paid/no-sensitive-data policy.
+- `docs/DEVPOST_REQUIREMENTS.md` for the qualified C11 state, rights boundary, Project URL/access
+  implications, and unchanged submission blockers.
+- `docs/DEPLOYMENT.md` for the zero-cost architecture decision matrix, selected preflight path or
+  explicit blocker, secrets/runtime/persistence/HTTPS/health/rollback/judge-access constraints, and
+  dated official-source register.
+- `docs/RELEASE_CHECKLIST.md`, `docs/KNOWN_ISSUES.md`, `docs/REPOSITORY_MAP.md`, this plan,
+  `docs/SESSION_LOG.md`, and `CHANGELOG.md` only where Phase 8.6 current-state, validation, or next
+  action must be recorded.
+- Phase 8.5 attribution/builder/verifier inputs remain read-only unless a direct inconsistency is
+  found. No runtime, test, fixture, workflow, dependency, manifest, lockfile, version, tag, Release,
+  deployment configuration, or GitHub-setting change is planned.
+
+Acceptance criteria:
+
+- Record the owner's authorization exactly as conditional operational authorization, not legal
+  advice: no fee, purchase, payment method, metered overage, paid runner/storage/package/domain/
+  hosting/DataHub Cloud/API, auto-converting trial, or other billable service. Any payment, billing,
+  upgrade, card, or material free-tier expiry/auto-conversion prompt fails closed pending new explicit
+  authorization.
+- Qualify the artifact gate as technical attribution `PASS` plus owner no-fee distribution
+  authorization only for the exact Phase 8.5 artifact with deterministic `THIRD_PARTY_NOTICES.txt`
+  and manifest/verifier enforcement. Preserve the exact five embedded MIT-declared packages and
+  `abstract-logging@2.0.1` non-embedded/missing-legal-file caveat without calling it a legal
+  conclusion or representing its code as distributed.
+- Restrict public demo/artifact data to checked-in synthetic fixtures, project-owned/generated
+  reports/assets, and operator-authorized metadata. Prohibit production/customer/confidential/PII/
+  proprietary metadata, credentials, screenshots, logs, uploads, or redistribution.
+- Authorize credential-free fixture mode and only operator-owned/authorized DataHub OSS/self-
+  controlled or challenge-provided endpoints whose terms permit the demo. Keep `DATAHUB_TOKEN`
+  operator-supplied, secret, least privilege, and unlogged; do not purchase DataHub Cloud/API, scrape
+  an unauthorized demo, or use third-party credentials. Separate Apache-2.0 source terms from
+  instance/data-owner authorization and service cost/terms.
+- Preserve deterministic zero-model behavior and absence of `OPENAI_API_KEY` use. Preserve Public
+  GitHub and standard public-repository hosted runners as authorized only while genuinely free; do
+  not enable Pages or another host in this slice.
+- Produce a dated, official-primary-source-backed matrix for static-only and full-stack options
+  covering Node/secrets needs, same-origin `/api`, persistence, free-tier/card/expiry risk, HTTPS/
+  public URL, readiness, rollback, and Devpost judge access. Recommend a path only when its current
+  zero-cost boundary is proven; otherwise state the exact blocker and fallback.
+- Keep Draft RC/tag/version, assets, environments, Pages, settings, workflows, runtime, and
+  submission unchanged. End with one additive commit, one push, exactly one conflict-free Draft PR,
+  exact-head PR CI `SUCCESS`, and no merge.
+
+Bounded validation:
+
+- Read/cite only current primary official DataHub OSS/licensing/API and GitHub public Actions/Pages/
+  hosting cost sources needed for this decision; record exact URLs and 2026-07-26 access date while
+  distinguishing licence, data-owner permission, service terms, and price.
+- Reuse Phase 8.5 evidence and run its focused contract only; verify exact five-package attribution
+  expectations, `abstract-logging` exclusion, workspace/manifests, installed/repository lock equality,
+  and byte-identical dependency/version/workflow inputs. Do not rebuild an artifact.
+- Run changed-file Markdown/Prettier checks, UTF-8/LF/final-newline/no-BOM, local-link validation,
+  exact changed-path allowlist, `git diff --check`, and added-line secret/private-path/debug/conflict
+  scans.
+- Reverify exact branch/base/HEAD/tree/parent/diff, clean worktree, no task-created outputs, processes,
+  or listeners, and GitHub non-mutation for tag/Draft Release/assets/deployment/settings/version/
+  workflow/runtime before push and handoff.
+
+Deferred: any deploy or Pages enablement; Release asset/artifact upload, publication, attachment, or
+distribution; tag/version/Release mutation; Devpost registration/form/video/submission; credential
+entry; paid or trial service; live DataHub smoke; runtime/product/dependency/workflow change; full
+suite/build/artifact rebuild/evaluation/browser E2E; Ready transition, merge, branch deletion, and
+QA-task creation.

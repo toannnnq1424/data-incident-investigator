@@ -66,8 +66,9 @@ That exact set does not include `abstract-logging@2.0.1`. Its missing package le
 does not enter the bundled notice: the server build preserves external package imports, and the
 archive excludes `node_modules`. It remains a separate production-install/C11 legal-owner caveat.
 This engineering inventory and reproduced upstream text are not a compatibility ruling or legal
-approval. Artifact publication, attachment, and distribution remain unauthorized until independent
-QA and the recorded legal-owner disposition.
+approval. Phase 8.6 records a qualified owner authorization to distribute only the exact verified
+artifact at zero cost and within the synthetic/authorized-data and authorized-API boundary. This
+slice does not publish, attach, upload, distribute, or deploy it.
 
 Verify the archive before extraction, supplying the approved full commit and version from release
 coordination rather than trusting the filename:
@@ -239,3 +240,55 @@ all active/completed incident IDs. There is no database, migration, persistent u
 server-side Markdown report store to back up or restore. DataHub access is read-only; the MCP
 allowlist excludes every mutation, user, document, shell, and model operation, and the product never
 mutates provider state. See [`ROLLBACK.md`](ROLLBACK.md) before replacing an active release.
+
+## Phase 8.6 zero-cost deployment preflight
+
+### Non-billable policy
+
+The owner authorizes only a path that incurs no fee. Stop before any purchase, billing account,
+payment method/card, paid quota, metered overage, larger runner, paid storage/package/domain/hosting,
+paid DataHub Cloud/API, Codespaces, or trial that can auto-convert. A free tier with material expiry,
+card requirement, or unresolved overage behavior is not approved. No service is enabled and no
+deployment is performed in Phase 8.6.
+
+Public demo data is limited to checked-in synthetic fixtures and project-owned/generated assets.
+Live DataHub may use only an operator-owned/authorized OSS/self-controlled instance or a
+challenge-provided endpoint whose permitted use covers the demo. Never deploy with production,
+customer, confidential, PII, proprietary metadata, third-party credentials, or a logged/committed
+`DATAHUB_TOKEN`. The product remains model-free and does not use `OPENAI_API_KEY`.
+
+### Decision matrix for the current architecture
+
+| Path                                | Static web / Node API / secrets                                                                                 | Persistence and access                                                                                 | Cost/card/expiry evidence                                                                                                                | HTTPS, probes, rollback, and judge result                                                                                                                                    | Disposition                                                                                                                       |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Public repository clean setup       | Judge runs Vite + Fastify locally in fixture mode; no runtime secret                                            | In-memory incidents reset on restart; repository is already Public and fixture mode is credential-free | Uses the existing Public repo and standard public-repo CI only; no host, card, trial, or paid service                                    | Loopback only, so no public HTTPS app URL; `/health`, `/ready`, fixture smoke, and clean restart are supported; Devpost permits a repository with clear setup as Project URL | **Recommended zero-cost judge path now.** Add a timed clean quickstart in a later authorized docs slice; this is not a deployment |
+| GitHub Pages only                   | Can serve `apps/web/dist` HTML/CSS/JS, but cannot run Fastify, proxy same-origin `/api`, or keep server secrets | Static files only; no incident API or server memory                                                    | Official docs say Pages is available for Public repositories on GitHub Free; default `github.io` needs no paid domain                    | `github.io` receives automatic HTTPS, but API health/readiness and end-to-end incident flow are absent; static rollback can select a prior source artifact                   | **Not a functioning deployment of the current product.** Do not enable Pages                                                      |
+| Pages web + separate API host       | Static web could be public; Node API and any DataHub secret require another host                                | Split origins; current API has no CORS and the release build expects same-origin `/api`                | No separate host has been proven card-free, non-expiring, and non-metered                                                                | Would require HTTPS API, CORS or a same-origin edge proxy, probes, uptime, and two-part rollback; judges could otherwise see a broken UI                                     | **Blocked** by unselected zero-cost host and out-of-scope runtime/topology change                                                 |
+| One full-stack Node host            | Matches the documented static host + same-origin `/api` proxy and can run fixture or authorized live mode       | In-memory only; restart loses incident IDs; live token must be injected server-side                    | No current provider has been selected and proven to require no card, paid quota, auto-converting trial, or material expiry               | Must supply public HTTPS, proxy timeout, `/health`, `/ready`, fixture smoke, bounded logs, immutable prior artifact, and access through judging                              | **Preferred future deployment shape, but currently blocked** pending a separately authorized provider/account/cost verification   |
+| Operator-owned/self-controlled host | Can match the full generic Node 24 topology; live mode may reach an authorized DataHub OSS instance             | Operator owns uptime, TLS, network boundary, token storage, and rollback; still no app persistence     | Potentially zero incremental fee only if existing authorized hardware/network/TLS incur no new charge; that fact is not established here | Requires a stable public HTTPS URL, same-origin proxy, probes, fixture smoke, judge availability through 2026-08-31, and retained prior artifact                             | **Conditional alternative**, not selected until the operator proves zero incremental cost and durable judge access                |
+
+The truthful recommendation is therefore the already-Public repository plus a timed, credential-free
+fixture quickstart as the immediate zero-cost judge path. It is permitted by the recorded Devpost
+Project URL rule and exercises the full React/Vite + Fastify product without a paid service. A
+publicly hosted application remains desirable but has no proven zero-cost full-stack provider in this
+preflight. GitHub Pages is not selected because official GitHub documentation defines it as static
+hosting, while this product requires a Node API and same-origin `/api` proxy.
+
+### Current official-source register
+
+Accessed 2026-07-26:
+
+- [DataHub OSS repository](https://github.com/datahub-project/datahub): the source project identifies
+  itself as Apache-2.0 and documents self-hosted installation. This is a source-licence fact, not
+  permission to access an instance or its data.
+- [Official DataHub MCP Server repository](https://github.com/acryldata/mcp-server-datahub) and
+  [MCP documentation](https://docs.datahub.com/docs/features/feature-guides/mcp): the MCP server is
+  Apache-2.0; the docs distinguish managed DataHub Cloud from a self-hosted server for DataHub Core
+  and require an instance URL/token. They do not establish that Cloud service use is free.
+- [GitHub Actions billing](https://docs.github.com/en/billing/concepts/product-billing/github-actions):
+  standard GitHub-hosted runners are free for Public repositories; larger runners are always
+  charged, and storage/packages have separate allowance/billing boundaries.
+- [What is GitHub Pages?](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages):
+  Pages is available to Public repositories on GitHub Free and hosts static HTML/CSS/JavaScript.
+- [GitHub Pages HTTPS](https://docs.github.com/en/pages/getting-started-with-github-pages/securing-your-github-pages-site-with-https):
+  `github.io` sites are automatically served over HTTPS. This does not add a Node runtime.

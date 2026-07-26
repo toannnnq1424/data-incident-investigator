@@ -13,8 +13,12 @@ separately authorized post-merge gates.
 ### Changed
 
 - Relicensed the project from MIT to Apache-2.0 across the canonical license text, all seven private
-  workspace manifests, contributor guidance, and repository documentation. Repository visibility
-  remains Private pending the separately authorized publication gate.
+  workspace manifests, contributor guidance, and repository documentation. The separately authorized
+  repository transition is now integrated and GitHub visibility is Public.
+- Recorded the owner's qualified zero-cost distribution/data/API disposition and a deployment
+  preflight for the existing React/Vite plus Fastify architecture. No deployment, artifact
+  publication, paid service, credential, runtime, dependency, workflow, version, tag, or Release
+  mutation is included.
 
 ## [1.0.0-rc.1] - 2026-07-23
 

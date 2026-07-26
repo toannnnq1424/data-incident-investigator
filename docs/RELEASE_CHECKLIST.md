@@ -242,12 +242,43 @@ actions below remain separately scoped.
       `bde288112f504c2067ff85499337d9315c30c432`; correct frozen identity binding, Windows path/link
       safety, archive/sidecar rollback, capture preconditions, focused coverage, and stale Phase 8.4B
       state on the same Draft PR #54.
-- [ ] Require independent Windows QA over the exact branch head and local artifact evidence.
-- [ ] Obtain a legal-owner disposition over the captured texts and remaining dependency/data/API
-      rights before any artifact publication, attachment, distribution, or Devpost submission. C11
-      remains `PARTIAL` until that owner gate is recorded.
-- [ ] Keep the RC tag immutable, Draft Release unpublished with no user-uploaded assets, and all local
+- [x] Independent Windows QA passed the corrected exact branch head and local artifact evidence; PR
+      #54 then merged through exact main `73172b7e8e8b02ab9629019eac298b89e02895c2`.
+- [x] Phase 8.6 records the legal-owner operational disposition over the captured texts and remaining
+      dependency/data/API rights. C11 is `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE`; this is a
+      conditional zero-cost authorization, not blanket legal clearance.
+- [x] Keep the RC tag immutable, Draft Release unpublished with no user-uploaded assets, and all local
       artifact outputs unuploaded.
+
+## Phase 8.6 — zero-cost rights and deployment preflight
+
+- [x] Start from exact fetched `origin/main`
+      `73172b7e8e8b02ab9629019eac298b89e02895c2`, tree
+      `a4beb330fb528f4926eee8a538c7d2a79dab1f67`, ordered parents
+      `1c32f6c913b196fc4a23055fb7da3b1482b94e5e` then
+      `0b37e8a3235f0db0af8d84cbaaa2fd35cc48ddbd`; verify main CI `30188091600` /
+      `89756253516` `SUCCESS` and PR #54 merged.
+- [x] Reverify Public visibility, enabled Private vulnerability reporting, the unpublished Draft RC
+      with only two automatic source archives, and no deployment environment.
+- [x] Record the owner's no-fee operational authorization and fail closed on payment, card, billing,
+      upgrade, paid quota, larger runner, paid storage/package/domain/hosting/DataHub Cloud/API, or an
+      auto-converting/materially expiring free tier.
+- [x] Set C11 to `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE`: Phase 8.5 technical attribution passes,
+      and zero-cost distribution is authorized only for the exact verified artifact with deterministic
+      notices/manifest/verifier, synthetic/authorized data, and authorized DataHub/API access. Preserve
+      the non-embedded `abstract-logging@2.0.1` caveat and make no blanket legal conclusion.
+- [x] Preserve fixture mode as the recommended credential-free path; prohibit production/customer/
+      confidential/PII/proprietary metadata, unauthorized endpoints or credentials, paid DataHub
+      Cloud/API, and any `DATAHUB_TOKEN` commit/log.
+- [x] Record official 2026-07-26 DataHub OSS/MCP and GitHub Actions/Pages evidence. Standard runners
+      for the Public repository are free; larger runners are charged. Pages is available on GitHub
+      Free for Public repositories and provides HTTPS static hosting, but cannot run the Fastify API.
+- [x] Select the Public repository plus a later timed fixture quickstart as the immediate zero-cost
+      judge path. Leave public full-stack deployment blocked until a card-free, non-expiring/
+      non-metered Node host with HTTPS, same-origin `/api`, probes, rollback, and judging-period access
+      is proven.
+- [x] Do not deploy, enable Pages, upload/publish/distribute an artifact, mutate tag/version/Release,
+      enter credentials, change workflows/runtime, or submit in this slice.
 
 ## Phase 8 — `v1.0.0` final (not performed)
 

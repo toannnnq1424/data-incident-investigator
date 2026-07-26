@@ -5425,3 +5425,101 @@ amend/rebase, run exactly one new clean-head local-only artifact build and archi
 repeatability inspection, delete all generated evidence, normal-push the same branch, update Draft PR
 #54, require exact-new-head CI including `test:release-artifact` terminal `SUCCESS`, and return
 `READY FOR SAME WINDOWS QA RE-REVIEW` without merge or publication.
+
+## 2026-07-26 — Phase 8.6 zero-cost rights and deployment preflight
+
+### Objective
+
+Convert the repository owner's conditional no-fee authorization into an auditable disposition for
+the exact Phase 8.5 artifact, public demo data, DataHub/API access, GitHub/hosting, and the continued
+zero-model boundary. Decide C11 without claiming blanket legal clearance and identify the next
+truthful zero-cost path for the current React/Vite plus Fastify architecture without deploying or
+publishing anything.
+
+### Completed
+
+- Ran the tracked Windows bootstrap. Node `24.14.0`, pnpm `11.9.0`, the frozen install, and lock
+  policy check completed; the script's final `pnpm exec` Prettier probe failed because that invocation
+  did not resolve the installed root binary. Direct `node_modules/.bin/prettier.CMD` resolution and
+  changed-file formatting/checks pass. No manifest or lockfile changed.
+- Fetched and verified exact `origin/main`/default main
+  `73172b7e8e8b02ab9629019eac298b89e02895c2`, tree
+  `a4beb330fb528f4926eee8a538c7d2a79dab1f67`, ordered parents
+  `1c32f6c913b196fc4a23055fb7da3b1482b94e5e` then
+  `0b37e8a3235f0db0af8d84cbaaa2fd35cc48ddbd`. Signed-in GitHub confirmed main CI
+  `30188091600` / job `89756253516` `SUCCESS`, PR #54 merged, Public visibility, enabled Private
+  vulnerability reporting, the unpublished Draft RC with only automatic source zip/tar archives,
+  and no deployment environment. Created only
+  `codex/phase-8-6-zero-cost-rights-deployment-preflight` from that exact main.
+- Reused the exact Phase 8.5 engineering evidence. The focused release-artifact contract passes
+  15/15; repository and installed lockfiles are byte-identical at SHA-256
+  `e36baa3fe1899c4f58cc66eeeaea279601e5be271690b6fa215273740e4ac107`; the exact five
+  embedded package roots and separate `abstract-logging@2.0.1` root resolve from the frozen graph.
+- Recorded C11 as `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE`: technical attribution passes and the
+  owner authorizes zero-cost distribution only for the exact verified Phase 8.5 artifact with
+  deterministic `THIRD_PARTY_NOTICES.txt`/manifest/verifier enforcement, synthetic or otherwise
+  authorized data, and authorized zero-cost DataHub/API access. The non-embedded
+  `abstract-logging@2.0.1` missing-legal-file caveat remains; no blanket legal clearance is claimed.
+- Recorded the fail-closed no-fee/no-sensitive-data policy, operator-owned/authorized DataHub
+  instance boundary, secret least-privilege `DATAHUB_TOKEN`, prohibition on paid DataHub Cloud/API
+  and unauthorized demo scraping, and the unchanged zero-model/no-`OPENAI_API_KEY` boundary.
+- Read current primary official DataHub OSS/MCP and GitHub Actions/Pages/HTTPS sources. Source
+  Apache-2.0 terms are separated from instance/data-owner permission and service cost. Standard
+  GitHub-hosted runners for the Public repository are free while larger runners are charged; Pages
+  is available for Public repositories on GitHub Free but is static-only.
+- Added the architecture decision matrix. The immediate zero-cost judge path is the already-Public
+  repository plus a later timed credential-free fixture quickstart. Pages alone cannot run Fastify
+  or same-origin `/api`; no full-stack public host is selected until card-free, non-expiring/
+  non-metered operation, HTTPS, probes, rollback, and access through judging are proven.
+
+### Files changed
+
+`CHANGELOG.md`; `docs/DEPLOYMENT.md`; `docs/DEVPOST_REQUIREMENTS.md`;
+`docs/IMPLEMENTATION_PLAN.md`; `docs/KNOWN_ISSUES.md`;
+`docs/PUBLIC_SOURCE_APACHE_READINESS.md`; `docs/RELEASE_CHECKLIST.md`;
+`docs/REPOSITORY_MAP.md`; and this session log only.
+
+### Decisions
+
+Owner authorization is operational and conditional on zero fee; it is not legal advice. C11's new
+qualified state applies only to the exact artifact/data/API scope and does not replace C12
+entrant/contributor/asset ownership attestations or authorize arbitrary data, endpoints, paid
+services, deployment, publication, or submission.
+
+No currently proven zero-cost public full-stack deployment exists. The repository quickstart is
+truthful and Devpost-permitted as a Project URL path, while GitHub Pages is insufficient for the
+current product. A full-stack Node host remains the preferred future topology only after a separate
+provider/account/cost and deployment authorization gate.
+
+### Validation performed
+
+Focused Node release-artifact contracts `15/15`; installed/repository lock equality; seven manifests
+all `1.0.0-rc.1`, `private: true`, `Apache-2.0`; unchanged runtime/workflow/test/fixture/script/
+manifest/lock inputs; changed-file Prettier; `git diff --check`; exact changed-path allowlist; strict
+UTF-8/LF/final-newline/no-BOM; local Markdown links; added-line secret/private-path/debug/conflict
+scan; no `outputs/release`; no listeners on `3001`/`5173`; and full documentation diff review.
+Final signed-in GitHub non-mutation checks reconfirmed Public, enabled Private vulnerability
+reporting, Pages disabled with source `None`, no deployment environment, and the Draft RC unchanged.
+
+### Validation intentionally deferred
+
+No full suite, build, artifact rebuild, evaluation, browser E2E, live DataHub smoke, deployment,
+Pages enablement, Release asset upload, artifact publication/distribution, credential entry,
+version/tag/Release/submission/workflow/runtime mutation, Ready transition, merge, or QA task
+creation is performed.
+
+### Known issues
+
+The tracked bootstrap's final Prettier lookup remains an environment/tool-resolution issue despite
+the successful frozen install and direct binary validation. C12 ownership/asset attestations,
+live/judge named DataHub integration evidence, a timed clean judge quickstart, final video/form
+materials, and a proven zero-cost full-stack host remain open. `abstract-logging@2.0.1` remains a
+documented non-embedded missing-legal-file caveat.
+
+### Exact next step
+
+Complete final non-mutation/state checks, mark the Phase 8.6 no-mutation checklist item complete,
+create one conventional documentation commit, normal-push the branch, create exactly one Draft PR
+against current `main`, require exact-head PR CI `SUCCESS`, confirm conflict-free/no duplicate/no
+external mutation, and return `READY FOR INDEPENDENT WINDOWS QA` for controller reuse of QA task
+`019f8401-5db4-7bd3-b4df-f8ff379d07dc`.
