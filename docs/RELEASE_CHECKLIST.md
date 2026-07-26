@@ -326,6 +326,29 @@ actions below remain separately scoped.
 - [x] Preserve all safely redacted signed-in facts, official citations, uncreated project-ID
       candidates, and the no-Agent/Vertex/model boundary. Perform no GCP mutation.
 
+The checklist above is historical. The owner subsequently and explicitly superseded its rejection,
+accepted the residual Paid-account risk, and authorized the exact execution below.
+
+## Phase 8.7 — owner-approved Google Cloud deployment execution
+
+- [x] Disable billing on both prior test/reference projects and verify the new dedicated project is
+      the candidate billing account's only linked project.
+- [x] Create `dii-cloudrun-demo-26-a7c9` (`Data Incident Investigator`, no organization) and enable
+      only Cloud Run, Cloud Build, and Artifact Registry APIs.
+- [x] Add the narrow Docker/same-origin production host seam and focused integration coverage; add no
+      secret, model, DataHub credential, database, VPC, custom domain, scheduler, or reminder.
+- [x] Deploy `data-incident-investigator` in `asia-southeast1` with request-based billing, first
+      generation, `0.08` vCPU, `256 MiB`, concurrency `1`, minimum `0`, maximum `1`, timeout `100s`,
+      CPU throttling on, and startup CPU boost off.
+- [x] Verify final revision `data-incident-investigator-00002-pdq`, 100% traffic, public static UI,
+      readiness, canonical Removed schema column investigation, report `81% · high`, and zero browser
+      console warnings/errors.
+- [x] Record that Bangkok has lower Tier 1 unit pricing; after that verification, retain Singapore
+      under the owner's explicit instruction. Do not claim Singapore is the lowest-price region.
+- [x] Preserve the hard-risk warning: budgets do not cap spend and maximum instances is not an
+      absolute monetary cap. Stop/delete/detach billing by 2026-08-10 or at 20% reported credit
+      remaining, whichever occurs first.
+
 ## Phase 8 — `v1.0.0` final (not performed)
 
 - [ ] Confirm the accepted candidate, final scope, clean current `main`, and absence of an existing
@@ -341,10 +364,11 @@ actions below remain separately scoped.
 ## Deployment
 
 - [x] Production API starts and `/health` succeeds.
-- [ ] Web artifact points to the production API.
-- [ ] Public fixture demo completes end-to-end.
+- [x] Web artifact uses the same-origin production `/api` boundary.
+- [x] Public fixture demo completes end-to-end.
 - [x] Timeout/provider error states are user-friendly.
-- [ ] A distinct deployed last-known-good rollback artifact is identified and retained.
+- [x] Previous immutable revision `data-incident-investigator-00001-jst` is retained as the
+      last-known-good rollback target.
 
 ## Submission
 

@@ -222,7 +222,7 @@ official signed-in in-app Browser and independent unsigned reads established thi
 | Branches and PRs            | all 47 branches retained; 1 open/43 closed pull requests; Draft PR #53 remains open, `Not ready`, conflict-free, unmerged, with its branch and conversation retained                                                              |
 | Issues and Actions          | 2 open/7 closed issues retained; 125 workflow runs existed before the evidence push, including accepted run `30175050395`; histories/logs remain visible                                                                          |
 | Tag/Release                 | one `v1.0.0-rc.1` tag retained at `c4e33f7af3707f604d35b1220a18e4e83f491be3`; Draft Release remains unpublished with zero user-uploaded assets and only two automatic source archives                                             |
-| Pages/deployments           | Pages remains disabled with source `None`; no public deployment is configured or claimed                                                                                                                                          |
+| Pages/deployments           | Pages remains disabled with source `None`; no GitHub deployment was configured at this historical checkpoint. Phase 8.7 later added a separate external Cloud Run fixture deployment.                                             |
 | Security reporting          | enabled at 2026-07-26 05:22 ICT; Settings shows `Disable private vulnerability reporting`, Security overview shows `Enabled`, and unsigned `/security` exposes `Report a vulnerability`; the report route requires GitHub sign-in |
 
 No branch, conversation, issue, Actions history, tag, Release, or user-uploaded asset was deleted,
@@ -643,7 +643,7 @@ Separately, every production dependency must have compatible license and notice 
 dependency compatibility does not establish the right to relicense project-owned code, and owner
 authority does not resolve dependency obligations.
 
-## Phase 8.6 owner zero-cost rights disposition
+## Phase 8.6 owner zero-cost rights disposition (historical cost policy)
 
 On 2026-07-26, the repository owner authorized proceeding only when no fee is incurred. No purchase,
 paid subscription, metered overage, paid or larger runner, paid storage/package/domain/hosting,
@@ -654,6 +654,12 @@ charge/hold, or allow auto-conversion. Before any such action, the provider-spec
 control packet in [`DEPLOYMENT.md`](DEPLOYMENT.md) and fresh explicit owner approval are mandatory.
 The owner controls/performs any sensitive card entry; agents never request, read, type, copy, log,
 screenshot, or store card number, CVV, or billing credentials.
+
+Later in Phase 8.7, the owner explicitly superseded only the zero-fee/no-overage hosting policy,
+accepted the residual Google Cloud Paid-account risk, and authorized the exact project, billing, API,
+source-build, and fixture deployment actions recorded in [`DEPLOYMENT.md`](DEPLOYMENT.md). That
+operational approval does not expand data rights, authorize secrets/live DataHub/model APIs, provide
+blanket legal clearance, or make budgets/max instances a hard spending cap.
 
 Card-free, non-expiring tiers remain preferred. A card-required trial is eligible only if current
 official evidence establishes no unavoidable fee and a reliable pre-charge cancellation path. Any
@@ -685,12 +691,11 @@ Within that fail-closed cost boundary, the owner records this operational dispos
    source and the official MCP server are recorded as Apache-2.0; those source terms do not grant
    access to an instance or its metadata, so separate instance/data-owner authorization remains
    mandatory.
-4. **GitHub and hosting.** The Public GitHub repository, standard GitHub-hosted runners for the
-   Public repository, and a genuinely free Pages/hosting tier are authorized. Larger runners,
-   paid Actions/storage/packages/Codespaces, a paid domain, and paid hosting are not. A
-   card-required genuinely free trial may only pass the separate packet/fresh-approval gate above.
-   This disposition does not enable Pages, select a provider, create an account, start a trial, or
-   deploy anything.
+4. **GitHub and hosting.** Historically, only the Public GitHub repository, standard GitHub-hosted
+   runners for the Public repository, and a genuinely free Pages/hosting tier were authorized.
+   Phase 8.7 later consumed the separate owner risk acceptance for the exact Google Cloud fixture
+   deployment. Larger runners, paid Actions/storage/packages/Codespaces, a paid domain, and unrelated
+   paid hosting remain unauthorized.
 5. **No model fee.** The current deterministic product makes no LLM/OpenAI API call.
    `OPENAI_API_KEY` remains unnecessary and must not be introduced by this disposition.
 
@@ -714,19 +719,21 @@ Phase 8.5 artifact-enforcement work and is merged through historical main
 `73172b7e8e8b02ab9629019eac298b89e02895c2`. PR #55 is the merged historical Phase 8.6
 rights/deployment preflight. Current main is
 `c7abc652c23b532e90091b377490b27eadd7e084`, tree
-`66e90eae74c7065c62a30a14ffeb25ef26974ea4`; Draft PR #56 is the current Phase 8.7 review and
-does not authorize any external mutation.
+`66e90eae74c7065c62a30a14ffeb25ef26974ea4`; Draft PR #56 is the current Phase 8.7 review. The
+owner's separate explicit instructions—not the PR itself—authorized the exact external Google Cloud
+mutations now recorded. No additional external mutation is implied.
 
 ## Residual blockers and next evidence
 
 1. Apache-2.0 is integrated on exact `main`, exact-main CI is successful, and GitHub detects the
    license. C09 is `PASS`; no license mutation remains in Phase 8.4B.
 2. All 138 external production package-version nodes have declared-license metadata, and 137 have a
-   legal file. Phase 8.5 closes the technical bundle audit/enforcement gap for the exact five embedded
-   packages and proves `abstract-logging@2.0.1` is not embedded. Phase 8.6 records the owner's
-   conditional zero-cost disposition, so C11 is `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE`; the missing
-   non-embedded legal file remains a caveat and no blanket legal conclusion is claimed. This slice
-   still performs no artifact publication or distribution.
+   legal file. Phase 8.5 closes the verified RC archive's technical bundle audit/enforcement gap for
+   the exact five embedded packages and proves `abstract-logging@2.0.1` is not embedded in that
+   archive. The separate Cloud Run source-built container installs runtime dependencies and is not
+   the verified RC archive; the missing packaged legal file therefore remains a
+   production-container caveat. C11 stays `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE`, and no blanket
+   legal conclusion is claimed.
 3. GitHub is `Public`. Authenticated and unsigned access, the completed Phase 8.4B normal merge, and
    exact-main CI make C10 `PASS`; preserve and reverify that state through later work.
 4. Phase 8.2 remains `PARTIAL` pending live/judge DataHub credentials and validation; this packet does

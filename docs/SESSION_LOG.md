@@ -5710,7 +5710,8 @@ without any Google Cloud mutation.
 - Distinguished hard controls from alerts. Budgets do not cap spend; maximum instances may briefly
   overshoot; the Paid account has no credible hard zero-spend cap. Recorded first-charge events,
   Free Tier/build/registry/network/log risks, unknown taxes, rollback/cleanup/deletion consequences,
-  and the 20%-credit or 2026-09-30 safe stop boundary.
+  and the historical pre-execution 20%-credit or 2026-09-30 safe stop boundary. The later execution
+  entry replaces that date with 2026-08-10.
 - Initially labeled the packet `ACCEPTABLE AFTER OWNER APPROVAL`; independent QA later rejected that
   conclusion because it superseded the owner's unchanged zero-fee/no-overage policy without
   authority. The additive correction below is controlling.
@@ -5758,6 +5759,9 @@ commit, normal-push, create exactly one Draft PR against current main, require e
 Correct the three independent Windows QA blocker groups on the same implementation branch and Draft
 PR #56 without GCP mutation or runtime work.
 
+This is a historical correction entry. The owner's later explicit risk acceptance and completed
+deployment in the next entry supersede its rejection/no-mutation decision.
+
 ### Completed
 
 - Changed the inspected Google Cloud Paid-account decision to
@@ -5787,8 +5791,8 @@ PR #56 without GCP mutation or runtime work.
 
 ### Decisions
 
-Google Cloud is not selected or approved. The current public-repository fixture quickstart remains
-the zero-fee path. No new task, branch, PR, or external resource is created.
+Historically, Google Cloud was not selected or approved and the Public-repository fixture quickstart
+remained the zero-fee path. The next entry records the later owner-authorized external resources.
 
 ### Validation performed
 
@@ -5812,3 +5816,82 @@ margin/configuration and reuse-versus-dedicated total cost remain unproven.
 Run bounded docs validation, create one additive commit, normal-push the same branch, keep only Draft
 PR #56, wait for exact-new-head CI `SUCCESS`, update the existing PR body with only that final run/job,
 and return for the same Windows QA re-review without merge or GCP mutation.
+
+## 2026-07-26 — Phase 8.7 owner-approved Cloud Run deployment execution
+
+### Objective
+
+Resume the same branch and Draft PR #56 after the owner explicitly superseded the earlier
+zero-fee/no-overage rejection, accepted the residual Paid-account risk, and authorized the exact
+project, billing, minimum API, build, and deployment actions. Deliver the smallest practical public
+Devpost fixture service and retain bounded rollback/stop controls.
+
+### Completed
+
+- Safely reverified signed-in account `t***@gmail.com`, no organization, active Direct Paid billing
+  account `M*** …D627`, and approximately VND 7.886 million of account-scoped Welcome credit
+  remaining through 2026-10-07. No payment method, card, payment profile, invoice, tax identity, or
+  sensitive billing page was opened or recorded.
+- Disabled billing on `onlinelearning-484610` and the other prior test/reference project under the
+  owner's explicit instruction. The new project is the candidate billing account's only linked
+  project at the post-deploy checkpoint.
+- Created project `dii-cloudrun-demo-26-a7c9`, display name `Data Incident Investigator`, with no
+  organization. The two other proposed project IDs remained uncreated.
+- Enabled only `run.googleapis.com`, `cloudbuild.googleapis.com`, and
+  `artifactregistry.googleapis.com`. No Secret Manager, Agent Platform, Vertex AI, Gemini, model API,
+  database, VPC, custom domain, scheduler, or reminder was enabled or created.
+- Added one production-host seam: Fastify serves built Vite assets and same-origin `/api`, accepts
+  Cloud Run `PORT`/`0.0.0.0`, and preserves local defaults. Added `@fastify/static@10.1.2`, a focused
+  integration test, `Dockerfile`, and `.dockerignore`.
+- Created the exact source archive from tracked plus non-ignored working-tree files, with no `.env`,
+  credential, token, or `node_modules`, and used `gcloud run deploy --source`. Cloud Build built the
+  Dockerfile and source deploy auto-created co-located Artifact Registry repository
+  `cloud-run-source-deploy`.
+- Deployed public service `data-incident-investigator` in `asia-southeast1` (Singapore). Final
+  revision `data-incident-investigator-00002-pdq` receives 100% traffic at
+  <https://data-incident-investigator-1071683558688.asia-southeast1.run.app>.
+- Verified request-based billing, first-generation execution, `0.08` vCPU, `256 MiB`, concurrency
+  `1`, minimum instances `0`, service maximum instances `1`, timeout `100s` above the bounded `90s`
+  application deadline, CPU throttling on, startup CPU boost off, public invocation, and
+  `APP_MODE=fixture`.
+- Public smoke passed after the final revision: static UI loaded, fixture metadata became ready, the
+  canonical Removed schema column investigation completed, report confidence showed `81% · high`,
+  and the browser console had zero warnings/errors.
+- Official current pricing/location recheck proved Bangkok (`asia-southeast3`) has lower Tier 1
+  unit pricing and Cloud Build support. The owner then explicitly chose to retain the already healthy
+  Singapore service. The record therefore does not claim Singapore is the cheapest region.
+- Preserved stop/delete/billing-detach deadline 2026-08-10 or 20% reported credit remaining,
+  whichever occurs first. Budgets/alerts and maximum instances remain risk reducers, not hard
+  currency caps. Availability through the 2026-08-31 judging end remains unresolved.
+
+### Local validation performed
+
+- Changed production-host source passed Prettier, API typecheck, focused production-host/health
+  Vitest (`2` files / `4` tests), affected workspace builds, and `pnpm smoke`.
+- Local same-origin UI canonical browser smoke passed with clean console.
+- Local Docker image built and passed root, health, readiness, and canonical incident requests under
+  `256 MiB` / `0.08` CPU limits before source deployment.
+- Public final-revision browser smoke passed as recorded above.
+
+### Files changed
+
+`.dockerignore`, `Dockerfile`, `apps/api/package.json`, `apps/api/src/index.ts`, `pnpm-lock.yaml`,
+`tests/integration/production-host.test.ts`, `docs/DEPLOYMENT.md`, `docs/IMPLEMENTATION_PLAN.md`,
+`docs/KNOWN_ISSUES.md`, `docs/REPOSITORY_MAP.md`, `docs/DEVPOST_REQUIREMENTS.md`,
+`docs/PUBLIC_SOURCE_APACHE_READINESS.md`, `docs/RELEASE_CHECKLIST.md`, and this session log.
+
+### Known issues and boundaries
+
+The Paid account still has no credible hard VND/USD `0` cap; credit reporting can lag, taxes remain
+unknown, and maximum instances may briefly overshoot. The source-built container is distinct from
+the verified RC archive and includes installed runtime dependencies, so the documented
+`abstract-logging@2.0.1` packaged-legal-file caveat remains. Fixture data is synthetic and
+process-local. No live DataHub judge credential/path exists. No tag, GitHub Release, Devpost
+submission, PR Ready transition, merge, card/payment action, secret, or reminder occurred.
+
+### Exact next step
+
+Run bounded changed-file formatting, focused runtime seam checks, link/EOL/diff/path/secret/conflict
+scans, and full diff review. Create one additive commit, normal-push the same branch, update only
+Draft PR #56, wait for exact-new-head PR CI `SUCCESS`, record only that final run/job, and return for
+the same Windows QA re-review without merge.

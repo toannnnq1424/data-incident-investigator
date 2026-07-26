@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
+import fastifyStatic from '@fastify/static';
 import {
   DEFAULT_INCIDENT_CONTEXT_LIMITS,
   DeterministicBlastRadiusAnalyzer,
@@ -136,6 +137,7 @@ interface BuildServerOptions {
   publicIngress?: PublicIngressConfig;
   requestClock?: () => number;
   readinessTimeoutMs?: number;
+  staticRoot?: string;
 }
 
 type StoredIncident =
@@ -917,7 +919,16 @@ export function buildServer(options: BuildServerOptions = {}) {
     bodyLimit: publicIngress.maxBodyBytes,
     logger: options.logger ?? true,
     requestTimeout: runtimeLimits.agentTimeoutMs,
+    rewriteUrl: (request) => {
+      const url = request.url ?? '/';
+      return url === '/api' ? '/' : url.startsWith('/api/') ? url.slice(4) : url;
+    },
   });
+  if (options.staticRoot) {
+    void server.register(fastifyStatic, {
+      root: options.staticRoot,
+    });
+  }
   const requestClock = options.requestClock ?? (() => Date.now());
   const readinessTimeoutMs = boundedReadinessTimeout(options.readinessTimeoutMs);
   const protectedPostRoutes = new Set([
@@ -2136,10 +2147,23 @@ export function buildServer(options: BuildServerOptions = {}) {
   return server;
 }
 
+export function readListenConfig(environment: NodeJS.ProcessEnv = process.env) {
+  const port = Number(environment.PORT ?? environment.API_PORT ?? 3001);
+  if (!Number.isInteger(port) || port < 0 || port > 65_535) {
+    throw new RuntimeConfigurationError(
+      environment.PORT === undefined ? 'API_PORT' : 'PORT',
+      'must be an integer from 0 through 65535',
+    );
+  }
+  const host = environment.API_HOST ?? (environment.PORT ? '0.0.0.0' : '127.0.0.1');
+  return { host, port };
+}
+
 async function start() {
-  const server = buildServer();
-  const port = Number(process.env.API_PORT ?? 3001);
-  const host = process.env.API_HOST ?? '127.0.0.1';
+  const server = buildServer({
+    ...(process.env.WEB_DIST_DIR ? { staticRoot: process.env.WEB_DIST_DIR } : {}),
+  });
+  const { host, port } = readListenConfig();
 
   await server.listen({ host, port });
 }

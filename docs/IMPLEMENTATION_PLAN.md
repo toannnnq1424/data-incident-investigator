@@ -6307,8 +6307,8 @@ signup/card/trial action, PR Ready transition, merge, and independent Windows QA
 
 ### Phase 8.7 — Google Cloud deployment control packet
 
-Status: documentation-only read-only preflight from exact main
-`c7abc652c23b532e90091b377490b27eadd7e084`.
+Status: historical documentation-only read-only preflight from exact main
+`c7abc652c23b532e90091b377490b27eadd7e084`; superseded by the owner-approved execution below.
 
 Objective: use signed-in Console read-only evidence and current official Google Cloud documentation
 to produce an account/project-specific cheapest truthful Cloud Run control packet without any GCP
@@ -6329,10 +6329,9 @@ Acceptance:
   has no hard zero-spend cap;
 - record public URL, fixture/data/secret/judging constraints, rollback, artifact cleanup, billing
   detachment, project deletion, safe stop threshold/deadline, and cancellation consequences;
-- label the packet `REJECT FOR CURRENT DEPLOYMENT` under the unchanged zero-fee/no-overage policy;
-  record that a future owner could supersede that policy only through a new explicit risk acceptance,
-  while preserving separate fresh gates for project creation, billing association, API enablement,
-  and build/deploy if policy ever changes;
+- historically label the packet `REJECT FOR CURRENT DEPLOYMENT` under the then-unchanged
+  zero-fee/no-overage policy; the owner later superseded that decision through the explicit risk
+  acceptance recorded in the execution section below;
 - perform no project/API/billing/resource/deploy/card/credential/reminder mutation and change no
   runtime, workflow, manifest, lockfile, version, test, fixture, or asset.
 
@@ -6346,9 +6345,10 @@ publication, Ready transition, merge, and independent QA.
 
 #### Phase 8.7 QA correction — policy, timeout ordering, and current state
 
-Status: smallest additive docs-only correction on the same branch and Draft PR #56 after independent
-Windows QA `FAIL / DO NOT MERGE` on exact head
-`4eab4d516ef94e9477faa7b9386076049a60260f`.
+Status: historical additive docs-only correction on the same branch and Draft PR #56 after
+independent Windows QA `FAIL / DO NOT MERGE` on exact head
+`4eab4d516ef94e9477faa7b9386076049a60260f`; its rejection was later superseded by the owner's
+explicit risk acceptance.
 
 Objective: reject the inspected Google Cloud Paid-account candidate under the unchanged
 zero-fee/no-overage authorization, correct Cloud Run timeout ordering, and replace only stale
@@ -6360,8 +6360,9 @@ Minimum files: `docs/DEPLOYMENT.md`, this plan, `docs/KNOWN_ISSUES.md`,
 
 Acceptance:
 
-- make the matrix, packet, known issues, plan, and session consistently say
-  `REJECT FOR CURRENT DEPLOYMENT`; budgets/max instances remain risk reducers, not a hard zero cap;
+- historically make the matrix, packet, known issues, plan, and session consistently say
+  `REJECT FOR CURRENT DEPLOYMENT`; that correction is superseded, while its budgets/max-instances
+  risk finding remains current;
 - state that only a future new explicit owner risk acceptance could supersede the current policy and
   that this packet is not such authorization;
 - require the platform request timeout to exceed the bounded application/API deadline by a finite
@@ -6377,3 +6378,65 @@ Acceptance:
 
 Deferred: exact timeout margin/config smoke, all runtime/full-suite/build/browser work, every GCP
 mutation, deployment, reminder, publication, Ready transition, merge, and independent QA re-review.
+
+#### Phase 8.7 deployment execution — owner risk acceptance
+
+Status: implementation and public smoke complete on the same branch and Draft PR #56 after the owner
+explicitly accepted the residual Paid-account overage risk and authorized project creation, billing
+association, minimum API enablement, build, and deployment.
+
+Objective: deploy the existing credential-free fixture demo to one isolated Google Cloud project as
+the cheapest practical Devpost-sized public service, then prove health, readiness, the canonical
+incident flow, exact runtime controls, and the post-deploy credit/billing state.
+
+Minimum files: `Dockerfile`, `.dockerignore`, `apps/api/package.json`,
+`apps/api/src/index.ts`, one focused production-host integration test, `docs/DEPLOYMENT.md`, this
+plan, `docs/KNOWN_ISSUES.md`, `docs/REPOSITORY_MAP.md`, and `docs/SESSION_LOG.md`. Lockfile changes
+are allowed only for the exact static-serving runtime dependency.
+
+Acceptance:
+
+- keep `onlinelearning-484610` billing-disabled; under the owner's explicit instruction, disable
+  billing on the other prior test/reference project so the new isolated project is the candidate
+  billing account's only linked project;
+- create one dedicated project owned by the already verified redacted personal account with no
+  organization, and associate only the verified active Paid billing account containing the remaining
+  Welcome credit;
+- enable only Cloud Run, Cloud Build, and Artifact Registry APIs required by source deployment;
+- serve the built Vite application and Fastify API from one same-origin container, accept Cloud
+  Run's `PORT`, retain existing local-development behavior, and add no secret/model/DataHub
+  credential;
+- start with request-based billing, first-generation execution, `0.08` vCPU, `256 MiB`, concurrency
+  `1`, minimum instances `0`, service maximum instances `1`, and a `100s` platform timeout above the
+  bounded `90s` application deadline; enable CPU throttling, disable startup CPU boost, and raise only
+  memory/CPU one step if later measured smoke evidence proves the initial setting inadequate;
+- require public `/health`, `/ready`, static-root, and canonical fixture investigation smoke before
+  declaring success; verify the deployed configuration and current credit/billing summary without
+  viewing payment-method details;
+- preserve the fixed 2026-08-10 teardown deadline and explicitly retain that budgets/alerts and
+  maximum instances reduce but do not eliminate overage risk.
+
+Deferred: DataHub/live credentials, Vertex AI, Agent Platform, model APIs, databases, VPC, custom
+domain, scheduler/reminder, multi-instance scaling, production SLO work, Devpost submission, PR Ready,
+and merge.
+
+Execution result:
+
+- created project `dii-cloudrun-demo-26-a7c9` with display name `Data Incident Investigator`, no
+  organization, and only the safely redacted candidate billing association;
+- enabled exactly Cloud Run, Cloud Build, and Artifact Registry APIs; source deploy built the
+  repository Dockerfile and auto-created co-located repository `cloud-run-source-deploy`;
+- deployed service `data-incident-investigator` in `asia-southeast1` (Singapore), revision
+  `data-incident-investigator-00002-pdq`, with 100% traffic and public URL
+  <https://data-incident-investigator-1071683558688.asia-southeast1.run.app>;
+- verified exact runtime controls: first generation, request-based billing, `0.08` vCPU, `256 MiB`,
+  concurrency `1`, minimum instances `0`, maximum instances `1`, timeout `100s`, CPU throttling on,
+  startup CPU boost off, and `APP_MODE=fixture`;
+- passed public static-root/readiness/canonical Removed schema column smoke after the final revision,
+  including completed report `81% · high` and zero browser console warnings/errors;
+- official recheck found Bangkok has lower Tier 1 unit pricing and supports Cloud Build, but the owner
+  explicitly chose to keep the already healthy Singapore deployment. The record therefore does not
+  claim Singapore has the lowest regional unit price;
+- retained the 2026-08-10 or 20%-remaining-credit stop boundary and no-hard-cap warning. No card,
+  payment-method detail, secret, DataHub credential, Agent/Vertex/model API, scheduler, reminder,
+  database, VPC, or custom domain was created or entered.

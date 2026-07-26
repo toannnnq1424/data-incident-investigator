@@ -15,14 +15,11 @@ Last updated: 2026-07-26.
   clearance. `abstract-logging@2.0.1` remains non-embedded and its missing packaged legal file remains
   a documented caveat.
 
-  No public full-stack provider is selected. GitHub Pages is available for the Public repository but
-  is static-only and cannot run Fastify or the same-origin `/api` proxy. The immediate zero-cost judge
-  path remains the Public repository plus a later timed credential-free fixture quickstart. Official
-  evidence identifies Render Free as an unselected card-free candidate and rejects both Koyeb
-  Starter/Free and the inspected Google Cloud Paid-account candidate for lack of credible hard
-  zero-dollar containment. Phase 8.6 performs no signup, card/trial
-  action, reminder, deploy, Pages enablement, credential entry, artifact upload/publication, or
-  submission.
+  Phase 8.6 historically selected no public full-stack provider. The owner later explicitly
+  superseded the zero-fee/no-overage rejection, accepted the residual Google Cloud Paid-account risk,
+  and authorized Phase 8.7 deployment. A public fixture-only Cloud Run service now exists; Koyeb
+  remains rejected and Render remains unselected. No card/payment data, live credential, model API,
+  reminder, Devpost submission, or GitHub Release asset was created or entered.
 
   Koyeb's official Pricing FAQ additionally documents a USD 29 pre-authorization hold that is
   immediately canceled but may remain visible for 7–21 days, plus a prorated selected-plan charge at
@@ -31,15 +28,23 @@ Last updated: 2026-07-26.
   is selected for mutation. Fresh approval of the exact project name/ID and owning
   account/organization/billing account is required immediately before any `Create Project` action.
 
-  Phase 8.7 read-only Console inspection now confirms the candidate billing account is already
-  **Paid**, has an Available account-scoped Free Trial credit of approximately VND 7.886 million
-  ending 2026-10-07, and is linked to `onlinelearning-484610`. A new dedicated project remains
-  preferable for isolation, but reuse-versus-dedicated total cost is unknown and not proven. The Paid
-  account can charge for credit-ineligible or over-credit/free-tier usage; budgets do not cap spend,
-  Cloud Run maximum instances can briefly be exceeded, taxes are unknown, and Google Cloud provides
-  no credible hard VND/USD 0 cap. The packet is therefore `REJECT FOR CURRENT DEPLOYMENT` under the
-  unchanged zero-fee/no-overage policy. A future owner could supersede that policy only through new
-  explicit risk acceptance; this packet is not authorization. No GCP mutation or reminder occurred.
+  Phase 8.7 inspection confirmed the candidate billing account is already **Paid**, with
+  approximately VND 7.886 million of account-scoped Free Trial credit remaining and expiry
+  2026-10-07. Billing was disabled on both prior test/reference projects; dedicated project
+  `dii-cloudrun-demo-26-a7c9` is the only project linked at the post-deploy checkpoint.
+  Reuse-versus-dedicated total cost remains unknown and unproven. The owner accepted that budgets do
+  not cap spend, Cloud Run maximum instances can briefly be exceeded, taxes remain unknown, and
+  Google Cloud provides no credible hard VND/USD 0 cap.
+
+  Public service `data-incident-investigator` now runs in `asia-southeast1` (Singapore) at
+  <https://data-incident-investigator-1071683558688.asia-southeast1.run.app>. Final revision
+  `data-incident-investigator-00002-pdq` receives 100% traffic with request-based billing,
+  first-generation execution, `0.08` vCPU, `256 MiB`, concurrency `1`, minimum instances `0`,
+  maximum instances `1`, timeout `100s` above the `90s` application deadline, CPU throttling on,
+  startup CPU boost off, and fixture mode. Public UI/readiness/canonical incident smoke passed.
+  Bangkok has a lower published Tier 1 unit price, but the owner explicitly chose to keep the healthy
+  Singapore service. Stop/delete/detach billing by 2026-08-10 or at 20% reported credit remaining,
+  whichever occurs first. This does not guarantee access through the 2026-08-31 judging end.
 
 - Phase 8.4A is integrated through exact normal merge
   `36d4205806597ae14b7306c74e1527c284202023`, tree
@@ -76,9 +81,11 @@ Last updated: 2026-07-26.
   MIT-declared packages: `react@19.2.7`, `react-dom@19.2.7`, `scheduler@0.27.0`, `vite@7.3.6`, and
   `zod@4.4.3`; Vite contributes its runtime module-preload polyfill.
 
-  `abstract-logging@2.0.1` is not embedded: the API output preserves external imports and the archive
-  excludes `node_modules`. Its missing legal file therefore does not enter the bundled notice, but it
-  remains a broader production-install/C11 caveat. Phase 8.2 remains `PARTIAL`; captured
+  `abstract-logging@2.0.1` is not embedded in the verified RC archive: the API output preserves
+  external imports and that archive excludes `node_modules`. The separate Cloud Run source-built
+  container does install runtime dependencies and is not the verified RC distribution artifact, so
+  the package's missing packaged legal file remains an explicit production-container caveat. Phase
+  8.2 remains `PARTIAL`; captured
   declarations/texts are engineering evidence, not compatibility or legal approval. The newer
   Phase 8.6 qualified owner disposition supersedes the historical C11 `PARTIAL/BLOCKED` state only
   within its exact zero-cost artifact/data/API scope. See
@@ -90,8 +97,9 @@ Last updated: 2026-07-26.
   narrow, and three Phase 8.4B state documents remained stale. This is historical: the additive
   correction passed independent QA and PR #54 merged through historical main
   `73172b7e8e8b02ab9629019eac298b89e02895c2`. PR #55 subsequently merged as current main
-  `c7abc652c23b532e90091b377490b27eadd7e084`; Draft PR #56 is the current Phase 8.7 review. No
-  artifact is published or deployed.
+  `c7abc652c23b532e90091b377490b27eadd7e084`; Draft PR #56 is the current Phase 8.7 review. The
+  verified RC archive remains unpublished, while the separate Cloud Run fixture demo described
+  above is deployed.
 
 - Phase 8.2 is integrated as `aa8d120205fdc35298b9ef36c7dd36b38b23e342` through main merge
   `7f05888ce7266f51b5028f5ac5ddacd3a91a11aa`; exact main CI run `30161661962`, job
