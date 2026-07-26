@@ -489,11 +489,11 @@ migrate it. Singapore is therefore the accepted stable deployment, not the lowes
 regional unit price. No load balancer, custom domain, database, VPC connector, scheduler, Agent
 Platform, Vertex AI, Gemini, or model API exists.
 
-Initial runtime controls:
+Approved runtime controls:
 
 - request-based billing, first-generation execution environment;
-- `0.08` vCPU, `256 MiB`, concurrency `1`, minimum instances `0`, and service-level maximum
-  instances `1`;
+- `0.08` vCPU, `256 MiB`, concurrency `1`, minimum instances `0`, and both service-level and
+  revision-level maximum instances `1`;
 - Cloud Run request timeout `100s`, strictly greater than the bounded `90s` application deadline by
   a finite `10s` response margin;
 - CPU throttling enabled and startup CPU boost disabled;
@@ -508,11 +508,21 @@ validated Dockerfile. Source deploy used Cloud Build and automatically created t
 Artifact Registry repository `cloud-run-source-deploy`. Direct image deploy would still require a
 registry and a build. The Preview no-build source path was not selected.
 
-Enabled APIs for the source-build path:
+APIs explicitly enabled for the source-build path:
 
 1. Cloud Run Admin API: `run.googleapis.com`;
 2. Cloud Build API: `cloudbuild.googleapis.com`;
 3. Artifact Registry API: `artifactregistry.googleapis.com`.
+
+A read-only post-deploy inventory found 29 enabled Google services/APIs in total. In addition to the
+three explicitly enabled deployment APIs above, 26 Google/default/transitive services are present:
+`analyticshub`, `bigqueryconnection`, `bigquerydatapolicy`, `bigquerydatatransfer`, `bigquery`,
+`bigquerymigration`, `bigqueryreservation`, `bigquerystorage`, `cloudapis`, `cloudtrace`,
+`containerregistry`, `dataform`, `dataplex`, `datastore`, `iamcredentials`, `iam`, `logging`,
+`monitoring`, `pubsub`, `servicemanagement`, `serviceusage`, `sql-component`, `storage-api`,
+`storage-component`, `storage`, and `telemetry`. This packet does not prove which were project
+defaults versus source-deploy transitive enablement. Do not blindly disable them; first prove that a
+service is not Google-managed, default, or required by the live service/build/registry path.
 
 Secret Manager was not enabled for fixture mode. A later authorized live-DataHub deployment would add
 `secretmanager.googleapis.com`, create a least-privilege secret reference for `DATAHUB_TOKEN`, and
@@ -572,9 +582,13 @@ must tolerate a cold start and must not expect durable incident URLs. Live DataH
 an authorized endpoint and server-side secret are separately approved. Do not expose
 production/customer data, PII, private metadata, tokens, raw provider payloads, or billing identity.
 
-Current known-good revision `data-incident-investigator-00002-pdq` receives 100% of traffic. The
-previous immutable revision `data-incident-investigator-00001-jst` is retained as the rollback
-target. Rollback means route 100% traffic to that revision, then repeat public smoke.
+Historical revision `data-incident-investigator-00002-pdq` receives 100% of traffic, but independent
+QA disproved its documented service-level maximum: the service annotation is `maxScale=100` while
+the revision template is `maxScale=1`; the template timeout read back as `100s`. It is therefore not
+the corrected known-good target. The previous immutable revision
+`data-incident-investigator-00001-jst` is retained only as a historical rollback candidate.
+Rollback means route 100% traffic to an explicitly verified immutable revision, then repeat public
+smoke.
 Deletion means first remove public access/traffic, delete the Cloud Run service, delete unused
 Artifact Registry images/repository, verify no builds/resources remain, detach billing, and finally
 request project shutdown. Deleting a revision does not delete its image. Project shutdown disconnects
@@ -598,7 +612,7 @@ were consumed:
 4. built from the repository Dockerfile and deployed public service
    `data-incident-investigator` with the exact controls above.
 
-Public smoke passed after final revision `data-incident-investigator-00002-pdq`: static UI loaded,
+Historical public smoke passed after revision `data-incident-investigator-00002-pdq`: static UI loaded,
 fixture metadata became ready, the canonical Removed schema column investigation completed, the
 report showed `81% · high`, and the browser console had zero warnings/errors. Billing alerts were
 not treated as a cap. No secret, credential, card/payment data, model API, reminder, custom domain,
@@ -606,6 +620,77 @@ database, or unrelated paid feature was created or entered.
 
 Any different account, billing account, project, region, API, architecture, paid feature, secret, or
 material capacity increase requires a refreshed cost/risk check and explicit owner direction.
+
+### Deployed-state QA correction: pre-redeploy source evidence
+
+Independent QA returned `FAIL / DO NOT MERGE` on deployed repository head
+`d1d67b13642b40edf570e79106493309b7df05c0`. The existing public URL and Docker deployment are real;
+all earlier Phase 8.7 no-mutation/preflight wording is historical. Current `main` remains
+`c7abc652c23b532e90091b377490b27eadd7e084`; Draft PR #56 changes are not current main.
+QA reported a `240s` timeout at its checkpoint; the correction's later read-only reinspection found
+the current revision template at `100s`. The redeploy still sets and verifies `100s` explicitly.
+
+The clean-source correction candidate pins every Docker stage to
+`node:24-bookworm-slim@sha256:6f7b03f7c2c8e2e784dcf9295400527b9b1270fd37b7e9a7285cf83b6951452d`,
+builds API/workspace/Vite output, installs only the API production closure, rewrites only runtime
+workspace exports to `dist`, starts `node apps/api/dist/index.js` as the unprivileged `node` user,
+and keeps only the required compiled output, one fixture metadata file, production dependencies, and
+legal/provenance evidence. Local final-image audit found no API source, `tsx`, tests, docs, audit
+scripts, or extra fixture scenarios; Node 24 production root, `/health`, and `/ready` all passed.
+The final local image is 86,183,068 bytes and, under `0.08` CPU / `256 MiB`, also passed same-origin
+canonical incident completion plus a 9,221-byte Markdown report with renderer version and `81%`
+high-confidence evidence.
+
+Exact source-side attribution evidence:
+
+- `pnpm-lock.yaml` SHA-256
+  `eeec795d5a09d5e8865b54bfbd95fb3557cce421c5369d99b6e2f89a472484b2`;
+- 397 lock package entries, 397 snapshots, and 377 distinct lock package names;
+- 152 full-production package identities / 145 names;
+- 149 deployed external runtime identities / 142 names / 149 canonical package roots;
+- five exact Vite bundled identities: `react@19.2.7`, `react-dom@19.2.7`,
+  `scheduler@0.27.0`, `vite@7.3.6`, and `zod@4.4.3`;
+- deterministic `RUNTIME-ATTRIBUTION.json` and `THIRD_PARTY_NOTICES.txt`, plus Apache `LICENSE`,
+  project `NOTICE`, and the required reproduced third-party legal evidence;
+- `abstract-logging@2.0.1` truthfully records that neither the npm package nor exact upstream tag
+  contains a legal file. Its declared-MIT README links the author-controlled legal page; the tracked
+  fallback records the exact upstream tag commit
+  `80dfaef91ee87008f4ed2b6e78921d383bccd406`, URL, capture date, text, and SHA-256 without claiming
+  it came from the package.
+
+Final-image SHA-256 values are
+`d343d34681cf92e1d7c9a3bf834251c2a2db98a3b1b6614a365c382da769c6b1` for
+`RUNTIME-ATTRIBUTION.json`,
+`9cc0b8b55f4a78435cf4d25b7f7f5aa05a981ee041963d38ab82e2afdcebccab` for
+`THIRD_PARTY_NOTICES.txt`,
+`cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30` for `LICENSE`, and
+`4c3019e13c96e2906eddd3e8fa35d4ef0d4e13826d2398551d8a9796fac82d1f` for `NOTICE`.
+
+Source verification and production-only image verification both pass under the immutable Node 24
+base. C11 is nevertheless **BLOCKED FOR THE CURRENT CLOUD RUN DISTRIBUTION** until this candidate is
+committed, exact-head CI succeeds, the deployment is built from the clean immutable commit archive,
+and the deployed digest/legal files are reverified. The corrected deploy must set both `--max=1`
+(service-level) and `--max-instances=1` (revision-level), plus `--min=0`,
+`--min-instances=0`, concurrency `1`, timeout `100s`, `0.08` vCPU, `256 MiB`, CPU throttling on,
+startup CPU boost off, fixture mode, a deterministic revision suffix, and an exact source-commit
+label. No live correction has been claimed in this pre-redeploy record.
+
+Read-only resource inventory before correction:
+
+- source bucket `run-sources-dii-cloudrun-demo-26-a7c9-asia-southeast1`, Singapore, uniform
+  bucket-level access, one source ZIP, 745,422 bytes;
+- standard Docker repository `cloud-run-source-deploy`, Singapore, Google-managed encryption,
+  scanning disabled, reported size 113.275 MB;
+- one tagged old image, digest
+  `sha256:410fdef2cda022f9e8f977b5300adeed9470bb632b5f5d9cee86918dc9d5b707`;
+- one successful historical regional build,
+  `53c336af-d3dc-449f-8366-5f527810dcfe`.
+
+The bucket archive, repository, image, and build history are real storage/resource inventory and
+must remain in cost, rollback, and cleanup gates. They are not deleted in this correction. After a
+new verified deployment, keep only the live image and one proven rollback image if needed; remove
+surplus source archives/images only under a separate exact cleanup check, then preserve the
+2026-08-10 or 20%-remaining-credit stop/delete/detach boundary.
 
 Official sources accessed 2026-07-26:
 

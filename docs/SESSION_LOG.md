@@ -5895,3 +5895,62 @@ Run bounded changed-file formatting, focused runtime seam checks, link/EOL/diff/
 scans, and full diff review. Create one additive commit, normal-push the same branch, update only
 Draft PR #56, wait for exact-new-head PR CI `SUCCESS`, record only that final run/job, and return for
 the same Windows QA re-review without merge.
+
+## 2026-07-26 — Phase 8.7 deployed-state QA correction: clean source candidate
+
+### Objective
+
+Close the independent QA blockers on deployed head
+`d1d67b13642b40edf570e79106493309b7df05c0` using the same branch and Draft PR #56: correct live
+service controls, inventory real Google resources/APIs, enforce complete container legal evidence,
+and redeploy only from a clean immutable commit/archive with explicit provenance.
+
+### Pre-redeploy findings
+
+- Read-only Cloud Run describe found historical revision
+  `data-incident-investigator-00002-pdq` at 100% traffic, revision `maxScale=1`, timeout `100s`,
+  `0.08` CPU, `256 MiB`, concurrency `1`, fixture mode, CPU throttling on, and boost off. The
+  service-level annotation is still `maxScale=100`; the earlier fully bounded/final claim is false.
+- Enabled-service inventory found 29 entries. Only `run.googleapis.com`,
+  `cloudbuild.googleapis.com`, and `artifactregistry.googleapis.com` were explicit deployment
+  enablements; the 26 additional Google/default/transitive services have unproven causal origin and
+  were not disabled.
+- The Singapore run-sources bucket has one source ZIP totaling 745,422 bytes. The standard
+  `cloud-run-source-deploy` Docker repository reports 113.275 MB, scanning disabled, one old image
+  digest `sha256:410fdef2cda022f9e8f977b5300adeed9470bb632b5f5d9cee86918dc9d5b707`,
+  and one historical successful build `53c336af-d3dc-449f-8366-5f527810dcfe`. Nothing was deleted.
+
+### Source correction prepared
+
+- Pinned all Docker stages to
+  `node:24-bookworm-slim@sha256:6f7b03f7c2c8e2e784dcf9295400527b9b1270fd37b7e9a7285cf83b6951452d`.
+  The production image now runs compiled Node output as the unprivileged `node` user, installs only
+  the API production closure, rewrites only runtime workspace exports to `dist`, and includes only
+  compiled output, one required fixture metadata file, runtime dependencies, and legal/provenance
+  evidence.
+- Added deterministic `RUNTIME-ATTRIBUTION.json`/`THIRD_PARTY_NOTICES.txt`, project `NOTICE`,
+  focused attribution/manifest contracts, and tracked explicit upstream fallback evidence for
+  `abstract-logging@2.0.1`. The fallback records that neither the npm package nor exact tag contains
+  a legal file and binds the author-linked source to exact tag commit
+  `80dfaef91ee87008f4ed2b6e78921d383bccd406`.
+- Exact lock SHA is `eeec795d5a09d5e8865b54bfbd95fb3557cce421c5369d99b6e2f89a472484b2`;
+  lock inventory is 397 packages/397 snapshots/377 names; full-production inventory is 152
+  identities/145 names; deployed runtime is 149 identities/142 names/149 roots; exact Vite bundle
+  inventory remains five identities.
+- Focused contracts pass 3/3. Exact source generation, Node 24 source verification, production-only
+  installed-closure verification, final-image legal/junk checks, and local production
+  root/health/readiness smoke pass. The final local image contains no API source, `tsx`, tests, docs,
+  audit scripts, or surplus fixtures. It is 86,183,068 bytes. Under exact `0.08` CPU / `256 MiB`,
+  same-origin canonical incident completion and the 9,221-byte Markdown renderer output also pass.
+  Final-image legal hashes are `d343d346...c6b1` (runtime manifest), `9cc0b8b5...ccab` (notices),
+  `cfc7749b...3d30` (Apache LICENSE), and `4c3019e...2d1f` (project NOTICE).
+
+### Current gate
+
+C11 is blocked for the current Cloud Run distribution because the live image predates the new
+evidence. No corrected deployment is claimed yet. Next: complete bounded source checks, create and
+push one additive source commit, require exact-source-head PR CI success, create a deterministic
+archive from that clean commit, deploy with both service and revision maximum `1`, exact source
+label/revision suffix, verify live provenance/config, run exactly one corrected public smoke, then
+record a separate docs-only evidence commit and final-head CI without claiming it is the deployed
+source commit.

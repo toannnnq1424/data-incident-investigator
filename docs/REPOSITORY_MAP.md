@@ -26,6 +26,9 @@ version, fixture, asset, release, or submission state.
 | `.github`                 | Collaboration intake plus scoped repository validation                      | `ISSUE_TEMPLATE/`, `pull_request_template.md`, `workflows/`                                                                                                                       |
 | `.codex`                  | Trusted project-scoped Codex settings without secrets                       | `config.toml`                                                                                                                                                                     |
 
+Phase 8.7 adds `scripts/runtime-attribution.mjs` and `scripts/prepare-runtime-manifests.mjs` for the
+container-only production/legal boundary.
+
 ## Root configuration
 
 - `package.json`: canonical commands, tool versions, engine, package manager, and license metadata.
@@ -37,9 +40,12 @@ version, fixture, asset, release, or submission state.
 - `tsconfig.base.json`: strict shared compiler rules.
 - `eslint.config.mjs`, `.prettierrc.json`: static quality rules.
 - `.env.example`: environment contract with blank credentials.
-- `Dockerfile`, `.dockerignore`: minimal source-build container contract and upload exclusions for
-  the fixture-only same-origin Cloud Run service.
-- `LICENSE` and `CONTRIBUTING.md`: canonical Apache License 2.0 terms and contributor workflow.
+- `Dockerfile`, `.dockerignore`: immutable-base, production-only source-build container contract and
+  upload exclusions for the fixture-only same-origin Cloud Run service.
+- `LICENSE`, `NOTICE`, `THIRD_PARTY_NOTICES.txt`, `RUNTIME-ATTRIBUTION.json`, and
+  `third_party_licenses/`: canonical Apache terms plus exact deterministic runtime legal/provenance
+  evidence.
+- `CONTRIBUTING.md`: contributor workflow.
 - `CHANGELOG.md`: curated unreleased and released product changes under the coordinated SemVer policy.
 - `CODEX.md` and `AGENTS.md`: durable agent workflow.
 
@@ -74,6 +80,7 @@ version, fixture, asset, release, or submission state.
 | `pnpm test`                                                     | Vitest unit/integration/smoke tests.                                        |
 | `pnpm test:e2e:report`                                          | Canonical fixture report browser flow.                                      |
 | `pnpm test:release-artifact`                                    | Focused Node contracts for release cleanup, attribution, and verification.  |
+| `pnpm test:runtime-attribution`                                 | Focused runtime closure, notices, and production-manifest contracts.        |
 | `pnpm --filter @dii/evaluation evaluate -- --output-dir <path>` | Write validated canonical JSON and Markdown evaluation reports after build. |
 | `pnpm build`                                                    | Build packages and apps.                                                    |
 | `pnpm release:artifact`                                         | Build once and create the deterministic clean-commit host artifact.         |
@@ -113,6 +120,13 @@ virtual-store roots plus upstream legal files, emits deterministic `THIRD_PARTY_
 binds the evidence into release-manifest schema v3. Builder and verifier share one Windows-safe path
 validator, while the verifier independently reconstructs every attributed identity from the archived
 lockfile. Ordinary development and non-release Vite builds emit no provenance file.
+
+The Cloud Run Docker build uses the same rendered-module evidence and frozen-lock identity helpers,
+then records the exact full-production and deployed external runtime closures in
+`RUNTIME-ATTRIBUTION.json`. `runtime-attribution.mjs` generates/enforces the paired
+`THIRD_PARTY_NOTICES.txt` and compiled-output hashes. The production-dependency stage verifies the
+installed runtime/legal closure before the final image removes audit scripts and starts compiled
+Node output as the unprivileged `node` user.
 
 ## Documentation index
 

@@ -40,8 +40,11 @@ Last updated: 2026-07-26.
   <https://data-incident-investigator-1071683558688.asia-southeast1.run.app>. Final revision
   `data-incident-investigator-00002-pdq` receives 100% traffic with request-based billing,
   first-generation execution, `0.08` vCPU, `256 MiB`, concurrency `1`, minimum instances `0`,
-  maximum instances `1`, timeout `100s` above the `90s` application deadline, CPU throttling on,
-  startup CPU boost off, and fixture mode. Public UI/readiness/canonical incident smoke passed.
+  revision maximum instances `1`, timeout `100s` above the `90s` application deadline, CPU
+  throttling on, startup CPU boost off, and fixture mode. Independent QA found that the service-level
+  annotation still allows `maxScale=100`, so the prior claim of a fully bounded/final revision is
+  false and historical public smoke is not correction evidence. The exact corrected clean-commit
+  deployment remains pending.
   Bangkok has a lower published Tier 1 unit price, but the owner explicitly chose to keep the healthy
   Singapore service. Stop/delete/detach billing by 2026-08-10 or at 20% reported credit remaining,
   whichever occurs first. This does not guarantee access through the 2026-08-31 judging end.
@@ -70,9 +73,10 @@ Last updated: 2026-07-26.
   account was used, and public issue disclosure remains prohibited. No Code of Conduct is tracked;
   this is an optional governance follow-up, not a proven Public-source blocker.
 
-  The reused frozen production graph remains 138 external package-version nodes/132 names/7
-  importers, with declared licenses 122 MIT, 10 ISC, 5 BSD-3-Clause, and 1 BSD-2-Clause; 137 legal
-  files; 0 NOTICE files; and a missing legal file for declared-MIT `abstract-logging@2.0.1`. Phase 8.5
+  The historical Phase 8.5 release-archive graph contained 138 external package-version nodes/132
+  names/7 importers, with declared licenses 122 MIT, 10 ISC, 5 BSD-3-Clause, and 1 BSD-2-Clause; 137
+  legal files; 0 NOTICE files; and a missing legal file for declared-MIT
+  `abstract-logging@2.0.1`. Phase 8.5
   closes the technical bundled-output gap with exact Vite/Rollup positive-rendered-module provenance,
   lock/package/source/legal-file hashes, a deterministic `THIRD_PARTY_NOTICES.txt`, manifest schema v3,
   and archive/directory verifier enforcement. Schema v3 binds each package to the exact pnpm lock
@@ -82,10 +86,15 @@ Last updated: 2026-07-26.
   `zod@4.4.3`; Vite contributes its runtime module-preload polyfill.
 
   `abstract-logging@2.0.1` is not embedded in the verified RC archive: the API output preserves
-  external imports and that archive excludes `node_modules`. The separate Cloud Run source-built
-  container does install runtime dependencies and is not the verified RC distribution artifact, so
-  the package's missing packaged legal file remains an explicit production-container caveat. Phase
-  8.2 remains `PARTIAL`; captured
+  external imports and that archive excludes `node_modules`. The Cloud Run container does install
+  runtime dependencies. Its new correction candidate records lock SHA
+  `eeec795d5a09d5e8865b54bfbd95fb3557cce421c5369d99b6e2f89a472484b2`, 152 full-production
+  identities, 149 runtime identities/roots, 5 exact Vite identities, deterministic
+  `RUNTIME-ATTRIBUTION.json`/`THIRD_PARTY_NOTICES.txt`, Apache `LICENSE`, project `NOTICE`, and a
+  truthfully labeled upstream fallback for `abstract-logging@2.0.1` at exact tag commit
+  `80dfaef91ee87008f4ed2b6e78921d383bccd406`. Source and local production-image verification pass,
+  but C11 is blocked for the current deployed distribution until a clean immutable commit/archive is
+  deployed and the exact live digest/legal files pass. Phase 8.2 remains `PARTIAL`; captured
   declarations/texts are engineering evidence, not compatibility or legal approval. The newer
   Phase 8.6 qualified owner disposition supersedes the historical C11 `PARTIAL/BLOCKED` state only
   within its exact zero-cost artifact/data/API scope. See

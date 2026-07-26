@@ -699,12 +699,42 @@ Within that fail-closed cost boundary, the owner records this operational dispos
 5. **No model fee.** The current deterministic product makes no LLM/OpenAI API call.
    `OPENAI_API_KEY` remains unnecessary and must not be introduced by this disposition.
 
-The C11 release-artifact gate therefore moves from `PARTIAL/BLOCKED` to
-`QUALIFIED PASS — OWNER-AUTHORIZED SCOPE`: Phase 8.5 technical attribution is `PASS`, and the owner
-authorizes zero-cost distribution only inside the exact artifact/data/API boundary above. This does
-not resolve entrant/contributor ownership attestations under C12, authorize arbitrary data or
-endpoints, approve a paid service, or permit this slice to publish, attach, upload, deploy, or submit
-anything. Those actions retain their own gates.
+The historical C11 release-archive gate moved from `PARTIAL/BLOCKED` to
+`QUALIFIED PASS — OWNER-AUTHORIZED SCOPE` for the exact Phase 8.5 archive only. That disposition did
+not cover the Cloud Run container, because the container installs external runtime dependencies.
+Independent QA therefore returns C11 to **BLOCKED FOR THE CURRENT CLOUD RUN DISTRIBUTION** until the
+exact clean immutable source commit is deployed and its final image digest, production closure,
+legal files, notices, and compiled-output hashes all pass. This does not resolve
+entrant/contributor ownership attestations under C12, authorize arbitrary data or endpoints, or
+provide blanket legal clearance.
+
+### Phase 8.7 runtime-container attribution correction
+
+The correction candidate pins all Docker stages to immutable
+`node:24-bookworm-slim@sha256:6f7b03f7c2c8e2e784dcf9295400527b9b1270fd37b7e9a7285cf83b6951452d`.
+Its exact frozen evidence is:
+
+- lock SHA-256 `eeec795d5a09d5e8865b54bfbd95fb3557cce421c5369d99b6e2f89a472484b2`,
+  397 package entries, 397 snapshots, and 377 distinct names;
+- 152 full-production package identities / 145 names;
+- 149 installed deployed-runtime identities / 142 names / 149 canonical roots;
+- the same five exact Vite bundled identities already listed above;
+- deterministic `RUNTIME-ATTRIBUTION.json` and `THIRD_PARTY_NOTICES.txt`, Apache `LICENSE`, a
+  project `NOTICE`, and every required reproduced legal text in the final image.
+
+`abstract-logging@2.0.1` still has no `LICENSE`, `LICENCE`, or `COPYING` file in its npm package or
+exact upstream tag. Its README declares MIT and links to the author's legal page. The correction
+tracks that page's captured legal text as explicit upstream fallback evidence, bound to exact tag
+commit `80dfaef91ee87008f4ed2b6e78921d383bccd406`, source URL, capture date, and SHA-256. It never
+represents that fallback as npm-package content.
+
+Focused contracts, exact source regeneration, immutable-base Docker build, production-only install
+verification, final-image legal-file checks, and local production root/health/readiness smoke pass.
+The final image contains compiled API/workspace/Vite output, one required synthetic fixture file,
+production dependencies, and legal/provenance evidence; it contains no API source, `tsx`, tests,
+docs, or audit scripts. C11 remains blocked here because the currently deployed image predates this
+evidence. The final post-deploy record may restore the qualified disposition only after exact live
+digest verification passes.
 
 ## Independent human decision checklist
 
@@ -727,13 +757,12 @@ mutations now recorded. No additional external mutation is implied.
 
 1. Apache-2.0 is integrated on exact `main`, exact-main CI is successful, and GitHub detects the
    license. C09 is `PASS`; no license mutation remains in Phase 8.4B.
-2. All 138 external production package-version nodes have declared-license metadata, and 137 have a
-   legal file. Phase 8.5 closes the verified RC archive's technical bundle audit/enforcement gap for
-   the exact five embedded packages and proves `abstract-logging@2.0.1` is not embedded in that
-   archive. The separate Cloud Run source-built container installs runtime dependencies and is not
-   the verified RC archive; the missing packaged legal file therefore remains a
-   production-container caveat. C11 stays `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE`, and no blanket
-   legal conclusion is claimed.
+2. The historical Phase 8.5 graph had 138 external production package identities and 137 packaged
+   legal files. The current container correction recomputes the new lock/runtime graph and supplies
+   the exact evidence above, including the truthfully labeled `abstract-logging@2.0.1` upstream
+   fallback. The currently deployed image predates it, so C11 is blocked for Cloud Run until the
+   clean immutable source commit is deployed and exact live digest/legal verification passes. No
+   blanket legal conclusion is claimed.
 3. GitHub is `Public`. Authenticated and unsigned access, the completed Phase 8.4B normal merge, and
    exact-main CI make C10 `PASS`; preserve and reverify that state through later work.
 4. Phase 8.2 remains `PARTIAL` pending live/judge DataHub credentials and validation; this packet does

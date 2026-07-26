@@ -6440,3 +6440,76 @@ Execution result:
 - retained the 2026-08-10 or 20%-remaining-credit stop boundary and no-hard-cap warning. No card,
   payment-method detail, secret, DataHub credential, Agent/Vertex/model API, scheduler, reminder,
   database, VPC, or custom domain was created or entered.
+
+#### Phase 8.7 deployed-state QA correction — controls, legal evidence, and provenance
+
+Status: in progress on the same branch and Draft PR #56 after independent Windows QA
+`FAIL / DO NOT MERGE` on deployed head
+`d1d67b13642b40edf570e79106493309b7df05c0`.
+
+Objective: replace the non-reproducible dirty-worktree deployment with one bounded Cloud Run revision
+built from an immutable clean commit/archive, correct the live service to the approved cheapest
+controls, and bind the runtime image to exact dependency/legal/provenance evidence.
+
+Minimum files: `Dockerfile`, `.dockerignore`, root package scripts, one container-attribution script
+and focused contract test, `NOTICE`, `THIRD_PARTY_NOTICES.txt`, one exact runtime-attribution
+manifest, the single verified upstream fallback legal text for `abstract-logging@2.0.1`, and only
+affected persistent deployment/licence/state documents.
+
+Acceptance:
+
+- pin every Node 24 Docker stage to one immutable `node:24-bookworm-slim` digest;
+- build compiled API/workspace output and built Vite assets, install only the API production
+  dependency closure, start with `node apps/api/dist/index.js`, and exclude source/dev/test/docs/junk
+  from the final runtime image except required licence/provenance evidence;
+- recompute exact lock SHA and full-production/deployed-runtime package identity/name counts;
+  deterministically generate and enforce `THIRD_PARTY_NOTICES.txt` from exact Vite rendered-module
+  evidence plus the exact external Node runtime closure; include Apache `LICENSE`, project `NOTICE`,
+  the attribution manifest, and every verified package legal file in the final image;
+- treat C11 as blocked until source-side generation, clean container verification, and final image
+  evidence all pass; record the `abstract-logging@2.0.1` npm-package omission and exact author-linked
+  upstream fallback provenance without claiming that the npm tarball contained a legal file;
+- create and push one additive source commit, require its exact-head PR CI success, build only from a
+  deterministic archive of that clean commit, label the Cloud Run revision with that full source
+  commit, and use a deterministic revision suffix when supported;
+- correct and verify live Singapore controls: min `0`, max `1`, concurrency `1`, timeout `100s`,
+  `0.08` vCPU, `256 MiB`, CPU boost off, CPU throttling on, fixture mode, and 100% traffic; do not
+  change region or broaden resources;
+- inventory actual enabled services, clearly separating the three explicitly enabled deployment APIs
+  from Google/default/transitive services; inventory the run-sources bucket, Artifact Registry
+  repository/image, build ID, immutable image digest, source archive SHA-256, revision, labels, and
+  rollback/cleanup boundaries without disabling or deleting anything;
+- after corrected deploy, run exactly one bounded public smoke covering UI, `/api/health`,
+  `/api/ready`, one canonical fixture incident, Markdown when supported, console, accessibility, and
+  overflow; earlier public smoke remains historical only;
+- if post-deploy evidence requires a later documentation commit, state exactly that the running
+  revision maps to the earlier labeled source commit and never claim it maps to the later docs-only
+  HEAD; update only the existing Draft PR #56 and wait for final-head CI.
+
+Validation: changed-file Prettier/lint/typecheck; focused production-host and attribution contracts;
+affected build/smoke; deterministic attribution generate/verify; pinned container build, inventory,
+licence/provenance, file allowlist, no-secret/junk, constrained health/readiness/canonical/Markdown
+smoke; clean archive SHA; exact-source-head CI before deploy; one post-deploy public smoke; bounded
+docs/link/EOL/path/secret/conflict checks; exact-final-head PR CI.
+
+Deferred: region migration, resource increase, live DataHub/secret/model work, unrelated API/resource
+mutation, billing/project deletion, reminder, full suite, tag, Release, Devpost submission, PR Ready,
+and merge.
+
+Interim result before source commit/redeploy:
+
+- read-only live inventory proved service-level `maxScale=100`, revision-level `maxScale=1`,
+  timeout `100s`, and 100% traffic to historical revision `00002-pdq`; the prior fully bounded claim
+  is superseded;
+- inventoried 29 enabled services total, the single 745,422-byte run-sources object, 113.275 MB
+  Artifact Registry repository, one old image/digest, and one historical successful build without
+  disabling or deleting anything;
+- pinned the Node 24 base by immutable digest; changed the final image to compiled production start
+  under user `node`; excluded source/dev/test/docs/audit scripts and surplus fixtures;
+- generated exact runtime attribution for lock SHA `eeec795d...84b2`, 152 full-production
+  identities, 149 deployed-runtime identities/roots, and five Vite identities; added deterministic
+  notices/project NOTICE and explicit `abstract-logging@2.0.1` upstream fallback evidence;
+- focused contracts, source generation/verification, immutable-base Docker build, production-only
+  closure verification, final-image legal/junk audit, and local root/health/readiness smoke pass;
+- C11 remains blocked for the current deployed distribution. No corrected live revision is claimed
+  until the additive clean source commit passes exact-head CI and its immutable archive is deployed.

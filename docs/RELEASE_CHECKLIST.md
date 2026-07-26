@@ -334,7 +334,9 @@ accepted the residual Paid-account risk, and authorized the exact execution belo
 - [x] Disable billing on both prior test/reference projects and verify the new dedicated project is
       the candidate billing account's only linked project.
 - [x] Create `dii-cloudrun-demo-26-a7c9` (`Data Incident Investigator`, no organization) and enable
-      only Cloud Run, Cloud Build, and Artifact Registry APIs.
+      Cloud Run, Cloud Build, and Artifact Registry APIs explicitly. A later read-only inventory
+      found 26 additional Google/default/transitive enabled services whose exact origin is not
+      proven; do not blindly disable them.
 - [x] Add the narrow Docker/same-origin production host seam and focused integration coverage; add no
       secret, model, DataHub credential, database, VPC, custom domain, scheduler, or reminder.
 - [x] Deploy `data-incident-investigator` in `asia-southeast1` with request-based billing, first
@@ -348,6 +350,36 @@ accepted the residual Paid-account risk, and authorized the exact execution belo
 - [x] Preserve the hard-risk warning: budgets do not cap spend and maximum instances is not an
       absolute monetary cap. Stop/delete/detach billing by 2026-08-10 or at 20% reported credit
       remaining, whichever occurs first.
+
+The execution checklist above is historical and was found incomplete by independent QA.
+
+## Phase 8.7 — deployed-state controls, legal, and provenance correction
+
+- [x] Reproduce the live mismatch read-only: revision maximum `1` and timeout `100s`, but
+      service-level `maxScale=100`; classify revision `00002-pdq` and its smoke as historical.
+- [x] Inventory 29 enabled services total, separating the three explicitly enabled deployment APIs
+      from 26 Google/default/transitive services with unproven origin. Inventory one 745,422-byte
+      run-sources ZIP, the 113.275 MB Artifact Registry repository, one old image/digest, and one
+      successful historical build.
+- [x] Pin all Node Docker stages to immutable digest
+      `sha256:6f7b03f7c2c8e2e784dcf9295400527b9b1270fd37b7e9a7285cf83b6951452d`;
+      use compiled production start as unprivileged `node`; exclude source/dev/test/docs/audit junk.
+- [x] Generate and source/local-image verify exact runtime attribution: lock SHA
+      `eeec795d5a09d5e8865b54bfbd95fb3557cce421c5369d99b6e2f89a472484b2`, 152 full-production
+      identities, 149 runtime identities/roots, five Vite identities, deterministic runtime
+      manifest/notices, Apache `LICENSE`, project `NOTICE`, and explicit
+      `abstract-logging@2.0.1` upstream fallback evidence.
+- [x] Keep C11 blocked for the current Cloud Run distribution until the exact clean source commit
+      passes CI, is archived and deployed, and its live digest/legal evidence passes.
+- [ ] Push the additive clean source commit and require exact-source-head PR CI success.
+- [ ] Deploy only its immutable archive with source label/revision suffix and both service
+      `--max=1` and revision `--max-instances=1`, plus min `0`, concurrency `1`, timeout `100s`,
+      `0.08` CPU, `256 MiB`, CPU throttling on, CPU boost off, fixture mode, and Singapore.
+- [ ] Verify exact build/archive/image/revision/config/API/resource/legal provenance, then run exactly
+      one corrected public UI/health/readiness/canonical/Markdown/console/accessibility/overflow
+      smoke.
+- [ ] Record a later docs-only evidence commit without claiming the running revision was built from
+      that later commit; require exact-final-head CI and keep Draft PR #56 unmerged.
 
 ## Phase 8 — `v1.0.0` final (not performed)
 
