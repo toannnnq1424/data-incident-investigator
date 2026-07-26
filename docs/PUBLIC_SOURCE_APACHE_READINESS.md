@@ -645,11 +645,21 @@ authority does not resolve dependency obligations.
 ## Phase 8.6 owner zero-cost rights disposition
 
 On 2026-07-26, the repository owner authorized proceeding only when no fee is incurred. No purchase,
-paid subscription, payment method or card entry, metered overage, paid or larger runner, paid
-storage/package/domain/hosting, paid DataHub Cloud/API, or other billable service may be enabled. Any
-payment, billing-account, card, upgrade, paid-quota, or trial that can auto-convert prompt is a stop
-condition requiring new explicit authorization. A materially expiring free tier is likewise not
-accepted without a separate owner decision.
+paid subscription, metered overage, paid or larger runner, paid storage/package/domain/hosting,
+paid DataHub Cloud/API, or other billable service may be enabled. A provider requiring a payment
+card may be considered only for a genuinely free trial/free tier. This is not blanket authorization
+to create an account, accept billing terms, enter/store a card, start a trial, incur a verification
+charge/hold, or allow auto-conversion. Before any such action, the provider-specific ten-field
+control packet in [`DEPLOYMENT.md`](DEPLOYMENT.md) and fresh explicit owner approval are mandatory.
+The owner controls/performs any sensitive card entry; agents never request, read, type, copy, log,
+screenshot, or store card number, CVV, or billing credentials.
+
+Card-free, non-expiring tiers remain preferred. A card-required trial is eligible only if current
+official evidence establishes no unavoidable fee and a reliable pre-charge cancellation path. Any
+unavoidable or non-refundable charge, mandatory paid plan, unclear price, uncontrollable
+auto-conversion, or inability to enforce zero spend is `REJECT`. If a later provider is approved, a
+reminder/automation must be created before the buffered safe cancellation deadline; none is created
+in this preflight because no provider is selected or approved.
 
 Within that fail-closed cost boundary, the owner records this operational disposition:
 
@@ -676,8 +686,10 @@ Within that fail-closed cost boundary, the owner records this operational dispos
    mandatory.
 4. **GitHub and hosting.** The Public GitHub repository, standard GitHub-hosted runners for the
    Public repository, and a genuinely free Pages/hosting tier are authorized. Larger runners,
-   paid Actions/storage/packages/Codespaces, a paid domain, paid hosting, or any payment-method
-   requirement are not. This disposition does not enable Pages or deploy anything.
+   paid Actions/storage/packages/Codespaces, a paid domain, and paid hosting are not. A
+   card-required genuinely free trial may only pass the separate packet/fresh-approval gate above.
+   This disposition does not enable Pages, select a provider, create an account, start a trial, or
+   deploy anything.
 5. **No model fee.** The current deterministic product makes no LLM/OpenAI API call.
    `OPENAI_API_KEY` remains unnecessary and must not be introduced by this disposition.
 

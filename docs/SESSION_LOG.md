@@ -5523,3 +5523,51 @@ create one conventional documentation commit, normal-push the branch, create exa
 against current `main`, require exact-head PR CI `SUCCESS`, confirm conflict-free/no duplicate/no
 external mutation, and return `READY FOR INDEPENDENT WINDOWS QA` for controller reuse of QA task
 `019f8401-5db4-7bd3-b4df-f8ff379d07dc`.
+
+## 2026-07-26 — Phase 8.6 controlled-card policy correction
+
+### Objective and retained state
+
+Continue the same implementation branch and Draft PR #55 from exact head
+`2cc7321ccac76e8017796d039c9abc9729a2a98c`, tree
+`0202be87753037832f1ffc54a287732d7e5dffc6`, parent/base
+`73172b7e8e8b02ab9629019eac298b89e02895c2`; retained exact CI run `30189130287`,
+job `89758950255`, was `SUCCESS`. Correct only the earlier “no card ever” shorthand after the
+owner expanded authorization, without changing C11, selecting a provider, or performing any
+signup/card/trial/deployment action.
+
+### Completed
+
+- Recorded that a card-required genuinely free trial/free tier may be considered, but account
+  creation, billing-term acceptance, card entry/storage, trial start, verification hold, and
+  auto-conversion require a provider-specific ten-field control packet and fresh explicit owner
+  approval. The owner alone performs sensitive card entry; agents never handle or capture card,
+  CVV, or billing credentials.
+- Added the mandatory provider packet fields, fail-closed acceptance/rejection rules, and the later
+  reminder requirement. No reminder was created because no provider was selected or approved.
+- Reviewed only current official provider sources accessed 2026-07-26. Render Free is a card-free
+  candidate whose no-payment-method path suspends/stops on overage rather than billing; it remains
+  unselected pending named account identity and repository-specific validation. Koyeb Starter/Free
+  is `REJECT` because a valid payment method is required and no hard zero-dollar spending limit
+  exists. The unupgraded Google Cloud Free Trial is `ACCEPTABLE ONLY AFTER OWNER APPROVAL`: it has a
+  documented USD 300/90-day non-converting trial and USD 0–1 temporary authorization, but budgets do
+  not cap spending and any paid-account upgrade remains prohibited.
+- Preserved the already-Public repository plus later timed fixture quickstart as the immediate
+  zero-cost judge path. Preserved C11 `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE`, all data/API/secret
+  boundaries, paid DataHub/runner/storage/domain/hosting prohibitions, and the no-model boundary.
+
+### Files changed
+
+`CHANGELOG.md`; `docs/DEPLOYMENT.md`; `docs/DEVPOST_REQUIREMENTS.md`;
+`docs/IMPLEMENTATION_PLAN.md`; `docs/KNOWN_ISSUES.md`;
+`docs/PUBLIC_SOURCE_APACHE_READINESS.md`; `docs/RELEASE_CHECKLIST.md`; and this session log only.
+
+### Validation boundary and next step
+
+This is a documentation-only additive correction. Changed-file Prettier, strict UTF-8/LF/final-
+newline/no-BOM, local-link and official-citation reachability, secret/private-path/debug/conflict,
+exact allowlist, and `git diff --check` validations pass. Full diff review confirms eight allowed
+documentation files only. The full suite, build, artifact rebuild, evaluation, browser E2E, and live
+DataHub are intentionally not run. Next create one additive commit, normal-push the same branch,
+update only Draft PR #55, and require exact-new-head CI `SUCCESS`; do not Ready, merge, deploy,
+publish, sign up, enter a card, or create a cancellation reminder.

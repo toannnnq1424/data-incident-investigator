@@ -472,8 +472,10 @@ across 37 rows.
    readable. Private vulnerability reporting is enabled; preserve both states through this task.
 4. **Judge access:** the immediate zero-cost recommendation is the already-Public repository plus a
    timed credential-free fixture quickstart. GitHub Pages is static-only and cannot run the current
-   Fastify/same-origin `/api` product; no card-free, non-expiring full-stack host is yet proven.
-   Choose and verify the final Project URL path and free access through judging.
+   Fastify/same-origin `/api` product. Render Free is a current card-free full-stack candidate but is
+   not selected; Koyeb is rejected under the zero-spend controls, and an unupgraded Google Cloud Free
+   Trial requires a ten-field packet and fresh owner approval before any signup/card/trial action.
+   Choose and verify the final Project URL path and free access through judging without changing C11.
 5. **Form schema:** exact screenshot/cover image, teammate, challenge selector, credentials, and other
    live Devpost controls are not enumerated publicly. Inspect only after authorized registration.
 6. **Video visibility:** ask `support@devpost.com` whether unlisted hosting qualifies if Public is not

@@ -260,9 +260,8 @@ actions below remain separately scoped.
       `89756253516` `SUCCESS` and PR #54 merged.
 - [x] Reverify Public visibility, enabled Private vulnerability reporting, the unpublished Draft RC
       with only two automatic source archives, and no deployment environment.
-- [x] Record the owner's no-fee operational authorization and fail closed on payment, card, billing,
-      upgrade, paid quota, larger runner, paid storage/package/domain/hosting/DataHub Cloud/API, or an
-      auto-converting/materially expiring free tier.
+- [x] Record the owner's no-fee operational authorization and fail closed on paid quota, larger
+      runner, paid storage/package/domain/hosting/DataHub Cloud/API, or model/API fees.
 - [x] Set C11 to `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE`: Phase 8.5 technical attribution passes,
       and zero-cost distribution is authorized only for the exact verified artifact with deterministic
       notices/manifest/verifier, synthetic/authorized data, and authorized DataHub/API access. Preserve
@@ -274,11 +273,24 @@ actions below remain separately scoped.
       for the Public repository are free; larger runners are charged. Pages is available on GitHub
       Free for Public repositories and provides HTTPS static hosting, but cannot run the Fastify API.
 - [x] Select the Public repository plus a later timed fixture quickstart as the immediate zero-cost
-      judge path. Leave public full-stack deployment blocked until a card-free, non-expiring/
-      non-metered Node host with HTTPS, same-origin `/api`, probes, rollback, and judging-period access
-      is proven.
+      judge path. Leave public full-stack deployment unselected until a provider-specific zero-spend
+      packet, account identity, HTTPS/same-origin `/api`/probe/rollback/judge-access validation, and
+      fresh owner approval exist.
 - [x] Do not deploy, enable Pages, upload/publish/distribute an artifact, mutate tag/version/Release,
       enter credentials, change workflows/runtime, or submit in this slice.
+- [x] Correct the earlier “no card ever” shorthand: a card-required genuinely free trial/free tier
+      may be evaluated, but account creation, billing acceptance, card entry/storage, trial start,
+      verification hold, and auto-conversion remain unauthorized until a ten-field provider packet
+      receives fresh explicit owner approval. The owner performs sensitive card entry; agents never
+      handle or capture card/CVV/billing credentials.
+- [x] Separate official-source-backed candidates: Render Free is card-free/fail-closed without a
+      payment method but remains unselected; Koyeb Starter/Free is `REJECT` because it requires a
+      valid payment method without a hard zero-dollar limit; the unupgraded Google Cloud Free Trial
+      is `ACCEPTABLE ONLY AFTER OWNER APPROVAL`, subject to its packet and buffered cancellation
+      deadline. Do not sign up, deploy, or create a reminder in this correction.
+- [x] Preserve C11 `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE`; the expanded hosting-evaluation policy
+      does not authorize paid DataHub/API/runner/storage/domain/hosting, sensitive data, publication,
+      deployment, Ready transition, or merge.
 
 ## Phase 8 — `v1.0.0` final (not performed)
 

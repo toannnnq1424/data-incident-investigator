@@ -14,12 +14,14 @@ Last updated: 2026-07-26.
   clearance. `abstract-logging@2.0.1` remains non-embedded and its missing packaged legal file remains
   a documented caveat.
 
-  No current zero-cost public full-stack deployment target is proven. GitHub Pages is available for
-  the Public repository but is static-only and cannot run Fastify or the same-origin `/api` proxy.
-  The immediate zero-cost judge path is the Public repository plus a later timed credential-free
-  fixture quickstart. A hosted app remains blocked until an operator proves a card-free,
-  non-expiring/non-metered Node host with HTTPS, probes, rollback, and access through judging. Phase
-  8.6 performs no deploy, Pages enablement, credential entry, artifact upload/publication, or
+  No public full-stack provider is selected. GitHub Pages is available for the Public repository but
+  is static-only and cannot run Fastify or the same-origin `/api` proxy. The immediate zero-cost judge
+  path remains the Public repository plus a later timed credential-free fixture quickstart. Official
+  evidence identifies Render Free as a card-free candidate, rejects Koyeb Starter/Free for lack of a
+  hard zero-dollar cap, and makes the unupgraded Google Cloud Free Trial eligible only after a
+  provider-specific ten-field packet and fresh owner approval. Account identity and repository-
+  specific runtime/judge-window validation remain open. Phase 8.6 performs no signup, card/trial
+  action, reminder, deploy, Pages enablement, credential entry, artifact upload/publication, or
   submission.
 
 - Phase 8.4A is integrated through exact normal merge

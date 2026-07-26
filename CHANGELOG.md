@@ -19,6 +19,10 @@ separately authorized post-merge gates.
   preflight for the existing React/Vite plus Fastify architecture. No deployment, artifact
   publication, paid service, credential, runtime, dependency, workflow, version, tag, or Release
   mutation is included.
+- Corrected the deployment preflight so a card-required genuinely free trial may be evaluated only
+  through a provider-specific control packet and fresh owner approval. Render, Koyeb, and Google
+  Cloud are separated by current official cost controls; no provider, account, card, trial, reminder,
+  or deployment is selected or started, and C11 remains qualified.
 
 ## [1.0.0-rc.1] - 2026-07-23
 

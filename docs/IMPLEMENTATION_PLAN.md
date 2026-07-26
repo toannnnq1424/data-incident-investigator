@@ -6157,3 +6157,56 @@ distribution; tag/version/Release mutation; Devpost registration/form/video/subm
 entry; paid or trial service; live DataHub smoke; runtime/product/dependency/workflow change; full
 suite/build/artifact rebuild/evaluation/browser E2E; Ready transition, merge, branch deletion, and
 QA-task creation.
+
+#### Phase 8.6 targeted correction — controlled card-required free-trial policy
+
+Status: additive documentation correction on the existing Phase 8.6 branch and Draft PR #55 after
+the owner's expanded 2026-07-26 authorization. The retained implementation head is
+`2cc7321ccac76e8017796d039c9abc9729a2a98c` (tree
+`0202be87753037832f1ffc54a287732d7e5dffc6`, parent/base
+`73172b7e8e8b02ab9629019eac298b89e02895c2`) with exact-head CI run `30189130287`, job
+`89758950255`, `SUCCESS`.
+
+Objective: replace the over-broad “no card ever” deployment wording with a fail-closed policy under
+which a card-required genuinely free trial/free tier may be evaluated, but no account creation,
+billing-term acceptance, card entry/storage, trial start, verification hold, or auto-conversion is
+authorized. Before any such action, require a provider-specific ten-field control packet and fresh
+explicit owner approval; the owner alone controls any sensitive card entry, and agents never
+request, read, type, copy, log, screenshot, or store card number, CVV, or billing credentials.
+
+Files: update only directly relevant Phase 8.6 disposition, deployment, Devpost, checklist,
+known-issue, session, and changelog documentation. Preserve the qualified C11 disposition and the
+Phase 8.5 artifact evidence unchanged.
+
+Acceptance:
+
+- Separate currently evidenced card-free candidates from card-required trial/free-tier candidates
+  for the actual React/Vite plus Fastify architecture, using only current official provider
+  pricing, terms, and product documentation accessed on 2026-07-26.
+- For every provider requiring signup/card/trial action, require a packet recording the exact
+  service and official signup/billing URL; owner-visible account identity; duration/start trigger
+  and compute/bandwidth/storage/build quotas; card/hold/tax/region/currency facts; conversion,
+  overage, idle, suspension, deletion, and first-billable-event behavior; cancellation/downgrade/
+  deletion steps and buffered safe deadline; budget/cap/alert controls and hard-zero-cap support;
+  retention, HTTPS/public URL, secrets, build/runtime, sleep/cold-start, and judge-access limits;
+  dated official citations; and either `ACCEPTABLE ONLY AFTER OWNER APPROVAL` or `REJECT` with reason.
+- Prefer card-free, non-expiring tiers. Mark a card-required option eligible only when official
+  evidence establishes no unavoidable fee and reliable pre-charge cancellation. Reject unavoidable
+  or non-refundable charges, mandatory paid plans, unclear pricing, uncontrollable conversion, or
+  inability to enforce zero spend.
+- Do not select or start a provider, create an account, accept terms, enter credentials/card data,
+  create a cancellation reminder, deploy, publish, upload, enable Pages, mutate GitHub state beyond
+  the existing Draft PR, or alter product/runtime/dependencies/workflows. A reminder is required only
+  after a specific provider is later approved and before its buffered cancellation deadline.
+- Preserve the existing paid DataHub Cloud/API, paid runner/storage/package/domain/hosting, and
+  OpenAI/model-fee prohibitions. End with one additive docs commit and normal push to the same branch,
+  the same conflict-free Draft PR #55, exact-new-head CI `SUCCESS`, no Ready transition, and no merge.
+
+Validation: changed-file Prettier/Markdown, UTF-8/LF/final-newline/no-BOM, local links, exact
+allowlist, official citation reachability, added-line secret/private-path/debug/conflict scans,
+`git diff --check`, and exact full/correction diff and Git identities. Rely on exact root PR CI for
+unchanged code; do not run the full suite, build, artifact rebuild, browser E2E, or live DataHub.
+
+Deferred: all signup, account identity choice, billing-term acceptance, trial activation, card or
+verification-hold action, reminder creation, deployment/publication, Release/tag/version/assets/
+settings/runtime/workflow mutation, submission, Ready transition, merge, and independent Windows QA.
