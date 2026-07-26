@@ -5974,6 +5974,12 @@ Implementation evidence before the exact clean-head artifact build:
 - The first focused contract run passed 8/8, web typecheck passed, and focused ESLint passed after one
   unused local helper was removed. These are preliminary working-tree checks; Node 24 focused reruns,
   exact committed artifact evidence, formatting/invariant scans, and exact-head PR CI remain below.
+- The first clean-head artifact attempt reached the completed six-workspace build, then stopped before
+  writing an archive because the mapper sorted package tuples while the verifier compared concatenated
+  `name@version` strings; `react`/`react-dom` exposed the mismatch. No archive or sidecar was created,
+  temporary provenance was removed, and no listener remained. The permitted adjacent correction makes
+  the verifier use the mapper's explicit `(name, version)` ordering and adds that prefix-name case to
+  the deterministic mapping test; exactly one adjacent rebuild remains authorized.
 
 Deferred: any artifact publication/distribution/upload, version/tag/Release mutation, deployment,
 Devpost form/video/assets/submission, live DataHub smoke, dependency upgrade, legal advice or

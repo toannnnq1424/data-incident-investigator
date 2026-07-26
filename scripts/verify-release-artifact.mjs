@@ -214,7 +214,7 @@ function validateThirdPartyAttribution(attribution) {
     'third-party package attribution must be nonempty',
   );
 
-  let priorIdentity = '';
+  let priorPackage;
   const packageManifestPaths = new Set();
   for (const packageEntry of attribution.packages) {
     exactKeys(
@@ -225,8 +225,13 @@ function validateThirdPartyAttribution(attribution) {
     assert(packageNamePattern.test(packageEntry.name), 'third-party package name is invalid');
     assert(semverPattern.test(packageEntry.version), 'third-party package version is invalid');
     const identity = `${packageEntry.name}@${packageEntry.version}`;
-    assert(identity > priorIdentity, 'third-party packages are not uniquely sorted');
-    priorIdentity = identity;
+    assert(
+      !priorPackage ||
+        packageEntry.name > priorPackage.name ||
+        (packageEntry.name === priorPackage.name && packageEntry.version > priorPackage.version),
+      'third-party packages are not uniquely sorted by name and version',
+    );
+    priorPackage = packageEntry;
     assert(
       typeof packageEntry.declaredLicense === 'string' &&
         packageEntry.declaredLicense.trim() === packageEntry.declaredLicense &&

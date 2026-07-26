@@ -5275,6 +5275,12 @@ artifact local-only and retain the separate legal-owner distribution decision.
   and malformed archives. Added that Node contract to root `validate`, because PR CI previously did
   not execute this `.mjs` test; no dependency, version, privacy, licence, engine, or workspace value
   changed.
+- The first exact clean-head artifact attempt completed all six workspace builds, then failed closed
+  before writing an archive because mapper and verifier used different package-order comparisons.
+  `react`/`react-dom` exposed that a tuple sort is not equivalent to sorting a concatenated
+  `name@version` string. No archive/sidecar was created, temporary provenance was removed, and no
+  listener remained. The adjacent correction aligns the verifier with explicit `(name, version)`
+  ordering and adds the prefix-name regression to the deterministic mapping contract.
 - The adjacent web-only audit transformed 109 modules and produced
   `apps/web/dist/assets/index-DHLGe_T9.js`. Exactly five package versions have positive rendered
   contributions: `react@19.2.7`, `react-dom@19.2.7`, `scheduler@0.27.0`, `vite@7.3.6`, and
@@ -5312,8 +5318,10 @@ submission, credential, or GitHub setting changes are authorized.
 
 Preliminary working-tree validation passed: focused release-artifact contracts 8/8, web typecheck,
 focused ESLint, Prettier after edits, and `git diff --check`. The adjacent web build/audit succeeded;
-its temporary provenance directory was removed. No release archive has yet been built, uploaded,
-attached, published, distributed, or deployed.
+its temporary provenance directory was removed. The first exact artifact attempt failed closed at
+package-order validation after the build and before archive creation; its temporary provenance was
+also removed. No release archive has yet been written, uploaded, attached, published, distributed, or
+deployed.
 
 ### Validation intentionally deferred
 
@@ -5331,8 +5339,9 @@ must remain unpublished and be deleted after evidence capture.
 
 ### Exact next step
 
-Complete Node 24 focused validation, formatting/encoding/allowlist/invariant/full-diff review, create
-one additive implementation commit, build/inspect/verify exactly one clean-head artifact locally,
-remove every task-created artifact/build residue, normal-push the same branch, create exactly one
-Draft PR, require exact-head PR CI and the release-artifact contract to reach terminal `SUCCESS`, and
-return `READY FOR INDEPENDENT WINDOWS QA` without merge or publication.
+Complete the adjacent correction's Node 24 focused validation and invariant/diff review, create one
+additive correction commit without amend/rebase, run the one permitted adjacent clean-head artifact
+rebuild, inspect/verify it locally, remove every task-created artifact/build residue, normal-push the
+same branch, create exactly one Draft PR, require exact-head PR CI and the release-artifact contract
+to reach terminal `SUCCESS`, and return `READY FOR INDEPENDENT WINDOWS QA` without merge or
+publication.

@@ -89,6 +89,9 @@ test('bundle attribution deterministically maps rendered package and Vite virtua
       { 'cjs/react.production.js': 'export const value = 1;\n' },
       { licenseFile: 'LICENSE.md' },
     );
+    const reactDomRoot = await writePackageEvidence(root, 'react-dom', '19.2.7', {
+      'cjs/react-dom.production.js': 'export const dom = true;\n',
+    });
     const viteRoot = path.join(root, 'apps', 'web', 'node_modules', 'vite');
     await mkdir(path.join(viteRoot, 'dist', 'node', 'chunks'), { recursive: true });
     await writeFile(
@@ -105,6 +108,10 @@ test('bundle attribution deterministically maps rendered package and Vite virtua
       {
         id: path.join(reactRoot, 'cjs', 'react.production.js'),
         renderedLength: 41,
+      },
+      {
+        id: path.join(reactDomRoot, 'cjs', 'react-dom.production.js'),
+        renderedLength: 37,
       },
       { id: '\0vite/modulepreload-polyfill.js', renderedLength: 29 },
       { id: path.join(root, 'apps', 'web', 'src', 'main.tsx'), renderedLength: 17 },
@@ -128,13 +135,17 @@ test('bundle attribution deterministically maps rendered package and Vite virtua
     assert.deepEqual(second, first);
     assert.deepEqual(
       first.packages.map(({ name, version }) => `${name}@${version}`),
-      ['react@19.2.7', 'vite@7.3.1'],
+      ['react@19.2.7', 'react-dom@19.2.7', 'vite@7.3.1'],
     );
     assert.deepEqual(
       first.packages.flatMap(({ contributions }) =>
         contributions.flatMap(({ modules }) => modules.map(({ path }) => path)),
       ),
-      ['cjs/react.production.js', 'virtual:vite/modulepreload-polyfill.js'],
+      [
+        'cjs/react.production.js',
+        'cjs/react-dom.production.js',
+        'virtual:vite/modulepreload-polyfill.js',
+      ],
     );
 
     const notice = createThirdPartyNotice(first);
