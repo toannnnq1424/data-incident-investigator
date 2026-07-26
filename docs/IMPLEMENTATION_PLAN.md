@@ -6579,3 +6579,123 @@ Acceptance:
 Deferred: every GCP mutation, image rebuild, redeploy, resource/API/billing change, public incident or
 smoke, live DataHub/model work, tag, Release, Devpost submission, PR Ready transition, merge, history
 rewrite, and force-push.
+
+### Phase 8.8 — public demo and submission package
+
+Status: locally complete; terminal Git, Draft PR, and exact-head CI gates remain. Work is on
+`codex/phase-8-8-demo-submission-package` from exact `origin/main`
+`b5b394b31ec626bb4ecc175975ca9869e475054e` (tree
+`2499267d819704b900511418818674010b4b9eae`). This slice prepares truthful judge-facing copy,
+screenshots, and rehearsal material only. It does not register, save, upload, or submit anything on
+Devpost.
+
+Objective: make the existing public credential-free fixture demo and Public repository easy to judge
+in under three minutes, while mapping every visible claim to exact UI/repository evidence and
+preserving the qualified DataHub MCP, deployment, legal, cost, and judging-access boundaries.
+
+Minimum files:
+
+- `README.md` and `docs/DEVPOST_SUBMISSION.md` for concise product, technology, data, public URL,
+  fallback, and limitations copy.
+- One concise judge quickstart and one claim-to-demo matrix under `docs/`.
+- `docs/DEMO_SCRIPT.md` for the timed storyboard, exact interactions, fallback, accessibility,
+  caption, and media-rights rehearsal gates.
+- A small `docs/demo-assets/` set containing only real app-only PNG captures from one canonical public
+  fixture incident plus captions/alt text.
+- `docs/DEVPOST_REQUIREMENTS.md`, this plan, `docs/REPOSITORY_MAP.md`, and `docs/SESSION_LOG.md` only
+  for truthful Phase 8.8 state and indexing.
+
+Acceptance criteria:
+
+- The quickstart reaches the canonical **Removed schema column** result from the public Cloud Run URL
+  without credentials and includes a repository-local Node 24 / pnpm `11.9.0` fallback.
+- Copy distinguishes facts from evidence-linked inferences; describes `81% · high` as deterministic
+  code-owned confidence, blast radius as bounded validated lineage, and recommendations as
+  `not_executed`; and never claims hidden reasoning, live DataHub evidence, an LLM/model call, durable
+  incidents, or automatic remediation.
+- DataHub MCP wording remains `PARTIAL`: the bounded local read-only `search`/`get_lineage`
+  integration exists, while authorized live/judge endpoint validation and recent-change support do
+  not.
+- Challenge positioning recommends **Open / Wildcard** first and **Agents That Do Real Work**
+  second only if organizers accept a read-only report workflow, based on the published requirements
+  and without claiming a Devpost form selection.
+- The under-three-minute English script includes timings, narration, exact controls, public
+  cold/unavailable fallback, owned/licensed media and caption checks, and one clearly labeled
+  architecture explanation.
+- Exactly one canonical public fixture incident is created during capture. PNGs use one stable
+  viewport, contain only synthetic app UI without browser/account/session chrome, and are checked for
+  dimensions, type, size, metadata, readability, and caption/alt alignment. No fake or generated UI
+  and no external upload.
+- Changed documentation/assets pass focused Prettier/Markdown/local-link checks,
+  `git diff --check`, UTF-8/LF/final-newline/no-BOM checks for text, PNG signature/dimension/metadata
+  checks, English/claim consistency, exact path allowlist, and secret/private-identity/conflict/debug
+  scans.
+- Create one additive commit, push normally, create exactly one Draft PR against exact current
+  `main`, require exact-head PR CI `SUCCESS`, and leave the worktree/upstream clean. Do not merge.
+
+Deferred: Devpost registration, join/consent/form inspection or save, challenge-form selection,
+eligibility and ownership attestations, final legal review, public video recording/upload, judging-
+period uptime resolution, live DataHub/MCP credentials or validation, runtime/source/API/workflow/
+package/lock/version changes, GCP/billing/resource changes, tag, Release, `v1.0.0`, PR Ready
+transition, and merge.
+
+Validation plan:
+
+- Run Prettier only on changed Markdown files, validate local Markdown links and screenshot references,
+  and inspect claim consistency against the real captured UI plus persisted Phase 8.7 evidence.
+- Verify PNG signature, dimensions, byte size, absence of avoidable metadata, app-only content, and
+  descriptive caption/alt coverage; visually inspect every image.
+- Run `git diff --check`, changed-path allowlist, text EOL/BOM/final-newline checks, binary/secret/
+  private-path/conflict/debug scans, and full diff review. Reuse exact-main Phase 8.7 and CI greens;
+  do not run the full suite, evaluation, build, public smoke, or a second fixture incident.
+
+Local result:
+
+- Added a public-first judge quickstart with the exact **Removed schema column** interactions and a
+  repository-local Node 24 / pnpm `11.9.0` fallback.
+- Refreshed the README, Devpost draft, claim-to-demo matrix, and under-three-minute English rehearsal
+  materials around verified fixture behavior and explicit claim boundaries.
+- Captured exactly one public canonical fixture incident and retained five clean app-only PNGs for
+  intake, completion/export context, ranked confidence, blast radius, and evidence/lineage. Browser
+  capture bytes were mechanically converted from JPEG to lossless PNG without content edits; the
+  1425 x 891 intake frame was centered on a 1440 x 900 sampled-background canvas, and all final
+  assets are 1440 x 900.
+- Did not add a sample report: the visible export surface and captured report views provide the
+  useful judging evidence without persisting an ephemeral incident identifier.
+- Preserved the Phase 8.7 live-source/digest boundary, current-main identity, deployment and
+  cost/shutdown evidence, C11 qualified status, and all unresolved submission/access/live-MCP gates.
+
+#### Phase 8.8 QA correction — aligned challenge position and clean intake asset
+
+Status: canonical Windows QA returned `FAIL / DO NOT MERGE` on exact Phase 8.8 head
+`e1573bbdf5d1d0d14b5ae485c8ebe1d259efeaa1` with two bounded blockers: one stale
+challenge-positioning sentence and a browser-native scrollbar in the intake screenshot.
+
+Objective: align the stale requirements sentence with C23 and the submission draft, and replace only
+the intake asset with a true 1440 × 900 app-only PNG that preserves the pre-Start fixture state without
+creating another incident.
+
+Minimum files:
+
+- `docs/DEVPOST_REQUIREMENTS.md` for the single positioning correction.
+- `docs/demo-assets/01-intake-removed-schema-column.png` for the clean intake asset.
+- `docs/demo-assets/README.md` only to disclose the exact mechanical scrollbar exclusion/padding.
+- this plan and `docs/SESSION_LOG.md` for the canonical QA correction state.
+
+Acceptance:
+
+- **Open / Wildcard** is the primary and strongest current fit; **Agents That Do Real Work** is
+  conditional and secondary only if organizers accept a bounded read-only investigative workflow;
+  no Devpost challenge form selection is claimed.
+- The replacement intake image is a real 1440 × 900 PNG containing only the selected synthetic
+  **Removed schema column** pre-Start app state, with no browser/Windows/UA scrollbar or chrome.
+- The other four screenshots remain byte-identical; no incident is created and no public smoke is
+  rerun.
+- Affected Markdown formatting/links/claim consistency and exact PNG signature/dimensions/metadata/
+  visual-content checks pass, together with bounded diff/path/secret/residue/process/port checks.
+- Create one additive commit, push normally to the existing branch, update only Draft PR #57, require
+  exact-new-head PR CI `SUCCESS`, and leave the worktree/upstream clean. Do not mark Ready or merge.
+
+Deferred: full suite, build, evaluation, runtime/source/API/workflow/package/lock/version changes,
+every GCP/deployment/billing mutation, Devpost registration/form/upload/submission, video work, live
+DataHub/model validation, another public incident, a second PR, PR Ready transition, and merge.

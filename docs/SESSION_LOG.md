@@ -6126,3 +6126,166 @@ Run bounded changed-file format, diff, link/path, strict UTF-8/LF/final-newline/
 conflict, and debug checks. Create one additive commit, normal-push the same branch, wait for exact
 new-head PR CI `SUCCESS`, then update only existing Draft PR #56 through the official in-app GitHub
 Browser with the new verifier/docs identities while preserving the immutable image-source boundary.
+
+## 2026-07-27 — Phase 8.8 public demo and submission package
+
+### Objective
+
+Prepare a truthful judge-facing package for the existing public credential-free fixture demo without
+registering, saving, uploading, or submitting on Devpost. Make the canonical **Removed schema
+column** result understandable in under three minutes, provide a repository-local fallback, and map
+every visible claim to exact UI or repository evidence.
+
+### Completed
+
+- Refreshed the README and Devpost draft with the concise product story, public demo and repository
+  links, architecture, technologies, synthetic fixture data, verified report behavior, and explicit
+  limitations.
+- Added a judge quickstart covering the public flow and the Node 24 / pnpm `11.9.0` local fallback,
+  plus a claim-to-demo matrix that identifies the exact screen, route, or persisted evidence for each
+  core claim.
+- Reworked the English demo script into a 2:50–2:58 storyboard with exact interactions, narration,
+  cold-service and unavailable-service fallbacks, accessibility and caption checks, media-rights
+  gates, and no hidden-reasoning claims.
+- Created exactly one canonical public fixture incident and retained five app-only captures: intake,
+  completed status/export context, ranked hypothesis/confidence, blast radius, and evidence/lineage.
+  No account, browser chrome, credential, session material, live DataHub evidence, or non-synthetic
+  incident data appears.
+- Mechanically converted the Browser-provided JPEG bytes to lossless PNG without modifying UI
+  content. Four frames were already 1440 x 900; the 1425 x 891 intake frame was centered on a
+  1440 x 900 canvas using its sampled page background. All five final files are real 1440 x 900 PNGs
+  with no textual, EXIF, timestamp, or ICC metadata chunks.
+- Chose **Open / Wildcard** as the strongest truthful primary positioning and **Agents That Do Real
+  Work** only as a secondary option if organizers accept a read-only report workflow. No challenge
+  or form selection was made.
+- Declined the optional sample Markdown report because the export surface and captured report
+  sections already provide useful deterministic evidence without persisting an ephemeral public
+  incident identifier.
+
+### Files changed
+
+`README.md`; `docs/JUDGE_QUICKSTART.md`; `docs/CLAIM_TO_DEMO_MATRIX.md`;
+`docs/DEMO_SCRIPT.md`; `docs/DEVPOST_SUBMISSION.md`; `docs/DEVPOST_REQUIREMENTS.md`;
+`docs/DEPLOYMENT.md`; `docs/IMPLEMENTATION_PLAN.md`; `docs/KNOWN_ISSUES.md`;
+`docs/PUBLIC_SOURCE_APACHE_READINESS.md`; `docs/RELEASE_CHECKLIST.md`;
+`docs/REPOSITORY_MAP.md`; `docs/demo-assets/README.md`; five PNGs under
+`docs/demo-assets/`; and this session log.
+
+### Decisions
+
+Treat the public deployment as a credential-free synthetic fixture, not as live DataHub evidence.
+Describe the top result as a plausible contributor with deterministic code-owned `81% · high`
+confidence, not a confirmed cause. Describe blast radius as complete only within the bounded fixture
+lineage, retain recommendations as `not_executed`, and state that incidents are process-local and no
+model call or remediation occurs.
+
+Preserve the two-layer Phase 8.7 provenance: current `main`
+`b5b394b31ec626bb4ecc175975ca9869e475054e` contains later verifier/docs evidence, while the running
+immutable image remains built from source commit `3653cf6b591eed76ad6276d07b1ea08e88d7fa4f`.
+Preserve C11 as `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE` and keep the paid-account stop boundary and
+judging-period availability mismatch unresolved.
+
+### Validation performed
+
+- Bootstrapped the exact local toolchain with Node `24.14.0` and pnpm `11.9.0`; the frozen dependency
+  install resolved from the existing cache.
+- Ran changed-Markdown Prettier, local Markdown-link and screenshot-reference checks, exact
+  Devpost-matrix row/total checks, descriptive alt/caption checks, and an English-completeness scan
+  for the judge-facing documents.
+- Verified each asset has the PNG signature and 1440 x 900 dimensions, inspected all five images for
+  readability and caption alignment, and confirmed only `IHDR`, `sRGB`, `gAMA`, `pHYs`, `IDAT`, and
+  `IEND` chunks are present.
+- Confirmed the completed public UI had zero console warnings or errors. Reused the single bounded
+  capture flow and did not create a second public incident or run another public smoke.
+
+### Validation intentionally deferred
+
+The full test suite, evaluation, build, public smoke, second fixture incident, live DataHub/model
+validation, GCP or billing mutation, runtime/source/API/workflow/package/lock/version change, Devpost
+registration or form action, video recording/upload, tag, Release, `v1.0.0`, PR Ready transition,
+merge, and judging-period access resolution.
+
+### Known issues
+
+Authorized live/judge DataHub MCP validation remains `PARTIAL`; recent-change collection is not
+supported. The public service remains a process-local synthetic fixture with no durability,
+authentication, model call, or automated remediation. Paid-account residual risk, the stop/delete/
+detach boundary of 2026-08-10 or 20% reported credit remaining, and the earlier-than-judging-end
+availability boundary remain unchanged.
+
+### Exact next step
+
+After the one additive commit, normal push, single Draft PR, and exact-head CI `SUCCESS` terminal
+gates, hand the exact head to independent Windows QA. Do not merge or transition the PR to Ready.
+
+## 2026-07-27 — Phase 8.8 targeted QA correction
+
+### Objective
+
+Resolve the two canonical `FAIL / DO NOT MERGE` blockers on exact Phase 8.8 head
+`e1573bbdf5d1d0d14b5ae485c8ebe1d259efeaa1`: align one stale challenge-positioning sentence and
+remove the browser-native scrollbar from the intake asset without creating another public incident.
+
+### Completed
+
+- Replaced the stale requirements statement with the exact current position: **Open / Wildcard** is
+  primary and strongest; **Agents That Do Real Work** is conditional and secondary only if organizers
+  accept a bounded read-only investigative workflow; no Devpost challenge form selection is claimed.
+- Reused the real public credential-free fixture intake state, selected **Removed schema column**, and
+  verified `Fixture metadata · Ready`, populated synthetic fields, **Start investigation**, and the
+  pre-Start ready message in the official in-app Browser. **Start investigation** was never activated.
+- The Browser screenshot API timed out on two fresh tabs at full app width and on a smaller panel.
+  Rather than simulate or recreate UI, the correction reused the existing real public capture:
+  removed only its captured 15-pixel browser-native scrollbar strip and centered all remaining
+  1410 × 891 app pixels on a sampled page-background 1440 × 900 canvas.
+- Visually inspected the corrected image at original resolution. Preset, question, dataset, occurrence
+  time, symptom, Start button, production-safety note, and ready state remain readable; no native
+  scrollbar, browser chrome, account/session surface, credential, or private endpoint remains.
+- Kept the other four screenshots byte-identical and left their captions unchanged.
+
+### Files changed
+
+`docs/DEVPOST_REQUIREMENTS.md`; `docs/IMPLEMENTATION_PLAN.md`; `docs/SESSION_LOG.md`;
+`docs/demo-assets/README.md`; and
+`docs/demo-assets/01-intake-removed-schema-column.png`.
+
+### Decisions
+
+Use a bounded mechanical correction of the already-authentic public capture after the official
+Browser capture backend failed repeatedly. Exclude only browser chrome, preserve every app-content
+pixel, and disclose the exact 15-pixel exclusion plus background padding. Do not create another
+incident, alter the other screenshots, or broaden the copy change.
+
+### Validation performed
+
+- Corrected intake image: true PNG signature, 1440 × 900, 241,215 bytes, SHA-256
+  `0930bd1688cba0eccdf18e702b0289908915fbb1c154b69ad48b8ef40359b7fc`; chunks only
+  `IHDR`, `sRGB`, `gAMA`, `pHYs`, `IDAT`, and `IEND`; no text, EXIF, timestamp, or ICC metadata.
+- The corrected right-edge maximum average brightness is 22.4, proving the prior bright native
+  scrollbar strip is absent. Original-resolution visual inspection confirms content/caption
+  alignment.
+- The four untouched screenshots match the prior SHA-256 values exactly.
+- Affected Markdown Prettier, local links, exact challenge-claim alignment, `git diff --check`,
+  exact path/residue allowlist, added-line secret/private-path/email/conflict/debug scan, and
+  task-owned process/port checks pass.
+- Ports `3001` and `5173` have zero listeners; no task-owned repository runtime process or QA temp
+  asset remains.
+
+### Validation intentionally deferred
+
+The full suite, build, evaluation, public smoke, another incident, runtime/source/API/workflow/
+package/lock/version changes, every GCP/deployment/billing mutation, live DataHub/model work, Devpost
+registration/form/upload/submission, video, tag, Release, PR Ready transition, and merge.
+
+### Known issues
+
+The public service remains fixture-only and process-local. Authorized live/judge DataHub MCP evidence
+remains `PARTIAL`, and judging-period availability remains unresolved under the earlier cost-control
+stop boundary. This correction does not change those retained Phase 8.7/8.8 limitations.
+
+### Exact next step
+
+Run the final five-path formatting/link/PNG/diff/secret/residue/process/port audit, create one additive
+commit, normal-push the existing branch, update only Draft PR #57 with correction evidence, require
+exact-new-head PR CI `SUCCESS`, and return the clean exact head to the same Windows QA. Do not mark
+Ready or merge.

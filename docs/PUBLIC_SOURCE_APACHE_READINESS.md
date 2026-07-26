@@ -765,11 +765,12 @@ The approvals are independent. Phase 8.4B consumed the Public authorization and 
 normal merge recorded above; its branch and PR conversation remain retained. PR #54 is the historical
 Phase 8.5 artifact-enforcement work and is merged through historical main
 `73172b7e8e8b02ab9629019eac298b89e02895c2`. PR #55 is the merged historical Phase 8.6
-rights/deployment preflight. Current main is
-`c7abc652c23b532e90091b377490b27eadd7e084`, tree
-`66e90eae74c7065c62a30a14ffeb25ef26974ea4`; Draft PR #56 is the current Phase 8.7 review. The
-owner's separate explicit instructions—not the PR itself—authorized the exact external Google Cloud
-mutations now recorded. No additional external mutation is implied.
+rights/deployment preflight. PR #56 subsequently merged Phase 8.7 through current main
+`b5b394b31ec626bb4ecc175975ca9869e475054e`, tree
+`2499267d819704b900511418818674010b4b9eae`. The owner's separate explicit instructions—not the PR
+itself—authorized the exact external Google Cloud mutations now recorded. The running image remains
+bound to immutable source `3653cf6b591eed76ad6276d07b1ea08e88d7fa4f`; no additional external
+mutation is implied.
 
 ## Residual blockers and next evidence
 
