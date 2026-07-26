@@ -1,14 +1,14 @@
 # Known issues
 
-Last updated: 2026-07-26.
+Last updated: 2026-07-27.
 
 - Current main is exact normal merge
-  `c7abc652c23b532e90091b377490b27eadd7e084`, tree
-  `66e90eae74c7065c62a30a14ffeb25ef26974ea4`, with ordered parents
-  `73172b7e8e8b02ab9629019eac298b89e02895c2` then
-  `91c52ae69b335b2b3122c8d5e1a95a997bc49ec5`. PR #55 is merged historical. Its
-  parent `73172b7e8e8b02ab9629019eac298b89e02895c2`, main CI run `30188091600`, and job
-  `89756253516` remain historical Phase 8.5 evidence. Phase 8.6 records C11 as
+  `b5b394b31ec626bb4ecc175975ca9869e475054e`, tree
+  `2499267d819704b900511418818674010b4b9eae`, with ordered parents
+  `c7abc652c23b532e90091b377490b27eadd7e084` then
+  `74a4acabe23e110a15a4331bfd9b018d6d115d24`. PR #56 is merged historical. The
+  prior Phase 8.6 main, main CI run `30188091600`, and job `89756253516` remain historical
+  Phase 8.5/8.6 evidence. Phase 8.6 records C11 as
   `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE`: technical attribution passes and the owner authorizes
   only zero-cost distribution of the exact verified artifact with synthetic/authorized data and
   authorized zero-cost DataHub/API access. This is operational authorization, not blanket legal
@@ -68,9 +68,10 @@ Last updated: 2026-07-26.
   tag and unpublished Draft Release with zero user-uploaded assets remain retained. At that
   historical Phase 8.4B GitHub-only checkpoint, GitHub Pages was disabled and no GitHub Pages or
   GitHub Environment deployment was claimed. GitHub Pages remains disabled; separately, the
-  owner-approved external public Cloud Run deployment now exists from immutable Draft PR source
-  `3653cf6b591eed76ad6276d07b1ea08e88d7fa4f`, remains unmerged/not current main, and is governed by
-  the Phase 8.7 Paid-account cost and shutdown boundaries.
+  owner-approved external public Cloud Run deployment was built from immutable source
+  `3653cf6b591eed76ad6276d07b1ea08e88d7fa4f`. Phase 8.7 source/evidence later merged through current
+  main, while the running image remains bound to that earlier source commit and governed by the
+  Phase 8.7 Paid-account cost and shutdown boundaries.
 
   The prior GitHub private-reporting blocker is closed. At 2026-07-26 05:22 ICT, authenticated
   Settings showed the enabled control as `Disable private vulnerability reporting`, Security overview
@@ -108,7 +109,7 @@ Last updated: 2026-07-26.
   within its exact zero-cost artifact/data/API scope. See
   [`PUBLIC_SOURCE_APACHE_READINESS.md`](PUBLIC_SOURCE_APACHE_READINESS.md).
   The eight-file/schema-v1 statement is immutable evidence from live-image source commit
-  `3653cf6b591eed76ad6276d07b1ea08e88d7fa4f`. The later Draft PR verifier head binds the complete
+  `3653cf6b591eed76ad6276d07b1ea08e88d7fa4f`. The later verifier/docs head binds the complete
   23-file build-output set, required legal-file content, and rewritten workspace manifests under
   schema v2, but it was not rebuilt or redeployed and is not the source of the running image.
 
@@ -117,10 +118,10 @@ Last updated: 2026-07-26.
   store, Windows path/link/output atomicity was incomplete, five-package/exclusion coverage was too
   narrow, and three Phase 8.4B state documents remained stale. This is historical: the additive
   correction passed independent QA and PR #54 merged through historical main
-  `73172b7e8e8b02ab9629019eac298b89e02895c2`. PR #55 subsequently merged as current main
-  `c7abc652c23b532e90091b377490b27eadd7e084`; Draft PR #56 is the current Phase 8.7 review. The
-  verified RC archive remains unpublished, while the separate Cloud Run fixture demo described
-  above is deployed.
+  `73172b7e8e8b02ab9629019eac298b89e02895c2`. PR #55 then merged through historical main
+  `c7abc652c23b532e90091b377490b27eadd7e084`, and PR #56 subsequently merged as current main
+  `b5b394b31ec626bb4ecc175975ca9869e475054e`. The verified RC archive remains unpublished, while the
+  separate Cloud Run fixture demo described above is deployed.
 
 - Phase 8.2 is integrated as `aa8d120205fdc35298b9ef36c7dd36b38b23e342` through main merge
   `7f05888ce7266f51b5028f5ac5ddacd3a91a11aa`; exact main CI run `30161661962`, job

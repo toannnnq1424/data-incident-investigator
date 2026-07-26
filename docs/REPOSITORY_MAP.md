@@ -1,11 +1,11 @@
 # Repository map
 
-Last verified: 2026-07-26 for Phase 8.7 on the implementation branch based on exact `main`
-`c7abc652c23b532e90091b377490b27eadd7e084` (tree
-`66e90eae74c7065c62a30a14ffeb25ef26974ea4`). The root and six private workspace manifests remain at
-candidate version `1.0.0-rc.1` and SPDX `Apache-2.0`. Phase 8.7 adds the narrow Cloud Run production
-host seam, container definition, and focused integration coverage; it does not change workflow,
-version, fixture, asset, release, or submission state.
+Last verified: 2026-07-27 for Phase 8.8 on the implementation branch based on exact `origin/main`
+`b5b394b31ec626bb4ecc175975ca9869e475054e` (tree
+`2499267d819704b900511418818674010b4b9eae`). The root and six private workspace manifests remain at
+candidate version `1.0.0-rc.1` and SPDX `Apache-2.0`. Phase 8.8 changes only judge-facing Markdown
+and real public-fixture PNG captures; it does not change runtime, API, workflow, package, lockfile,
+version, tag, Release, fixture, deployment, or submission state.
 
 ## Directories
 
@@ -22,12 +22,15 @@ version, fixture, asset, release, or submission state.
 | `tests/smoke`             | Primary health and build smoke tests                                        | `health.test.ts`                                                                                                                                                                  |
 | `tests/e2e`               | Browser flows                                                               | `report-display.spec.mjs`                                                                                                                                                         |
 | `scripts`                 | Bootstrap, smoke, and deterministic release-artifact operations             | `bootstrap-worktree.ps1`, `smoke.mjs`, `release-path-safety.mjs`, `pnpm-lock-identity.mjs`, `bundle-attribution.mjs`, `build-release-artifact.mjs`, `verify-release-artifact.mjs` |
-| `docs`                    | Product, architecture, plan, memory, and release docs                       | see list below                                                                                                                                                                    |
+| `docs`                    | Product, architecture, plan, memory, release, and judge-package docs        | `JUDGE_QUICKSTART.md`, `CLAIM_TO_DEMO_MATRIX.md`, `DEMO_SCRIPT.md`, `demo-assets/`, plus the index below                                                                          |
 | `.github`                 | Collaboration intake plus scoped repository validation                      | `ISSUE_TEMPLATE/`, `pull_request_template.md`, `workflows/`                                                                                                                       |
 | `.codex`                  | Trusted project-scoped Codex settings without secrets                       | `config.toml`                                                                                                                                                                     |
 
-Phase 8.7 adds `scripts/runtime-attribution.mjs` and `scripts/prepare-runtime-manifests.mjs` for the
-container-only production/legal boundary.
+Phase 8.7 added `scripts/runtime-attribution.mjs` and `scripts/prepare-runtime-manifests.mjs` for the
+container-only production/legal boundary and is integrated through exact main
+`b5b394b31ec626bb4ecc175975ca9869e475054e`. The running Cloud Run image remains independently bound
+to immutable source commit `3653cf6b591eed76ad6276d07b1ea08e88d7fa4f`; Phase 8.8 does not rebuild
+or redeploy it.
 
 ## Root configuration
 
@@ -139,7 +142,8 @@ Execution and quality: `IMPLEMENTATION_PLAN.md`, `TEST_STRATEGY.md`, `SECURITY.m
 `ROLLBACK.md`, `DECISIONS.md`, `LOCAL_ENVIRONMENT.md`, `KNOWN_ISSUES.md`, `SESSION_LOG.md`,
 `VERSIONING.md`.
 
-Submission: `DEVPOST_REQUIREMENTS.md`, `DEMO_SCRIPT.md`, `DEVPOST_SUBMISSION.md`,
+Submission: `DEVPOST_REQUIREMENTS.md`, `DEVPOST_SUBMISSION.md`, `JUDGE_QUICKSTART.md`,
+`CLAIM_TO_DEMO_MATRIX.md`, `DEMO_SCRIPT.md`, `demo-assets/README.md`,
 `PUBLIC_SOURCE_APACHE_READINESS.md`, `RELEASE_CHECKLIST.md`.
 
 ## Rescan triggers

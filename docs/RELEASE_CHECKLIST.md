@@ -301,9 +301,9 @@ actions below remain separately scoped.
       `a4beb330fb528f4926eee8a538c7d2a79dab1f67`; keep Phase 8.4B identities historical and record PR
       #54 merged.
 - [x] Record current main
-      `c7abc652c23b532e90091b377490b27eadd7e084`, tree
-      `66e90eae74c7065c62a30a14ffeb25ef26974ea4`; PR #55 is merged historical and Draft PR #56 is the
-      current Phase 8.7 review. Preserve the existing `v1.0.0-rc.1` tag/unpublished Draft Release.
+      `b5b394b31ec626bb4ecc175975ca9869e475054e`, tree
+      `2499267d819704b900511418818674010b4b9eae`; PR #55 and PR #56 are merged historical. Preserve
+      the existing `v1.0.0-rc.1` tag/unpublished Draft Release.
 - [x] Record `onlinelearning-484610` only as a non-mandatory existing Google Cloud reference. A later
       read-only control packet may prefer a dedicated project only if credit applicability and no
       increased fee risk are proven; require fresh owner approval for its exact name, globally unique
@@ -382,7 +382,8 @@ The execution checklist above is historical and was found incomplete by independ
       smoke.
 - [x] Record this later docs-only evidence commit without claiming the running revision was built
       from it. Record exact-final-head CI only in the mutable Draft PR #56 body to avoid circular
-      evidence; keep the PR Draft and unmerged.
+      evidence; keep the PR Draft and unmerged at that Phase 8.7 review gate. PR #56 later merged
+      through current main; the running image remains bound to its earlier immutable source commit.
 
 ## Phase 8 — `v1.0.0` final (not performed)
 
