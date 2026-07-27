@@ -6881,3 +6881,39 @@ Acceptance:
 
 Deferred: every media/source/runtime/deployment/Devpost/TTS action, another incident or PR, PR Ready
 transition, merge, full suite, build, evaluation, and unchanged media validation.
+
+#### Phase 8.9 second QA correction — qualify the final video-host gate
+
+Status: local correction complete; bounded validation and additive publication to the same Draft PR
+#58 remain. Canonical QA re-review returned `FAIL / DO NOT MERGE` on exact head
+`dc5e4cc595203250e7c30ad64772ed4e51858845` for two ambiguous checklist phrases in
+`docs/demo-video/README.md`.
+
+Objective: replace only the unqualified `public hosting` and `Public hosting visibility` wording with
+the exact Rules-listed YouTube/Vimeo/Youku host/public-visibility boundary, while preserving the
+already-public GitHub repository-asset statement and every other Phase 8.9 claim.
+
+Minimum files:
+
+- `docs/demo-video/README.md` for the two judge-visible phrase corrections.
+- This plan and `docs/SESSION_LOG.md` only because the repository operating contract requires durable
+  objective, validation, and next-action state for every additive correction.
+- Existing Draft PR #58 body only for the new exact identities and CI evidence; no new PR or state
+  transition.
+
+Acceptance:
+
+- Both checklist lines identify Rules-listed YouTube/Vimeo/Youku hosting/public visibility or the
+  final hosted derivative; neither can be read as denying the WebM's existing Public GitHub access.
+- C18 remains `PARTIAL — LOCAL CANDIDATE`; C19 remains `OPEN`. The WebM, captions, and transcript
+  retain their exact prior hashes/blobs.
+- Only the three required Markdown files change. Prettier, local links, claim consistency,
+  UTF-8/LF/final-newline/no-BOM, exact path/diff, added-line secret/private-path/email/conflict/debug,
+  residue, process, and port checks pass; all unchanged greens are reused.
+- Create one additive commit, push normally to the same branch, update only Draft PR #58 if needed,
+  require exact-new-head PR CI `SUCCESS`, and leave the worktree/upstream clean without Ready or
+  merge.
+
+Deferred: all media/audio/TTS/incident/source/runtime/workflow/package/lock/version/GCP/deployment,
+external video-host upload, Devpost action, full suite/build/evaluation, another branch/PR, Ready, and
+merge work.

@@ -6443,3 +6443,61 @@ the same hosting boundary, require exact-new-head PR CI `SUCCESS`, and return th
 same Windows QA. Do not mark Ready or merge. A narrated derivative remains a separately scoped,
 user-authorized follow-up because this correction's acceptance gate requires the existing media
 hashes to remain unchanged.
+
+## 2026-07-27 — Phase 8.9 second targeted QA correction: qualify the final video host
+
+### Objective
+
+Resolve the one remaining canonical-QA wording ambiguity on exact prior head
+`dc5e4cc595203250e7c30ad64772ed4e51858845` without changing any media or product state. Qualify the
+two `docs/demo-video/README.md` checklist gates so they refer only to Rules-listed
+YouTube/Vimeo/Youku hosting/public visibility or the final hosted derivative.
+
+### Completed
+
+- Replaced unqualified `public hosting` with `final hosted derivative for Rules-listed
+YouTube/Vimeo/Youku hosting`.
+- Replaced unqualified `Public hosting visibility` with `Rules-listed YouTube/Vimeo/Youku
+public-host visibility`.
+- Preserved the surrounding statement that the WebM is already publicly accessible as a GitHub
+  repository blob/raw asset while C18 remains `PARTIAL — LOCAL CANDIDATE` and C19 remains `OPEN`.
+
+### Files changed
+
+- `docs/demo-video/README.md` for the two judge-visible phrase corrections.
+- `docs/IMPLEMENTATION_PLAN.md` and `docs/SESSION_LOG.md` only for operating-contract state.
+
+### Decisions
+
+The GitHub-public repository asset and the required Rules-listed video host are separate publication
+surfaces. The final entrant gate applies only to a YouTube/Vimeo/Youku-hosted derivative and its
+public visibility; it does not imply that the repository asset is private or unpublished.
+
+### Validation performed
+
+- Changed-file Prettier, local Markdown links, exact wording/claim checks, strict
+  UTF-8/LF/final-newline/no-BOM, and `git diff --check` pass.
+- Exact three-path allowlist plus added-line high-confidence secret/private-path/email/conflict/debug
+  scans pass. Task workspace residue, processes, and ports `3001`/`5173` are clean.
+- WebM SHA-256 remains `f7cef629fa03db6113949e1b347004230158b05f695258454278cc7473f14e18`
+  with blob `743fd02d02ef9397d98b27825054d7253e039a69`; captions remain blob
+  `7aeb7a392ae226fc5962df3ce2c466e24b852e72`; transcript remains blob
+  `af8222a22385903bec5fc7e8faf8a5cfe4d56f10`.
+
+### Validation intentionally deferred
+
+All unchanged media checks, full suite, build, evaluation, public smoke, recording, audio/TTS,
+incident, source/runtime/workflow/package/lock/version/GCP/deployment, external upload, and Devpost
+actions remain intentionally unrun or unperformed.
+
+### Known issues
+
+C18 remains `PARTIAL — LOCAL CANDIDATE`; C19 remains `OPEN` until a separately authorized
+YouTube/Vimeo/Youku-hosted video is publicly visible and linked in Devpost. C14, live DataHub MCP,
+entrant attestations, Ready, and merge remain open/deferred exactly as before.
+
+### Exact next step
+
+Create one additive commit, push normally to the existing branch, update only Draft PR #58's exact
+identity/CI evidence if needed, require exact-new-head PR CI `SUCCESS`, and return the clean branch to
+the same Windows QA. Do not create another branch/PR, mark Ready, or merge.

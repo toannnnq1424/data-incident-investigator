@@ -90,9 +90,9 @@ application console-clean claim, and it is one reason C18 remains `PARTIAL`.
 - [x] Key frames were reviewed for chrome, accounts, credentials, private data, hidden reasoning,
       confirmed-cause wording, and remediation claims.
 - [ ] A human entrant must perform the final rights/privacy/accessibility review on any exported file
-      chosen for public hosting.
-- [ ] Public hosting visibility, entrant identity/rights attestations, and the final Devpost form
-      remain separately authorized user actions.
+      chosen as the final hosted derivative for Rules-listed YouTube/Vimeo/Youku hosting.
+- [ ] Rules-listed YouTube/Vimeo/Youku public-host visibility, entrant identity/rights attestations,
+      and the final Devpost form remain separately authorized user actions.
 
 This candidate advances C18 only to **PARTIAL — LOCAL CANDIDATE** and provides bounded C20 evidence.
 C19 remains `OPEN`: although the WebM is publicly accessible through GitHub, no public YouTube,
