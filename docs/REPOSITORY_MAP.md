@@ -4,8 +4,10 @@ Last verified: 2026-07-27 for Phase 8.9 on the implementation branch based on ex
 `082d617cab203393f87d0cc3b97aff5ca2b3a3dc` (tree
 `208e80f8d7e9fbab14b93ff1af16787c48e34d92`). The root and six private workspace manifests remain at
 candidate version `1.0.0-rc.1` and SPDX `Apache-2.0`. Phase 8.9 adds only judge-facing Markdown and
-one authentic local WebM/caption/transcript review packet; it does not change runtime, API, workflow,
-package, lockfile, version, tag, Release, fixture, deployment, public hosting, or submission state.
+one authentic WebM/caption/transcript review packet. The packet is publicly accessible on its Public
+GitHub feature branch/PR but is not hosted on YouTube/Vimeo/Youku or linked in Devpost. Phase 8.9 does
+not change runtime, API, workflow, package, lockfile, version, tag, Release, fixture, deployment, or
+submission state.
 
 ## Directories
 

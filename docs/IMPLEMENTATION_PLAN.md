@@ -6625,7 +6625,8 @@ Acceptance criteria:
 - Exactly one canonical public fixture incident is created during capture. PNGs use one stable
   viewport, contain only synthetic app UI without browser/account/session chrome, and are checked for
   dimensions, type, size, metadata, readability, and caption/alt alignment. No fake or generated UI
-  and no external upload.
+  and no separate image-host/Devpost upload occurred; later repository publication made the assets
+  public on GitHub.
 - Changed documentation/assets pass focused Prettier/Markdown/local-link checks,
   `git diff --check`, UTF-8/LF/final-newline/no-BOM checks for text, PNG signature/dimension/metadata
   checks, English/claim consistency, exact path allowlist, and secret/private-identity/conflict/debug
@@ -6704,9 +6705,11 @@ DataHub/model validation, another public incident, a second PR, PR Ready transit
 
 Status: in progress on `codex/phase-8-9-demo-rehearsal` from exact merged `origin/main`
 `082d617cab203393f87d0cc3b97aff5ca2b3a3dc` (tree
-`208e80f8d7e9fbab14b93ff1af16787c48e34d92`). This slice may produce a local/repository video
-candidate and final-readiness evidence only. It does not upload media, register or submit on Devpost,
-enter credentials or consent, or mutate the deployment.
+`208e80f8d7e9fbab14b93ff1af16787c48e34d92`). This slice may produce a repository video candidate
+and final-readiness evidence only. Publishing the feature branch/Draft PR makes repository media
+publicly accessible on GitHub; the slice does not upload media to YouTube, Vimeo, or Youku, link or
+enter the video in Devpost, register or submit on Devpost, enter credentials or consent, or mutate
+the deployment.
 
 Objective: rehearse the merged Phase 8.8 public and repository-fallback paths, create one authentic
 functioning-project video candidate when available tooling can capture only real app interaction
@@ -6747,8 +6750,9 @@ Acceptance criteria:
   `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE`, C14 judging-window mismatch, and DataHub MCP
   `PARTIAL`. **Open / Wildcard** remains primary; **Agents That Do Real Work** remains conditional.
 - C18 may advance only to local-candidate/`PARTIAL`; C19 remains `OPEN` until a separately authorized
-  public video upload. Eligibility, team/IP attestations, consent, registration, challenge selection,
-  exact form controls, save, and submission remain user-owned `OPEN` gates.
+  public YouTube/Vimeo/Youku upload is linked in Devpost. Eligibility, team/IP attestations, consent,
+  registration, challenge selection, exact form controls, save, and submission remain user-owned
+  `OPEN` gates.
 - If safe authentic capture is unavailable after bounded attempts, create no fake candidate; persist
   exact evidence and return the smallest genuine user-choice blocker while completing safe rehearsal
   and readiness documentation.
@@ -6775,15 +6779,16 @@ Validation plan:
   private-path/email/conflict/debug scans, and process/port/temp cleanup. Reuse unchanged exact-main
   and Phase 8.8 greens; do not run Level D, evaluation, build, or unchanged browser tests.
 
-Deferred: any external video upload or publication, Devpost registration/join/consent/form
-inspection/save/submission, entrant/team/IP attestation, exact hidden form controls, live DataHub/MCP
-credentials or validation, GCP/deployment/billing/resource mutation, paid service, global tool
-installation, runtime/source/API/workflow/package/workspace/lock change, version bump, `v1.0.0`, tag,
-Release, PR Ready transition, merge, and the next phase.
+Deferred: any YouTube/Vimeo/Youku upload or public-visibility choice, Devpost video link,
+registration/join/consent/form inspection/save/submission, entrant/team/IP attestation, exact hidden
+form controls, live DataHub/MCP credentials or validation, GCP/deployment/billing/resource mutation,
+paid service, global tool installation, runtime/source/API/workflow/package/workspace/lock change,
+version bump, `v1.0.0`, tag, Release, PR Ready transition, merge, and the next phase.
 
 #### Phase 8.9 local result
 
-Status: implementation, rehearsal, and bounded validation complete; Draft-PR publication remains.
+Status: implementation, rehearsal, bounded validation, and Draft-PR publication completed on PR #58;
+the targeted public-repository-hosting truthfulness correction below is in progress.
 
 - Official overview, dates, rules, resources, and incorporated Terms were re-read read-only at
   `2026-07-27 03:12:26 ICT` / `2026-07-26 20:12:26 UTC`. No material requirement drift was found,
@@ -6815,10 +6820,11 @@ Status: implementation, rehearsal, and bounded validation complete; Draft-PR pub
   tab was closed, and review falls back to static HTML/link validation plus direct media/caption
   probes and inspected source frames; no alternate browser was used to bypass policy.
 
-The user requested that a later, separately authorized narrated-video slice evaluate an appropriate
-voice tool, potentially ElevenLabs if access is granted. No voice service, credential, audio
-generation, or upload is used in Phase 8.9. Any future narration must align with visible actions,
-remain synchronized with captions, and make no false speaker-identity claim.
+The user has authorized a later narrated-video slice to evaluate an appropriate voice tool,
+potentially ElevenLabs if access is granted. This exact QA correction preserves the verified WebM
+bytes and therefore performs no voice-service, credential, audio-generation, YouTube/Vimeo/Youku
+upload, or Devpost-link action. A separately scoped narrated derivative must align with visible
+actions, remain synchronized with captions, and make no false speaker-identity claim.
 
 Bounded validation passes:
 
@@ -6834,3 +6840,44 @@ Bounded validation passes:
   WebM private-path/URL/key metadata string scan, claim consistency, and task temp-residue checks.
 - Ports `3001`/`5173` and task-owned Node processes are clean after rehearsal. The persistent Codex
   Browser kernel is correctly excluded from the task-owned process audit.
+
+#### Phase 8.9 QA correction — Public GitHub asset versus required video host
+
+Status: local correction and bounded validation complete; additive publication to the same Draft PR
+#58 remains. Canonical Windows QA returned `FAIL / DO NOT MERGE` on exact Phase 8.9 head
+`ee789becd0280963b07eaa229c3d225b5c7e4d04` with one bounded truthfulness blocker. Pushing the
+feature branch and opening Draft PR #58 made the WebM publicly accessible as a repository blob/raw
+asset, so absolute statements that it was not uploaded, published, or publicly hosted are false.
+
+Objective: correct only the distribution/hosting wording across the affected judge packet and PR
+body. State precisely that the candidate is public on the repository feature branch/PR but has not
+been uploaded to or made publicly visible on YouTube, Vimeo, or Youku, has not been linked or entered
+in Devpost, and has not been submitted. Never imply that GitHub blob/raw access satisfies Rules
+section 4's video-host/link requirement.
+
+Minimum files:
+
+- `docs/demo-video/README.md`, `docs/demo-video/review.html`, `docs/DEMO_SCRIPT.md`,
+  `docs/DEVPOST_SUBMISSION.md`, `docs/JUDGE_QUICKSTART.md`, `docs/DEVPOST_REQUIREMENTS.md`, and
+  `docs/CLAIM_TO_DEMO_MATRIX.md` for the visible claim correction.
+- `docs/IMPLEMENTATION_PLAN.md`, `docs/SESSION_LOG.md`, `docs/KNOWN_ISSUES.md`, and
+  `docs/REPOSITORY_MAP.md` for the narrow persistent-state correction.
+- Draft PR #58 body for the same exact boundary; no new PR or review-state change.
+
+Acceptance:
+
+- Every current Phase 8.9 claim distinguishes Public GitHub repository access from the required
+  public YouTube/Vimeo/Youku video and Devpost form link.
+- C18 remains `PARTIAL — LOCAL CANDIDATE`; C19 remains `OPEN`. GitHub blob/raw accessibility is not
+  represented as satisfying the official hosting requirement.
+- The WebM, captions, and transcript remain byte-identical; no capture, incident, audio, TTS,
+  external video-host upload, Devpost action, source/runtime/workflow/package/lock/version/GCP/
+  deployment mutation, Ready transition, or merge occurs.
+- Affected Markdown/HTML formatting and links, claim consistency, exact correction/full path diffs,
+  UTF-8/LF/final-newline/no-BOM, added-line secret/private-path/email/conflict/debug scans, residue,
+  process, and ports pass. Reuse all prior media and exact-head CI greens.
+- Create one additive commit, push normally to the same branch, update only Draft PR #58, require
+  exact-new-head PR CI `SUCCESS`, and leave worktree/upstream clean.
+
+Deferred: every media/source/runtime/deployment/Devpost/TTS action, another incident or PR, PR Ready
+transition, merge, full suite, build, evaluation, and unchanged media validation.

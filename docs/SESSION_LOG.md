@@ -6298,7 +6298,8 @@ Started additive branch `codex/phase-8-9-demo-rehearsal` from exact current `ori
 `082d617cab203393f87d0cc3b97aff5ca2b3a3dc`, tree
 `208e80f8d7e9fbab14b93ff1af16787c48e34d92`, without rewriting or cherry-picking history. The slice
 is docs/media only: no runtime, API, workflow, package, lock, version, tag, Release, GCP, deployment,
-Devpost form, credential, consent, submission, or external upload mutation.
+Devpost form, credential, consent, submission, or YouTube/Vimeo/Youku upload mutation. Publishing the
+feature branch and Draft PR makes repository assets publicly accessible on GitHub.
 
 ### Official-source drift recheck
 
@@ -6332,8 +6333,8 @@ or inferred.
   failure appears.
 - The silent candidate has synchronized human-reviewed English WebVTT captions and a matching
   transcript. It explicitly preserves fixture-only, zero-model, no-remediation, no-hidden-reasoning,
-  bounded-blast-radius, live MCP `PARTIAL`, C11 qualified, C14 open, and no-upload/no-submission
-  boundaries.
+  bounded-blast-radius, live MCP `PARTIAL`, C11 qualified, C14 open, Public GitHub repository access,
+  and no YouTube/Vimeo/Youku upload or Devpost-link/submission boundaries.
 - The capture script recorded one non-visual instrumentation page error when its scrollbar-hiding
   style ran before the initial document element existed. The flow and finalized video completed
   normally. No app-console-clean claim is made for this candidate.
@@ -6351,14 +6352,17 @@ or inferred.
 C18 is `PARTIAL — LOCAL CANDIDATE`, never `PASS`; C20 has bounded `PARTIAL` media/English evidence;
 C19 remains `OPEN` until a separately authorized public YouTube/Vimeo/Youku upload. C11 remains
 `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE`; C14 remains `OPEN`; DataHub MCP remains `PARTIAL`;
-**Open / Wildcard** remains primary and **Agents That Do Real Work** conditional only. The local
-candidate is not registration, a form save, challenge selection, entrant/team/IP attestation, public
-video, upload, submission, or judging-period access resolution.
+**Open / Wildcard** remains primary and **Agents That Do Real Work** conditional only. The candidate
+is publicly accessible as a repository asset on the Public GitHub feature branch and Draft PR #58,
+but it has not been uploaded to or made publicly visible on YouTube, Vimeo, or Youku, linked or
+entered in Devpost, or submitted. GitHub blob/raw access does not satisfy C19. The candidate is not
+registration, a form save, challenge selection, entrant/team/IP attestation, or judging-period access
+resolution.
 
-The user asked that a later separately authorized narrated-video slice evaluate a suitable voice
-tool, potentially ElevenLabs if access is granted. Phase 8.9 uses no voice service or credential. Any
-future narration must be synchronized to visible actions and captions and must not claim a false
-speaker identity.
+The user has authorized a later narrated-video slice to evaluate a suitable voice tool, potentially
+ElevenLabs if access is granted. This exact QA correction must preserve the verified WebM bytes, so
+it uses no voice service, credential, or audio generation. A separately scoped narrated derivative
+must be synchronized to visible actions and captions and must not claim a false speaker identity.
 
 ### Bounded validation completed
 
@@ -6386,3 +6390,56 @@ Complete the bounded docs/media validation, clean task-owned temporary capture/k
 create one additive commit, push normally, create exactly one Draft PR against exact current `main`,
 require exact-head PR CI `SUCCESS`, and return the clean branch for independent Windows QA. Do not
 mark Ready or merge.
+
+## 2026-07-27 — Phase 8.9 targeted QA correction: repository access is not required video hosting
+
+### Objective
+
+Correct the single canonical-QA truthfulness blocker on existing branch
+`codex/phase-8-9-demo-rehearsal` and existing Draft PR #58. Make every current Phase 8.9 claim state
+that the WebM is publicly accessible as a repository blob/raw asset on the Public GitHub feature
+branch/PR while remaining absent from YouTube/Vimeo/Youku and Devpost.
+
+### Completed locally
+
+- Corrected the visible judge packet, requirement matrix, and persistent state across exactly 11
+  documentation paths. GitHub repository access is no longer described as absent or private.
+- Preserved C18 as `PARTIAL — LOCAL CANDIDATE` and C19 as `OPEN`: no YouTube/Vimeo/Youku URL exists,
+  no video link has been entered in Devpost, and no submission has been made. GitHub blob/raw access
+  is explicitly not represented as satisfying the official video-host/link requirement.
+- Preserved the WebM, captions, and transcript byte-for-byte. No recording, re-encoding, new incident,
+  voice/TTS, source/runtime/workflow/package/lock/version/GCP/deployment change, external video-host
+  upload, Devpost action, Ready transition, or merge occurred.
+
+### Files changed
+
+- Judge/video packet: `docs/demo-video/README.md`, `docs/demo-video/review.html`,
+  `docs/DEMO_SCRIPT.md`, `docs/DEVPOST_SUBMISSION.md`, `docs/JUDGE_QUICKSTART.md`,
+  `docs/DEVPOST_REQUIREMENTS.md`, and `docs/CLAIM_TO_DEMO_MATRIX.md`.
+- Persistent state: `docs/IMPLEMENTATION_PLAN.md`, `docs/SESSION_LOG.md`,
+  `docs/KNOWN_ISSUES.md`, and `docs/REPOSITORY_MAP.md`.
+
+### Bounded validation
+
+- Prettier check passed all 11 affected Markdown/HTML files; 44 relative Markdown links and all three
+  local `review.html` references resolve.
+- Strict UTF-8/LF/final-newline/no-BOM, `git diff --check`, exact 11-path allowlist, and added-line
+  high-confidence secret/private-path/conflict/debug scan passed. The only added email is the already
+  documented official `support@devpost.com` address.
+- The requirement matrix still parses as 37 rows with exact totals
+  `3 PASS / 1 QUALIFIED PASS / 13 PARTIAL / 12 OPEN / 8 NOT REQUIRED`.
+- The WebM remains 11,074,997 bytes with SHA-256
+  `f7cef629fa03db6113949e1b347004230158b05f695258454278cc7473f14e18` and Git blob
+  `743fd02d02ef9397d98b27825054d7253e039a69`; captions remain blob
+  `7aeb7a392ae226fc5962df3ce2c466e24b852e72`, and transcript remains blob
+  `af8222a22385903bec5fc7e8faf8a5cfe4d56f10`.
+- Ports `3001`/`5173` and task-owned workspace residue are clean. All unchanged media/CI evidence is
+  reused; no full suite, build, evaluation, public smoke, or media recapture was run.
+
+### Exact next step
+
+Create one additive commit, push normally to the same branch, update only Draft PR #58's body with
+the same hosting boundary, require exact-new-head PR CI `SUCCESS`, and return the clean branch to the
+same Windows QA. Do not mark Ready or merge. A narrated derivative remains a separately scoped,
+user-authorized follow-up because this correction's acceptance gate requires the existing media
+hashes to remain unchanged.

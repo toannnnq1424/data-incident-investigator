@@ -1,7 +1,10 @@
 # Phase 8.9 local demo-video candidate
 
-Status: **local candidate / PARTIAL only**. Nothing in this directory has been uploaded, published,
-entered into Devpost, or submitted.
+Status: **local candidate / PARTIAL only**. The committed WebM is publicly accessible as a
+repository blob/raw asset on the Public GitHub feature branch and Draft PR #58. It has not been
+uploaded to or made publicly visible on YouTube, Vimeo, or Youku, has not been linked or entered in
+Devpost, and has not been submitted. GitHub repository access does not satisfy the Rules' required
+video-host and form-link condition.
 
 ## Review
 
@@ -15,7 +18,7 @@ Files:
   credential-free fixture interaction.
 - [`phase-8-9-demo-captions.vtt`](phase-8-9-demo-captions.vtt) — synchronized English captions.
 - [`TRANSCRIPT.md`](TRANSCRIPT.md) — caption-equivalent English transcript.
-- [`review.html`](review.html) — repository-local native video/caption review surface.
+- [`review.html`](review.html) — repository review surface using native video/caption controls.
 
 ## Media identity
 
@@ -91,5 +94,6 @@ application console-clean claim, and it is one reason C18 remains `PARTIAL`.
 - [ ] Public hosting visibility, entrant identity/rights attestations, and the final Devpost form
       remain separately authorized user actions.
 
-This local candidate advances C18 only to **PARTIAL — LOCAL CANDIDATE** and provides bounded C20
-evidence. C19 remains `OPEN`: no public YouTube, Vimeo, or Youku upload or URL exists.
+This candidate advances C18 only to **PARTIAL — LOCAL CANDIDATE** and provides bounded C20 evidence.
+C19 remains `OPEN`: although the WebM is publicly accessible through GitHub, no public YouTube,
+Vimeo, or Youku upload/URL exists and no video link has been entered in Devpost.

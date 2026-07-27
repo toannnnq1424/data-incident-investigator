@@ -1,7 +1,9 @@
 # Under-three-minute demo script
 
-Status: one authentic English-captioned local candidate has been recorded and reviewed. It has not
-been uploaded, published, entered into Devpost, or submitted.
+Status: one authentic English-captioned candidate has been recorded and reviewed. Its committed
+WebM is publicly accessible as a repository asset on the Public GitHub feature branch and Draft PR
+#58. It has not been uploaded to or made publicly visible on YouTube, Vimeo, or Youku, linked or
+entered in Devpost, or submitted. GitHub access is not the Rules-required video-host/form-link gate.
 
 Candidate running time: **2:50.20**. The Rules recommend less than three minutes, and judges are not
 required to watch beyond minute three. Review the local packet at
@@ -93,7 +95,8 @@ Phase 8.9 recorded-candidate result:
       explicit.
 - [x] The public demo is not described as live DataHub. Local bounded MCP integration and live/judge
       validation `PARTIAL` are kept separate.
-- [x] No Devpost registration, selection, upload, or submission is implied.
+- [x] No Devpost registration, challenge selection, YouTube/Vimeo/Youku upload or form link, or
+      submission is implied.
 
 ### Accessibility and English
 
@@ -116,8 +119,8 @@ Phase 8.9 recorded-candidate result:
 - [x] Third-party product names are used only as factual text; no
       unlicensed logos, clips, stock images, or trademarks as decoration.
 - [x] Key frames at eleven timestamps were reviewed for accidental identifiers and claim accuracy.
-- [ ] The entrant must review the exact chosen export again before any separately authorized public
-      upload.
+- [ ] The entrant must review the exact chosen export again before any separately authorized
+      YouTube/Vimeo/Youku upload.
 
 The recording script emitted one non-visual capture-instrumentation page error because its
 scrollbar-hiding style ran before the first document element existed. The application interaction and

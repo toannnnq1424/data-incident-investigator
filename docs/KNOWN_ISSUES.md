@@ -15,9 +15,11 @@ Last updated: 2026-07-27.
   clearance. `abstract-logging@2.0.1` remains non-embedded and its missing packaged legal file remains
   a documented caveat.
 
-- Phase 8.9 records one authentic local 2:50.20, 1440 × 900 VP8/WebM functioning-project
-  candidate with synchronized human-reviewed English WebVTT captions/transcript. It is silent,
-  repository-local, and not publicly hosted or submitted. C18 is only
+- Phase 8.9 records one authentic 2:50.20, 1440 × 900 VP8/WebM functioning-project candidate with
+  synchronized human-reviewed English WebVTT captions/transcript. It is silent and publicly
+  accessible as a repository blob/raw asset on the Public GitHub feature branch and Draft PR #58.
+  It has not been uploaded to or made publicly visible on YouTube/Vimeo/Youku, linked in Devpost, or
+  submitted; GitHub access does not satisfy the Rules' video-host/form-link condition. C18 is only
   `PARTIAL — LOCAL CANDIDATE`; C19 remains `OPEN`. Key-frame review found only the application and
   synthetic fixture data, with no browser/Windows/account chrome, credentials, private endpoints,
   external media, or visible runtime failure. The capture script emitted one non-visual
