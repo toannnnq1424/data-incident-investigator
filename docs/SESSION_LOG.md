@@ -6501,3 +6501,116 @@ entrant attestations, Ready, and merge remain open/deferred exactly as before.
 Create one additive commit, push normally to the existing branch, update only Draft PR #58's exact
 identity/CI evidence if needed, require exact-new-head PR CI `SUCCESS`, and return the clean branch to
 the same Windows QA. Do not create another branch/PR, mark Ready, or merge.
+
+## 2026-07-27 — Phase 8.9A synchronized male voice-over derivative
+
+### Objective
+
+Create one separate synchronized male-English narrated derivative of the merged authentic Phase 8.9
+video without recapturing UI, starting another incident, changing any application frame, contacting
+an account service, or altering runtime/deployment state. Start additive branch
+`codex/phase-8-9a-male-voiceover` from exact `origin/main`
+`ceaed0a3f5a277884bf03eb2605c3dd5f70b4afe`, tree
+`0d38dd187fc6f3cd166d88287112f1dc3a46f867`.
+
+### Completed locally
+
+- Audited callable app capabilities and installed local voices. No exportable Codex/ChatGPT speech
+  capability was available. Selected installed **Microsoft Mark — English (United States)**,
+  identified locally as Microsoft Adult/Male, and synthesized offline through Windows SAPI at
+  default rate (`0`) and volume (`100`). No network, account, API key, credential, subscription,
+  paid credit, per-use cost, or ElevenLabs access was used.
+- Reused the exact 11,074,997-byte Phase 8.9 silent source with SHA-256
+  `f7cef629fa03db6113949e1b347004230158b05f695258454278cc7473f14e18` and blob
+  `743fd02d02ef9397d98b27825054d7253e039a69`. No source WebM, caption, or transcript byte changed.
+- Created `docs/demo-video/phase-8-9a-demo-voiceover.webm`: 13,185,933 bytes, WebM, unchanged
+  1440 × 900/25 fps VP8 stream plus 48 kHz mono Opus, `170.20 s`, SHA-256
+  `f52daa606f3cf9f627909e23422ca2d14fd92db1f5c4ed6ca304744c5608ab33`, and prospective blob
+  `30a1f2b768a85599d0dfd0bdb95c0170ed4b2e4f`. The extracted source and derivative VP8 streams are
+  both 11,043,338 bytes with identical SHA-256
+  `a1f8e79698cf8857fb48d25ce7370def3ad689569bac80b31be02db0dcb0dfea`; their 4,255-row
+  copy-timestamp framehash outputs also match byte-for-byte at SHA-256
+  `3bdd38f1026dca7dc670b967231418df2d168158d1093b57f1ee8d9467a0dd6e`.
+- Added exact speech-matched English WebVTT and transcript for all eleven action windows. Existing
+  local FFmpeg stream-copied VP8 and encoded Opus; no global/project package or binary was installed
+  or committed. VLC independently decoded the final Opus track.
+- Updated the review packet, demo script, Devpost draft/requirements/matrix, quickstart, and
+  persistent state only where the voiced derivative changes evidence. The derivative remains a
+  Public GitHub repository/Draft-PR asset after publication, not a YouTube/Vimeo/Youku-hosted or
+  Devpost-linked/submitted video. C18 remains `PARTIAL — LOCAL CANDIDATE`; C19 remains `OPEN`.
+
+### Files changed
+
+- New media packet: `docs/demo-video/phase-8-9a-demo-voiceover.webm`,
+  `docs/demo-video/phase-8-9a-voiceover-captions.vtt`, and
+  `docs/demo-video/VOICEOVER_TRANSCRIPT.md`.
+- Review/judge copy: `docs/demo-video/README.md`, `docs/demo-video/review.html`,
+  `docs/DEMO_SCRIPT.md`, `docs/DEVPOST_SUBMISSION.md`, `docs/DEVPOST_REQUIREMENTS.md`,
+  `docs/CLAIM_TO_DEMO_MATRIX.md`, and `docs/JUDGE_QUICKSTART.md`.
+- Persistent state: `docs/IMPLEMENTATION_PLAN.md`, `docs/SESSION_LOG.md`,
+  `docs/REPOSITORY_MAP.md`, and `docs/KNOWN_ISSUES.md`.
+
+### Decisions
+
+- Prefer the clearest acceptable installed male voice over an external account service. Microsoft
+  Mark passed the bounded audition, so the ElevenLabs/account/consent/credential gate was never
+  entered.
+- Frame authenticity takes precedence over embedding every stream: the video was stream-copied
+  byte-for-byte and captions remain an external WebVTT loaded by `review.html`. The existing FFmpeg
+  build could not decode WebVTT for in-container muxing; no media or accessibility claim depends on
+  embedded captions.
+- The first mux retained VP8 payload bytes but shifted video timestamps by three milliseconds to
+  avoid the Opus encoder's negative pre-roll. Bounded remuxing disabled that automatic timestamp
+  shift and capped encoded audio at `170.198 s`; the final copy-timestamp framehash now matches all
+  source PTS/DTS/durations exactly while the video ends at `170.200 s`.
+- The installed Windows voice remains governed by the host Microsoft/Windows licence. No voice
+  model/tool binary is redistributed, no named person is imitated, and no broad output-rights or
+  final submission-clearance claim is made.
+
+### Validation performed
+
+- Probed every raw cue before assembly. All eleven naturally paced utterances fit their action
+  windows; the final decoded activity windows finish with `1.08–15.16 s` margin before the next
+  boundary. Intentional scene silence remains; speech was not stretched or unnaturally accelerated.
+- Independent final Opus decoding measured `170.18 s` after pre-skip, 48 kHz mono signed 16-bit PCM,
+  `-18.0 LUFS`, `7.1 LU`, `-1.0 dBTP`, sample peak `-1.046 dBFS`, zero clipped samples, and exact
+  digital silence through the first four seconds.
+- Exact extracted VP8 packet size/SHA plus the matching 4,255-row copy-timestamp framehash prove no
+  application frame was generated, re-encoded, inserted, removed, or retimed. Representative
+  original-resolution derivative frames at `00:05`, `01:10`, and `02:49` and final decoded cues 1,
+  6, and 11 passed visual/listening review for content, sync, clarity, privacy, and scene relevance.
+- Prettier and `git diff --check` pass; all 50 changed-document Markdown links and six `review.html`
+  references resolve. Strict UTF-8/LF/final-newline/no-BOM passes all 13 changed text files. The new
+  11-cue WebVTT is ordered, non-overlapping, inside `170.20 s`, and matches all 11 transcript rows.
+- The requirements matrix remains 37 rows with exact totals
+  `3 PASS / 1 QUALIFIED PASS / 13 PARTIAL / 12 OPEN / 8 NOT REQUIRED`. The exact 14-path allowlist,
+  added-line high-confidence secret/private-path/email/conflict/debug scan, media metadata/private-
+  data scan, and current-claim consistency all pass.
+- Independent media audit confirms final EBML/container/stream identities, original Phase 8.9 media
+  immutability, exact VP8 payload and timestamp identity, final decoded audio levels/clipping/silence,
+  and all eleven activity boundaries. Task-owned intermediate WAV/frame/hash files were removed;
+  task media/runtime processes and ports `3001`/`5173` are clean.
+- Unchanged exact-main CI and Phase 8.9 greens are reused. No full suite, build, smoke, evaluation,
+  or public service request ran.
+
+### Validation intentionally deferred
+
+Rules-listed YouTube/Vimeo/Youku hosting/public visibility, Devpost link/form/save/submission,
+organizer acceptance, entrant identity/team/IP/rights attestations, final hosted-export review,
+judging-window access resolution, live DataHub MCP validation, GCP/deployment/runtime/source/API/
+workflow/package/workspace/lock/version/tag/Release changes, another capture/incident, full suite,
+evaluation, PR Ready, and merge all remain deferred.
+
+### Known issues
+
+C18 remains `PARTIAL — LOCAL CANDIDATE`, C19 remains `OPEN`, C20 remains bounded `PARTIAL`, C14
+remains `OPEN`, C11 retains its qualified status, and live DataHub MCP remains `PARTIAL`. The
+repository derivative is not a Rules-listed hosted submission video and has not been entered in
+Devpost. Final entrant review of Microsoft/Windows output rights and the exact hosted export remains
+open.
+
+### Exact next step
+
+Create one additive commit and normal push, open exactly one Draft PR against exact current `main`,
+require exact-head PR CI `SUCCESS`, and return the clean branch for independent Windows QA. Do not
+mark Ready, merge, host externally, or enter Devpost.

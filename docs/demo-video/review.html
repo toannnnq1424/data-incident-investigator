@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Phase 8.9 local demo candidate review</title>
+    <title>Phase 8.9 / 8.9A demo candidate review</title>
     <style>
       :root {
         color-scheme: dark;
@@ -37,12 +37,27 @@
     </style>
   </head>
   <body>
-    <h1>Phase 8.9 local demo candidate review</h1>
+    <h1>Phase 8.9 / 8.9A demo candidate review</h1>
     <p>
-      Repository review asset. The candidate is silent; enable the default English captions. The
-      WebM is publicly accessible through the Public GitHub feature branch/PR, but it has not been
-      uploaded to YouTube, Vimeo, or Youku, linked in Devpost, or submitted.
+      Repository review assets only. The voiced derivative uses synchronized synthetic male English
+      narration and default captions; the unchanged silent source follows for provenance. They are
+      Public GitHub repository assets, but neither is hosted on YouTube, Vimeo, or Youku, linked in
+      Devpost, accepted by an organizer, or submitted.
     </p>
+    <h2>Phase 8.9A voiced derivative</h2>
+    <video controls preload="metadata">
+      <source src="phase-8-9a-demo-voiceover.webm" type="video/webm" />
+      <track
+        default
+        kind="captions"
+        label="English"
+        src="phase-8-9a-voiceover-captions.vtt"
+        srclang="en"
+      />
+      This browser cannot play the VP8/Opus WebM derivative.
+    </video>
+    <p><a href="VOICEOVER_TRANSCRIPT.md">Read the exact voiced English transcript.</a></p>
+    <h2>Unchanged Phase 8.9 silent source</h2>
     <video controls preload="metadata">
       <source src="phase-8-9-demo-candidate.webm" type="video/webm" />
       <track
@@ -52,8 +67,8 @@
         src="phase-8-9-demo-captions.vtt"
         srclang="en"
       />
-      This browser cannot play the VP8 WebM candidate.
+      This browser cannot play the VP8 WebM source.
     </video>
-    <p><a href="TRANSCRIPT.md">Read the synchronized English transcript.</a></p>
+    <p><a href="TRANSCRIPT.md">Read the silent source's synchronized English transcript.</a></p>
   </body>
 </html>

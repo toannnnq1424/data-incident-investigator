@@ -1,0 +1,50 @@
+WEBVTT
+
+NOTE
+Phase 8.9A English captions for the synchronized synthetic male narration. Each cue uses the exact
+text supplied to the local Microsoft Mark voice and remains inside the matching visible action.
+
+00:00:04.000 --> 00:00:14.000
+Data Incident Investigator assembles schema, lineage, and dashboard clues
+into one auditable report.
+
+00:00:14.000 --> 00:00:31.000
+This public demo uses a synthetic, credential-free fixture.
+The Removed schema column preset fills editable incident fields.
+
+00:00:31.000 --> 00:00:43.000
+We ask why revenue dropped, then provide the affected dataset and symptom.
+No production data is modified.
+
+00:00:43.000 --> 00:00:51.000
+Start once. The agent performs bounded retrieval, deterministic scoring,
+and report composition.
+
+00:00:51.000 --> 00:01:05.000
+The activity trail shows observable operations, not hidden reasoning.
+Fixture execution makes zero model calls.
+
+00:01:05.000 --> 00:01:31.000
+The strongest result is a plausible contributor, not a confirmed cause.
+Gross revenue was removed from upstream raw dot orders.
+Visible factors total eighty-one percent, high.
+
+00:01:31.000 --> 00:01:51.000
+Every hypothesis resolves to report evidence.
+The schema-change fact and lineage evidence remain separate.
+
+00:01:51.000 --> 00:02:11.000
+Within the displayed fixture bounds, analytics dot daily revenue is supported at distance one,
+and Revenue overview at distance two, with paths and provenance.
+
+00:02:11.000 --> 00:02:31.000
+These are human-review proposals. Every recommendation is Not Executed.
+The app never changes production or writes back.
+
+00:02:31.000 --> 00:02:42.000
+The completed result downloads as deterministic, sanitized U T F eight Markdown.
+No server-side report file is stored.
+
+00:02:42.000 --> 00:02:50.100
+This service is fixture-only. Local DataHub M C P is bounded;
+live validation and judging access remain open.

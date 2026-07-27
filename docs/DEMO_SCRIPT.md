@@ -1,16 +1,19 @@
 # Under-three-minute demo script
 
-Status: one authentic English-captioned candidate has been recorded and reviewed. Its committed
-WebM is publicly accessible as a repository asset on the Public GitHub feature branch and Draft PR
-#58. It has not been uploaded to or made publicly visible on YouTube, Vimeo, or Youku, linked or
-entered in Devpost, or submitted. GitHub access is not the Rules-required video-host/form-link gate.
+Status: one authentic English-captioned silent source has been recorded, reviewed, and merged. Phase
+8.9A adds a separate derivative with synchronized synthetic male English narration while stream-
+copying the exact video. Both are Public GitHub repository assets; neither has been uploaded to or
+made publicly visible on YouTube, Vimeo, or Youku, linked or entered in Devpost, accepted by an
+organizer, or submitted. GitHub access is not the Rules-required video-host/form-link gate.
 
 Candidate running time: **2:50.20**. The Rules recommend less than three minutes, and judges are not
 required to watch beyond minute three. Review the local packet at
 [`demo-video/README.md`](demo-video/README.md).
 
-The candidate is intentionally silent. Its human-reviewed WebVTT captions are the synchronized
-English narrative, mirrored by a transcript; no narration identity is claimed or required.
+The preferred review derivative uses **Microsoft Mark — English (United States)**, an installed
+Microsoft Windows Adult/Male synthetic voice operating offline at its default rate. It is framed as
+an AI narrator, not the entrant or a named real person. Its WebVTT and transcript contain the exact
+spoken text. The unchanged silent source remains available with its original captions/transcript.
 
 ## Recording setup
 
@@ -26,10 +29,16 @@ English narrative, mirrored by a transcript; no narration identity is claimed or
   endpoint, customer name, production incident, or personal identifier.
 - Record one continuous canonical incident. Do not splice in a different incident ID or imply that a
   screenshot is a live result.
+- For Phase 8.9A, do not record another incident or UI take. Reuse the exact Phase 8.9 frame stream
+  and align each synthetic sentence to the existing action window.
 
-## Timed candidate storyboard and caption narrative
+## Timed candidate storyboard and voiced narrative
 
-| Time         | Visible interaction                                                         | Synchronized English caption boundary                                                                                            |
+The exact spoken words are in
+[`demo-video/VOICEOVER_TRANSCRIPT.md`](demo-video/VOICEOVER_TRANSCRIPT.md) and the matching WebVTT.
+The table below is the concise scene-to-claim map.
+
+| Time         | Visible interaction                                                         | Synchronized synthetic male narration boundary                                                                                   |
 | ------------ | --------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
 | 0:00–0:14    | Show the title and **Fixture metadata · Ready**.                            | The product assembles schema, lineage, and dashboard clues into one auditable report.                                            |
 | 0:14–0:31    | Scroll to **What changed?** and select **Removed schema column**.           | The public demo is a synthetic, credential-free fixture; the preset fills editable fields.                                       |
@@ -81,7 +90,7 @@ warm-worktree rehearsal, not a clean-clone installation benchmark.
 
 ## Rehearsal checklist
 
-Phase 8.9 recorded-candidate result:
+Phase 8.9A voiced-derivative result:
 
 ### Truth and interaction
 
@@ -100,8 +109,8 @@ Phase 8.9 recorded-candidate result:
 
 ### Accessibility and English
 
-- [x] The take is intentionally silent; no narration identity or audio-transcription claim is made.
-- [x] Human-reviewed English captions match the visible identifiers, numbers, and timing.
+- [x] The AI narrator is identified as Microsoft Mark, not the entrant or a named real person.
+- [x] Exact English captions/transcript match the spoken words and their eleven action windows.
 - [x] An English transcript mirrors the captions; no auto-caption dependency exists.
 - [x] Captions preserve controls, evidence IDs, confidence, and blast-radius paths.
 - [x] The take uses readable zoom, a steady view, high-resolution capture, and no rapid flashing.
@@ -114,8 +123,8 @@ Phase 8.9 recorded-candidate result:
 - [x] No browser chrome, account/session surface, credential, private endpoint, billing identity,
       terminal history, notification, or personal path is visible.
 - [x] Only project UI and project-authored captions appear.
-- [x] No music is present; silence is
-      the safe default.
+- [x] No music is present; the audio contains only the locally synthesized English narration and
+      intentional silence.
 - [x] Third-party product names are used only as factual text; no
       unlicensed logos, clips, stock images, or trademarks as decoration.
 - [x] Key frames at eleven timestamps were reviewed for accidental identifiers and claim accuracy.
@@ -126,3 +135,8 @@ The recording script emitted one non-visual capture-instrumentation page error b
 scrollbar-hiding style ran before the first document element existed. The application interaction and
 final video continued normally, no runtime failure is visible, and no app-console-clean claim is made
 for this take. See [`demo-video/README.md`](demo-video/README.md).
+
+Phase 8.9A independently measured the final Opus narration at `-18.0 LUFS`, `-1.0 dBTP`, zero
+clipped samples, and exact cue completion before every next boundary. The extracted VP8 payload and
+all 4,255 copy-timestamp framehash rows match the silent source, so the voice-over adds no synthetic
+or retimed UI frame.

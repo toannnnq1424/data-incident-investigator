@@ -3,10 +3,12 @@
 Last updated: 2026-07-27.
 
 - Current main is exact normal merge
-  `082d617cab203393f87d0cc3b97aff5ca2b3a3dc`, tree
-  `208e80f8d7e9fbab14b93ff1af16787c48e34d92`, with ordered parents
-  `b5b394b31ec626bb4ecc175975ca9869e475054e` then
-  `e7fb7d18d2398637366ed11c5ceff8a47402ef9f`. PR #57 is merged historical. The
+  `ceaed0a3f5a277884bf03eb2605c3dd5f70b4afe`, tree
+  `0d38dd187fc6f3cd166d88287112f1dc3a46f867`, with ordered parents
+  `082d617cab203393f87d0cc3b97aff5ca2b3a3dc` then
+  `d8756edcfe53356b41f227f6c4a655f11748feab`. PR #58 is merged historical and its branch/
+  conversation remain retained. Exact-main CI run `30232489891`, job `89873846528`, is `SUCCESS`.
+  The
   prior Phase 8.6 main, main CI run `30188091600`, and job `89756253516` remain historical
   Phase 8.5/8.6 evidence. Phase 8.6 records C11 as
   `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE`: technical attribution passes and the owner authorizes
@@ -15,16 +17,21 @@ Last updated: 2026-07-27.
   clearance. `abstract-logging@2.0.1` remains non-embedded and its missing packaged legal file remains
   a documented caveat.
 
-- Phase 8.9 records one authentic 2:50.20, 1440 × 900 VP8/WebM functioning-project candidate with
-  synchronized human-reviewed English WebVTT captions/transcript. It is silent and publicly
-  accessible as a repository blob/raw asset on the Public GitHub feature branch and Draft PR #58.
-  It has not been uploaded to or made publicly visible on YouTube/Vimeo/Youku, linked in Devpost, or
-  submitted; GitHub access does not satisfy the Rules' video-host/form-link condition. C18 is only
-  `PARTIAL — LOCAL CANDIDATE`; C19 remains `OPEN`. Key-frame review found only the application and
-  synthetic fixture data, with no browser/Windows/account chrome, credentials, private endpoints,
-  external media, or visible runtime failure. The capture script emitted one non-visual
-  instrumentation page error when its scrollbar style ran before the initial document element
-  existed; no app-console-clean claim is made for this take.
+- Phase 8.9 records one authentic 2:50.20, 1440 × 900 VP8/WebM functioning-project source with
+  synchronized human-reviewed English WebVTT captions/transcript. It is silent and public on merged
+  `main`. Phase 8.9A adds a separate WebM derivative with the identical 11,043,338-byte VP8 payload
+  and all 4,255 source PTS/DTS/duration/content hashes retained, plus locally synthesized Microsoft
+  Mark Adult/Male English narration: Opus 48 kHz mono, `-18.0 LUFS`, `-1.0 dBTP`, zero clipped
+  samples, and all 11 utterances inside their scene boundaries. Microsoft Mark is an installed
+  Windows voice used offline without network, account,
+  credential, paid service, or ElevenLabs; no voice model/tool is redistributed and final entrant
+  rights review remains open. Neither variant is hosted on YouTube/Vimeo/Youku, linked in Devpost,
+  accepted, or submitted; GitHub access does not satisfy the Rules' video-host/form-link condition.
+  C18 remains only `PARTIAL — LOCAL CANDIDATE`; C19 remains `OPEN`. Key-frame review found only the
+  application and synthetic fixture data, with no browser/Windows/account chrome, credentials,
+  private endpoints, external media, or visible runtime failure. The Phase 8.9 capture script emitted
+  one non-visual instrumentation page error when its scrollbar style ran before the initial document
+  element existed; no app-console-clean claim is made for the take.
 - The Phase 8.9 repository fallback rehearsal used the bundled Node `24.14.0` and pnpm `11.9.0`.
   With the existing frozen install, Vite reported ready in `549 ms`; API `/health`, fixture `/ready`,
   and web `/` all returned successfully by the bounded `10.1 s` probe. No local incident was started.
