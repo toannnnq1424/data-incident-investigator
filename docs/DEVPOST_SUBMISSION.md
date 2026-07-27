@@ -1,6 +1,6 @@
 # Devpost submission draft
 
-> Draft copy only. Nothing in this file has been entered, saved, uploaded, or submitted on Devpost.
+> Draft copy only. No copy or link from this file has been entered, saved, or submitted in Devpost.
 
 ## Title
 
@@ -19,9 +19,13 @@ an auditable report with transparent confidence, blast radius, and safe human ne
   <https://github.com/toannnnq1424/data-incident-investigator>
 - Judge instructions: [`JUDGE_QUICKSTART.md`](JUDGE_QUICKSTART.md)
 - Screenshot gallery: [`demo-assets/README.md`](demo-assets/README.md)
+- Repository video candidate and review packet: [`demo-video/README.md`](demo-video/README.md)
 
 The Public repository quickstart is the fallback if the Cloud Run fixture service is cold or
-unavailable.
+unavailable. The candidate WebM is publicly accessible as a repository asset on the Public GitHub
+feature branch and Draft PR #58. It has not been uploaded to or made publicly visible on YouTube,
+Vimeo, or Youku, linked or entered in Devpost, or submitted. The GitHub blob/raw asset does not
+satisfy the Rules' required video-host and form-link condition.
 
 ## Inspiration
 
@@ -140,12 +144,16 @@ No Devpost challenge control has been selected.
 - The agent makes zero model calls and performs no automatic production change or DataHub write-back.
 - Cloud Run availability through the judging end is unresolved because the cost-control stop boundary
   precedes it; the Public repository fallback remains essential.
-- Registration, entrant eligibility, ownership/rights attestations, public video, final form review,
-  and submission remain undone.
+- One authentic 2:50.20 app-only video candidate now exists with human-reviewed English
+  captions/transcript and is publicly accessible through the feature branch/PR. It is silent and is
+  not a Rules-compliant hosted-and-linked Devpost video.
+- Registration, entrant eligibility, ownership/rights attestations, YouTube/Vimeo/Youku hosting and
+  Devpost linking, final form review, and submission remain undone.
 
 Next work is operational rather than a new product claim: obtain authorized live/judge MCP evidence,
-resolve judging-period access, record and rights-audit the under-three-minute English demo, complete
-entrant attestations, and verify the final form before the deadline.
+resolve judging-period access, complete the entrant's final media/rights review and separately
+authorized YouTube/Vimeo/Youku upload plus Devpost link, complete entrant attestations, and verify the
+final form before the deadline.
 
 ## Codex usage
 

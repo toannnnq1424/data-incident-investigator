@@ -6289,3 +6289,215 @@ Run the final five-path formatting/link/PNG/diff/secret/residue/process/port aud
 commit, normal-push the existing branch, update only Draft PR #57 with correction evidence, require
 exact-new-head PR CI `SUCCESS`, and return the clean exact head to the same Windows QA. Do not mark
 Ready or merge.
+
+## 2026-07-27 — Phase 8.9 final demo rehearsal and local video-candidate readiness
+
+### Scope
+
+Started additive branch `codex/phase-8-9-demo-rehearsal` from exact current `origin/main`
+`082d617cab203393f87d0cc3b97aff5ca2b3a3dc`, tree
+`208e80f8d7e9fbab14b93ff1af16787c48e34d92`, without rewriting or cherry-picking history. The slice
+is docs/media only: no runtime, API, workflow, package, lock, version, tag, Release, GCP, deployment,
+Devpost form, credential, consent, submission, or YouTube/Vimeo/Youku upload mutation. Publishing the
+feature branch and Draft PR makes repository assets publicly accessible on GitHub.
+
+### Official-source drift recheck
+
+Re-read the official DataHub Devpost
+[overview](https://datahub.devpost.com/),
+[dates](https://datahub.devpost.com/details/dates),
+[rules](https://datahub.devpost.com/rules),
+[resources](https://datahub.devpost.com/resources), and incorporated
+[Terms](https://info.devpost.com/legal/terms-of-service) read-only at
+`2026-07-27 03:12:26 ICT` / `2026-07-26 20:12:26 UTC`. The deadline, judging window,
+functioning-video/public-host/English/access/rights rules, challenge descriptions, resources, and
+Terms boundaries had no material drift. A changing participant count was not persisted. No joined
+form, challenge control, eligibility/team/IP attestation, consent, or hidden form field was inspected
+or inferred.
+
+### Authentic candidate and rehearsal evidence
+
+- The official in-app Browser has no recording operation. Existing Playwright Chromium plus its
+  already-installed FFmpeg build captured one continuous real app-only public-fixture flow without a
+  new dependency, fake/generated UI, synthetic frame, or app change.
+- Exactly one new public **Removed schema column** incident was created. No capture or incident was
+  repeated.
+- `docs/demo-video/phase-8-9-demo-candidate.webm` is WebM/VP8, 1440 × 900, 25 fps,
+  `170.20 s`, 11,074,997 bytes, no audio stream, SHA-256
+  `f7cef629fa03db6113949e1b347004230158b05f695258454278cc7473f14e18`.
+- Original-resolution frame review at `00:05`, `00:20`, `00:48`, `00:55`, `01:10`, `01:35`,
+  `01:55`, `02:15`, `02:35`, `02:45`, and `02:49` confirms intake-before-Start, completion/export,
+  plausible-contributor wording, `81% · high` factors, resolved evidence, both bounded impacts,
+  **Not Executed** recommendations, and a clean terminal app frame. No browser/Windows/account chrome,
+  native scrollbar, credential, private endpoint, personal path, external media, or visible runtime
+  failure appears.
+- The silent candidate has synchronized human-reviewed English WebVTT captions and a matching
+  transcript. It explicitly preserves fixture-only, zero-model, no-remediation, no-hidden-reasoning,
+  bounded-blast-radius, live MCP `PARTIAL`, C11 qualified, C14 open, Public GitHub repository access,
+  and no YouTube/Vimeo/Youku upload or Devpost-link/submission boundaries.
+- The capture script recorded one non-visual instrumentation page error when its scrollbar-hiding
+  style ran before the initial document element existed. The flow and finalized video completed
+  normally. No app-console-clean claim is made for this candidate.
+- The public rehearsal take is `2:50.20`. The existing-frozen-install Windows fallback used bundled
+  Node `24.14.0` and pnpm `11.9.0`; Vite reported ready in `549 ms`, and `/health`, fixture `/ready`,
+  and web `/` all passed by the `10.1 s` probe. No local incident was started. A first sandboxed
+  launch was denied dependency/config reads; the scoped retry passed and all runtime ports/processes
+  were stopped.
+- Official Browser policy blocked the local `file://` review page. Its tab was closed; no alternate
+  browser bypass was attempted. Direct media probes, static HTML/link checks, caption validation, and
+  inspected source frames provide the local-review evidence.
+
+### Requirement and submission posture
+
+C18 is `PARTIAL — LOCAL CANDIDATE`, never `PASS`; C20 has bounded `PARTIAL` media/English evidence;
+C19 remains `OPEN` until a separately authorized public YouTube/Vimeo/Youku upload. C11 remains
+`QUALIFIED PASS — OWNER-AUTHORIZED SCOPE`; C14 remains `OPEN`; DataHub MCP remains `PARTIAL`;
+**Open / Wildcard** remains primary and **Agents That Do Real Work** conditional only. The candidate
+is publicly accessible as a repository asset on the Public GitHub feature branch and Draft PR #58,
+but it has not been uploaded to or made publicly visible on YouTube, Vimeo, or Youku, linked or
+entered in Devpost, or submitted. GitHub blob/raw access does not satisfy C19. The candidate is not
+registration, a form save, challenge selection, entrant/team/IP attestation, or judging-period access
+resolution.
+
+The user has authorized a later narrated-video slice to evaluate a suitable voice tool, potentially
+ElevenLabs if access is granted. This exact QA correction must preserve the verified WebM bytes, so
+it uses no voice service, credential, or audio generation. A separately scoped narrated derivative
+must be synchronized to visible actions and captions and must not claim a false speaker identity.
+
+### Bounded validation completed
+
+- Prettier check passed for every changed Markdown/HTML file; 45 relative Markdown links resolve, as
+  do all local candidate/caption/transcript references in `review.html`.
+- Exact EBML signature, 11,074,997-byte size, SHA-256, WebM/VP8 identity, 1440 × 900 resolution,
+  25 fps, `170.20 s` duration, no-audio boundary, and private-path/URL/key metadata string scan pass.
+- Eleven WebVTT cues are monotonic and non-overlapping from `4.00 s` through `170.10 s`, within the
+  media duration. Required claims appear in both captions and the transcript.
+- Strict UTF-8/LF/final-newline/no-BOM passes for 13 changed text files. Requirement matrix parsing
+  confirms all 37 rows and exact totals
+  `3 PASS / 1 QUALIFIED PASS / 13 PARTIAL / 12 OPEN / 8 NOT REQUIRED`.
+- `git diff --check`, exact 14-path allowlist, added-line secret/private-path/email/conflict scan,
+  claim consistency, and task temp-residue checks pass.
+- Ports `3001`/`5173` and task-owned Node processes are clean. The persistent Codex Browser kernel
+  is correctly excluded from the task-owned runtime check.
+
+Validation remains intentionally bounded to changed docs/media and reuses exact-main/Phase 8.8
+greens. The full suite, Level D, evaluation, build, public smoke, another incident, and all deferred
+mutations were not run.
+
+### Exact next step
+
+Complete the bounded docs/media validation, clean task-owned temporary capture/key-frame residue,
+create one additive commit, push normally, create exactly one Draft PR against exact current `main`,
+require exact-head PR CI `SUCCESS`, and return the clean branch for independent Windows QA. Do not
+mark Ready or merge.
+
+## 2026-07-27 — Phase 8.9 targeted QA correction: repository access is not required video hosting
+
+### Objective
+
+Correct the single canonical-QA truthfulness blocker on existing branch
+`codex/phase-8-9-demo-rehearsal` and existing Draft PR #58. Make every current Phase 8.9 claim state
+that the WebM is publicly accessible as a repository blob/raw asset on the Public GitHub feature
+branch/PR while remaining absent from YouTube/Vimeo/Youku and Devpost.
+
+### Completed locally
+
+- Corrected the visible judge packet, requirement matrix, and persistent state across exactly 11
+  documentation paths. GitHub repository access is no longer described as absent or private.
+- Preserved C18 as `PARTIAL — LOCAL CANDIDATE` and C19 as `OPEN`: no YouTube/Vimeo/Youku URL exists,
+  no video link has been entered in Devpost, and no submission has been made. GitHub blob/raw access
+  is explicitly not represented as satisfying the official video-host/link requirement.
+- Preserved the WebM, captions, and transcript byte-for-byte. No recording, re-encoding, new incident,
+  voice/TTS, source/runtime/workflow/package/lock/version/GCP/deployment change, external video-host
+  upload, Devpost action, Ready transition, or merge occurred.
+
+### Files changed
+
+- Judge/video packet: `docs/demo-video/README.md`, `docs/demo-video/review.html`,
+  `docs/DEMO_SCRIPT.md`, `docs/DEVPOST_SUBMISSION.md`, `docs/JUDGE_QUICKSTART.md`,
+  `docs/DEVPOST_REQUIREMENTS.md`, and `docs/CLAIM_TO_DEMO_MATRIX.md`.
+- Persistent state: `docs/IMPLEMENTATION_PLAN.md`, `docs/SESSION_LOG.md`,
+  `docs/KNOWN_ISSUES.md`, and `docs/REPOSITORY_MAP.md`.
+
+### Bounded validation
+
+- Prettier check passed all 11 affected Markdown/HTML files; 44 relative Markdown links and all three
+  local `review.html` references resolve.
+- Strict UTF-8/LF/final-newline/no-BOM, `git diff --check`, exact 11-path allowlist, and added-line
+  high-confidence secret/private-path/conflict/debug scan passed. The only added email is the already
+  documented official `support@devpost.com` address.
+- The requirement matrix still parses as 37 rows with exact totals
+  `3 PASS / 1 QUALIFIED PASS / 13 PARTIAL / 12 OPEN / 8 NOT REQUIRED`.
+- The WebM remains 11,074,997 bytes with SHA-256
+  `f7cef629fa03db6113949e1b347004230158b05f695258454278cc7473f14e18` and Git blob
+  `743fd02d02ef9397d98b27825054d7253e039a69`; captions remain blob
+  `7aeb7a392ae226fc5962df3ce2c466e24b852e72`, and transcript remains blob
+  `af8222a22385903bec5fc7e8faf8a5cfe4d56f10`.
+- Ports `3001`/`5173` and task-owned workspace residue are clean. All unchanged media/CI evidence is
+  reused; no full suite, build, evaluation, public smoke, or media recapture was run.
+
+### Exact next step
+
+Create one additive commit, push normally to the same branch, update only Draft PR #58's body with
+the same hosting boundary, require exact-new-head PR CI `SUCCESS`, and return the clean branch to the
+same Windows QA. Do not mark Ready or merge. A narrated derivative remains a separately scoped,
+user-authorized follow-up because this correction's acceptance gate requires the existing media
+hashes to remain unchanged.
+
+## 2026-07-27 — Phase 8.9 second targeted QA correction: qualify the final video host
+
+### Objective
+
+Resolve the one remaining canonical-QA wording ambiguity on exact prior head
+`dc5e4cc595203250e7c30ad64772ed4e51858845` without changing any media or product state. Qualify the
+two `docs/demo-video/README.md` checklist gates so they refer only to Rules-listed
+YouTube/Vimeo/Youku hosting/public visibility or the final hosted derivative.
+
+### Completed
+
+- Replaced unqualified `public hosting` with `final hosted derivative for Rules-listed
+YouTube/Vimeo/Youku hosting`.
+- Replaced unqualified `Public hosting visibility` with `Rules-listed YouTube/Vimeo/Youku
+public-host visibility`.
+- Preserved the surrounding statement that the WebM is already publicly accessible as a GitHub
+  repository blob/raw asset while C18 remains `PARTIAL — LOCAL CANDIDATE` and C19 remains `OPEN`.
+
+### Files changed
+
+- `docs/demo-video/README.md` for the two judge-visible phrase corrections.
+- `docs/IMPLEMENTATION_PLAN.md` and `docs/SESSION_LOG.md` only for operating-contract state.
+
+### Decisions
+
+The GitHub-public repository asset and the required Rules-listed video host are separate publication
+surfaces. The final entrant gate applies only to a YouTube/Vimeo/Youku-hosted derivative and its
+public visibility; it does not imply that the repository asset is private or unpublished.
+
+### Validation performed
+
+- Changed-file Prettier, local Markdown links, exact wording/claim checks, strict
+  UTF-8/LF/final-newline/no-BOM, and `git diff --check` pass.
+- Exact three-path allowlist plus added-line high-confidence secret/private-path/email/conflict/debug
+  scans pass. Task workspace residue, processes, and ports `3001`/`5173` are clean.
+- WebM SHA-256 remains `f7cef629fa03db6113949e1b347004230158b05f695258454278cc7473f14e18`
+  with blob `743fd02d02ef9397d98b27825054d7253e039a69`; captions remain blob
+  `7aeb7a392ae226fc5962df3ce2c466e24b852e72`; transcript remains blob
+  `af8222a22385903bec5fc7e8faf8a5cfe4d56f10`.
+
+### Validation intentionally deferred
+
+All unchanged media checks, full suite, build, evaluation, public smoke, recording, audio/TTS,
+incident, source/runtime/workflow/package/lock/version/GCP/deployment, external upload, and Devpost
+actions remain intentionally unrun or unperformed.
+
+### Known issues
+
+C18 remains `PARTIAL — LOCAL CANDIDATE`; C19 remains `OPEN` until a separately authorized
+YouTube/Vimeo/Youku-hosted video is publicly visible and linked in Devpost. C14, live DataHub MCP,
+entrant attestations, Ready, and merge remain open/deferred exactly as before.
+
+### Exact next step
+
+Create one additive commit, push normally to the existing branch, update only Draft PR #58's exact
+identity/CI evidence if needed, require exact-new-head PR CI `SUCCESS`, and return the clean branch to
+the same Windows QA. Do not create another branch/PR, mark Ready, or merge.

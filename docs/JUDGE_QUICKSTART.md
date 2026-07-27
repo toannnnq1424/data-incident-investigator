@@ -38,6 +38,12 @@ Screenshots of the expected surfaces are in the
 [demo asset gallery](demo-assets/README.md). The incident UUID and activity timestamps are
 run-specific and process-local; do not use them as durable links.
 
+For a non-interactive preview of the same authentic flow, review the local
+[2:50.20 app-only video candidate](demo-video/README.md) with its default English captions. It is a
+publicly accessible repository asset on the Public GitHub feature branch/PR, but it has not been
+uploaded to or made publicly visible on YouTube, Vimeo, or Youku, linked in Devpost, or submitted.
+GitHub blob/raw access does not satisfy the official video-hosting requirement.
+
 ## Repository-local fallback
 
 Use this if the public service is cold for more than 30 seconds or unavailable. Requirements are
@@ -68,6 +74,11 @@ requires no DataHub, model, or OpenAI credential.
 
 If startup fails, confirm `node --version`, `pnpm --version`, and that the bootstrap completed a frozen
 install. API probes are `http://localhost:3001/health` and `http://localhost:3001/ready`.
+
+Phase 8.9 bounded rehearsal evidence: with an existing frozen install on Windows, bundled Node
+`24.14.0` and pnpm `11.9.0`, Vite reported ready in `549 ms`; `/health`, fixture `/ready`, and the web
+root all passed by the `10.1 s` probe. No local incident was created. This is a warm-worktree
+rehearsal, not a clean-clone install-time promise.
 
 ## Exact judging boundary
 
