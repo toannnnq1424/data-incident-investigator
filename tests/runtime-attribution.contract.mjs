@@ -154,11 +154,22 @@ test('createRuntimeNotice is deterministic and preserves fallback provenance', (
       ],
     },
     bundledWeb: { packages: [] },
+    requiredLegalFiles: [
+      {
+        path: 'THIRD_PARTY_NOTICES.txt',
+        sha256: 'd'.repeat(64),
+        size: 123,
+      },
+    ],
   };
 
   const first = createRuntimeNotice(attribution);
   const second = createRuntimeNotice(attribution);
+  const changedSelfEvidence = JSON.parse(JSON.stringify(attribution));
+  changedSelfEvidence.requiredLegalFiles[0].sha256 = 'e'.repeat(64);
+  changedSelfEvidence.requiredLegalFiles[0].size = 456;
   assert.deepEqual(first, second);
+  assert.deepEqual(first, createRuntimeNotice(changedSelfEvidence));
   assert.match(first.toString('utf8'), /Evidence source: upstream fallback/);
   assert.match(first.toString('utf8'), /80dfaef91ee87008f4ed2b6e78921d383bccd406/);
 });

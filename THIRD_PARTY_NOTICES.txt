@@ -21,7 +21,7 @@ Frozen lock snapshot: react@19.2.7
 Package manifest: node_modules/.pnpm/react@19.2.7/node_modules/react/package.json
 Package manifest SHA-256: 51966ae9c8c377ff592b5d69c980966992101bc6791bf83a1e5c7ad9bcefa7f4
 Rendered bundle contributions:
-- apps/web/dist/assets/index-DHLGe_T9.js
+- apps/web/dist/assets/index-dAXJ3Duz.js
   - cjs/react-jsx-runtime.production.js | rendered bytes: 1294 | source: cjs/react-jsx-runtime.production.js | source SHA-256: 1e46f15002696985e80c61d47aaa30dabb03c954270a690f5f7dfbbacfa9002b
   - cjs/react-jsx-runtime.production.js?commonjs-exports | rendered bytes: 36 | source: cjs/react-jsx-runtime.production.js | source SHA-256: 1e46f15002696985e80c61d47aaa30dabb03c954270a690f5f7dfbbacfa9002b
   - cjs/react.production.js | rendered bytes: 18321 | source: cjs/react.production.js | source SHA-256: 66fa8fc8149e02f61dd5f26e3d0ea7bd03bac64a52d15601019f50a61260a115
@@ -69,7 +69,7 @@ Frozen lock snapshot: react-dom@19.2.7(react@19.2.7)
 Package manifest: node_modules/.pnpm/react-dom@19.2.7_react@19.2.7/node_modules/react-dom/package.json
 Package manifest SHA-256: 447acd72cdb6a966d9db967729e286e7cbb4a09ea61fddd45e12c2a97fd4cfb6
 Rendered bundle contributions:
-- apps/web/dist/assets/index-DHLGe_T9.js
+- apps/web/dist/assets/index-dAXJ3Duz.js
   - cjs/react-dom-client.production.js | rendered bytes: 552879 | source: cjs/react-dom-client.production.js | source SHA-256: 9d2de2ee4a588c5d0b8580ff3467f796b8d9bbc45bdc35b257f7d1380e686c56
   - cjs/react-dom-client.production.js?commonjs-exports | rendered bytes: 35 | source: cjs/react-dom-client.production.js | source SHA-256: 9d2de2ee4a588c5d0b8580ff3467f796b8d9bbc45bdc35b257f7d1380e686c56
   - cjs/react-dom.production.js | rendered bytes: 7216 | source: cjs/react-dom.production.js | source SHA-256: 288449d34c12dba9cb0ad3d0470d741a30dfb1a6a5df1cf2df6b4c61207180eb
@@ -116,7 +116,7 @@ Frozen lock snapshot: scheduler@0.27.0
 Package manifest: node_modules/.pnpm/scheduler@0.27.0/node_modules/scheduler/package.json
 Package manifest SHA-256: 393bb96b7e481bf50189a1a02c7e0e7f4d01acba5abc6fbe7d214638624462fc
 Rendered bundle contributions:
-- apps/web/dist/assets/index-DHLGe_T9.js
+- apps/web/dist/assets/index-dAXJ3Duz.js
   - cjs/scheduler.production.js | rendered bytes: 11134 | source: cjs/scheduler.production.js | source SHA-256: 679adff761d31e9426604f80c0e99be44a3e6f4c6834b0218ecf0312a67c171f
   - cjs/scheduler.production.js?commonjs-exports | rendered bytes: 30 | source: cjs/scheduler.production.js | source SHA-256: 679adff761d31e9426604f80c0e99be44a3e6f4c6834b0218ecf0312a67c171f
   - index.js | rendered bytes: 226 | source: index.js | source SHA-256: 145965504d60007bc25486ab930b0367867dcd5d579ccd343c148d69349a7cfb
@@ -158,7 +158,7 @@ Frozen lock snapshot: vite@7.3.6(@types/node@24.13.3)(tsx@4.23.1)
 Package manifest: node_modules/.pnpm/vite@7.3.6_@types+node@24.13.3_tsx@4.23.1/node_modules/vite/package.json
 Package manifest SHA-256: e5ed0f85215f871fe22a48987dcd77fcfbe14064a53c0c9f7f48186a6b7e2cf0
 Rendered bundle contributions:
-- apps/web/dist/assets/index-DHLGe_T9.js
+- apps/web/dist/assets/index-dAXJ3Duz.js
   - virtual:vite/modulepreload-polyfill.js | rendered bytes: 1168 | source: dist/node/chunks/config.js | source SHA-256: c2fcfa51206dc1f8d22120ef4a82af8b9acdc02f4476520b6a0897d12a724ba3
 
 Evidence source: installed package file (node_modules/.pnpm/vite@7.3.6_@types+node@24.13.3_tsx@4.23.1/node_modules/vite/LICENSE.md)
@@ -2296,7 +2296,7 @@ Frozen lock snapshot: zod@4.4.3
 Package manifest: node_modules/.pnpm/zod@4.4.3/node_modules/zod/package.json
 Package manifest SHA-256: c630bd10b52dcf71c112a2bf78dbf2734b9db58d62de663b8d86c2ec2c8cda2e
 Rendered bundle contributions:
-- apps/web/dist/assets/index-DHLGe_T9.js
+- apps/web/dist/assets/index-dAXJ3Duz.js
   - v4/classic/errors.js | rendered bytes: 1365 | source: v4/classic/errors.js | source SHA-256: b155316267f79068ddc2dddc7046e13785804b768ca36e6deff1691d154f7c20
   - v4/classic/iso.js | rendered bytes: 919 | source: v4/classic/iso.js | source SHA-256: 3cc5e6b4da086b8ffc7ee3188c69e4d3c945b368092e78d2299b5321182752c5
   - v4/classic/parse.js | rendered bytes: 766 | source: v4/classic/parse.js | source SHA-256: 14cbcc416ab9169abc2cde97af77da54ca769684eac1e03a3753c16ea4a7cd95

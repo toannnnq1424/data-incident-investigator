@@ -1,10 +1,14 @@
 # Repository map
 
-Last verified: 2026-07-28 for released exact `origin/main`
-`a28e21c06ad623f1547c02a6d65fd900fa8472a4` (tree
-`e0594ddecbe9d82f30e7b3005a51cb8df9283bf8`). Annotated tag object
-`eb26bc54fccd4cc0ebeacfb14539008a03da687a` (`v1.0.0`) resolves to that merge; the matching
-GitHub Release is Published/Latest and exact-main CI is successful. Phase 8.9A retains the authentic
+Last verified: 2026-07-29 for exact `origin/main`
+`813621802628b94580c7fb69043e2369760cea3d` (tree
+`9966965ad3416261367fd7e813d1bcb664bff296`; ordered parents
+`a28e21c06ad623f1547c02a6d65fd900fa8472a4` then
+`b2be659e03638cb030d2ad59e2bb95a83aaf0829`). PR #61 normal-merged and exact-main CI run
+`30383803889`, job `90357919592`, is successful. Annotated tag object
+`eb26bc54fccd4cc0ebeacfb14539008a03da687a` (`v1.0.0`) remains on the earlier exact merge
+`a28e21c06ad623f1547c02a6d65fd900fa8472a4`; its matching GitHub Release remains
+Published/Latest. Phase 8.9A retains the authentic
 silent WebM/caption/transcript packet plus a separate exact-video-stream synthetic male-voice
 derivative with matching captions/transcript. These are Public GitHub repository assets on merged
 `main`; the male-voice derivative is also Public at <https://youtu.be/D5mvMqrhyDc> with its authored
@@ -19,12 +23,14 @@ Phase 8.10 aligned the root and six private Apache-2.0 manifests to `1.0.0`, upd
 protocol identity to the same version, and applied only the two transitive denial-of-service patches
 required by the final production audit. It changed no investigation behavior, workflow, fixture,
 media, deployment, or submission state.
-The active Phase 8.11 source candidate keeps the same API/contracts and makes the existing seven
+Merged Phase 8.11 keeps the same API/contracts and makes the existing seven
 canonical scenarios visible as incident playbooks. `apps/web/src/App.tsx` also renders a
 validated-response-only verdict dashboard and evidence path (incident → selected entity → factual
 evidence → top hypothesis → supported/explicitly unverified impact). These are presentation
-components, not a workflow builder, write-back system, or new provider claim. This revision is not in
-the released/Public deployment until separately merged and deployed.
+components, not a workflow builder, write-back system, or new provider claim. The first exact-main
+Cloud Run build stopped before deployment because tracked runtime attribution was stale; no revision
+or traffic changed. The targeted attribution correction is not in `main` or the Public deployment
+until separately reviewed, merged, and deployed.
 
 ## Directories
 
@@ -150,6 +156,9 @@ then records the exact full-production and deployed external runtime closures in
 `THIRD_PARTY_NOTICES.txt`, the complete compiled-output file set, required legal-file content, and
 rewritten runtime workspace manifests. Its shared containment routine rejects links/reparse targets,
 noncanonical or cross-root reads, unexpected files, missing files, and content tamper. The
+targeted generator correction writes the derived notice first, rebuilds and verifies the
+notice-bound manifest, asserts convergence, and restores the prior notice on failure; it does not
+relax source or runtime verification. The
 production-dependency stage verifies that installed runtime/legal closure before the final image
 removes audit scripts and starts compiled Node output as the unprivileged `node` user.
 

@@ -3463,7 +3463,7 @@
       {
         "contributions": [
           {
-            "bundlePath": "apps/web/dist/assets/index-DHLGe_T9.js",
+            "bundlePath": "apps/web/dist/assets/index-dAXJ3Duz.js",
             "modules": [
               {
                 "path": "cjs/react-jsx-runtime.production.js",
@@ -3550,7 +3550,7 @@
       {
         "contributions": [
           {
-            "bundlePath": "apps/web/dist/assets/index-DHLGe_T9.js",
+            "bundlePath": "apps/web/dist/assets/index-dAXJ3Duz.js",
             "modules": [
               {
                 "path": "cjs/react-dom-client.production.js",
@@ -3631,7 +3631,7 @@
       {
         "contributions": [
           {
-            "bundlePath": "apps/web/dist/assets/index-DHLGe_T9.js",
+            "bundlePath": "apps/web/dist/assets/index-dAXJ3Duz.js",
             "modules": [
               {
                 "path": "cjs/scheduler.production.js",
@@ -3682,7 +3682,7 @@
       {
         "contributions": [
           {
-            "bundlePath": "apps/web/dist/assets/index-DHLGe_T9.js",
+            "bundlePath": "apps/web/dist/assets/index-dAXJ3Duz.js",
             "modules": [
               {
                 "path": "virtual:vite/modulepreload-polyfill.js",
@@ -3715,7 +3715,7 @@
       {
         "contributions": [
           {
-            "bundlePath": "apps/web/dist/assets/index-DHLGe_T9.js",
+            "bundlePath": "apps/web/dist/assets/index-dAXJ3Duz.js",
             "modules": [
               {
                 "path": "v4/classic/errors.js",
@@ -3865,18 +3865,18 @@
       "size": 53690
     },
     {
-      "path": "apps/web/dist/assets/index-CT34O9fC.css",
-      "sha256": "8d871b9874c9508f3327227bb978df8a33fe1539fa97d3e7c5bdbe3c0f43258a",
-      "size": 27414
+      "path": "apps/web/dist/assets/index-BhTPVZzV.css",
+      "sha256": "945842c40314c95cba92624de5d95b1068638adf00a86ec1c2ffce595e73e4e4",
+      "size": 35230
     },
     {
-      "path": "apps/web/dist/assets/index-DHLGe_T9.js",
-      "sha256": "3b3031f82d1d63a680fc2830ee21ff9d5cb7aca85a11155405f3014dcd66ed47",
-      "size": 405671
+      "path": "apps/web/dist/assets/index-dAXJ3Duz.js",
+      "sha256": "1d59cac3e570f595d0e2528c89aafecf5e1b1b6890de18f4f8293485ef9798a4",
+      "size": 414075
     },
     {
       "path": "apps/web/dist/index.html",
-      "sha256": "1c2d054c4b53658f3eaa193978433d09ef6988b5971342b4301f6b3d8ad13d6c",
+      "sha256": "5055fca6745cb25a0d3e97b08c8c4f90c23c5f6c2439d6e16019964cedf02df9",
       "size": 542
     },
     {
@@ -3906,18 +3906,18 @@
     },
     {
       "path": "packages/datahub-client/dist/datahub-mcp.d.ts.map",
-      "sha256": "88f1738476f025f9ed2986432c341c5c2e7148797ff04fae74480793aaa2b6f7",
+      "sha256": "f873796c6394d82ea87457d22f94a2bd81661069341804402bc6ee28c21decce",
       "size": 1804
     },
     {
       "path": "packages/datahub-client/dist/datahub-mcp.js",
-      "sha256": "0e2cd803788fcc5693d4fe68544420d50c6faa96a06453219fd7e6b2b28010a2",
-      "size": 28495
+      "sha256": "2da4ba88c4fa284443709574b85d946f787a6ca2556ad7903145d8cd929d5f4f",
+      "size": 28713
     },
     {
       "path": "packages/datahub-client/dist/datahub-mcp.js.map",
-      "sha256": "f6aa4f36a15b75905364f92f39e4d1ff9e70f6fecbaac3049b5c33d66b959fe6",
-      "size": 27051
+      "sha256": "0480908ffdf601749ac036af58ca85d2a7f97d8ddcae8f5ddafaf0ac8aa7e309",
+      "size": 27314
     },
     {
       "path": "packages/datahub-client/dist/index.d.ts",
@@ -3973,7 +3973,7 @@
     },
     {
       "path": "THIRD_PARTY_NOTICES.txt",
-      "sha256": "ce6e13e7d0378b20fa46de6492bd97e39b16aa7b3b6cb24bce218a3303ffc82b",
+      "sha256": "d5fd8497cf8cd41aab12f2e3e8af2e3a3057b2bec75927b4ee5be46b236f06c6",
       "size": 402446
     }
   ],

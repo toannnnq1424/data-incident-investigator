@@ -1,15 +1,16 @@
 # Known issues
 
-Last updated: 2026-07-28.
+Last updated: 2026-07-29.
 
-- Current released main is exact normal merge
-  `a28e21c06ad623f1547c02a6d65fd900fa8472a4`, tree
-  `e0594ddecbe9d82f30e7b3005a51cb8df9283bf8`, with ordered parents
-  `b4f9e360e22baba3cab60710a65ea5c0e0555369` then
-  `03f72172a9742b3f3f84b33c131cb0d4393a3193`. PR #60 is merged historical and its branch/
-  conversation remain retained. Exact-main CI run `30338530196`, job `90208641358`, is `SUCCESS`.
+- Current source main is exact normal merge
+  `813621802628b94580c7fb69043e2369760cea3d`, tree
+  `9966965ad3416261367fd7e813d1bcb664bff296`, with ordered parents
+  `a28e21c06ad623f1547c02a6d65fd900fa8472a4` then
+  `b2be659e03638cb030d2ad59e2bb95a83aaf0829`. PR #61 is merged historical and its branch/
+  conversation remain retained. Exact-main CI run `30383803889`, job `90357919592`, is `SUCCESS`.
   Annotated tag object `eb26bc54fccd4cc0ebeacfb14539008a03da687a` (`v1.0.0`) resolves to that
-  exact merge, and the matching GitHub Release is Published/Latest.
+  earlier exact merge `a28e21c06ad623f1547c02a6d65fd900fa8472a4`, and the matching GitHub Release is
+  Published/Latest.
   The
   prior Phase 8.6 main, main CI run `30188091600`, and job `89756253516` remain historical
   Phase 8.5/8.6 evidence. Phase 8.6 records C11 as
@@ -60,6 +61,18 @@ Last updated: 2026-07-28.
   PAT hardening by enabling Metadata Service Authentication for both local GMS and frontend, then
   passing the PAT only to the MCP process as `DATAHUB_GMS_TOKEN`; that token path was documented but
   not rerun in this follow-up.
+
+- The first post-merge Phase 8.11 deployment attempt, Cloud Build
+  `382d4515-a40b-4c6e-aab7-e1b29f4e63b3`, stopped in the Docker build before a new Cloud Run revision
+  because `RUNTIME-ATTRIBUTION.json` was stale for the merged source/build/lock graph. Live revision
+  `data-incident-investigator-src-3653cf6b591e` remains at 100% traffic in `APP_MODE=fixture`.
+  Diagnosis proved the lock, 152-package full-production closure, 149-package runtime closure,
+  legal evidence, and rewritten manifests unchanged; only eight compiled runtime-file entries and
+  five bundled-web provenance records changed. The targeted correction regenerates the paired
+  attribution/notice evidence and makes one `generate` invocation converge the notice-bound manifest
+  while restoring the prior notice if generation fails. Local source verification, runtime contracts,
+  Docker source/runtime verification, and packaged `/health` pass. This is a QA candidate, not a
+  successful public deployment; C29 remains `PARTIAL`.
 
 - Phase 8.10 completed coordinated `1.0.0` metadata, full validation, normal merge, annotated
   `v1.0.0` tag, and Published/Latest GitHub Release. All seven private Apache-2.0 manifests are
