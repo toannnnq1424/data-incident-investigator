@@ -7164,3 +7164,46 @@ and prize status remain unresolved.
 Finish bounded diff/path/link/secret/encoding/residue checks, create one additive conventional commit,
 push the same branch, update only Draft PR #61, and require exact-new-head PR CI `SUCCESS`. Do not
 mark Ready, merge, deploy, mutate Devpost/YouTube/GCP, or create another incident.
+
+## 2026-07-29 — Phase 8.11 QA evidence-path provenance correction
+
+### Objective
+
+Correct the canonical QA finding on the same
+`codex/phase-8-11-submission-readiness` branch/Draft PR #61: the Evidence Path Map must follow the
+displayed top hypothesis's evidence and impact references, not independent array positions.
+
+### Completed
+
+- Replaced report-order evidence selection with deterministic lookup through the top hypothesis's
+  ordered `evidenceIds`, retaining the existing preference for a linked non-lineage fact.
+- Replaced first-impact selection with the first deterministic blast-radius impact whose
+  `hypothesisIds` contains the top hypothesis ID.
+- Added explicit independent/unverified nodes when either relationship cannot be resolved, so the UI
+  cannot attribute another hypothesis's evidence or impact to the top hypothesis.
+- Relabelled the map as a schema-validated response graph and described its source as the
+  schema-validated terminal response because question/entity context is outside the report object.
+- Added a focused multiple-hypothesis/evidence/impact regression with unrelated first entries plus
+  defensive missing-link assertions.
+
+### Validation performed
+
+- Changed-file Prettier and affected App/report-test ESLint passed.
+- Web strict TypeScript typecheck passed.
+- Focused `web-report` and `web-scenario-intake` tests passed `11/11`.
+- Affected Vite production build passed with `109` modules.
+- The initial Vitest invocation reproduced the known managed-worktree ancestor-read denial; its exact
+  elevated recovery passed. One build invocation used a nonexistent root Vite path and stopped before
+  build; the corrected package-local command passed.
+
+### Validation intentionally deferred
+
+Reuse all unchanged canonical QA, Level D, evaluation, release, artifact, media, deployment, and
+public-smoke greens. No API/provider/runtime behavior, deployment, public incident, Devpost/video
+state, package/lock/workflow/version/tag/Release state, or PR readiness changed.
+
+### Exact next step
+
+Complete bounded diff/path/secret/encoding/residue/process/port checks, create one additive commit,
+push the same branch, update only Draft PR #61 with exact new identities, and require exact-head CI
+`SUCCESS`. Keep the PR Draft; do not merge.

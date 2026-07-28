@@ -318,15 +318,20 @@ export function getCompletedReportDashboard(incident: CompletedIncident) {
 
 export function getEvidencePathNodes(incident: CompletedIncident) {
   const selectedEntity = incident.contextStage.facts.selectedEntity;
-  const evidence =
-    incident.report.evidence.find((item) => item.category !== 'lineage') ??
-    incident.report.evidence[0];
   const topHypothesis = incident.report.hypotheses[0];
-  const firstImpact = incident.report.blastRadius.impacts[0];
 
-  if (!selectedEntity || !evidence || !topHypothesis) {
-    throw new Error('A completed evidence path requires an entity, evidence, and hypothesis.');
+  if (!selectedEntity || !topHypothesis) {
+    throw new Error('A completed evidence path requires an entity and ranked hypothesis.');
   }
+
+  const evidenceById = new Map(incident.report.evidence.map((item) => [item.id, item]));
+  const linkedEvidence = topHypothesis.evidenceIds
+    .map((evidenceId) => evidenceById.get(evidenceId))
+    .filter((item) => item !== undefined);
+  const evidence = linkedEvidence.find((item) => item.category !== 'lineage') ?? linkedEvidence[0];
+  const impact = incident.report.blastRadius.impacts.find((item) =>
+    item.hypothesisIds.includes(topHypothesis.id),
+  );
 
   return [
     {
@@ -341,14 +346,21 @@ export function getEvidencePathNodes(incident: CompletedIncident) {
       detail: 'Adapter-selected entity',
       tone: 'entity',
     },
-    {
-      type: evidence.category,
-      label: evidence.statement,
-      detail: evidence.sourceEntity
-        ? `Observed on ${evidence.sourceEntity.name}`
-        : 'Validated factual evidence',
-      tone: 'evidence',
-    },
+    evidence
+      ? {
+          type: evidence.category,
+          label: evidence.statement,
+          detail: evidence.sourceEntity
+            ? `Observed on ${evidence.sourceEntity.name}`
+            : 'Validated factual evidence',
+          tone: 'evidence',
+        }
+      : {
+          type: 'Evidence',
+          label: 'No hypothesis-linked evidence verified',
+          detail: 'Other report evidence remains independent and unverified for this hypothesis',
+          tone: 'unknown',
+        },
     {
       type: 'Hypothesis',
       label: topHypothesis.summary,
@@ -360,13 +372,15 @@ export function getEvidencePathNodes(incident: CompletedIncident) {
     },
     {
       type: 'Downstream impact',
-      label: firstImpact?.entity.name ?? 'No downstream impact verified',
-      detail: firstImpact
-        ? `${firstImpact.entity.kind} · distance ${firstImpact.distance}`
-        : incident.report.blastRadius.status === 'complete'
-          ? 'No supported impact within bounds'
-          : 'Coverage remains explicitly incomplete',
-      tone: firstImpact ? 'impact' : 'unknown',
+      label: impact?.entity.name ?? 'No top-hypothesis impact verified',
+      detail: impact
+        ? `${impact.entity.kind} · distance ${impact.distance}`
+        : incident.report.blastRadius.impacts.length > 0
+          ? 'Other reported impacts remain independent and unverified for this hypothesis'
+          : incident.report.blastRadius.status === 'complete'
+            ? 'No supported impact linked within bounds'
+            : 'Top-hypothesis impact remains unverified',
+      tone: impact ? 'impact' : 'unknown',
     },
   ] as const;
 }
@@ -378,10 +392,13 @@ function EvidencePathMap({ incident }: { incident: CompletedIncident }) {
     <section className="evidence-path-map" aria-labelledby="evidence-path-heading">
       <div className="evidence-path-heading">
         <div>
-          <p className="report-label">Validated report graph</p>
+          <p className="report-label">Schema-validated response graph</p>
           <h3 id="evidence-path-heading">Evidence path</h3>
         </div>
-        <p>Every node comes from the terminal report; connectors imply sequence, not causality.</p>
+        <p>
+          Every node comes from the schema-validated terminal response; connectors show provenance
+          sequence, not causality.
+        </p>
       </div>
       <ol>
         {nodes.map((node, index) => (

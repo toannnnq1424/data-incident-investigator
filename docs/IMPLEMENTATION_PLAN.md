@@ -7521,3 +7521,46 @@ Acceptance criteria:
 Deferred: Devpost editing/resubmission, a new screenshot/video/public incident, Public Cloud Run
 deployment, DataHub Cloud/remote MCP, mutation/write-back, package/lock/workflow/version/tag/Release
 changes, full Level D/evaluation rerun, PR Ready/merge, organizer acceptance, and prize outcome.
+
+#### Phase 8.11 QA correction — evidence-path provenance binding
+
+Status: targeted additive correction on the same
+`codex/phase-8-11-submission-readiness` branch and Draft PR #61 after canonical QA found that the
+Evidence Path Map selected evidence and impact by report-array position rather than by the displayed
+top hypothesis.
+
+Objective: bind the graph deterministically to `topHypothesis.evidenceIds` and to an impact whose
+`hypothesisIds` contains the top hypothesis. If either link cannot be resolved, render an explicit
+independent/unverified state instead of borrowing another hypothesis's provenance. Describe the graph
+as a schema-validated terminal response because the incident question and selected entity originate
+in the validated context stage.
+
+Minimum files: `apps/web/src/App.tsx`, `tests/integration/web-report.test.ts`, this plan, and
+`docs/SESSION_LOG.md`.
+
+Acceptance: a multiple-hypothesis/evidence/impact regression must reject an unrelated first evidence
+and first impact, while a defensive missing-link case must remain visibly unverified. Run only
+changed-file formatting/lint/typecheck, focused web report/scenario tests, the affected web build,
+and bounded diff/path/secret/encoding/residue/process/port checks. Reuse all unchanged QA greens.
+
+Deferred: all API/provider/runtime behavior; deployment; public incident; Devpost/video mutation;
+full-suite/evaluation reruns; PR Ready; and merge.
+
+Result:
+
+- Evidence selection now follows the top hypothesis's ordered `evidenceIds`, preferring a linked
+  non-lineage fact and otherwise its first linked fact. It never borrows unrelated report evidence.
+- Impact selection now requires the impact's `hypothesisIds` to contain the displayed top hypothesis.
+  Missing links render explicit independent/unverified evidence and impact states.
+- The graph label and explanation now describe the full schema-validated terminal response and its
+  provenance sequence without implying causality.
+- The focused multi-hypothesis regression places unrelated evidence and impact first, verifies the
+  linked later entries are selected, and verifies both defensive unlinked fallbacks.
+- Changed-file Prettier, affected ESLint, web strict typecheck, focused web report/scenario tests
+  (`11/11`), `git diff --check`, and the affected Vite production build (`109` modules) pass. The
+  initial test invocation reproduced the known managed-worktree ancestor-read denial; its exact
+  elevated recovery passed. One build command used the wrong package binary path and stopped before
+  build; the corrected package-local build passed.
+
+Deferred after result: all unchanged QA greens; deployment; public incident; Devpost/video mutation;
+full-suite/evaluation reruns; PR Ready; and merge.
