@@ -4,8 +4,10 @@ import { describe, expect, it } from 'vitest';
 import {
   App,
   CompletedReport,
+  getCompletedReportDashboard,
   getCompletedReportContent,
   getDegradedInvestigationPresentation,
+  getEvidencePathNodes,
   BlastRadiusSection,
   FailedInvestigation,
   InvestigationActivity,
@@ -51,6 +53,13 @@ describe('primary investigation layout', () => {
   it('places the incident workflow before the optional explorer with one concise announcement', () => {
     const markup = renderToStaticMarkup(createElement(App));
 
+    expect(markup).toContain('Trace the change. <span>Prove the impact.</span>');
+    expect(markup).toContain('Read-only investigation contract');
+    expect(markup).toContain('From incident signal to auditable answer');
+    expect(markup.match(/class="scenario-preset"/g) ?? []).toHaveLength(7);
+    expect(markup.indexOf('id="investigation-contract-heading"')).toBeLessThan(
+      markup.indexOf('id="incident-heading"'),
+    );
     expect(markup.indexOf('id="incident-heading"')).toBeLessThan(
       markup.indexOf('id="metadata-search-heading"'),
     );
@@ -387,7 +396,49 @@ describe('completed report presentation', () => {
       assumptions: ['The fixture snapshot covers the incident window.'],
       missingInformation: ['Runtime query logs are unavailable.'],
     });
-
+    expect(getCompletedReportDashboard(incident)).toEqual({
+      verdict: 'A schema change is a plausible contributor.',
+      confidenceLabel: 'Not scored',
+      confidenceScore: undefined,
+      confidenceDetail: 'Confidence was not scored because validated evidence was insufficient.',
+      evidenceCount: 2,
+      impactCount: 0,
+      blastRadiusStatus: 'unknown',
+      toolCalls: 8,
+      agentSteps: 5,
+    });
+    expect(getEvidencePathNodes(incident)).toEqual([
+      {
+        type: 'Incident',
+        label: 'Why did revenue drop?',
+        detail: 'Normalized operator question',
+        tone: 'signal',
+      },
+      {
+        type: 'dataset',
+        label: 'analytics.daily_revenue',
+        detail: 'Adapter-selected entity',
+        tone: 'entity',
+      },
+      {
+        type: 'schema-change',
+        label: 'The fixture records a removed source column.',
+        detail: 'Observed on raw.orders',
+        tone: 'evidence',
+      },
+      {
+        type: 'Hypothesis',
+        label: 'A schema change is a plausible contributor.',
+        detail: 'Confidence not scored',
+        tone: 'hypothesis',
+      },
+      {
+        type: 'Downstream impact',
+        label: 'No downstream impact verified',
+        detail: 'Coverage remains explicitly incomplete',
+        tone: 'unknown',
+      },
+    ]);
     const markup = renderToStaticMarkup(createElement(CompletedReport, { incident }));
     expect(markup.indexOf('id="report-summary-heading"')).toBeLessThan(
       markup.indexOf('id="investigation-activity-heading"'),
@@ -396,6 +447,15 @@ describe('completed report presentation', () => {
       markup.indexOf('id="investigation-activity-heading"'),
     );
     expect(markup.match(/id="blast-radius-heading"/g)).toHaveLength(1);
+    expect(markup).toContain('id="evidence-path-heading"');
+    expect(markup.indexOf('id="report-summary-heading"')).toBeLessThan(
+      markup.indexOf('id="evidence-path-heading"'),
+    );
+    expect(markup.indexOf('id="evidence-path-heading"')).toBeLessThan(
+      markup.indexOf('id="blast-radius-heading"'),
+    );
+    expect(markup).toContain('Every node comes from the terminal report');
+    expect(markup).toContain('No downstream impact verified');
   });
 
   it('renders an accessible evidence-linked blast-radius section and escapes untrusted labels', () => {

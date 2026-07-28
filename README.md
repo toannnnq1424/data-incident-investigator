@@ -20,7 +20,7 @@ missing information, blast radius, and recommended human checks separate.
 The public demo is credential-free and uses synthetic fixture data:
 
 1. Wait for **Fixture metadata · Ready**.
-2. Under **What changed?**, select **Removed schema column**.
+2. Under **What changed?**, choose **Removed schema column**.
 3. Keep the populated synthetic fields and choose **Start investigation**.
 4. After **Investigation completed**, inspect the ranked hypothesis, evidence, blast radius, and
    **Download Markdown report** link.
@@ -73,9 +73,36 @@ unavailable; it did not invent a root cause.
 
 That real local OSS proof is **PASS — LOCAL OSS**. It also exposed an official nested lineage
 `platform` descriptor that the adapter now accepts under the existing bounded entity schema. It is
-not a durable remotely reachable judge endpoint: no authorized DataHub Cloud tenant, OAuth/PAT,
-public tunnel, or judge credential was created. The public Cloud Run service still contains no
-DataHub or model credential, so public/judge named-integration access remains **PARTIAL**.
+not a durable remotely reachable endpoint: no DataHub Cloud tenant, public tunnel, or judge credential
+was created. The entrant reports that a DataHub hackathon representative confirmed that the intended
+hackathon path is DataHub OSS locally and answered **yes** when asked whether the credential-free
+Public fixture demo plus the reproducible local OSS/MCP path satisfies access and integration
+expectations without remote DataHub/MCP hosting. This records general organizer guidance, not
+submission acceptance or a judging result. The public Cloud Run service remains fixture-only.
+
+### Optional authenticated local OSS path
+
+DataHub Core can also protect the local MCP-to-GMS hop with a PAT. The current official
+[Metadata Service Authentication](https://docs.datahub.com/docs/authentication/introducing-metadata-service-authentication)
+and [PAT](https://docs.datahub.com/docs/authentication/personal-access-tokens) docs say authentication
+is opt-in and must be enabled for both GMS and the frontend. Keep a private copy of the
+[quickstart](https://docs.datahub.com/docs/quickstart) Compose file, set
+`METADATA_SERVICE_AUTH_ENABLED: 'true'` for
+`datahub-gms-quickstart` and `datahub-frontend-quickstart`, then restart from that copy:
+
+```bash
+cp ~/.datahub/quickstart/docker-compose.yml ~/datahub-auth-compose.yml
+# Edit ~/datahub-auth-compose.yml; never commit this operator-owned file or a generated token.
+datahub docker quickstart --stop
+datahub docker quickstart --quickstart-compose-file ~/datahub-auth-compose.yml
+```
+
+Sign in to local DataHub, open **Settings → Access Tokens**, generate a PAT, and expose it only to the
+self-hosted MCP process as `DATAHUB_GMS_TOKEN`; keep `DATAHUB_GMS_URL` pointed at local GMS. The app
+still connects to the trusted loopback MCP endpoint with `DATAHUB_MCP_AUTH_MODE=none`, so the PAT must
+never enter the frontend, repository, screenshots, logs, or `DATAHUB_TOKEN`. The unauthenticated
+localhost proof described above remains the actually executed evidence; this PAT recipe is a
+documented optional hardening path.
 
 ## Local judge fallback
 
@@ -111,8 +138,9 @@ For the shortest verified path and expected labels, use the
 ## Truthful limitations
 
 - The public service is credential-free **fixture mode**, not live DataHub evidence.
-- Seven guided presets are visible, but only **Removed schema column** has the rich checked-in
-  metadata/incident fixture and canonical browser flow.
+- Current source exposes seven incident playbooks, but only **Removed schema column** has the rich
+  checked-in metadata/incident fixture and canonical browser flow. Until this source revision is
+  separately deployed, the Public service retains the earlier compact scenario selector.
 - Incident state is process-local and disappears on restart or scale-to-zero; incident URLs are not
   durable.
 - Confidence is deterministic evidence scoring, not a probability from an LLM. The current workflow

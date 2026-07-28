@@ -52,9 +52,14 @@ Last updated: 2026-07-28.
   unavailable change history with no invented hypothesis. The first app lineage call exposed that
   official MCP `entity.platform` can be `{ urn, name? }`, not only a string. This Phase 8.11 branch
   accepts that exact bounded union and adds focused coverage without widening its read-only allowlist
-  or resource bounds. Technical status is **PASS — LOCAL OSS**; no durable remote judge endpoint,
-  OAuth/PAT, public tunnel, DataHub Cloud account, or public deployment was created. The public Cloud
-  Run service remains fixture-only, and the source/UI correction is not deployed there.
+  or resource bounds. Technical status is **PASS — LOCAL OSS**. The entrant reports that a DataHub
+  hackathon representative confirmed local OSS as the intended path and answered **yes** to the
+  Public fixture plus reproducible local MCP access model, so a durable remote endpoint is no longer
+  tracked as a requirement. No OAuth/PAT, public tunnel, DataHub Cloud account, or MCP deployment was
+  created. The Public Cloud Run service remains fixture-only. Current official docs support optional
+  PAT hardening by enabling Metadata Service Authentication for both local GMS and frontend, then
+  passing the PAT only to the MCP process as `DATAHUB_GMS_TOKEN`; that token path was documented but
+  not rerun in this follow-up.
 
 - Phase 8.10 completed coordinated `1.0.0` metadata, full validation, normal merge, annotated
   `v1.0.0` tag, and Published/Latest GitHub Release. All seven private Apache-2.0 manifests are
@@ -511,9 +516,11 @@ Last updated: 2026-07-28.
   PR #53 conversation remain retained after merge.
 - Slice 1.2 stores incident lifecycle and completed reports only in API process memory. Restarting the
   API removes existing incident IDs; durable persistence remains deferred.
-- The UI exposes seven guided presets, but only `removed-schema-column` has the rich checked-in
-  incident/metadata fixture pair and canonical browser E2E. The other six are guided form inputs and
-  deterministic evaluation cases, not additional rich E2E metadata fixtures.
+- Current source exposes seven visible incident playbooks and a report-derived evidence-path view,
+  but only `removed-schema-column` has the rich checked-in incident/metadata fixture pair and
+  canonical browser E2E. The other six are guided form inputs and deterministic evaluation cases,
+  not additional rich E2E metadata fixtures. The Public service retains the earlier compact selector
+  until this source revision is separately merged and deployed.
 - Slice 2.4 adds bounded recent metadata facts from search results or lineage nodes through
   deterministic fixtures and DataHub GraphQL `getTimeline`. The official DataHub timeline input has no
   time-range, count, page-token, or cursor field and the resolver caps results at 100 transactions, so
@@ -523,8 +530,8 @@ Last updated: 2026-07-28.
   correlation, ownership enrichment, schema diff, model reasoning, evaluation CLI, broader
   cross-browser automation, and public deployment remain deferred. A live DataHub smoke is
   credential-gated and is not required for fixture validation. Phase 8.11 later proves the real local
-  OSS/MCP path; a durable remote judge endpoint remains separately unavailable for the submitted
-  entry.
+  OSS/MCP path; user-reported organizer guidance confirms remote hosting is not required for the
+  submitted Public fixture/repository access model.
 - Stitch MCP configuration is tracked without a key. A rotated `STITCH_API_KEY` must be set in the Codex
   process environment on each machine, then Codex must reload the trusted project.
 - Stitch tools are not expected in the current task because project-scoped MCP configuration loads when

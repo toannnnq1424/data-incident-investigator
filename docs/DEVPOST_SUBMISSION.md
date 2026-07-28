@@ -147,10 +147,13 @@ bounded degraded incident all behaved as designed. The incident stopped at incom
 rather than inventing a root cause. The official server currently exposes no recent-changes/timeline
 tool, so that capability remains unsupported rather than emulated.
 
-This technical proof is **PASS — LOCAL OSS**. No authorized durable remote DataHub Core/Cloud MCP
-endpoint or safe judge authentication path has been provisioned. The deployed public service remains
-credential-free fixture mode. Public/judge named-integration access therefore remains **PARTIAL**;
-the local OSS proof is not presented as public live DataHub evidence.
+This technical proof is **PASS — LOCAL OSS**. The entrant reports that a DataHub hackathon
+representative clarified that entrants are meant to use DataHub OSS locally and answered **yes** when
+asked whether the Public credential-free fixture plus reproducible local OSS/MCP path satisfies the
+access and integration expectation without remote DataHub/MCP hosting. No remote service is therefore
+presented as required. The deployed public service remains credential-free fixture mode, and the local
+OSS proof is not presented as public live DataHub evidence. This is general organizer guidance, not
+acceptance of this submission or a judging result.
 
 ## Challenges we ran into
 
@@ -199,8 +202,8 @@ The entrant's Join registration and the saved project-form category both record
 - Only **Removed schema column** has the rich checked-in fixture and canonical browser path; six other
   presets are guided inputs/evaluation cases.
 - Incident state is process-local and not durable across restart or scale-to-zero.
-- The public demo is fixture-only. Real localhost DataHub OSS/MCP validation is complete, but a
-  durable authorized remote judge endpoint and judge authentication path remain open.
+- The public demo is fixture-only. Real localhost DataHub OSS/MCP validation is complete; remote
+  DataHub/MCP hosting is not part of the organizer-confirmed local OSS access path.
 - MCP recent-change evidence is unsupported by the current official tool surface.
 - The agent makes zero model calls and performs no automatic production change or DataHub write-back.
 - The owner-authorized Cloud Run operating window runs through 2026-09-17 23:59 ICT, beyond the
@@ -218,8 +221,8 @@ The entrant's Join registration and the saved project-form category both record
 
 Next work is operational rather than a new product claim: keep the Public app/video/repository
 available, monitor the registered contact through judging, preserve the submitted content, and
-provide a durable authorized remote MCP/judge path only if an endpoint and safe authentication scope
-are separately supplied. Do not infer organizer acceptance or a prize.
+respond to any organizer reproduction or verification request with the fixture quickstart and local
+OSS/MCP evidence. Do not infer organizer acceptance or a prize.
 
 ## Codex usage
 

@@ -88,11 +88,34 @@ rehearsal, not a clean-clone install-time promise.
 - The public service uses synthetic, credential-free fixture data. It is not live DataHub evidence.
 - A bounded read-only DataHub MCP integration passed a localhost-only proof against DataHub Core
   `1.6.0`, official synthetic data, and `mcp-server-datahub` `0.6.0` with mutation tools disabled.
-  This is **PASS — LOCAL OSS**, not a public service. No authorized durable remote judge endpoint or
-  judge authentication path has been provisioned, so public/judge access remains **PARTIAL**.
+  This is **PASS — LOCAL OSS**, not a public service. The entrant reports that a DataHub hackathon
+  representative confirmed that local DataHub OSS is the intended Rules path and answered **yes** to
+  the fixture-demo plus reproducible-local-MCP access model; remote DataHub/MCP hosting is therefore
+  not treated as a requirement. This guidance is not organizer acceptance or a judging result.
 - Only **Removed schema column** has the rich checked-in fixture and canonical browser path.
 - The app makes zero model calls and does not execute remediation or modify production data.
 - Incident state is in memory and disappears on restart or scale-to-zero.
 - The owner-authorized Cloud Run operating window runs through **2026-09-17 23:59 ICT /
   2026-09-17 16:59 UTC / 2026-09-17 12:59 EDT**, beyond the judging end. The Public repository
   remains the durable fallback for provider outages, cold starts, or emergency containment.
+
+## Optional authenticated local DataHub OSS
+
+The executed proof used localhost-only DataHub OSS without a GMS token. For a locally hardened
+reproduction, the official
+[Metadata Service Authentication](https://docs.datahub.com/docs/authentication/introducing-metadata-service-authentication)
+and [PAT](https://docs.datahub.com/docs/authentication/personal-access-tokens) docs require
+authentication on both GMS and the frontend before the UI can generate a PAT:
+
+1. Copy `~/.datahub/quickstart/docker-compose.yml` to an operator-owned file outside the repository.
+2. Set `METADATA_SERVICE_AUTH_ENABLED: 'true'` for `datahub-gms-quickstart` and
+   `datahub-frontend-quickstart`.
+3. Restart with
+   `datahub docker quickstart --quickstart-compose-file <operator-owned-compose-path>`.
+4. In local DataHub, use **Settings → Access Tokens → Generate new token**.
+5. Supply that token only to `mcp-server-datahub` as `DATAHUB_GMS_TOKEN`; never paste it into the web
+   app, repository, screenshots, or logs.
+
+The app-to-MCP hop remains trusted loopback with `DATAHUB_MCP_AUTH_MODE=none`. This optional recipe was
+verified against the current official documentation on 2026-07-28; it was not rerun with a token in
+this UI follow-up.

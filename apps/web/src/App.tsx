@@ -2,7 +2,6 @@ import { useEffect, useRef, useState, type FormEvent, type ReactNode, type RefOb
 import {
   ApiErrorSchema,
   CANONICAL_INCIDENT_SCENARIOS,
-  CanonicalIncidentScenarioIdSchema,
   METADATA_LINEAGE_DEFAULT_DEPTH,
   METADATA_LINEAGE_DEFAULT_MAX_NODES,
   METADATA_RECENT_CHANGES_DEFAULT_LIMIT,
@@ -202,51 +201,272 @@ export function CanonicalScenarioSelector({
 
   return (
     <fieldset className="scenario-selector">
-      <legend>Guided demo</legend>
-      <div className="scenario-selector-controls">
-        <div className="field">
-          <label htmlFor="canonical-scenario">Canonical incident scenario</label>
-          <select
-            id="canonical-scenario"
-            name="canonicalScenario"
-            value={selectionValue}
-            aria-describedby="canonical-scenario-help canonical-scenario-status"
-            onChange={(event) => {
-              if (event.target.value === 'manual') {
-                onSelect('manual');
-                return;
-              }
-              const parsedScenarioId = CanonicalIncidentScenarioIdSchema.safeParse(
-                event.target.value,
-              );
-              if (parsedScenarioId.success) {
-                onSelect(parsedScenarioId.data);
-              }
-            }}
-          >
-            <option value="manual">Manual input (default)</option>
-            {selection.kind === 'custom' && (
-              <option value="custom">Custom values based on {sourceScenario?.title}</option>
-            )}
-            {CANONICAL_INCIDENT_SCENARIOS.map((scenario) => (
-              <option key={scenario.id} value={scenario.id}>
-                {scenario.title}
-              </option>
-            ))}
-          </select>
-          <span className="field-help" id="canonical-scenario-help">
-            Selecting a scenario fills the existing incident fields; all fields remain editable.
-          </span>
-        </div>
+      <legend>Incident playbooks</legend>
+      <p className="scenario-selector-help" id="canonical-scenario-help">
+        Choose a bounded scenario to prefill the investigation. Every field remains editable, and
+        only the removed-column path has the rich canonical browser fixture.
+      </p>
+      <div className="scenario-preset-grid" aria-describedby="canonical-scenario-help">
+        {CANONICAL_INCIDENT_SCENARIOS.map((scenario, index) => {
+          const selected =
+            selectionValue === scenario.id ||
+            (selection.kind === 'custom' && selection.sourceScenarioId === scenario.id);
+          return (
+            <button
+              key={scenario.id}
+              className={`scenario-preset${selected ? ' scenario-preset-selected' : ''}`}
+              type="button"
+              aria-pressed={selected}
+              aria-describedby={`scenario-${scenario.id}-description`}
+              onClick={() => onSelect(scenario.id)}
+            >
+              <span className="scenario-preset-index" aria-hidden="true">
+                {String(index + 1).padStart(2, '0')}
+              </span>
+              <span className="scenario-preset-copy">
+                <strong>{scenario.title}</strong>
+                <span id={`scenario-${scenario.id}-description`}>{scenario.description}</span>
+              </span>
+              {index === 0 && <span className="scenario-preset-badge">Best demo path</span>}
+            </button>
+          );
+        })}
+      </div>
+      <div className="scenario-selector-footer">
+        <p className="scenario-selection-status" id="canonical-scenario-status" aria-live="polite">
+          {status}
+        </p>
         <button className="scenario-reset" type="button" onClick={onReset}>
-          Clear and use manual input
+          Use manual input
         </button>
       </div>
-      <p className="scenario-selection-status" id="canonical-scenario-status" aria-live="polite">
-        {status}
-      </p>
-      {sourceScenario && <p className="scenario-description">{sourceScenario.description}</p>}
+      {sourceScenario && (
+        <p className="scenario-description">
+          Selected playbook: <strong>{sourceScenario.title}</strong>
+          {selection.kind === 'custom' ? ' · customized' : ' · canonical prefill'}
+        </p>
+      )}
     </fieldset>
+  );
+}
+
+export function InvestigationFlow() {
+  const steps = [
+    {
+      label: 'Find context',
+      detail: 'Search bounded metadata and select only adapter-returned entities.',
+    },
+    {
+      label: 'Trace lineage',
+      detail: 'Follow upstream and downstream relationships within explicit limits.',
+    },
+    {
+      label: 'Test evidence',
+      detail: 'Separate factual change signals from evidence-linked inference.',
+    },
+    {
+      label: 'Explain impact',
+      detail: 'Show supported blast radius and human-review next steps.',
+    },
+  ];
+
+  return (
+    <section className="investigation-contract" aria-labelledby="investigation-contract-heading">
+      <div className="investigation-contract-copy">
+        <p className="step-label">Read-only investigation contract</p>
+        <h2 id="investigation-contract-heading">From incident signal to auditable answer</h2>
+        <p>
+          The workflow is deterministic and bounded: no hidden model call, no production mutation,
+          and no unsupported evidence is silently filled in.
+        </p>
+      </div>
+      <ol className="investigation-flow">
+        {steps.map((step, index) => (
+          <li key={step.label}>
+            <span aria-hidden="true">{index + 1}</span>
+            <strong>{step.label}</strong>
+            <p>{step.detail}</p>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}
+
+export function getCompletedReportDashboard(incident: CompletedIncident) {
+  const topHypothesis = incident.report.hypotheses[0];
+  if (!topHypothesis) {
+    throw new Error('A completed investigation dashboard requires a ranked hypothesis.');
+  }
+  const confidence = topHypothesis.confidence;
+
+  return {
+    verdict: topHypothesis.summary,
+    confidenceLabel:
+      confidence.status === 'scored'
+        ? `${formatConfidence(confidence.scorePercent)} · ${confidence.level}`
+        : 'Not scored',
+    confidenceScore: confidence.status === 'scored' ? confidence.scorePercent : undefined,
+    confidenceDetail: confidence.explanation.replace(/^Why:\s*/u, ''),
+    evidenceCount: incident.report.evidence.length,
+    impactCount: incident.report.blastRadius.summary.total,
+    blastRadiusStatus: incident.report.blastRadius.status,
+    toolCalls: incident.execution.toolCalls,
+    agentSteps: incident.execution.agentSteps,
+  };
+}
+
+export function getEvidencePathNodes(incident: CompletedIncident) {
+  const selectedEntity = incident.contextStage.facts.selectedEntity;
+  const evidence =
+    incident.report.evidence.find((item) => item.category !== 'lineage') ??
+    incident.report.evidence[0];
+  const topHypothesis = incident.report.hypotheses[0];
+  const firstImpact = incident.report.blastRadius.impacts[0];
+
+  if (!selectedEntity || !evidence || !topHypothesis) {
+    throw new Error('A completed evidence path requires an entity, evidence, and hypothesis.');
+  }
+
+  return [
+    {
+      type: 'Incident',
+      label: incident.contextStage.intent.question,
+      detail: 'Normalized operator question',
+      tone: 'signal',
+    },
+    {
+      type: selectedEntity.kind,
+      label: selectedEntity.name,
+      detail: 'Adapter-selected entity',
+      tone: 'entity',
+    },
+    {
+      type: evidence.category,
+      label: evidence.statement,
+      detail: evidence.sourceEntity
+        ? `Observed on ${evidence.sourceEntity.name}`
+        : 'Validated factual evidence',
+      tone: 'evidence',
+    },
+    {
+      type: 'Hypothesis',
+      label: topHypothesis.summary,
+      detail:
+        topHypothesis.confidence.status === 'scored'
+          ? `${formatConfidence(topHypothesis.confidence.scorePercent)} evidence confidence`
+          : 'Confidence not scored',
+      tone: 'hypothesis',
+    },
+    {
+      type: 'Downstream impact',
+      label: firstImpact?.entity.name ?? 'No downstream impact verified',
+      detail: firstImpact
+        ? `${firstImpact.entity.kind} · distance ${firstImpact.distance}`
+        : incident.report.blastRadius.status === 'complete'
+          ? 'No supported impact within bounds'
+          : 'Coverage remains explicitly incomplete',
+      tone: firstImpact ? 'impact' : 'unknown',
+    },
+  ] as const;
+}
+
+function EvidencePathMap({ incident }: { incident: CompletedIncident }) {
+  const nodes = getEvidencePathNodes(incident);
+
+  return (
+    <section className="evidence-path-map" aria-labelledby="evidence-path-heading">
+      <div className="evidence-path-heading">
+        <div>
+          <p className="report-label">Validated report graph</p>
+          <h3 id="evidence-path-heading">Evidence path</h3>
+        </div>
+        <p>Every node comes from the terminal report; connectors imply sequence, not causality.</p>
+      </div>
+      <ol>
+        {nodes.map((node, index) => (
+          <li key={`${node.type}-${index}`} data-tone={node.tone}>
+            <span className="evidence-path-index" aria-hidden="true">
+              {String(index + 1).padStart(2, '0')}
+            </span>
+            <span className="evidence-path-type">{node.type}</span>
+            <strong>{node.label}</strong>
+            <small>{node.detail}</small>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}
+
+function CompletedVerdictDashboard({
+  headingRef,
+  incident,
+}: {
+  headingRef?: RefObject<HTMLHeadingElement | null> | undefined;
+  incident: CompletedIncident;
+}) {
+  const dashboard = getCompletedReportDashboard(incident);
+
+  return (
+    <section className="verdict-dashboard" aria-labelledby="report-summary-heading">
+      <div className="verdict-copy">
+        <div className="verdict-kicker">
+          <p className="report-label">Evidence-backed verdict</p>
+          <span>Completed · read-only</span>
+        </div>
+        <h3 id="report-summary-heading" ref={headingRef} tabIndex={headingRef ? -1 : undefined}>
+          {dashboard.verdict}
+        </h3>
+        <p>{incident.report.summary}</p>
+      </div>
+      <aside className="confidence-card" aria-label="Top hypothesis confidence">
+        <span>Evidence confidence</span>
+        <strong>{dashboard.confidenceLabel}</strong>
+        {dashboard.confidenceScore === undefined ? (
+          <div className="confidence-meter confidence-meter-unscored" aria-hidden="true" />
+        ) : (
+          <div
+            className="confidence-meter"
+            role="progressbar"
+            aria-label="Evidence confidence score"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={dashboard.confidenceScore}
+          >
+            <span style={{ width: `${dashboard.confidenceScore}%` }} />
+          </div>
+        )}
+        <small>{dashboard.confidenceDetail}</small>
+      </aside>
+      <dl className="verdict-metrics" aria-label="Investigation proof summary">
+        <div>
+          <dt>Factual evidence</dt>
+          <dd>{dashboard.evidenceCount}</dd>
+        </div>
+        <div>
+          <dt>Supported impacts</dt>
+          <dd>{dashboard.impactCount}</dd>
+        </div>
+        <div>
+          <dt>Blast-radius coverage</dt>
+          <dd>{dashboard.blastRadiusStatus}</dd>
+        </div>
+        <div>
+          <dt>Bounded execution</dt>
+          <dd>
+            {dashboard.toolCalls} calls · {dashboard.agentSteps} steps
+          </dd>
+        </div>
+      </dl>
+      <nav className="report-jump-links" aria-label="Jump to report evidence">
+        <a href="#evidence-path-heading">Evidence path</a>
+        <a href="#blast-radius-heading">Blast radius</a>
+        <a href="#facts-heading">Evidence</a>
+        <a href="#recommendations-heading">Human next steps</a>
+        <a href="#investigation-activity-heading">Activity trail</a>
+      </nav>
+    </section>
   );
 }
 
@@ -1812,15 +2032,8 @@ export function CompletedReport({
   return (
     <div className="status-success completed-report">
       <p>Investigation completed</p>
-      <section className="report-summary" aria-labelledby="report-summary-heading">
-        <p className="report-label">Incident report</p>
-        <h3 id="report-summary-heading" ref={headingRef} tabIndex={headingRef ? -1 : undefined}>
-          Summary
-        </h3>
-        <p>{content.summary}</p>
-        <h4>Top ranked hypothesis</h4>
-        <p>{content.topHypothesis}</p>
-      </section>
+      <CompletedVerdictDashboard headingRef={headingRef} incident={incident} />
+      <EvidencePathMap incident={incident} />
       <BlastRadiusSection analysis={content.blastRadius} />
       <dl>
         <div>
@@ -2377,19 +2590,30 @@ export function App() {
   }
 
   const isBusy = state.kind === 'submitting' || state.kind === 'processing';
+  const selectedScenario = getScenarioSelectionSource(scenarioSelection);
 
   return (
     <main className="shell">
       <header className="hero">
-        <p className="eyebrow">Metadata · Lineage · Evidence</p>
-        <h1>Data Incident Investigator</h1>
+        <p className="eyebrow">Data Incident Investigator</p>
+        <h1>
+          Trace the change. <span>Prove the impact.</span>
+        </h1>
         <p className="lede">
-          Describe a suspicious data change. The investigator will trace the relevant entities and
-          build an evidence-backed report.
+          Turn a broken metric or dashboard into an auditable incident report: factual metadata,
+          bounded lineage, transparent confidence, supported blast radius, and safe human next
+          steps.
         </p>
+        <ul className="hero-proof-list" aria-label="Product boundaries">
+          <li>DataHub OSS + MCP</li>
+          <li>7 incident playbooks</li>
+          <li>Read-only by design</li>
+          <li>Zero hidden model calls</li>
+        </ul>
       </header>
 
       <MetadataSourceStatus health={metadataHealth} />
+      <InvestigationFlow />
 
       {(() => {
         const metadataExplorer = (
@@ -2553,83 +2777,100 @@ export function App() {
                 onReset={() => selectCanonicalScenario('manual')}
               />
 
-              <div className="field field-wide">
-                <label htmlFor="question">
-                  Incident question <span aria-hidden="true">*</span>
-                </label>
-                <textarea
-                  id="question"
-                  name="question"
-                  rows={4}
-                  required
-                  minLength={3}
-                  maxLength={2000}
-                  value={question}
-                  onChange={(event) => {
-                    setQuestion(event.target.value);
-                    markIncidentFormCustom();
-                  }}
-                  aria-describedby="question-help"
-                  placeholder="Why did revenue drop unexpectedly today?"
-                />
-                <span className="field-help" id="question-help">
-                  Ask one focused question about the incident.
-                </span>
-              </div>
+              <details
+                className="incident-details"
+                open={scenarioSelection.kind === 'manual' || scenarioSelection.kind === 'custom'}
+              >
+                <summary>
+                  <span>Review or customize incident details</span>
+                  <small>
+                    {selectedScenario
+                      ? `${selectedScenario.title} · every field remains editable`
+                      : 'Manual question, entity, time, and symptom'}
+                  </small>
+                </summary>
+                <div className="incident-details-content">
+                  <div className="field field-wide">
+                    <label htmlFor="question">
+                      Incident question <span aria-hidden="true">*</span>
+                    </label>
+                    <textarea
+                      id="question"
+                      name="question"
+                      rows={4}
+                      required
+                      minLength={3}
+                      maxLength={2000}
+                      value={question}
+                      onChange={(event) => {
+                        setQuestion(event.target.value);
+                        markIncidentFormCustom();
+                      }}
+                      aria-describedby="question-help"
+                      placeholder="Why did revenue drop unexpectedly today?"
+                    />
+                    <span className="field-help" id="question-help">
+                      Ask one focused question about the incident.
+                    </span>
+                  </div>
 
-              <div className="form-grid">
-                <div className="field">
-                  <label htmlFor="entity-hint">Dataset or dashboard</label>
-                  <input
-                    id="entity-hint"
-                    name="entityHint"
-                    type="text"
-                    maxLength={500}
-                    value={entityHint}
-                    onChange={(event) => {
-                      setEntityHint(event.target.value);
-                      markIncidentFormCustom();
-                    }}
-                    placeholder="analytics.daily_revenue"
-                  />
+                  <div className="form-grid">
+                    <div className="field">
+                      <label htmlFor="entity-hint">Dataset or dashboard</label>
+                      <input
+                        id="entity-hint"
+                        name="entityHint"
+                        type="text"
+                        maxLength={500}
+                        value={entityHint}
+                        onChange={(event) => {
+                          setEntityHint(event.target.value);
+                          markIncidentFormCustom();
+                        }}
+                        placeholder="analytics.daily_revenue"
+                      />
+                    </div>
+
+                    <div className="field">
+                      <label htmlFor="occurred-at">Occurrence time</label>
+                      <input
+                        id="occurred-at"
+                        name="occurredAt"
+                        type="datetime-local"
+                        value={occurredAt}
+                        onChange={(event) => {
+                          setOccurredAt(event.target.value);
+                          markIncidentFormCustom();
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="field field-wide">
+                    <label htmlFor="symptom">Observed symptom</label>
+                    <textarea
+                      id="symptom"
+                      name="symptom"
+                      rows={3}
+                      maxLength={2000}
+                      value={symptom}
+                      onChange={(event) => {
+                        setSymptom(event.target.value);
+                        markIncidentFormCustom();
+                      }}
+                      placeholder="Revenue is 42% below the seven-day baseline."
+                    />
+                  </div>
                 </div>
-
-                <div className="field">
-                  <label htmlFor="occurred-at">Occurrence time</label>
-                  <input
-                    id="occurred-at"
-                    name="occurredAt"
-                    type="datetime-local"
-                    value={occurredAt}
-                    onChange={(event) => {
-                      setOccurredAt(event.target.value);
-                      markIncidentFormCustom();
-                    }}
-                  />
-                </div>
-              </div>
-
-              <div className="field field-wide">
-                <label htmlFor="symptom">Observed symptom</label>
-                <textarea
-                  id="symptom"
-                  name="symptom"
-                  rows={3}
-                  maxLength={2000}
-                  value={symptom}
-                  onChange={(event) => {
-                    setSymptom(event.target.value);
-                    markIncidentFormCustom();
-                  }}
-                  placeholder="Revenue is 42% below the seven-day baseline."
-                />
-              </div>
+              </details>
 
               <div className="submission-row">
-                <button type="submit" disabled={isBusy}>
+                <button className="primary-investigation-action" type="submit" disabled={isBusy}>
                   {isBusy ? 'Investigation in progress…' : 'Start investigation'}
                 </button>
-                <p className="privacy-note">No production data is modified.</p>
+                <p className="privacy-note">
+                  Read-only investigation · recommendations remain unexecuted.
+                </p>
               </div>
             </form>
 

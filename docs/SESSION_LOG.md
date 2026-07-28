@@ -7085,3 +7085,82 @@ Finish the exact diff/path/encoding/secret/residue checks, remove ignored task-o
 create one additive conventional commit, push the same branch, update only Draft PR #61, and require
 exact-new-head PR CI `SUCCESS`. Do not mark Ready, merge, redeploy, mutate Devpost/YouTube/GCP, or
 create another incident.
+
+## 2026-07-28 — Phase 8.11 competitive judge UX and organizer OSS clarification
+
+### Objective
+
+Strengthen the existing judge interface on the same
+`codex/phase-8-11-submission-readiness` branch/Draft PR #61 after competitive UI review, while
+preserving all API/provider/runtime behavior and the fixture-only Public deployment. Reconcile the
+entrant-reported organizer confirmation that local DataHub OSS plus the Public fixture/repository path
+satisfies access/integration without remote DataHub/MCP hosting.
+
+### Completed
+
+- Replaced the compact scenario select in current source with seven visible, keyboard-accessible
+  incident playbooks backed by the unchanged shared canonical catalog. The removed-column playbook is
+  marked as the best demo path; all fields remain editable, custom/manual provenance remains explicit,
+  and the six non-rich cases are not presented as additional browser fixtures.
+- Added a clearer product headline, four explicit product-boundary chips, a four-step read-only
+  investigation contract, stronger primary action, answer-first terminal verdict dashboard, and an
+  Evidence Path Map derived only from the schema-validated terminal response. Its five nodes are
+  incident question, selected entity, factual evidence, top hypothesis, and supported or explicitly
+  unverified downstream impact. Connectors describe sequence, not causality.
+- Preserved detailed context/change/scoring/remediation/activity/evidence sections, deterministic
+  Markdown export, focus handoff, escaping, no-model/no-write-back boundaries, and all existing API
+  requests. No fixture, scenario payload, incident, provider call, or runtime contract was added.
+- Re-read official DataHub Quickstart, Metadata Service Authentication, PAT, and MCP documentation at
+  `2026-07-28 23:15 ICT / 16:15 UTC`. The optional hardened local recipe now uses the current
+  `--quickstart-compose-file` flag, enables `METADATA_SERVICE_AUTH_ENABLED=true` for both GMS and
+  frontend, and passes a generated PAT only to the MCP process as `DATAHUB_GMS_TOKEN`. No token was
+  generated, read, logged, or committed; the already-proven unauthenticated loopback stack was not
+  rerun.
+- Recorded the entrant-reported DataHub representative clarification as general organizer guidance,
+  not submission acceptance or a judging result. C06, C07, and C28 advance to `PASS`; C29 remains
+  `PARTIAL` until judging. The 37-row total is now
+  `18 PASS / 1 QUALIFIED PASS — OWNER-AUTHORIZED SCOPE / 5 PARTIAL / 3 OPEN / 10 NOT REQUIRED`,
+  where the 18 PASS count includes C14's separately labelled owner-authorized operating-window pass.
+- Kept the Public Cloud Run app explicitly fixture-only and unchanged. The new UI is a local/source
+  candidate only until separately merged and deployed; no Devpost field, YouTube asset, GCP resource,
+  media file, package, lockfile, workflow, version, tag, or Release changed.
+
+### Validation performed
+
+- Changed-file Prettier passes; affected App/test ESLint passes; web TypeScript strict typecheck
+  passes.
+- Focused `web-scenario-intake` and `web-report` contracts pass `11/11`. They cover seven visible
+  playbooks, one selected state, custom provenance, product/region ordering, verdict metrics,
+  not-scored confidence, evidence-path node order, unknown-impact wording, and escaped report labels.
+- Affected Vite production build passes with `109` modules. The first sandboxed build reproduced the
+  known managed-worktree ancestor-read denial; one incorrect root-cwd retry transformed zero modules;
+  the exact package-cwd elevated recovery passed.
+- One official Browser review used the local fixture service without starting an incident. At
+  `1440 × 900`, the product promise, source status, four-step contract, and seven-playbook grid were
+  readable with zero horizontal overflow. At `390 × 844`, the contract and playbooks collapsed to one
+  column with zero horizontal overflow. Selecting the removed-column playbook set
+  `aria-pressed=true`, populated the exact canonical question, retained one primary action, and
+  collapsed editable details without submission. Browser warning/error logs were empty.
+- Official-source claim review, requirement-status recount (`37/37`), changed-path review,
+  `git diff --check`, local-link/secret/encoding/residue/process/port checks complete in the terminal
+  handoff. Task-owned local API/Vite processes were stopped and ports `3001`/`5173` were clean.
+
+### Validation intentionally deferred
+
+Reuse unchanged prior full Level D, 7/7 evaluation, media, release-artifact, deployment, public smoke,
+and exact-main evidence. No new local/public incident, authenticated PAT run, Public deployment,
+Devpost edit/resubmission, media recapture, video upload, DataHub Cloud/remote MCP, Ready/merge, or
+full-suite rerun is authorized here.
+
+### Known issues
+
+The enhanced UI is not yet in the Public Cloud Run deployment. Only `removed-schema-column` has the
+rich canonical browser fixture. MCP recent-change evidence remains unsupported by the official tool
+surface. C29 judging outcome, entrant eligibility/IP/media-rights verification, organizer acceptance,
+and prize status remain unresolved.
+
+### Exact next step
+
+Finish bounded diff/path/link/secret/encoding/residue checks, create one additive conventional commit,
+push the same branch, update only Draft PR #61, and require exact-new-head PR CI `SUCCESS`. Do not
+mark Ready, merge, deploy, mutate Devpost/YouTube/GCP, or create another incident.

@@ -19,12 +19,18 @@ Phase 8.10 aligned the root and six private Apache-2.0 manifests to `1.0.0`, upd
 protocol identity to the same version, and applied only the two transitive denial-of-service patches
 required by the final production audit. It changed no investigation behavior, workflow, fixture,
 media, deployment, or submission state.
+The active Phase 8.11 source candidate keeps the same API/contracts and makes the existing seven
+canonical scenarios visible as incident playbooks. `apps/web/src/App.tsx` also renders a
+validated-response-only verdict dashboard and evidence path (incident → selected entity → factual
+evidence → top hypothesis → supported/explicitly unverified impact). These are presentation
+components, not a workflow builder, write-back system, or new provider claim. This revision is not in
+the released/Public deployment until separately merged and deployed.
 
 ## Directories
 
 | Path                      | Responsibility                                                              | Important entrypoints                                                                                                                                                             |
 | ------------------------- | --------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/web`                | React/Vite user interface                                                   | `src/App.tsx`, `src/main.tsx`, `vite.config.ts`                                                                                                                                   |
+| `apps/web`                | React/Vite intake, visible playbooks, evidence-first report UI              | `src/App.tsx`, `src/styles.css`, `src/main.tsx`, `vite.config.ts`                                                                                                                 |
 | `apps/api`                | Fastify HTTP API                                                            | `src/index.ts`                                                                                                                                                                    |
 | `packages/shared-types`   | Zod schemas and shared types                                                | `src/index.ts`                                                                                                                                                                    |
 | `packages/datahub-client` | Provider-neutral contract plus fixture, GraphQL, and MCP adapters           | `src/index.ts`, `src/datahub-mcp.ts`                                                                                                                                              |

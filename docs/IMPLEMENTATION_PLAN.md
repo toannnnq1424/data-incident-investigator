@@ -7460,3 +7460,64 @@ Deferred after result: an authorized durable remote DataHub MCP/judge endpoint a
 authentication path; any Devpost correction/resubmission; public deployment of the source/UI
 correction; PR Ready/merge; organizer acceptance; entrant eligibility/IP/media-rights verification;
 and any prize outcome.
+
+#### Phase 8.11 competitive judge UX and organizer OSS clarification
+
+Status: started on the same `codex/phase-8-11-submission-readiness` branch and Draft PR #61 after
+exact pushed head `e0d22783d819d25f6c9ecab62d90717d054a11c9`. The entrant reports that a DataHub
+hackathon representative answered **yes** when asked whether a Public credential-free synthetic
+fixture demo plus an exact repository-local DataHub OSS/MCP reproduction path satisfies project
+access and DataHub integration expectations without a remotely hosted DataHub or MCP service.
+
+Objective: turn the existing technically complete interface into a stronger judge-facing product
+story without borrowing another entrant's visual identity or inventing capabilities. Make canonical
+incident playbooks, the bounded investigation path, the evidence-backed verdict, transparent
+confidence, and supported blast radius immediately visible. Reconcile remote MCP hosting as
+optional/not required for this entry while preserving the explicit fixture-only Public deployment
+boundary.
+
+Minimum files:
+
+- `apps/web/src/App.tsx` and `apps/web/src/styles.css` for a stronger product hero, visible canonical
+  playbooks, compact editable intake, a truthful investigation contract, and a validated-report-only
+  verdict dashboard.
+- `tests/integration/web-scenario-intake.test.ts` and
+  `tests/integration/web-report.test.ts` for accessible selection, ordering, escaping, and
+  report-derived metric contracts.
+- `README.md`, `docs/CLAIM_TO_DEMO_MATRIX.md`, `docs/DEVPOST_REQUIREMENTS.md`,
+  `docs/DEVPOST_SUBMISSION.md`, `docs/JUDGE_QUICKSTART.md`, `docs/KNOWN_ISSUES.md`, this plan,
+  `docs/REPOSITORY_MAP.md`, and `docs/SESSION_LOG.md` only where organizer guidance or the new
+  judge-facing UI changes current evidence.
+
+Acceptance criteria:
+
+- Expose all seven existing shared canonical scenarios as keyboard-accessible visible playbooks,
+  retain manual/custom provenance, and keep every submitted field editable. Do not add a new fixture,
+  scenario payload, API call, hidden request field, or implied rich fixture result for the six
+  non-canonical-browser scenarios.
+- State the product promise in one judge-readable headline and show the exact read-only investigation
+  path before submission. Do not claim an LLM, autonomous remediation, DataHub write-back, audit
+  ledger, or remotely hosted MCP.
+- Derive the completed verdict dashboard only from the validated incident response: top hypothesis,
+  scored/not-scored confidence, evidence count, supported impact count, and execution bounds. Escape
+  provider labels and preserve the existing detailed report, evidence links, deterministic Markdown
+  export, accessible terminal focus handoff, and reduced-motion/mobile behavior.
+- Record the entrant-reported organizer confirmation as general access/integration guidance, not
+  organizer acceptance of the submission or a judging result. Advance only requirements whose
+  factual local OSS/access conditions are now satisfied; remote hosting becomes optional rather than
+  a blocker, while the Public app remains explicitly fixture-only.
+- Verify the organizer-supplied hardened local GMS recipe against current official documentation and
+  document it as an optional operator path: preserve a separate quickstart Compose copy, enable
+  `METADATA_SERVICE_AUTH_ENABLED=true` for both GMS and frontend, recreate from that exact copy,
+  generate a local PAT in Settings, and pass it only as `DATAHUB_GMS_TOKEN` to the MCP process. Keep
+  the app-to-MCP hop on trusted loopback with `DATAHUB_MCP_AUTH_MODE=none`; never place the PAT in the
+  app frontend, repository, command output, screenshots, or logs. Do not modify the already-proven
+  stack or generate a token in this slice.
+- Run changed-file Prettier/ESLint, web typecheck, focused scenario/report tests, affected web build,
+  and one local official Browser visual/accessibility/overflow review at stable desktop and mobile
+  dimensions. Create no additional incident during visual review; use static fixture rendering and
+  existing focused contracts for terminal report layout.
+
+Deferred: Devpost editing/resubmission, a new screenshot/video/public incident, Public Cloud Run
+deployment, DataHub Cloud/remote MCP, mutation/write-back, package/lock/workflow/version/tag/Release
+changes, full Level D/evaluation rerun, PR Ready/merge, organizer acceptance, and prize outcome.
