@@ -5,28 +5,58 @@ changes. It follows a Keep a Changelog-style structure and the repository's
 [versioning policy](docs/VERSIONING.md).
 
 Tag `v1.0.0-rc.1` exists, and its GitHub Draft Release exists but remains unpublished with only
-automatic source archives and no user-uploaded assets. Final `v1.0.0` tagging/publication remain
-separately authorized gates.
+automatic source archives and no user-uploaded assets. This repository prepares the `1.0.0`
+metadata below; final `v1.0.0` tagging and GitHub Release creation/publication remain separately
+authorized post-merge gates.
 
 ## [Unreleased]
+
+## [1.0.0] - 2026-07-28
+
+### Added
+
+- Added a bounded read-only adapter for the official DataHub MCP Server's search and lineage tools,
+  with strict transport, payload, result, timeout, and taxonomy validation. Authorized live/judge
+  endpoint validation remains partial, and unsupported recent-change evidence stays explicit.
+- Added a credential-free public Cloud Run fixture demo plus judge quickstart, claim-to-demo matrix,
+  clean synthetic-data screenshots, an under-three-minute functioning-project recording, synchronized
+  English captions/transcripts, and a separate locally generated male voice-over derivative.
+- Added deterministic exact-bundle and packaged-runtime legal/provenance records, notices, checksums,
+  and verification for the release archive and immutable deployed image.
 
 ### Changed
 
 - Relicensed the project from MIT to Apache-2.0 across the canonical license text, all seven private
   workspace manifests, contributor guidance, and repository documentation. The separately authorized
   repository transition is now integrated and GitHub visibility is Public.
-- Recorded the owner's qualified zero-cost distribution/data/API disposition and a deployment
-  preflight for the existing React/Vite plus Fastify architecture. No deployment, artifact
-  publication, paid service, credential, runtime, dependency, workflow, version, tag, or Release
-  mutation is included.
-- Corrected the deployment preflight so a card-required genuinely free trial may be evaluated only
-  through a provider-specific control packet and fresh owner approval. Render, Koyeb, and Google
-  Cloud are separated by current official cost controls; no provider, account, card, trial, reminder,
-  or deployment is selected or started, and C11 remains qualified.
-- Corrected the official Koyeb card hold and persistent Phase 8 current-state record. Existing Google
-  Cloud project `onlinelearning-484610` is only a reference; a later packet may propose a dedicated
-  project but must obtain fresh approval for its exact identity/ownership immediately before
-  creation. No GCP mutation or deployment is included.
+- Transitioned the repository to Public visibility with private vulnerability reporting, sanitized
+  public collaboration guidance, and a qualified zero-cost distribution/data/API disposition rather
+  than a blanket legal or eligibility claim.
+- Added a minimal same-origin production host and immutable-digest Docker path for the existing
+  React/Vite plus Fastify fixture architecture. The proven public revision remains fixture-only,
+  model-free, non-remediating with respect to DataHub/production systems, process-local, and
+  configured with service/revision maximum instances of `1`.
+- Refreshed the truthful submission packet around evidence-linked hypotheses, confidence factors,
+  downstream blast radius, Markdown export, explicit limitations, public-repository fallback, and
+  Open/Wildcard as the proposed primary challenge fit. No Devpost form choice or submission is made.
+
+### Fixed
+
+- Hardened MCP transport handling against unsafe URLs, oversized responses, invalid optional tool
+  inputs, late/aborted responses, ambiguous tool output, and unsupported schema-change claims.
+- Bound release and deployed-runtime attribution to exact lock, source, tree, image, bundled-module,
+  package, notice, and legal-file identities with fail-closed verification and Windows path safety.
+
+### Security
+
+- Pinned vulnerable transitive production paths to `find-my-way@9.7.0` and
+  `brace-expansion@5.0.8` after the final production audit identified the fixed versions for their
+  respective denial-of-service advisories.
+- Kept credentials, live DataHub/model access, customer data, browser/account chrome, and private
+  endpoints out of the public fixture, screenshots, reports, recordings, archives, and logs.
+- Preserved unresolved external gates explicitly: judging-window access is not guaranteed; the demo
+  video is a Public GitHub repository asset but is not hosted on a Rules-listed video service or
+  linked in Devpost; entrant/team/IP/media-rights/eligibility/consent attestations remain owner work.
 
 ## [1.0.0-rc.1] - 2026-07-23
 

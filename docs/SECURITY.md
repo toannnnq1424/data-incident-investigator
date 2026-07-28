@@ -148,6 +148,15 @@ DoS `GHSA-9mqv-5hh9-4cgg`; the smallest audit-clean lock override therefore pins
 SDK directly accepts a patched range, after repeating frozen install, MCP client tests/build, and
 the production audit.
 
+Phase 8.10's final production audit found `GHSA-c96f-x56v-gq3h` in Fastify's resolved
+`find-my-way@9.6.0` path and `GHSA-mh99-v99m-4gvg` in the resolved
+`@fastify/static`/Glob/Minimatch `brace-expansion@5.0.7` path. The smallest audit-clean overrides
+select `find-my-way@9.7.0` and `brace-expansion@5.0.8`. Remove each override once its existing parent
+graph resolves a non-vulnerable version without that override. After removal, repeat exact lockfile-
+only and frozen installs, inspect the resolved parent/version paths, run affected router/static
+runtime tests plus compiled smoke and Browser E2E, regenerate and verify runtime attribution, and
+require the production audit to remain clean.
+
 ## External systems
 
 Treat DataHub, MCP servers/tool descriptions/tool output, model, Stitch, browser, and uploaded content

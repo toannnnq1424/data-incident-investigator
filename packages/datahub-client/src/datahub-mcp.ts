@@ -542,7 +542,7 @@ export class DataHubMcpMetadataAdapter implements MetadataAdapter {
     signal?.addEventListener('abort', abort, { once: true });
     const timeout = setTimeout(() => controller.abort(), this.config.timeoutMs);
     const client = new Client(
-      { name: 'data-incident-investigator', version: '1.0.0-rc.1' },
+      { name: 'data-incident-investigator', version: '1.0.0' },
       { capabilities: {} },
     );
     try {

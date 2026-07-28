@@ -6,7 +6,7 @@ adding compatibility conclusions or representing fallback evidence as npm-packag
 Reproduced text is normalized to LF and trailing horizontal whitespace is removed; each
 recorded evidence SHA-256 binds the original installed/tracked source bytes.
 
-Lockfile SHA-256: eeec795d5a09d5e8865b54bfbd95fb3557cce421c5369d99b6e2f89a472484b2
+Lockfile SHA-256: 6194526652ac34a3f3b06e16fd8a055ff88cdbd77c51c8e6e3695b4b5611bf1d
 Full production identities: 152
 Deployed external runtime identities: 149
 Deployed external runtime package roots: 149
@@ -3121,15 +3121,15 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ----- END LICENSE EVIDENCE -----
 
 ================================================================================
-EXTERNAL NODE RUNTIME: brace-expansion@5.0.7
+EXTERNAL NODE RUNTIME: brace-expansion@5.0.8
 Declared licence metadata: MIT
-Canonical package root: node_modules/.pnpm/brace-expansion@5.0.7/node_modules/brace-expansion
-Frozen lock package: brace-expansion@5.0.7
-Frozen lock snapshot: brace-expansion@5.0.7
-Package manifest: node_modules/.pnpm/brace-expansion@5.0.7/node_modules/brace-expansion/package.json
-Package manifest SHA-256: f792e76015d954c06e8ac42cfa5664820126b2ecce01c987fe59de65bea57ab4
+Canonical package root: node_modules/.pnpm/brace-expansion@5.0.8/node_modules/brace-expansion
+Frozen lock package: brace-expansion@5.0.8
+Frozen lock snapshot: brace-expansion@5.0.8
+Package manifest: node_modules/.pnpm/brace-expansion@5.0.8/node_modules/brace-expansion/package.json
+Package manifest SHA-256: 4d079b0aafed063861201a3ea955b3e1d08b93f0876860d4f8028efac496b57a
 
-Evidence source: installed package file (node_modules/.pnpm/brace-expansion@5.0.7/node_modules/brace-expansion/LICENSE)
+Evidence source: installed package file (node_modules/.pnpm/brace-expansion@5.0.8/node_modules/brace-expansion/LICENSE)
 Evidence SHA-256: 9c63a23124d68cd30cd316a94a1a0bca34f032786df6df69fc4b5f136bac8d2e
 ----- BEGIN LICENSE EVIDENCE -----
 MIT License
@@ -4529,15 +4529,15 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ----- END LICENSE EVIDENCE -----
 
 ================================================================================
-EXTERNAL NODE RUNTIME: find-my-way@9.6.0
+EXTERNAL NODE RUNTIME: find-my-way@9.7.0
 Declared licence metadata: MIT
-Canonical package root: node_modules/.pnpm/find-my-way@9.6.0/node_modules/find-my-way
-Frozen lock package: find-my-way@9.6.0
-Frozen lock snapshot: find-my-way@9.6.0
-Package manifest: node_modules/.pnpm/find-my-way@9.6.0/node_modules/find-my-way/package.json
-Package manifest SHA-256: e02a41e66a831eb5218c734b214e9a0fa453694b5730e0a588ff6ce805eeb80f
+Canonical package root: node_modules/.pnpm/find-my-way@9.7.0/node_modules/find-my-way
+Frozen lock package: find-my-way@9.7.0
+Frozen lock snapshot: find-my-way@9.7.0
+Package manifest: node_modules/.pnpm/find-my-way@9.7.0/node_modules/find-my-way/package.json
+Package manifest SHA-256: 16f6c2ef9580032884b7f52cdbd672996305460518a757bfd493672e2479703b
 
-Evidence source: installed package file (node_modules/.pnpm/find-my-way@9.6.0/node_modules/find-my-way/LICENSE)
+Evidence source: installed package file (node_modules/.pnpm/find-my-way@9.7.0/node_modules/find-my-way/LICENSE)
 Evidence SHA-256: 693f9539655acc1847add1ccd364312ba570bf8ce84706b6059e7e0b5ceb90e6
 ----- BEGIN LICENSE EVIDENCE -----
 MIT License

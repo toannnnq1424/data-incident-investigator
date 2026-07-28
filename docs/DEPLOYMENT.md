@@ -8,7 +8,7 @@ credential-free deployment and demo path. Direct GraphQL and DataHub MCP Server 
 host layout but are ready only when their selected authorized, read-only external dependency passes
 the bounded readiness check.
 
-Exact current main `b5b394b31ec626bb4ecc175975ca9869e475054e` contains the supported source-build
+Exact current main `b4f9e360e22baba3cab60710a65ea5c0e0555369` contains the supported source-build
 `Dockerfile` and Phase 8.7 evidence. The exact clean source commit identified below is deployed as a
 credential-free fixture service at
 <https://data-incident-investigator-1071683558688.asia-southeast1.run.app>. Google terminates TLS;
@@ -18,6 +18,14 @@ durable incident storage. The running image remains bound to immutable source co
 rebuilt or redeployed. The earlier Phase 7.6 no-Docker/no-public-URL statement is historical; do not
 infer any broader provider, credential, persistence, or production-support promise from the bounded
 fixture deployment.
+
+Phase 8.10 release preparation updates only the repository/future-artifact dependency graph after a
+final production audit found two denial-of-service advisories. Its lock SHA-256 is
+`6194526652ac34a3f3b06e16fd8a055ff88cdbd77c51c8e6e3695b4b5611bf1d`, with
+`find-my-way@9.7.0` and `brace-expansion@5.0.8`, and its regenerated source attribution verifies
+locally. This graph is **not** deployed. The public service and its C11 qualified evidence remain
+bound to source `3653cf6b…7fa4f`, the earlier `eeec795d…84b2` lock, and live digest
+`fe56a3dc…36afd`; no deployment or GCP mutation occurs in Phase 8.10.
 
 ## Release artifact contract
 
@@ -652,7 +660,7 @@ The final local image is 86,183,068 bytes and, under `0.08` CPU / `256 MiB`, als
 canonical incident completion plus a 9,221-byte Markdown report with renderer version and `81%`
 high-confidence evidence.
 
-Exact source-side attribution evidence:
+Exact source-side attribution evidence for deployed source commit `3653cf6b…7fa4f`:
 
 - `pnpm-lock.yaml` SHA-256
   `eeec795d5a09d5e8865b54bfbd95fb3557cce421c5369d99b6e2f89a472484b2`;
@@ -694,7 +702,8 @@ The service-level `run.googleapis.com/maxScale` annotation is now exactly `1`.
 
 The exact running digest was pulled read-only and executed under `0.08` CPU / `256 MiB` for a second
 content-addressed audit. All 8 compiled runtime files, 149 package manifests/roots, and 149 package
-legal files matched the tracked hashes; the base-image digest, lock SHA, five rendered Vite
+legal files matched the hashes tracked at that immutable deployed source commit; the base-image
+digest, lock SHA, five rendered Vite
 identities, `RUNTIME-ATTRIBUTION.json`, `THIRD_PARTY_NOTICES.txt`, Apache `LICENSE`, and project
 `NOTICE` also matched. C11 is therefore restored to
 **QUALIFIED PASS — OWNER-AUTHORIZED SCOPE** for this exact live digest and the already documented

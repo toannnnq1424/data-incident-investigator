@@ -1,14 +1,15 @@
 # Repository map
 
-Last verified: 2026-07-27 for Phase 8.9A on the implementation branch based on exact `origin/main`
-`ceaed0a3f5a277884bf03eb2605c3dd5f70b4afe` (tree
-`0d38dd187fc6f3cd166d88287112f1dc3a46f867`). The root and six private workspace manifests remain at
-candidate version `1.0.0-rc.1` and SPDX `Apache-2.0`. Phase 8.9 is integrated and retains one
-authentic silent WebM/caption/transcript packet. Phase 8.9A adds only a separate exact-video-stream
-synthetic male-voice derivative, matching captions/transcript, and judge/persistent documentation.
-These are Public GitHub repository assets, not YouTube/Vimeo/Youku-hosted or Devpost-linked media.
-Phase 8.9A does not change runtime, API, workflow, package, lockfile, version, tag, Release, fixture,
-deployment, or submission state.
+Last verified: 2026-07-28 for Phase 8.10 from exact `origin/main`
+`b4f9e360e22baba3cab60710a65ea5c0e0555369` (tree
+`29f51960e9a772b8c331b427943920f296031bbe`). Phase 8.9A is integrated and retains the authentic
+silent WebM/caption/transcript packet plus a separate exact-video-stream synthetic male-voice
+derivative with matching captions/transcript. These are Public GitHub repository assets on merged
+`main`, not YouTube/Vimeo/Youku-hosted or Devpost-linked media. The Phase 8.10 preparation branch
+aligns the root and six private Apache-2.0 manifests to `1.0.0`, updates the MCP client protocol
+identity to the same version, and applies only the two transitive denial-of-service patches required
+by the final production audit. It changes no investigation behavior, workflow, fixture, media, tag,
+Release, deployment, or submission state.
 
 ## Directories
 
@@ -31,9 +32,9 @@ deployment, or submission state.
 
 Phase 8.7 added `scripts/runtime-attribution.mjs` and `scripts/prepare-runtime-manifests.mjs` for the
 container-only production/legal boundary and is integrated through exact main
-`ceaed0a3f5a277884bf03eb2605c3dd5f70b4afe`. The running Cloud Run image remains independently bound
-to immutable source commit `3653cf6b591eed76ad6276d07b1ea08e88d7fa4f`; Phase 8.8/8.9 do not
-rebuild or redeploy it.
+`b4f9e360e22baba3cab60710a65ea5c0e0555369`. The running Cloud Run image remains independently bound
+to immutable source commit `3653cf6b591eed76ad6276d07b1ea08e88d7fa4f`; later Phase 8.8–8.10
+repository evidence does not rebuild or redeploy it.
 
 ## Root configuration
 
