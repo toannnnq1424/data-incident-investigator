@@ -24,6 +24,7 @@ interface RecordedProtocolRequest {
 interface ProtocolFixtureOptions {
   omitLineageTool?: boolean;
   tools?: unknown[];
+  lineagePlatformObject?: boolean;
   malformedLineagePayload?: boolean;
   malformedSearchPayload?: boolean;
   oversizedSearchResponse?: boolean;
@@ -211,6 +212,14 @@ class DataHubMcpProtocolTransport {
                       urn: 'urn:li:dataset:(urn:li:dataPlatform:snowflake,raw.orders,PROD)',
                       type: 'DATASET',
                       name: 'raw.orders',
+                      ...(this.options.lineagePlatformObject
+                        ? {
+                            platform: {
+                              urn: 'urn:li:dataPlatform:snowflake',
+                              name: 'snowflake',
+                            },
+                          }
+                        : {}),
                     },
                   },
                 ],
@@ -529,6 +538,22 @@ describe('DataHub MCP Server provider', () => {
           offset: 0,
         }),
       }),
+    ]);
+  });
+
+  it('accepts the official nested lineage platform descriptor without widening entity kinds', async () => {
+    const adapter = testAdapter([], { lineagePlatformObject: true });
+
+    const lineage = await adapter.getLineageGraph({
+      rootUrn: 'urn:li:dataset:(urn:li:dataPlatform:snowflake,analytics.daily_revenue,PROD)',
+      direction: 'upstream',
+      depth: 1,
+      maxNodes: 4,
+    });
+
+    expect(lineage.nodes).toEqual([
+      expect.objectContaining({ kind: 'dataset', depth: 0 }),
+      expect.objectContaining({ kind: 'dataset', name: 'raw.orders', depth: 1 }),
     ]);
   });
 

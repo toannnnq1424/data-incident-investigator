@@ -6955,3 +6955,133 @@ Run the bounded affected-document format/link/claim/status-total/diff/path/encod
 process/port checks. Create one additive conventional commit on the existing branch, push normally,
 update the same Draft PR #61, require exact-new-head PR CI `SUCCESS`, and return for independent
 review. Do not mark Ready, merge, accept the final Rules/Terms, or submit the Devpost project.
+
+## 2026-07-28 — Phase 8.11 real local MCP and judge-UX follow-up
+
+### Objective
+
+Reconcile the entrant-operated Devpost submission, exhaust the smallest safe real DataHub MCP
+validation path, and implement only UI/provider corrections supported by direct evidence on the
+existing `codex/phase-8-11-submission-readiness` branch and Draft PR #61. Preserve the public
+fixture deployment, submitted media/form, release state, and all external accounts.
+
+### Completed
+
+- Current official DataHub MCP guide/repository/package metadata were re-read read-only at
+  `2026-07-28 19:20 ICT / 12:20 UTC`. The guide still identifies DataHub Core `1.6.0`, documents
+  self-hosted Core MCP, separates read-only and opt-in mutation tools, and lists no recent-change
+  tool.
+- Ran a localhost-only official DataHub Core `1.6.0` quickstart with the official synthetic
+  `showcase-ecommerce` pack and official `mcp-server-datahub` `0.6.0` over Streamable HTTP. Mutation,
+  user, data-quality, and telemetry surfaces were disabled. No token, DataHub Cloud account, public
+  tunnel, paid service, or remote judge credential was used.
+- Discovery returned exactly `search`, `get_entities`, `list_schema_fields`, `get_lineage`,
+  `get_lineage_paths_between`, `get_dataset_queries`, `search_documents`, and `grep_documents`.
+  Direct calls against synthetic
+  `urn:li:dataset:(urn:li:dataPlatform:dbt,b2fd91.order_entry_db.order_entry.orders,PROD)` returned
+  five search candidates in the protocol probe, fifteen schema fields, five upstream results, and
+  twenty downstream results. Sanitized response SHA-256 values are
+  `bfe8d46c4c3e7d58cac57bc406217f68cd2ef435a724825a24dee12587e6b6f6`,
+  `cb7a833a4cb6dffe9ad6d1804ba4204822829e03f37559aed7d612d45406ec04`,
+  `58f1b6b4e76f0cc5430f2babeb5ef43a0007de56e0ed6022d33ca2fd70b80977`,
+  `da1abbf3c03dbde0e7655ad5df5e57671d960d119540335df48f6b64a125b8da`, and
+  `fe08b91916608913303fb98c1e7cf1d35598e6dcba044be2c9e8dbe40d92fa83`.
+- Application `datahub-mcp` readiness, health, search, bounded lineage, and explicit unsupported
+  recent-change routes passed. The first lineage call reproduced a real compatibility defect:
+  official MCP lineage used a nested `platform` descriptor where the adapter allowed only a string.
+  The smallest correction accepts string or bounded `{ urn, name? }` without widening the exact
+  read-only tool allowlist, supported entity kinds, timeout/byte/entity/lineage bounds, or
+  fail-closed behavior.
+- Exactly one local synthetic incident terminated as designed with status `degraded`, four
+  candidates, four visited lineage nodes, `lineage_truncated`, unsupported recent changes, eight tool
+  calls, six steps, zero retries, and no hypothesis. The technical gate is
+  **PASS — LOCAL OSS**; no durable remote judge endpoint or safe judge-auth path exists, so
+  public/judge MCP access remains `PARTIAL`.
+- The web source now puts the primary investigation before the optional explorer, the summary/top
+  hypothesis/blast radius before execution detail, and one concise terminal announcement before
+  heading focus. It labels the source **DataHub MCP Server** and distinguishes unsupported history
+  from a supported empty window without inferring evidence.
+- One official Browser review at 1440 × 900 confirmed the local fixture intake order, readable
+  hierarchy, exact accessible region order, and zero warning/error console entries. It did not click
+  **Start investigation** or create another incident; completed/degraded ordering remains covered by
+  focused static-render contracts.
+- Reconciled current Devpost state after the entrant personally used the final gate. Project
+  `1117401` reports **Project submitted!**, **Submitted**, and **5/5**. C02, C22, and C27 advance to
+  `PASS`; totals are
+  `15 PASS / 1 QUALIFIED PASS — OWNER-AUTHORIZED SCOPE / 8 PARTIAL / 3 OPEN / 10 NOT REQUIRED`.
+  Submission is not organizer acceptance, eligibility approval, or a prize result.
+
+### Files changed
+
+- `README.md`
+- `apps/web/src/App.tsx`
+- `apps/web/src/styles.css`
+- `docs/CLAIM_TO_DEMO_MATRIX.md`
+- `docs/DEMO_SCRIPT.md`
+- `docs/DEVPOST_REQUIREMENTS.md`
+- `docs/DEVPOST_SUBMISSION.md`
+- `docs/IMPLEMENTATION_PLAN.md`
+- `docs/JUDGE_QUICKSTART.md`
+- `docs/KNOWN_ISSUES.md`
+- `docs/REPOSITORY_MAP.md`
+- `docs/SESSION_LOG.md`
+- `docs/demo-video/README.md`
+- `packages/datahub-client/src/datahub-mcp.ts`
+- `tests/integration/datahub-mcp.test.ts`
+- `tests/integration/web-metadata-health.test.ts`
+- `tests/integration/web-metadata-recent-changes.test.ts`
+- `tests/integration/web-report.test.ts`
+
+No fixture, API/orchestration behavior, public deployment/GCP resource, workflow, package, lockfile,
+version, tag, Release, media byte, YouTube asset, or Devpost form field changed in this follow-up.
+
+### Decisions
+
+- Treat the real integration as **PASS — LOCAL OSS**, not as a public live DataHub or durable
+  judge-access claim.
+- Keep compliance rows C06, C07, C28, and C29 `PARTIAL` because the submitted public app remains
+  fixture-only and no authorized remote endpoint/auth path is available.
+- Implement the three bounded UX corrections supported by source/visual review: primary-task-first
+  intake, answer-first terminal report, and one concise accessible result handoff. Do not redeploy
+  them in this slice.
+- Record the entrant-operated Devpost state without self-attesting age, eligibility, ownership,
+  contributor, IP/media-rights, organizer acceptance, or prize facts.
+
+### Validation performed
+
+- Changed-file Prettier and affected ESLint passed.
+- Web and datahub-client type checks passed.
+- `tests/integration/datahub-mcp.test.ts`: `28/28` passed.
+- Web metadata-health/recent-change/report tests: `19/19` passed.
+- Datahub-client compiled build passed.
+- Web Vite production build passed with `109` modules. The first corrected sandboxed invocation
+  reproduced the known managed-worktree ancestor-read denial; its one exact elevated recovery
+  passed. A preceding wrong root-module-path invocation was an environment command error, not a
+  product failure.
+- Ten changed Markdown files exposed `57` repository-local links; zero target was missing.
+- `git diff --check`, claim/status-total review, and the 1440 × 900 local Browser intake review
+  passed with zero warning/error console entry.
+- Task-owned API/MCP/UI processes and listeners were stopped. All temporary DataHub containers and
+  network were removed. Three Docker volumes containing only rebuildable task-created synthetic
+  quickstart state were removed.
+
+### Validation intentionally deferred
+
+All unchanged full Level D, 7/7 evaluation, release artifact/provenance, media, exact-main CI,
+public-fixture incident/smoke, and deployment gates are reused. No second incident, public
+deployment, DataHub Cloud/OAuth/PAT, remote judge endpoint, Devpost edit/resubmission, or external
+publication was performed.
+
+### Known issues
+
+The submitted public demo remains fixture-only. Technical MCP validation is real local OSS evidence,
+but no durable remote judge endpoint or judge authentication path exists. The current source/UX
+correction is not deployed. Repository evidence does not independently prove entrant
+eligibility/IP/media-rights facts, organizer acceptance, or a prize result.
+
+### Exact next step
+
+Finish the exact diff/path/encoding/secret/residue checks, remove ignored task-only tools/logs,
+create one additive conventional commit, push the same branch, update only Draft PR #61, and require
+exact-new-head PR CI `SUCCESS`. Do not mark Ready, merge, redeploy, mutate Devpost/YouTube/GCP, or
+create another incident.

@@ -1,9 +1,10 @@
-# Devpost submission draft
+# Devpost submission record
 
-> Devpost draft `1117401` is saved at **4/5 steps** after registration and individual
-> **Join Hackathon**. Verified English copy, links, media, and judge fields from this packet are in
-> the draft and match its signed-in preview. The final Rules/Terms checkbox is unchecked and
-> **Submit project** has not been clicked; no submission, receipt, or organizer acceptance exists.
+> Devpost project `1117401` was submitted by the entrant after registration and individual
+> **Join Hackathon**. The signed-in finalization screen reports **Project submitted!**,
+> **Submitted**, and **5/5**. Verified English copy, links, media, and judge fields from this packet
+> are in the submitted entry. This is submission evidence, not organizer acceptance, eligibility
+> approval, or a prize result.
 
 ## Title
 
@@ -25,7 +26,7 @@ an auditable report with transparent confidence, blast radius, and safe human ne
 - Judge instructions: [`JUDGE_QUICKSTART.md`](JUDGE_QUICKSTART.md)
 - Screenshot gallery: [`demo-assets/README.md`](demo-assets/README.md)
 - Public 2:50 functioning demo: <https://youtu.be/D5mvMqrhyDc>
-- Devpost draft preview route (incomplete; not a submission):
+- Public submitted Devpost project:
   <https://devpost.com/software/data-incident-investigator>
 - Repository silent/voiced video candidates and review packet:
   [`demo-video/README.md`](demo-video/README.md)
@@ -35,17 +36,21 @@ unavailable. The exact authentic 2:50.20 silent source is public on merged `main
 8.9A derivative stream-copies the same real video and adds synchronized Microsoft Mark synthetic
 male English narration plus matching captions/transcript. The voiced derivative is now Public on
 YouTube under **Data Incident Investigator — 2:50 Functioning Demo (Synthetic Fixture)** with the
-authored English WebVTT published. The exact YouTube URL is saved in draft `1117401` and embedded in
-its signed-in preview. The draft has not been submitted or accepted by an organizer.
+authored English WebVTT published. The exact YouTube URL is included in submitted project `1117401`.
+The signed-in UI reports submission; no organizer acceptance or prize result is claimed.
 
-## Saved Devpost draft state
+## Submitted Devpost state
 
-Observed and saved through the signed-in Devpost account at **2026-07-28 17:18 ICT
-(UTC+07:00) / 2026-07-28 10:18 UTC**:
+The field-level draft evidence below was observed and saved through the signed-in Devpost account at
+**2026-07-28 17:18 ICT (UTC+07:00) / 2026-07-28 10:18 UTC**. Later on 2026-07-28, the entrant
+personally completed the final agreement/submission action; the post-action signed-in state showed:
 
-- Exactly one project draft exists: numeric ID `1117401`, slug
-  `1117401-data-incident-investigator`, title **Data Incident Investigator**, status **Draft**, and
-  progress **4/5 steps done**.
+- Exactly one project exists: numeric ID `1117401`, slug
+  `1117401-data-incident-investigator`, title **Data Incident Investigator**, status
+  **Submitted**, and progress **5/5**.
+- The finalization banner says **Project submitted!** and the project remains editable until
+  **2026-08-10 17:00 EDT**. This edit window is not organizer acceptance and does not authorize
+  post-deadline material changes.
 - **Project overview:** the title and one-line description above are saved. The completed
   report/export PNG is uploaded as the project thumbnail.
 - **Project details:** the 4,898-character English story below is saved without the Devpost template
@@ -63,14 +68,14 @@ Observed and saved through the signed-in Devpost account at **2026-07-28 17:18 I
 - **Solo contribution:** the preview records that the solo entrant directed the project and used
   Codex as an AI coding assistant across design, implementation, validation, documentation,
   deployment, and rehearsal.
-- **Preview:** the signed-in draft preview renders the Public YouTube embed, all five captioned PNGs,
-  the clean English story, Built With tags, and both Try it out links. It labels the entry
-  **Incomplete submission**.
-- **Final gate:** the only final control shown is agreement to the Official Rules and Devpost Terms
-  of Service. It remains unchecked, and **Submit project** was not clicked.
+- **Submitted project:** the project page renders the Public YouTube embed, all five captioned PNGs,
+  the clean English story, Built With tags, and both Try it out links.
+- **Final gate:** the entrant personally operated the Rules/Terms agreement and **Submit project**
+  controls. Repository evidence records the resulting submitted UI state but does not self-certify
+  the underlying eligibility, ownership, or media-rights facts.
 
 No credential, account token, private endpoint, customer data, additional public incident, new media
-encoding, Devpost submission, or organizer acceptance was created by this form pass.
+encoding, organizer acceptance, or prize result was created by the later local technical follow-up.
 
 ## Inspiration
 
@@ -133,13 +138,19 @@ Live DataHub inputs and provider state can vary. The public service does not con
 ## DataHub usage and exact integration boundary
 
 The repository implements a bounded `APP_MODE=datahub-mcp` integration through the official MCP SDK.
-Local protocol and product vertical-slice tests prove that the application uses the MCP protocol and
-calls only read-only `search` and `get_lineage`. The official server currently exposes no
-recent-changes/timeline tool, so that capability is reported as unsupported rather than emulated.
+Protocol and product vertical-slice tests prove that the application uses the MCP protocol and calls
+only read-only `search` and `get_lineage`. On 2026-07-28, a localhost-only real integration also
+passed against DataHub Core `1.6.0`, the official synthetic ecommerce data pack, and official
+`mcp-server-datahub` `0.6.0`, with mutation, user, and data-quality tools disabled. Application
+readiness, metadata search, bounded lineage, explicit unsupported recent-change behavior, and one
+bounded degraded incident all behaved as designed. The incident stopped at incomplete evidence
+rather than inventing a root cause. The official server currently exposes no recent-changes/timeline
+tool, so that capability remains unsupported rather than emulated.
 
-An authorized live DataHub Core/Cloud MCP endpoint has not been validated for judges. The deployed
-public service is credential-free fixture mode. Named-integration compliance therefore remains
-**PARTIAL**; protocol fixtures are not presented as live DataHub evidence.
+This technical proof is **PASS — LOCAL OSS**. No authorized durable remote DataHub Core/Cloud MCP
+endpoint or safe judge authentication path has been provisioned. The deployed public service remains
+credential-free fixture mode. Public/judge named-integration access therefore remains **PARTIAL**;
+the local OSS proof is not presented as public live DataHub evidence.
 
 ## Challenges we ran into
 
@@ -188,7 +199,8 @@ The entrant's Join registration and the saved project-form category both record
 - Only **Removed schema column** has the rich checked-in fixture and canonical browser path; six other
   presets are guided inputs/evaluation cases.
 - Incident state is process-local and not durable across restart or scale-to-zero.
-- The public demo is fixture-only. Authorized live/judge DataHub MCP validation remains open.
+- The public demo is fixture-only. Real localhost DataHub OSS/MCP validation is complete, but a
+  durable authorized remote judge endpoint and judge authentication path remain open.
 - MCP recent-change evidence is unsupported by the current official tool surface.
 - The agent makes zero model calls and performs no automatic production change or DataHub write-back.
 - The owner-authorized Cloud Run operating window runs through 2026-09-17 23:59 ICT, beyond the
@@ -198,19 +210,20 @@ The entrant's Join registration and the saved project-form category both record
   male-voice repository variants. The voiced derivative changes no video packet/frame, uses only an
   offline installed Windows AI voice, and is Public on YouTube with authored English captions. Its
   exact URL is saved and embedded in the signed-in Devpost draft preview.
-- Devpost registration and individual Join are complete, and draft `1117401` is saved at 4/5 steps
-  with the fields described above. The final Rules/Terms checkbox and submission remain open.
-  Repository evidence does not independently establish the entrant's remaining eligibility,
-  ownership, contributor, or media-rights facts.
+- Devpost registration, individual Join, and the entrant-operated final submission are complete for
+  project `1117401`; the signed-in finalization screen reports **Project submitted!**,
+  **Submitted**, and **5/5**. Repository evidence does not independently establish the entrant's
+  eligibility, ownership, contributor, or media-rights facts, and submission does not imply organizer
+  acceptance or a prize result.
 
-Next work is operational rather than a new product claim: obtain authorized live/judge MCP evidence,
-complete the entrant's eligibility/IP/media-rights review, review and explicitly accept the final
-Rules/Terms gate, reverify the Public app/video/repository, and perform the separately authorized
-final submission before the deadline while preserving the receipt.
+Next work is operational rather than a new product claim: keep the Public app/video/repository
+available, monitor the registered contact through judging, preserve the submitted content, and
+provide a durable authorized remote MCP/judge path only if an endpoint and safe authentication scope
+are separately supplied. Do not infer organizer acceptance or a prize.
 
 ## Codex usage
 
 Codex supported repository-bounded planning, implementation, focused tests, documentation memory,
 Git/CI workflow, deployment evidence, and demo preparation under the tracked operating contract.
-Human review remains responsible for entrant attestations, third-party rights, account actions, form
-content, and final submission.
+The entrant remains responsible for eligibility and rights attestations, account actions, submitted
+form content, organizer correspondence, and any permitted pre-deadline correction.

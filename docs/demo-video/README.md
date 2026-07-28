@@ -7,9 +7,9 @@ GitHub repository asset. That exact voiced derivative is now publicly visible on
 [Data Incident Investigator — 2:50 Functioning Demo (Synthetic Fixture)](https://youtu.be/D5mvMqrhyDc).
 The authored English WebVTT captions are uploaded and published, and YouTube reported no copyright
 issue during upload processing. Devpost registration and **Join Hackathon** have succeeded for an
-individual entrant. The exact URL is saved in draft project `1117401` and appears in its signed-in
-preview, but the project remains incomplete at 4/5 steps; no final Terms acceptance, submission,
-receipt, or organizer acceptance is claimed.
+individual entrant. The exact URL is included in submitted project `1117401`; the signed-in
+finalization screen reports **Project submitted!**, **Submitted**, and **5/5**. Submission does not
+mean organizer acceptance, eligibility approval, or a prize result.
 
 ## Review
 
@@ -154,10 +154,13 @@ continued normally; Phase 8.9A changes no frames and makes no application-consol
       authored English WebVTT captions are uploaded and published.
 - [x] YouTube reported no copyright issue during upload processing. This is platform evidence, not a
       blanket legal or ownership attestation.
-- [ ] Entrant identity/IP/media-rights attestations, final Rules/Terms acceptance, submission, and
-      receipt remain separate open actions. The Devpost project-form video link is complete.
+- [x] The entrant personally operated the final Devpost agreement/submission gate; the project-form
+      video link is complete and the signed-in UI reports submission.
+- [ ] Independent repository proof of entrant eligibility, IP/media-rights facts, organizer
+      acceptance, and any prize result remains unavailable.
 
 The public functioning-project video satisfies C18, which is `PASS`. C19 is also `PASS` because the
-accepted-host visibility requirement is met and the exact YouTube URL is saved in Devpost draft
-`1117401`. Registration, **Join Hackathon**, and a saved 4/5-step draft do not constitute final
-Terms acceptance, submission, a receipt, or organizer acceptance.
+accepted-host visibility requirement is met and the exact YouTube URL is included in submitted
+Devpost project `1117401`. The signed-in finalization screen reports **Project submitted!**,
+**Submitted**, and **5/5**; that does not constitute organizer acceptance, eligibility approval, or a
+prize result.

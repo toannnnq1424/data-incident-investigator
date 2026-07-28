@@ -36,13 +36,25 @@ Last updated: 2026-07-28.
   non-visual instrumentation page error when its scrollbar style ran before the initial document
   element existed; no app-console-clean claim is made for the take.
 
-- The entrant's Devpost account is registered for the challenge as **Working solo**. Draft project
-  `1117401` is saved at 4/5 steps: **Open / Wildcard**, Vietnam, the new-project selection, the
-  Public demo/repository/video links, English story/feedback, a completed-report thumbnail, and five
-  truthful captioned fixture PNGs are present. The user personally supplied the residence country,
-  but repository evidence still does not independently prove the remaining eligibility, ownership,
-  or rights facts. The final Rules/Terms checkbox is unchecked and no submission, receipt, or
-  organizer acceptance exists.
+- The entrant's Devpost account is registered for the challenge as **Working solo**. The entrant
+  personally operated the final agreement/submission gate for project `1117401`; the signed-in
+  finalization screen reports **Project submitted!**, **Submitted**, and **5/5**. The entry retains
+  **Open / Wildcard**, Vietnam, the new-project selection, the Public demo/repository/video links,
+  English story/feedback, a completed-report thumbnail, and five truthful captioned fixture PNGs.
+  Repository evidence does not independently prove the remaining eligibility, ownership, or rights
+  facts, and submission does not imply organizer acceptance or a prize result.
+
+- Phase 8.11 now has a real localhost-only DataHub integration proof: official DataHub Core `1.6.0`
+  with official synthetic `showcase-ecommerce` data, plus official `mcp-server-datahub` `0.6.0`
+  over loopback Streamable HTTP. Mutation, user, data-quality, and telemetry surfaces were disabled.
+  Eight tools were discovered; application readiness/search/bounded lineage/unsupported recent
+  changes passed, and exactly one local synthetic incident degraded safely on truncated lineage and
+  unavailable change history with no invented hypothesis. The first app lineage call exposed that
+  official MCP `entity.platform` can be `{ urn, name? }`, not only a string. This Phase 8.11 branch
+  accepts that exact bounded union and adds focused coverage without widening its read-only allowlist
+  or resource bounds. Technical status is **PASS — LOCAL OSS**; no durable remote judge endpoint,
+  OAuth/PAT, public tunnel, DataHub Cloud account, or public deployment was created. The public Cloud
+  Run service remains fixture-only, and the source/UI correction is not deployed there.
 
 - Phase 8.10 completed coordinated `1.0.0` metadata, full validation, normal merge, annotated
   `v1.0.0` tag, and Published/Latest GitHub Release. All seven private Apache-2.0 manifests are
@@ -510,9 +522,9 @@ Last updated: 2026-07-28.
   an empty result. Live DataHub-backed incident orchestration, impact analysis, change-to-incident
   correlation, ownership enrichment, schema diff, model reasoning, evaluation CLI, broader
   cross-browser automation, and public deployment remain deferred. A live DataHub smoke is
-  credential-gated and is not required for the existing fixture/local fake-provider validation, but
-  Devpost compliance separately requires a working named DataHub integration and judge-verifiable
-  evidence before submission.
+  credential-gated and is not required for fixture validation. Phase 8.11 later proves the real local
+  OSS/MCP path; a durable remote judge endpoint remains separately unavailable for the submitted
+  entry.
 - Stitch MCP configuration is tracked without a key. A rotated `STITCH_API_KEY` must be set in the Codex
   process environment on each machine, then Codex must reload the trusted project.
 - Stitch tools are not expected in the current task because project-scoped MCP configuration loads when

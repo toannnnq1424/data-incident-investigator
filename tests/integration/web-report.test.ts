@@ -2,6 +2,8 @@ import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import {
+  App,
+  CompletedReport,
   getCompletedReportContent,
   getDegradedInvestigationPresentation,
   BlastRadiusSection,
@@ -43,6 +45,22 @@ const unknownBlastRadius = BlastRadiusAnalysisSchema.parse({
     truncatedGraphs: 0,
     appliedLimits: { maxDepth: 3, maxEntities: 25, maxRootEntities: 3 },
   },
+});
+
+describe('primary investigation layout', () => {
+  it('places the incident workflow before the optional explorer with one concise announcement', () => {
+    const markup = renderToStaticMarkup(createElement(App));
+
+    expect(markup.indexOf('id="incident-heading"')).toBeLessThan(
+      markup.indexOf('id="metadata-search-heading"'),
+    );
+    expect(markup).toContain('Optional metadata explorer');
+    expect(markup).toContain(
+      'class="submission-announcement" role="status" aria-live="polite" aria-atomic="true"',
+    );
+    expect(markup).toContain('<div class="submission-status">');
+    expect(markup).not.toContain('class="submission-status" aria-live=');
+  });
 });
 
 describe('investigation activity presentation', () => {
@@ -132,7 +150,7 @@ describe('investigation activity presentation', () => {
     if (incident.status !== 'failed') throw new Error('Expected failed incident fixture.');
 
     const markup = renderToStaticMarkup(createElement(FailedInvestigation, { incident }));
-    expect(markup).toContain('role="alert"');
+    expect(markup).not.toContain('role="alert"');
     expect(markup).toContain('The investigation did not complete');
     expect(markup).toContain('tool_call_limit_reached');
     expect(markup).toContain('Investigation activity');
@@ -369,6 +387,15 @@ describe('completed report presentation', () => {
       assumptions: ['The fixture snapshot covers the incident window.'],
       missingInformation: ['Runtime query logs are unavailable.'],
     });
+
+    const markup = renderToStaticMarkup(createElement(CompletedReport, { incident }));
+    expect(markup.indexOf('id="report-summary-heading"')).toBeLessThan(
+      markup.indexOf('id="investigation-activity-heading"'),
+    );
+    expect(markup.indexOf('id="blast-radius-heading"')).toBeLessThan(
+      markup.indexOf('id="investigation-activity-heading"'),
+    );
+    expect(markup.match(/id="blast-radius-heading"/g)).toHaveLength(1);
   });
 
   it('renders an accessible evidence-linked blast-radius section and escapes untrusted labels', () => {

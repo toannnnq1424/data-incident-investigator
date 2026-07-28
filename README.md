@@ -55,7 +55,7 @@ links every hypothesis and impact back to evidence IDs, and labels every recomme
 
 Fixture mode is deterministic for fixed inputs. Live DataHub inputs and provider state can vary.
 
-## DataHub integration: implemented, locally validated, not live in the public demo
+## DataHub integration: validated against local DataHub OSS, not live in the public demo
 
 The repository contains two DataHub-backed adapter paths:
 
@@ -64,11 +64,18 @@ The repository contains two DataHub-backed adapter paths:
   endpoint. It discovers and calls only read-only `search` and `get_lineage`, bounds time/bytes/entity
   counts, and never falls back silently to fixtures.
 
-The bounded MCP protocol and product vertical slice pass locally. The current official MCP Server
-does not expose a recent-changes tool, so that capability is reported as unsupported. No authorized
-live/judge MCP endpoint has been validated, and the public Cloud Run service contains no DataHub or
-model credential. Hackathon named-integration evidence therefore remains **PARTIAL**, not a live
-DataHub claim.
+On 2026-07-28, the MCP path also passed a localhost-only integration against DataHub Core `1.6.0`
+loaded with the official synthetic ecommerce data pack and official `mcp-server-datahub` `0.6.0`.
+Mutation, user, and data-quality tools were disabled. The application passed MCP-backed readiness,
+search, bounded lineage, and explicit unsupported recent-change handling. One bounded incident
+returned the designed degraded result when lineage was truncated and recent-change history was
+unavailable; it did not invent a root cause.
+
+That real local OSS proof is **PASS — LOCAL OSS**. It also exposed an official nested lineage
+`platform` descriptor that the adapter now accepts under the existing bounded entity schema. It is
+not a durable remotely reachable judge endpoint: no authorized DataHub Cloud tenant, OAuth/PAT,
+public tunnel, or judge credential was created. The public Cloud Run service still contains no
+DataHub or model credential, so public/judge named-integration access remains **PARTIAL**.
 
 ## Local judge fallback
 
@@ -118,13 +125,14 @@ For the shortest verified path and expected labels, use the
   beyond the 2026-08-31 judging end. A 20%-remaining-credit signal triggers monitoring and owner
   escalation rather than an automatic pre-judging stop; emergency security or uncontrolled-billing
   response remains possible. The Public repository quickstart remains the durable fallback.
-- Devpost registration and individual **Join Hackathon** are complete. Draft project `1117401` is
-  saved at **4/5 steps** with **Open / Wildcard**, the Public app/repository/video links, five real
-  fixture screenshots with English captions, a completed-report thumbnail, and truthful English
-  project/judge copy. Its signed-in preview matches the repository evidence. The Rules/Terms
-  checkbox remains unchecked and **Submit project** has not been clicked, so there is no submission,
-  receipt, or organizer acceptance; repository evidence also does not independently prove the
-  entrant's remaining eligibility, ownership, or rights facts.
+- Devpost registration, individual **Join Hackathon**, and the entrant-operated final submission are
+  complete for project `1117401`. The signed-in finalization screen reports **Project submitted!**,
+  **Submitted**, and **5/5**; the public project page is
+  <https://devpost.com/software/data-incident-investigator>. The entry retains **Open / Wildcard**,
+  the Public app/repository/video links, five real fixture screenshots with English captions, a
+  completed-report thumbnail, and truthful English project/judge copy. This records submission state,
+  not organizer acceptance, eligibility approval, prize status, or an independent repository
+  attestation of the entrant's ownership and rights facts.
 
 ## Validation and project documentation
 

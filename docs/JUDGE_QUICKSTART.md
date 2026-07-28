@@ -42,9 +42,10 @@ For a non-interactive preview of the same authentic flow, review the
 [Public 2:50 functioning demo](https://youtu.be/D5mvMqrhyDc). It uses the synchronized synthetic
 male English-voice derivative with the authored English WebVTT published; the
 [repository video packet](demo-video/README.md) retains the unchanged silent source and exact media
-identity for provenance. The exact YouTube URL is saved in Devpost draft `1117401` and appears in its
-signed-in preview. The project remains incomplete at 4/5 steps and has not been submitted or accepted
-by an organizer.
+identity for provenance. The exact YouTube URL is part of submitted Devpost project `1117401`, whose
+signed-in finalization screen reports **Project submitted!**, **Submitted**, and **5/5**. The public
+project page is <https://devpost.com/software/data-incident-investigator>. Submission does not imply
+organizer acceptance, eligibility approval, or a prize result.
 
 ## Repository-local fallback
 
@@ -85,8 +86,10 @@ rehearsal, not a clean-clone install-time promise.
 ## Exact judging boundary
 
 - The public service uses synthetic, credential-free fixture data. It is not live DataHub evidence.
-- A bounded read-only DataHub MCP integration exists and is locally protocol/product tested, but no
-  authorized live/judge endpoint has been validated. That compliance state remains **PARTIAL**.
+- A bounded read-only DataHub MCP integration passed a localhost-only proof against DataHub Core
+  `1.6.0`, official synthetic data, and `mcp-server-datahub` `0.6.0` with mutation tools disabled.
+  This is **PASS — LOCAL OSS**, not a public service. No authorized durable remote judge endpoint or
+  judge authentication path has been provisioned, so public/judge access remains **PARTIAL**.
 - Only **Removed schema column** has the rich checked-in fixture and canonical browser path.
 - The app makes zero model calls and does not execute remediation or modify production data.
 - Incident state is in memory and disappears on restart or scale-to-zero.

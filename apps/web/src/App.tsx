@@ -281,7 +281,12 @@ export function getMetadataHealthPresentation(health: MetadataHealthState) {
     };
   }
 
-  const sourceLabel = health.mode === 'fixture' ? 'Fixture metadata' : 'DataHub metadata';
+  const sourceLabel =
+    health.mode === 'fixture'
+      ? 'Fixture metadata'
+      : health.mode === 'datahub-mcp'
+        ? 'DataHub MCP Server'
+        : 'DataHub metadata';
   if (health.status === 'ready') {
     return {
       sourceLabel,
@@ -406,6 +411,14 @@ export function getMetadataRecentChangesPresentation(state: MetadataRecentChange
       heading: 'Recent changes failed',
       message: state.message,
       tone: 'error' as const,
+    };
+  }
+  if (state.response.capability === 'unsupported') {
+    return {
+      heading: 'Recent-change history unavailable',
+      message:
+        'The official DataHub MCP Server does not expose recent-change history; no change evidence was returned or inferred.',
+      tone: 'empty' as const,
     };
   }
   if (state.response.changes.length === 0) {
@@ -1214,14 +1227,20 @@ export function getRemediationPresentation(stage: RemediationPlanningStage) {
   };
 }
 
-export function RemediationStage({ stage }: { stage: RemediationPlanningStage }) {
+export function RemediationStage({
+  announce = true,
+  stage,
+}: {
+  announce?: boolean;
+  stage: RemediationPlanningStage;
+}) {
   const presentation = getRemediationPresentation(stage);
 
   return (
     <section
       className={`remediation-stage remediation-${presentation.tone}`}
       aria-labelledby="remediation-heading"
-      aria-live="polite"
+      aria-live={announce ? 'polite' : undefined}
       data-remediation-status={stage.status}
     >
       <p className="report-label">Human review only · no automatic action</p>
@@ -1646,7 +1665,7 @@ export function MarkdownReportDownload({ incidentId }: { incidentId: string }) {
 
 function ProcessingStatus({ incident }: { incident: ProcessingIncident }) {
   return (
-    <div className="status-progress processing-status" role="status">
+    <div className="status-progress processing-status">
       <p>Investigation processing</p>
       <span>{incident.incidentId}</span>
       <InvestigationActivity events={incident.eventTrail} />
@@ -1670,13 +1689,21 @@ export function getDegradedInvestigationPresentation(incident: DegradedIncident)
   };
 }
 
-export function DegradedInvestigation({ incident }: { incident: DegradedIncident }) {
+export function DegradedInvestigation({
+  headingRef,
+  incident,
+}: {
+  headingRef?: RefObject<HTMLHeadingElement | null>;
+  incident: DegradedIncident;
+}) {
   const presentation = getDegradedInvestigationPresentation(incident);
 
   return (
-    <div className="status-progress degraded-investigation" role="status">
+    <div className="status-progress degraded-investigation">
       <p>Investigation degraded</p>
-      <h3>{presentation.heading}</h3>
+      <h3 ref={headingRef} tabIndex={headingRef ? -1 : undefined}>
+        {presentation.heading}
+      </h3>
       <p>{presentation.message}</p>
       <dl>
         <div>
@@ -1703,7 +1730,7 @@ export function DegradedInvestigation({ incident }: { incident: DegradedIncident
       <IncidentContextStage stage={incident.contextStage} />
       <SuspiciousChangeStage stage={incident.suspiciousChangeStage} />
       <HypothesisScoringStage stage={incident.hypothesisScoringStage} />
-      <RemediationStage stage={incident.remediationStage} />
+      <RemediationStage stage={incident.remediationStage} announce={false} />
       <section aria-labelledby="degradation-warnings-heading">
         <h4 id="degradation-warnings-heading">Why this is incomplete</h4>
         <TextList
@@ -1741,11 +1768,19 @@ export function DegradedInvestigation({ incident }: { incident: DegradedIncident
   );
 }
 
-export function FailedInvestigation({ incident }: { incident: FailedIncident }) {
+export function FailedInvestigation({
+  headingRef,
+  incident,
+}: {
+  headingRef?: RefObject<HTMLHeadingElement | null>;
+  incident: FailedIncident;
+}) {
   return (
-    <div className="status-error failed-investigation" role="alert">
+    <div className="status-error failed-investigation">
       <p>Investigation stopped</p>
-      <h3>The investigation did not complete</h3>
+      <h3 ref={headingRef} tabIndex={headingRef ? -1 : undefined}>
+        The investigation did not complete
+      </h3>
       <p>{incident.error.message}</p>
       <dl>
         <div>
@@ -1765,12 +1800,28 @@ export function FailedInvestigation({ incident }: { incident: FailedIncident }) 
   );
 }
 
-export function CompletedReport({ incident }: { incident: CompletedIncident }) {
+export function CompletedReport({
+  headingRef,
+  incident,
+}: {
+  headingRef?: RefObject<HTMLHeadingElement | null>;
+  incident: CompletedIncident;
+}) {
   const content = getCompletedReportContent(incident);
 
   return (
-    <div className="status-success completed-report" role="status">
+    <div className="status-success completed-report">
       <p>Investigation completed</p>
+      <section className="report-summary" aria-labelledby="report-summary-heading">
+        <p className="report-label">Incident report</p>
+        <h3 id="report-summary-heading" ref={headingRef} tabIndex={headingRef ? -1 : undefined}>
+          Summary
+        </h3>
+        <p>{content.summary}</p>
+        <h4>Top ranked hypothesis</h4>
+        <p>{content.topHypothesis}</p>
+      </section>
+      <BlastRadiusSection analysis={content.blastRadius} />
       <dl>
         <div>
           <dt>Incident ID</dt>
@@ -1786,20 +1837,11 @@ export function CompletedReport({ incident }: { incident: CompletedIncident }) {
       <IncidentContextStage stage={incident.contextStage} />
       <SuspiciousChangeStage stage={incident.suspiciousChangeStage} />
       <HypothesisScoringStage stage={incident.hypothesisScoringStage} />
-      <RemediationStage stage={incident.remediationStage} />
-      <section className="report-summary" aria-labelledby="report-summary-heading">
-        <p className="report-label">Incident report</p>
-        <h3 id="report-summary-heading">Summary</h3>
-        <p>{content.summary}</p>
-        <h4>Top ranked hypothesis</h4>
-        <p>{content.topHypothesis}</p>
-      </section>
+      <RemediationStage stage={incident.remediationStage} announce={false} />
       <div className="report-detail-grid">
         <ReportSection id="related-entities-heading" label="Entity impact" title="Related entities">
           <EntityList entities={content.relatedEntities} />
         </ReportSection>
-
-        <BlastRadiusSection analysis={content.blastRadius} />
 
         <ReportSection id="facts-heading" label="Facts" title="Evidence">
           <EvidenceList
@@ -1853,6 +1895,27 @@ export function CompletedReport({ incident }: { incident: CompletedIncident }) {
   );
 }
 
+function getSubmissionAnnouncement(state: SubmissionState) {
+  switch (state.kind) {
+    case 'idle':
+      return 'Ready for an incident question.';
+    case 'submitting':
+      return 'Creating the incident.';
+    case 'processing':
+      return 'Investigation processing.';
+    case 'completed':
+      return 'Investigation completed. The report summary is ready.';
+    case 'degraded':
+      return 'Investigation degraded safely. Partial results and next steps are ready.';
+    case 'failed':
+      return 'Investigation stopped. Failure details are ready.';
+    case 'validation-error':
+      return `Check your incident details. ${state.message}`;
+    case 'api-error':
+      return `Request failed. ${state.message}`;
+  }
+}
+
 export function App() {
   const [question, setQuestion] = useState('');
   const [entityHint, setEntityHint] = useState('');
@@ -1891,6 +1954,7 @@ export function App() {
   const metadataSearchHeading = useRef<HTMLHeadingElement>(null);
   const metadataLineageHeading = useRef<HTMLHeadingElement>(null);
   const metadataRecentChangesHeading = useRef<HTMLHeadingElement>(null);
+  const terminalResultHeading = useRef<HTMLHeadingElement>(null);
   const metadataSearchGuard = useRef(createLatestRequestGuard());
   const metadataLineageGuard = useRef(createLatestRequestGuard());
   const metadataRecentChangesGuard = useRef(createLatestRequestGuard());
@@ -1967,6 +2031,12 @@ export function App() {
       metadataRecentChangesHeading.current?.focus();
     }
   }, [metadataRecentChangesState]);
+
+  useEffect(() => {
+    if (['completed', 'degraded', 'failed'].includes(state.kind)) {
+      terminalResultHeading.current?.focus();
+    }
+  }, [state.kind]);
 
   async function submitMetadataSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -2321,269 +2391,309 @@ export function App() {
 
       <MetadataSourceStatus health={metadataHealth} />
 
-      <section className="metadata-search-panel" aria-labelledby="metadata-search-heading">
-        <div className="metadata-search-copy">
-          <p className="step-label">Metadata lookup</p>
-          <h2 id="metadata-search-heading">Find an entity</h2>
-          <p>
-            Search the active source without opening entity details or changing production data.
-          </p>
-        </div>
-        <form className="metadata-search-form" onSubmit={submitMetadataSearch} noValidate>
-          <div className="field metadata-query-field">
-            <label htmlFor="metadata-query">Metadata query</label>
-            <input
-              id="metadata-query"
-              name="metadataQuery"
-              type="search"
-              minLength={2}
-              maxLength={200}
-              required
-              value={metadataQuery}
-              onChange={(event) => setMetadataQuery(event.target.value)}
-              placeholder="revenue"
-            />
-          </div>
-          <div className="field">
-            <label htmlFor="metadata-entity-type">Entity type</label>
-            <select
-              id="metadata-entity-type"
-              name="metadataEntityType"
-              value={metadataEntityType}
-              onChange={(event) => setMetadataEntityType(event.target.value as EntityKind | '')}
+      {(() => {
+        const metadataExplorer = (
+          <section className="metadata-search-panel" aria-labelledby="metadata-search-heading">
+            <div className="metadata-search-copy">
+              <p className="step-label">Optional metadata explorer</p>
+              <h2 id="metadata-search-heading">Find an entity</h2>
+              <p>
+                Search the active source without opening entity details or changing production data.
+              </p>
+            </div>
+            <form className="metadata-search-form" onSubmit={submitMetadataSearch} noValidate>
+              <div className="field metadata-query-field">
+                <label htmlFor="metadata-query">Metadata query</label>
+                <input
+                  id="metadata-query"
+                  name="metadataQuery"
+                  type="search"
+                  minLength={2}
+                  maxLength={200}
+                  required
+                  value={metadataQuery}
+                  onChange={(event) => setMetadataQuery(event.target.value)}
+                  placeholder="revenue"
+                />
+              </div>
+              <div className="field">
+                <label htmlFor="metadata-entity-type">Entity type</label>
+                <select
+                  id="metadata-entity-type"
+                  name="metadataEntityType"
+                  value={metadataEntityType}
+                  onChange={(event) => setMetadataEntityType(event.target.value as EntityKind | '')}
+                >
+                  <option value="">All supported types</option>
+                  <option value="dataset">Dataset</option>
+                  <option value="dashboard">Dashboard</option>
+                  <option value="chart">Chart</option>
+                  <option value="pipeline">Pipeline</option>
+                </select>
+              </div>
+              <div className="field">
+                <label htmlFor="metadata-result-limit">Result limit</label>
+                <select
+                  id="metadata-result-limit"
+                  name="metadataResultLimit"
+                  value={metadataResultLimit}
+                  onChange={(event) => setMetadataResultLimit(Number(event.target.value))}
+                >
+                  <option value={5}>5</option>
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                </select>
+              </div>
+              <button type="submit" disabled={metadataSearchState.kind === 'loading'}>
+                {metadataSearchState.kind === 'loading' ? 'Searching…' : 'Search metadata'}
+              </button>
+            </form>
+            <fieldset
+              className="metadata-lineage-controls"
+              disabled={metadataLineageState.kind === 'loading'}
             >
-              <option value="">All supported types</option>
-              <option value="dataset">Dataset</option>
-              <option value="dashboard">Dashboard</option>
-              <option value="chart">Chart</option>
-              <option value="pipeline">Pipeline</option>
-            </select>
-          </div>
-          <div className="field">
-            <label htmlFor="metadata-result-limit">Result limit</label>
-            <select
-              id="metadata-result-limit"
-              name="metadataResultLimit"
-              value={metadataResultLimit}
-              onChange={(event) => setMetadataResultLimit(Number(event.target.value))}
+              <legend>Lineage bounds</legend>
+              <div className="field">
+                <label htmlFor="metadata-lineage-depth">Depth</label>
+                <select
+                  id="metadata-lineage-depth"
+                  value={metadataLineageDepth}
+                  onChange={(event) => setMetadataLineageDepth(Number(event.target.value))}
+                >
+                  <option value={1}>1 hop</option>
+                  <option value={2}>2 hops</option>
+                  <option value={3}>3 hops</option>
+                  <option value={5}>5 hops</option>
+                </select>
+              </div>
+              <div className="field">
+                <label htmlFor="metadata-lineage-max-nodes">Node limit</label>
+                <select
+                  id="metadata-lineage-max-nodes"
+                  value={metadataLineageMaxNodes}
+                  onChange={(event) => setMetadataLineageMaxNodes(Number(event.target.value))}
+                >
+                  <option value={3}>3 nodes</option>
+                  <option value={8}>8 nodes</option>
+                  <option value={12}>12 nodes</option>
+                  <option value={25}>25 nodes</option>
+                </select>
+              </div>
+            </fieldset>
+            <fieldset
+              className="metadata-recent-changes-controls"
+              disabled={metadataRecentChangesState.kind === 'loading'}
             >
-              <option value={5}>5</option>
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-            </select>
-          </div>
-          <button type="submit" disabled={metadataSearchState.kind === 'loading'}>
-            {metadataSearchState.kind === 'loading' ? 'Searching…' : 'Search metadata'}
-          </button>
-        </form>
-        <fieldset
-          className="metadata-lineage-controls"
-          disabled={metadataLineageState.kind === 'loading'}
-        >
-          <legend>Lineage bounds</legend>
-          <div className="field">
-            <label htmlFor="metadata-lineage-depth">Depth</label>
-            <select
-              id="metadata-lineage-depth"
-              value={metadataLineageDepth}
-              onChange={(event) => setMetadataLineageDepth(Number(event.target.value))}
-            >
-              <option value={1}>1 hop</option>
-              <option value={2}>2 hops</option>
-              <option value={3}>3 hops</option>
-              <option value={5}>5 hops</option>
-            </select>
-          </div>
-          <div className="field">
-            <label htmlFor="metadata-lineage-max-nodes">Node limit</label>
-            <select
-              id="metadata-lineage-max-nodes"
-              value={metadataLineageMaxNodes}
-              onChange={(event) => setMetadataLineageMaxNodes(Number(event.target.value))}
-            >
-              <option value={3}>3 nodes</option>
-              <option value={8}>8 nodes</option>
-              <option value={12}>12 nodes</option>
-              <option value={25}>25 nodes</option>
-            </select>
-          </div>
-        </fieldset>
-        <fieldset
-          className="metadata-recent-changes-controls"
-          disabled={metadataRecentChangesState.kind === 'loading'}
-        >
-          <legend>Recent-change bounds</legend>
-          <div className="field">
-            <label htmlFor="metadata-recent-changes-window">Time window</label>
-            <select
-              id="metadata-recent-changes-window"
-              value={metadataRecentChangesWindow}
-              onChange={(event) => setMetadataRecentChangesWindow(Number(event.target.value))}
-            >
-              <option value={24}>24 hours</option>
-              <option value={168}>7 days</option>
-              <option value={720}>30 days</option>
-            </select>
-          </div>
-          <div className="field">
-            <label htmlFor="metadata-recent-changes-limit">Change limit</label>
-            <select
-              id="metadata-recent-changes-limit"
-              value={metadataRecentChangesLimit}
-              onChange={(event) => setMetadataRecentChangesLimit(Number(event.target.value))}
-            >
-              <option value={3}>3 changes</option>
-              <option value={10}>10 changes</option>
-              <option value={20}>20 changes</option>
-            </select>
-          </div>
-        </fieldset>
-        <MetadataSearchResults
-          headingRef={metadataSearchHeading}
-          lineageLoading={metadataLineageState.kind === 'loading'}
-          onRequestLineage={(result, direction) => {
-            void requestMetadataLineage(result, direction);
-          }}
-          onRequestRecentChanges={(result) => {
-            void requestMetadataRecentChanges(result);
-          }}
-          recentChangesLoading={metadataRecentChangesState.kind === 'loading'}
-          state={metadataSearchState}
-        />
-        <MetadataLineageResults
-          headingRef={metadataLineageHeading}
-          onRequestRecentChanges={(node) => {
-            void requestMetadataRecentChanges(node);
-          }}
-          recentChangesLoading={metadataRecentChangesState.kind === 'loading'}
-          state={metadataLineageState}
-        />
-        <MetadataRecentChangesResults
-          headingRef={metadataRecentChangesHeading}
-          state={metadataRecentChangesState}
-        />
-      </section>
-
-      <section className="incident-panel" aria-labelledby="incident-heading">
-        <div className="panel-heading">
-          <div>
-            <p className="step-label">New investigation</p>
-            <h2 id="incident-heading">What changed?</h2>
-          </div>
-        </div>
-
-        <form onSubmit={submitIncident} noValidate>
-          <CanonicalScenarioSelector
-            selection={scenarioSelection}
-            onSelect={selectCanonicalScenario}
-            onReset={() => selectCanonicalScenario('manual')}
-          />
-
-          <div className="field field-wide">
-            <label htmlFor="question">
-              Incident question <span aria-hidden="true">*</span>
-            </label>
-            <textarea
-              id="question"
-              name="question"
-              rows={4}
-              required
-              minLength={3}
-              maxLength={2000}
-              value={question}
-              onChange={(event) => {
-                setQuestion(event.target.value);
-                markIncidentFormCustom();
+              <legend>Recent-change bounds</legend>
+              <div className="field">
+                <label htmlFor="metadata-recent-changes-window">Time window</label>
+                <select
+                  id="metadata-recent-changes-window"
+                  value={metadataRecentChangesWindow}
+                  onChange={(event) => setMetadataRecentChangesWindow(Number(event.target.value))}
+                >
+                  <option value={24}>24 hours</option>
+                  <option value={168}>7 days</option>
+                  <option value={720}>30 days</option>
+                </select>
+              </div>
+              <div className="field">
+                <label htmlFor="metadata-recent-changes-limit">Change limit</label>
+                <select
+                  id="metadata-recent-changes-limit"
+                  value={metadataRecentChangesLimit}
+                  onChange={(event) => setMetadataRecentChangesLimit(Number(event.target.value))}
+                >
+                  <option value={3}>3 changes</option>
+                  <option value={10}>10 changes</option>
+                  <option value={20}>20 changes</option>
+                </select>
+              </div>
+            </fieldset>
+            <MetadataSearchResults
+              headingRef={metadataSearchHeading}
+              lineageLoading={metadataLineageState.kind === 'loading'}
+              onRequestLineage={(result, direction) => {
+                void requestMetadataLineage(result, direction);
               }}
-              aria-describedby="question-help"
-              placeholder="Why did revenue drop unexpectedly today?"
+              onRequestRecentChanges={(result) => {
+                void requestMetadataRecentChanges(result);
+              }}
+              recentChangesLoading={metadataRecentChangesState.kind === 'loading'}
+              state={metadataSearchState}
             />
-            <span className="field-help" id="question-help">
-              Ask one focused question about the incident.
-            </span>
-          </div>
+            <MetadataLineageResults
+              headingRef={metadataLineageHeading}
+              onRequestRecentChanges={(node) => {
+                void requestMetadataRecentChanges(node);
+              }}
+              recentChangesLoading={metadataRecentChangesState.kind === 'loading'}
+              state={metadataLineageState}
+            />
+            <MetadataRecentChangesResults
+              headingRef={metadataRecentChangesHeading}
+              state={metadataRecentChangesState}
+            />
+          </section>
+        );
 
-          <div className="form-grid">
-            <div className="field">
-              <label htmlFor="entity-hint">Dataset or dashboard</label>
-              <input
-                id="entity-hint"
-                name="entityHint"
-                type="text"
-                maxLength={500}
-                value={entityHint}
-                onChange={(event) => {
-                  setEntityHint(event.target.value);
-                  markIncidentFormCustom();
-                }}
-                placeholder="analytics.daily_revenue"
-              />
+        const incidentPanel = (
+          <section className="incident-panel" aria-labelledby="incident-heading">
+            <div className="panel-heading">
+              <div>
+                <p className="step-label">New investigation</p>
+                <h2 id="incident-heading">What changed?</h2>
+              </div>
             </div>
 
-            <div className="field">
-              <label htmlFor="occurred-at">Occurrence time</label>
-              <input
-                id="occurred-at"
-                name="occurredAt"
-                type="datetime-local"
-                value={occurredAt}
-                onChange={(event) => {
-                  setOccurredAt(event.target.value);
-                  markIncidentFormCustom();
-                }}
+            <form onSubmit={submitIncident} noValidate>
+              <CanonicalScenarioSelector
+                selection={scenarioSelection}
+                onSelect={selectCanonicalScenario}
+                onReset={() => selectCanonicalScenario('manual')}
               />
+
+              <div className="field field-wide">
+                <label htmlFor="question">
+                  Incident question <span aria-hidden="true">*</span>
+                </label>
+                <textarea
+                  id="question"
+                  name="question"
+                  rows={4}
+                  required
+                  minLength={3}
+                  maxLength={2000}
+                  value={question}
+                  onChange={(event) => {
+                    setQuestion(event.target.value);
+                    markIncidentFormCustom();
+                  }}
+                  aria-describedby="question-help"
+                  placeholder="Why did revenue drop unexpectedly today?"
+                />
+                <span className="field-help" id="question-help">
+                  Ask one focused question about the incident.
+                </span>
+              </div>
+
+              <div className="form-grid">
+                <div className="field">
+                  <label htmlFor="entity-hint">Dataset or dashboard</label>
+                  <input
+                    id="entity-hint"
+                    name="entityHint"
+                    type="text"
+                    maxLength={500}
+                    value={entityHint}
+                    onChange={(event) => {
+                      setEntityHint(event.target.value);
+                      markIncidentFormCustom();
+                    }}
+                    placeholder="analytics.daily_revenue"
+                  />
+                </div>
+
+                <div className="field">
+                  <label htmlFor="occurred-at">Occurrence time</label>
+                  <input
+                    id="occurred-at"
+                    name="occurredAt"
+                    type="datetime-local"
+                    value={occurredAt}
+                    onChange={(event) => {
+                      setOccurredAt(event.target.value);
+                      markIncidentFormCustom();
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div className="field field-wide">
+                <label htmlFor="symptom">Observed symptom</label>
+                <textarea
+                  id="symptom"
+                  name="symptom"
+                  rows={3}
+                  maxLength={2000}
+                  value={symptom}
+                  onChange={(event) => {
+                    setSymptom(event.target.value);
+                    markIncidentFormCustom();
+                  }}
+                  placeholder="Revenue is 42% below the seven-day baseline."
+                />
+              </div>
+
+              <div className="submission-row">
+                <button type="submit" disabled={isBusy}>
+                  {isBusy ? 'Investigation in progress…' : 'Start investigation'}
+                </button>
+                <p className="privacy-note">No production data is modified.</p>
+              </div>
+            </form>
+
+            <p
+              className="submission-announcement"
+              role={
+                state.kind === 'failed' ||
+                state.kind === 'validation-error' ||
+                state.kind === 'api-error'
+                  ? 'alert'
+                  : 'status'
+              }
+              aria-live={
+                state.kind === 'failed' ||
+                state.kind === 'validation-error' ||
+                state.kind === 'api-error'
+                  ? 'assertive'
+                  : 'polite'
+              }
+              aria-atomic="true"
+            >
+              {getSubmissionAnnouncement(state)}
+            </p>
+            <div className="submission-status">
+              {state.kind === 'idle' && (
+                <p className="status-neutral">Ready for an incident question.</p>
+              )}
+              {state.kind === 'submitting' && (
+                <p className="status-progress">Creating the incident…</p>
+              )}
+              {state.kind === 'processing' && <ProcessingStatus incident={state.incident} />}
+              {state.kind === 'completed' && (
+                <CompletedReport headingRef={terminalResultHeading} incident={state.incident} />
+              )}
+              {state.kind === 'degraded' && (
+                <DegradedInvestigation
+                  headingRef={terminalResultHeading}
+                  incident={state.incident}
+                />
+              )}
+              {state.kind === 'failed' && (
+                <FailedInvestigation headingRef={terminalResultHeading} incident={state.incident} />
+              )}
+              {(state.kind === 'validation-error' || state.kind === 'api-error') && (
+                <p className="status-error">
+                  <strong>
+                    {state.kind === 'validation-error'
+                      ? 'Check your incident details.'
+                      : 'Request failed.'}
+                  </strong>{' '}
+                  {state.message}
+                </p>
+              )}
             </div>
-          </div>
+          </section>
+        );
 
-          <div className="field field-wide">
-            <label htmlFor="symptom">Observed symptom</label>
-            <textarea
-              id="symptom"
-              name="symptom"
-              rows={3}
-              maxLength={2000}
-              value={symptom}
-              onChange={(event) => {
-                setSymptom(event.target.value);
-                markIncidentFormCustom();
-              }}
-              placeholder="Revenue is 42% below the seven-day baseline."
-            />
-          </div>
-
-          <div className="submission-row">
-            <button type="submit" disabled={isBusy}>
-              {isBusy ? 'Investigation in progress…' : 'Start investigation'}
-            </button>
-            <p className="privacy-note">No production data is modified.</p>
-          </div>
-        </form>
-
-        <div className="submission-status" aria-live="polite" aria-atomic="true">
-          {state.kind === 'idle' && (
-            <p className="status-neutral">Ready for an incident question.</p>
-          )}
-          {state.kind === 'submitting' && (
-            <p className="status-progress" role="status">
-              Creating the incident…
-            </p>
-          )}
-          {state.kind === 'processing' && <ProcessingStatus incident={state.incident} />}
-          {state.kind === 'completed' && <CompletedReport incident={state.incident} />}
-          {state.kind === 'degraded' && <DegradedInvestigation incident={state.incident} />}
-          {state.kind === 'failed' && <FailedInvestigation incident={state.incident} />}
-          {(state.kind === 'validation-error' || state.kind === 'api-error') && (
-            <p className="status-error" role="alert">
-              <strong>
-                {state.kind === 'validation-error'
-                  ? 'Check your incident details.'
-                  : 'Request failed.'}
-              </strong>{' '}
-              {state.message}
-            </p>
-          )}
-        </div>
-      </section>
+        return (
+          <>
+            {incidentPanel}
+            {metadataExplorer}
+          </>
+        );
+      })()}
     </main>
   );
 }

@@ -197,7 +197,17 @@ const DataHubMcpEntitySchema = z
     displayName: z.string().max(300).nullish(),
     description: z.string().max(1_000).nullish(),
     qualifiedName: z.string().max(500).nullish(),
-    platform: z.string().max(200).nullish(),
+    platform: z
+      .union([
+        z.string().max(200),
+        z
+          .object({
+            urn: z.string().trim().min(1).max(1_000),
+            name: z.string().max(200).nullish(),
+          })
+          .passthrough(),
+      ])
+      .nullish(),
     properties: z
       .object({
         name: z.string().max(300).nullish(),

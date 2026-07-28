@@ -8,11 +8,13 @@ GitHub Release is Published/Latest and exact-main CI is successful. Phase 8.9A r
 silent WebM/caption/transcript packet plus a separate exact-video-stream synthetic male-voice
 derivative with matching captions/transcript. These are Public GitHub repository assets on merged
 `main`; the male-voice derivative is also Public at <https://youtu.be/D5mvMqrhyDc> with its authored
-English captions. Devpost registration and individual Join are complete. Draft project `1117401` is
-saved at 4/5 steps with the verified Public video/app/repository links, English copy, five captioned
-fixture screenshots, a thumbnail, **Open / Wildcard**, and judge information. The final Rules/Terms
-checkbox remains unchecked and no submission, receipt, or organizer acceptance exists; exact gate
-state is tracked in the submission documents.
+English captions. Devpost registration, individual Join, and the entrant-operated final action are
+complete for project `1117401`; the signed-in finalization screen reports **Project submitted!**,
+**Submitted**, and **5/5**. The submitted entry contains the verified Public
+video/app/repository links, English copy, five captioned fixture screenshots, a thumbnail,
+**Open / Wildcard**, and judge information. This is submission evidence, not organizer acceptance,
+eligibility approval, prize status, or an independent ownership/rights attestation; exact gate state
+is tracked in the submission documents.
 Phase 8.10 aligned the root and six private Apache-2.0 manifests to `1.0.0`, updated the MCP client
 protocol identity to the same version, and applied only the two transitive denial-of-service patches
 required by the final production audit. It changed no investigation behavior, workflow, fixture,
@@ -110,7 +112,8 @@ responses, stable API error, entity, evidence, hypothesis, and report schemas.
 fixture implementation, and the DataHub GraphQL implementation for health, search, lineage, and recent
 changes. `packages/datahub-client/src/datahub-mcp.ts` adds the explicit Streamable HTTP DataHub MCP
 Server provider: fixed read-only `search`/`get_lineage`, strict protocol/metadata contracts, bounded
-timeouts/bytes/entities/lineage, and an explicit unsupported recent-changes capability.
+timeouts/bytes/entities/lineage, the official bounded string-or-descriptor lineage platform shape,
+and an explicit unsupported recent-changes capability.
 `packages/agent-core/src/index.ts` runs deterministic evidence-linked investigations through the
 selected adapter without a model call.
 
