@@ -617,7 +617,6 @@ async function readTrackedEvidence(rootPath = repositoryRoot) {
 }
 
 async function generate(bundleProvenancePath) {
-  const attribution = await buildAttribution(bundleProvenancePath);
   const canonicalRepositoryRoot = await assertCanonicalRoot(repositoryRoot, 'repository root');
   const attributionPath = await containedPath(
     canonicalRepositoryRoot,
@@ -625,9 +624,31 @@ async function generate(bundleProvenancePath) {
     attributionFileName,
   );
   const noticePath = await containedPath(canonicalRepositoryRoot, noticeFileName, noticeFileName);
-  await writeFile(attributionPath, canonicalManifest(attribution));
-  await writeFile(noticePath, createRuntimeNotice(attribution));
-  return attribution;
+  const originalNotice = await readFile(noticePath);
+  const initialAttribution = await buildAttribution(bundleProvenancePath);
+  const nextNotice = createRuntimeNotice(initialAttribution);
+
+  try {
+    await writeFile(noticePath, nextNotice);
+    const attribution = await buildAttribution(bundleProvenancePath);
+    assert(
+      nextNotice.equals(createRuntimeNotice(attribution)),
+      `${noticeFileName} did not converge during generation`,
+    );
+    await writeFile(attributionPath, canonicalManifest(attribution));
+    return attribution;
+  } catch (error) {
+    try {
+      await writeFile(noticePath, originalNotice);
+    } catch (rollbackError) {
+      fail(
+        `${noticeFileName} generation failed and rollback also failed: ${
+          rollbackError instanceof Error ? rollbackError.message : 'unknown rollback error'
+        }`,
+      );
+    }
+    throw error;
+  }
 }
 
 async function verifySource(bundleProvenancePath) {

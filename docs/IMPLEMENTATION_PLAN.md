@@ -7564,3 +7564,75 @@ Result:
 
 Deferred after result: all unchanged QA greens; deployment; public incident; Devpost/video mutation;
 full-suite/evaluation reruns; PR Ready; and merge.
+
+#### Phase 8.11 deployment blocker correction — runtime attribution refresh
+
+Status: targeted additive correction implemented from exact merged main
+`813621802628b94580c7fb69043e2369760cea3d` after Cloud Build
+`382d4515-a40b-4c6e-aab7-e1b29f4e63b3` rejected the Docker source-build seam before a new Cloud Run
+revision was created.
+
+Objective: reconcile the tracked deterministic runtime attribution with the exact merged
+source/build/lock graph without bypassing or weakening the source/runtime verifier.
+
+Minimum files:
+
+- `RUNTIME-ATTRIBUTION.json` and `THIRD_PARTY_NOTICES.txt` when deterministic regeneration proves
+  they are the only stale generated evidence.
+- This plan and `docs/SESSION_LOG.md` for the exact blocker, correction, validation, and QA handoff.
+- `docs/REPOSITORY_MAP.md` and `docs/KNOWN_ISSUES.md` only where current-main/deployment state must be
+  reconciled truthfully.
+- Tests or attribution scripts only if diagnosis proves a verifier defect rather than stale evidence.
+
+Acceptance criteria:
+
+- A fresh affected build produces exact Vite provenance and `verify-source` accepts the tracked
+  canonical attribution and notice pair.
+- The production-only Docker packaging seam completes both source and installed-runtime verification
+  without weakening pinned-image, frozen-lock, path containment, link/reparse, legal-file, exact
+  runtime-file-set, or rewritten-manifest checks.
+- The diff contains only deterministic evidence and directly required persistent state; manifests,
+  lockfile, workflows, application behavior, release/tag, media, Devpost, and GCP resources remain
+  unchanged.
+- One additive conventional commit is pushed on
+  `codex/phase-8-11-runtime-attribution-fix`; exactly one Draft PR targets exact base
+  `813621802628b94580c7fb69043e2369760cea3d`; exact-head PR CI succeeds before canonical QA.
+
+Focused validation:
+
+- Reproduce the committed `verify-source` mismatch once from the exact affected build graph, then
+  regenerate the evidence once and rerun that exact seam.
+- Run changed-file Prettier/JSON parsing, `pnpm test:runtime-attribution`, focused API/web production
+  builds with bundle provenance, and the Docker production packaging/runtime-verification seam once.
+- Run diff/path/secret/UTF-8/LF/no-BOM/residue/process/port checks; reuse exact-main CI and all
+  unrelated Phase 8.11 greens.
+
+Deferred: Cloud Run deploy and public smoke; PR Ready/merge; Devpost/video changes; credentials,
+billing/access, tag/Release/version changes; full Level D, evaluation, and unrelated test reruns.
+
+Result:
+
+- The exact merged build reproduced the committed `verify-source` rejection once. Lock SHA
+  `61945266…f1d`, 152 full-production identities, 149 runtime identities/roots, required legal
+  files, and rewritten runtime manifests were unchanged. Eight runtime-file records changed across
+  the web bundle/index and compiled DataHub MCP adapter; all five bundled-web package provenance
+  records changed with the new bundle.
+- The first regeneration exposed a directly related generator defect: it hashed the prior notice
+  into the manifest before writing the new derived notice, so a successful first invocation could
+  leave immediately stale evidence. Generation now writes the derived notice, rebuilds the
+  notice-bound attribution, asserts that the notice converged, writes the canonical manifest, and
+  restores the prior notice if any convergence/write step fails. Verification remains unchanged.
+- The final canonical `RUNTIME-ATTRIBUTION.json` is 438,230 bytes at SHA-256
+  `cf0e5b500720d758c875048bded93c911c3cf9f155f6a6d39a9f1ed5f0cb5ae9`; its paired
+  `THIRD_PARTY_NOTICES.txt` is 402,446 bytes at SHA-256
+  `d5fd8497cf8cd41aab12f2e3e8af2e3a3057b2bec75927b4ee5be46b236f06c6`.
+- Focused generation and `verify-source` pass; runtime-attribution contracts pass `10/10`; changed
+  script/test Prettier and ESLint pass. A clean-context Docker build passes both source and installed
+  runtime verification, emits local image
+  `sha256:af354285e067114b95245a48e176ec76aa40ac694044a0730f1216b9fd0387a2`
+  (86,200,804 bytes, `APP_MODE=fixture`), and its packaged `/health` returns
+  `200 {"status":"ok"}`. The task-created container and image were removed.
+
+Deferred after result: canonical QA, PR Ready/merge, exact merged-main deployment and one bounded
+public smoke. No GCP resource, public revision/traffic, Devpost/video, version/tag/Release, manifest,
+lockfile, workflow, or application behavior changed.

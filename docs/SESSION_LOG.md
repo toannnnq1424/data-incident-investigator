@@ -7207,3 +7207,88 @@ state, package/lock/workflow/version/tag/Release state, or PR readiness changed.
 Complete bounded diff/path/secret/encoding/residue/process/port checks, create one additive commit,
 push the same branch, update only Draft PR #61 with exact new identities, and require exact-head CI
 `SUCCESS`. Keep the PR Draft; do not merge.
+
+## 2026-07-29 — Phase 8.11 runtime-attribution deployment blocker correction
+
+### Objective
+
+Correct the exact-main Docker deployment blocker from Cloud Build
+`382d4515-a40b-4c6e-aab7-e1b29f4e63b3` without bypassing or weakening runtime attribution. Start one
+targeted additive branch from exact main `813621802628b94580c7fb69043e2369760cea3d`, keep the Public
+fixture revision unchanged, and stop at a Draft PR for the same canonical QA.
+
+### Completed
+
+- Reproduced the exact `RUNTIME-ATTRIBUTION.json is stale for the current source/build/lock graph`
+  rejection once from a clean affected API/web build and its exact Vite provenance.
+- Compared old and expected evidence. The frozen lock, 152-package full-production closure,
+  149-package runtime closure/roots, required legal evidence, and rewritten workspace manifests were
+  unchanged. Eight runtime-file records changed across the web bundle/index and compiled DataHub MCP
+  adapter; the rendered contributions for the same five bundled web packages changed.
+- Regenerated the paired attribution and third-party notice evidence. The final canonical manifest
+  is 438,230 bytes at SHA-256
+  `cf0e5b500720d758c875048bded93c911c3cf9f155f6a6d39a9f1ed5f0cb5ae9`; the notice is 402,446 bytes
+  at SHA-256 `d5fd8497cf8cd41aab12f2e3e8af2e3a3057b2bec75927b4ee5be46b236f06c6`.
+- Corrected one directly related generator flaw exposed during recovery: a first invocation could
+  hash the old notice into the manifest before writing the new notice. Generation now performs a
+  two-pass convergence, restores the prior notice if generation fails, and writes the manifest only
+  after the derived notice is stable. Source/runtime verification, path containment, exact file
+  allowlists, frozen-lock identity, legal evidence, and link/reparse protections are unchanged.
+
+### Files changed
+
+- `RUNTIME-ATTRIBUTION.json`
+- `THIRD_PARTY_NOTICES.txt`
+- `scripts/runtime-attribution.mjs`
+- `tests/runtime-attribution.contract.mjs`
+- `docs/IMPLEMENTATION_PLAN.md`
+- `docs/KNOWN_ISSUES.md`
+- `docs/REPOSITORY_MAP.md`
+- `docs/SESSION_LOG.md`
+
+No manifest, lockfile, workflow, application source/behavior, fixture, media, Devpost, version, tag,
+Release, GCP resource, Cloud Run revision, or traffic changed.
+
+### Decisions
+
+- Treat the failed Cloud Build as stale deterministic evidence plus a generator convergence defect,
+  not as permission to weaken or bypass verification.
+- Keep the existing Public service at
+  `data-incident-investigator-src-3653cf6b591e`, 100% traffic, `APP_MODE=fixture`; C29 remains
+  `PARTIAL`.
+- Reuse exact-main CI and unrelated Phase 8.11 greens. Run only the focused build, attribution
+  contracts, Docker source/runtime verification, packaged health, and changed-file/static audits.
+
+### Validation performed
+
+- Clean affected API/web production build completed with `109` web modules and exact Vite bundle
+  provenance.
+- Post-correction `generate` and `verify-source` report lock SHA
+  `6194526652ac34a3f3b06e16fd8a055ff88cdbd77c51c8e6e3695b4b5611bf1d`, 152 full-production
+  identities, 149 runtime identities/roots, and five bundled-web packages.
+- Changed script/test Prettier and ESLint pass. Runtime-attribution contracts pass `10/10`, including
+  deterministic notice self-evidence behavior and all existing unexpected-file, content-tamper,
+  legal-file, rewritten-manifest, containment, and link/reparse rejection gates.
+- One local Docker production build passes build-stage `verify-source` and
+  production-dependencies `verify-runtime`. The final 86,200,804-byte fixture image has ID
+  `sha256:af354285e067114b95245a48e176ec76aa40ac694044a0730f1216b9fd0387a2`; its packaged `/health`
+  returns `200 {"status":"ok"}`. The task-created health container and image were removed.
+
+### Validation intentionally deferred
+
+Unrelated Level D, evaluation, browser incident/E2E, media, release-artifact, Devpost, and public-smoke
+gates are unchanged and not rerun. Cloud Run deployment is deferred until canonical QA passes and
+the correction is normally merged.
+
+### Known issues
+
+The corrected evidence is not on `main` or deployed. The Public service remains the prior
+fixture-only revision and C29 remains `PARTIAL`.
+
+### Exact next step
+
+Complete changed-document formatting/schema/link, diff/path/secret/encoding/residue/process/port
+checks; create one additive conventional commit; push
+`codex/phase-8-11-runtime-attribution-fix`; open exactly one Draft PR against exact main
+`813621802628b94580c7fb69043e2369760cea3d`; require exact-head PR CI `SUCCESS`; and return
+`READY FOR SAME CANONICAL QA`. Do not mark Ready, merge, deploy, or mutate Devpost/video/GCP.
