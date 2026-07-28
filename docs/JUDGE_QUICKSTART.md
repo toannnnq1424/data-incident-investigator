@@ -38,10 +38,11 @@ Screenshots of the expected surfaces are in the
 [demo asset gallery](demo-assets/README.md). The incident UUID and activity timestamps are
 run-specific and process-local; do not use them as durable links.
 
-For a non-interactive preview of the same authentic flow, review the local
-[2:50.20 app-only video candidate](demo-video/README.md) with its default English captions. It is a
-publicly accessible repository asset on the Public GitHub feature branch/PR, but it has not been
-uploaded to or made publicly visible on YouTube, Vimeo, or Youku, linked in Devpost, or submitted.
+For a non-interactive preview of the same authentic flow, review the
+[2:50.20 app-only video packet](demo-video/README.md). It offers a synchronized synthetic male
+English-voice derivative with default captions and the unchanged silent source for provenance. These
+are publicly accessible Public GitHub repository/feature-PR assets, but neither has been uploaded to
+or made publicly visible on YouTube, Vimeo, or Youku, linked in Devpost, accepted, or submitted.
 GitHub blob/raw access does not satisfy the official video-hosting requirement.
 
 ## Repository-local fallback

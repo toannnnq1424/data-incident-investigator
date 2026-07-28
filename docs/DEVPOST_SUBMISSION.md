@@ -19,13 +19,15 @@ an auditable report with transparent confidence, blast radius, and safe human ne
   <https://github.com/toannnnq1424/data-incident-investigator>
 - Judge instructions: [`JUDGE_QUICKSTART.md`](JUDGE_QUICKSTART.md)
 - Screenshot gallery: [`demo-assets/README.md`](demo-assets/README.md)
-- Repository video candidate and review packet: [`demo-video/README.md`](demo-video/README.md)
+- Repository silent/voiced video candidates and review packet:
+  [`demo-video/README.md`](demo-video/README.md)
 
 The Public repository quickstart is the fallback if the Cloud Run fixture service is cold or
-unavailable. The candidate WebM is publicly accessible as a repository asset on the Public GitHub
-feature branch and Draft PR #58. It has not been uploaded to or made publicly visible on YouTube,
-Vimeo, or Youku, linked or entered in Devpost, or submitted. The GitHub blob/raw asset does not
-satisfy the Rules' required video-host and form-link condition.
+unavailable. The exact authentic 2:50.20 silent source is public on merged `main`; a separate Phase
+8.9A derivative stream-copies the same real video and adds synchronized Microsoft Mark synthetic
+male English narration plus matching captions/transcript. These are Public GitHub repository assets,
+not Rules-listed hosted submission videos. Neither has been uploaded to or made publicly visible on
+YouTube, Vimeo, or Youku, linked or entered in Devpost, accepted by an organizer, or submitted.
 
 ## Inspiration
 
@@ -69,6 +71,9 @@ The project is a TypeScript pnpm monorepo:
   lineage limits.
 - Deterministic TypeScript orchestration owns ranking and report composition. The current
   investigation makes zero model calls.
+- The repository review derivative uses the installed Microsoft Mark English synthetic male voice
+  offline; it requires no speech account, API key, network call, or paid service and does not change
+  the authentic video frames.
 - Vitest, browser regression, TypeScript, ESLint, Prettier, artifact/runtime attribution contracts,
   and GitHub Actions provide validation.
 - The public credential-free fixture is deployed on Google Cloud Run with synthetic, process-local
@@ -144,9 +149,10 @@ No Devpost challenge control has been selected.
 - The agent makes zero model calls and performs no automatic production change or DataHub write-back.
 - Cloud Run availability through the judging end is unresolved because the cost-control stop boundary
   precedes it; the Public repository fallback remains essential.
-- One authentic 2:50.20 app-only video candidate now exists with human-reviewed English
-  captions/transcript and is publicly accessible through the feature branch/PR. It is silent and is
-  not a Rules-compliant hosted-and-linked Devpost video.
+- One authentic 2:50.20 app-only video source now exists in both silent and synchronized English
+  male-voice repository variants. The voiced derivative changes no video packet/frame, uses only an
+  offline installed Windows AI voice, and remains only a Public GitHub repository/PR asset—not a
+  Rules-compliant hosted-and-linked Devpost video.
 - Registration, entrant eligibility, ownership/rights attestations, YouTube/Vimeo/Youku hosting and
   Devpost linking, final form review, and submission remain undone.
 

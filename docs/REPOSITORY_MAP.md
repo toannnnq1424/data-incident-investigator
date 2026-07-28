@@ -1,13 +1,14 @@
 # Repository map
 
-Last verified: 2026-07-27 for Phase 8.9 on the implementation branch based on exact `origin/main`
-`082d617cab203393f87d0cc3b97aff5ca2b3a3dc` (tree
-`208e80f8d7e9fbab14b93ff1af16787c48e34d92`). The root and six private workspace manifests remain at
-candidate version `1.0.0-rc.1` and SPDX `Apache-2.0`. Phase 8.9 adds only judge-facing Markdown and
-one authentic WebM/caption/transcript review packet. The packet is publicly accessible on its Public
-GitHub feature branch/PR but is not hosted on YouTube/Vimeo/Youku or linked in Devpost. Phase 8.9 does
-not change runtime, API, workflow, package, lockfile, version, tag, Release, fixture, deployment, or
-submission state.
+Last verified: 2026-07-27 for Phase 8.9A on the implementation branch based on exact `origin/main`
+`ceaed0a3f5a277884bf03eb2605c3dd5f70b4afe` (tree
+`0d38dd187fc6f3cd166d88287112f1dc3a46f867`). The root and six private workspace manifests remain at
+candidate version `1.0.0-rc.1` and SPDX `Apache-2.0`. Phase 8.9 is integrated and retains one
+authentic silent WebM/caption/transcript packet. Phase 8.9A adds only a separate exact-video-stream
+synthetic male-voice derivative, matching captions/transcript, and judge/persistent documentation.
+These are Public GitHub repository assets, not YouTube/Vimeo/Youku-hosted or Devpost-linked media.
+Phase 8.9A does not change runtime, API, workflow, package, lockfile, version, tag, Release, fixture,
+deployment, or submission state.
 
 ## Directories
 
@@ -30,7 +31,7 @@ submission state.
 
 Phase 8.7 added `scripts/runtime-attribution.mjs` and `scripts/prepare-runtime-manifests.mjs` for the
 container-only production/legal boundary and is integrated through exact main
-`082d617cab203393f87d0cc3b97aff5ca2b3a3dc`. The running Cloud Run image remains independently bound
+`ceaed0a3f5a277884bf03eb2605c3dd5f70b4afe`. The running Cloud Run image remains independently bound
 to immutable source commit `3653cf6b591eed76ad6276d07b1ea08e88d7fa4f`; Phase 8.8/8.9 do not
 rebuild or redeploy it.
 
@@ -148,6 +149,8 @@ Submission: `DEVPOST_REQUIREMENTS.md`, `DEVPOST_SUBMISSION.md`, `JUDGE_QUICKSTAR
 `CLAIM_TO_DEMO_MATRIX.md`, `DEMO_SCRIPT.md`, `demo-assets/README.md`,
 `demo-video/README.md`, `demo-video/review.html`, `demo-video/TRANSCRIPT.md`,
 `demo-video/phase-8-9-demo-captions.vtt`, `demo-video/phase-8-9-demo-candidate.webm`,
+`demo-video/VOICEOVER_TRANSCRIPT.md`, `demo-video/phase-8-9a-voiceover-captions.vtt`,
+`demo-video/phase-8-9a-demo-voiceover.webm`,
 `PUBLIC_SOURCE_APACHE_READINESS.md`, `RELEASE_CHECKLIST.md`.
 
 ## Rescan triggers

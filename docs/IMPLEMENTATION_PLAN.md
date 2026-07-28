@@ -6917,3 +6917,113 @@ Acceptance:
 Deferred: all media/audio/TTS/incident/source/runtime/workflow/package/lock/version/GCP/deployment,
 external video-host upload, Devpost action, full suite/build/evaluation, another branch/PR, Ready, and
 merge work.
+
+### Phase 8.9A — synchronized male voice-over derivative
+
+Status: local implementation and bounded validation complete; additive Draft-PR publication remains
+on `codex/phase-8-9a-male-voiceover` from exact merged `origin/main`
+`ceaed0a3f5a277884bf03eb2605c3dd5f70b4afe` (tree
+`0d38dd187fc6f3cd166d88287112f1dc3a46f867`). The owner authorizes a synthetic male English
+narrator for a separate derivative of the merged Phase 8.9 candidate. The authentic silent source,
+its frames, captions, transcript, provenance, and prior branches/conversations remain retained.
+
+Objective: select the clearest acceptable no-cost, credential-free local male voice; synthesize only
+the scene-matched English narration; and mux it into one separate under-three-minute WebM while
+preserving the real Phase 8.9 video stream byte-for-byte when existing tooling supports stream copy.
+The narrator may be identified only as an AI/Codex narrator and must not imitate the entrant or a
+named real person.
+
+Minimum files:
+
+- `docs/demo-video/phase-8-9-demo-candidate.webm`,
+  `docs/demo-video/phase-8-9-demo-captions.vtt`, and
+  `docs/demo-video/TRANSCRIPT.md` as immutable silent-source provenance.
+- One separate voiced WebM plus a voice-matched English WebVTT and readable transcript under
+  `docs/demo-video/`; no intermediate WAV or tool output is tracked.
+- `docs/demo-video/README.md` and `docs/demo-video/review.html` for local review, media identity,
+  voice/provider/cost/credential boundaries, and the silent-versus-voiced choice.
+- `docs/DEMO_SCRIPT.md`, `docs/DEVPOST_SUBMISSION.md`, `docs/DEVPOST_REQUIREMENTS.md`, and
+  `docs/CLAIM_TO_DEMO_MATRIX.md` only where the voiced derivative changes current judge-facing
+  evidence.
+- `docs/IMPLEMENTATION_PLAN.md`, `docs/SESSION_LOG.md`, `docs/REPOSITORY_MAP.md`, and
+  `docs/KNOWN_ISSUES.md` for exact persistent state.
+
+Acceptance criteria:
+
+- Inventory legitimate Codex/ChatGPT exportable voice support first, then installed Windows/local
+  voices. Use ElevenLabs or another account service only if local voices are demonstrably inadequate
+  and an already-authorized no-cost credential path exists; never inspect, print, store, or commit a
+  credential and never incur a charge.
+- Record the chosen voice name, gender/language/provider metadata, installed-OS/licence boundary,
+  cost, network, account, and credential facts without claiming broad legal clearance or imitating a
+  real person.
+- Reuse the exact merged silent WebM; create no incident and no UI capture. The voiced derivative has
+  the same real 1440 × 900, 25 fps frames and duration no greater than `170.20 s`; prefer WebM VP8 +
+  Opus and stream-copy the video track.
+- Every spoken sentence describes the scene/action inside its matching one of eleven cue windows.
+  Speech is clear and naturally paced, does not overlap the next cue, and matches the derivative's
+  English captions/transcript exactly. There is no generic monologue, hidden-reasoning claim,
+  confirmed-cause claim, live-DataHub claim, write-back claim, copyrighted music, or synthetic UI.
+- Independently validate container, streams/codecs, channels/sample rate, integrated loudness, true
+  peak/no clipping, silence placement, duration, all eleven A/V boundaries, caption timing/text,
+  representative playback/frames/audio, and video-stream packet/frame identity against the silent
+  source.
+- Confirm no browser/Windows/account chrome, credential, private endpoint/data/path, external media,
+  or account metadata appears in the derivative or its metadata. Preserve C18 as
+  `PARTIAL — LOCAL CANDIDATE` and C19 as `OPEN`.
+- Publishing the branch/Draft PR may make the derivative publicly accessible as a Public GitHub
+  repository asset only. Do not represent that as Rules-listed YouTube/Vimeo/Youku hosting, a
+  Devpost form link, organizer acceptance, or submission.
+- Changed media/docs pass bounded format, local-link, UTF-8/LF/final-newline/no-BOM, exact path,
+  binary/hash, secret/private-data/conflict/debug, residue, process, port, and full-diff checks.
+- Create one additive commit, push normally, open exactly one Draft PR against this exact `main`,
+  require exact-head PR CI `SUCCESS`, and leave the worktree/upstream clean. Do not mark Ready or
+  merge.
+
+Validation plan:
+
+- Enumerate local voice/provider metadata and existing encoders without installing a tool or opening
+  an external account. Generate bounded temporary speech samples only after the local option passes
+  the no-cost/account/credential gate.
+- Probe every synthesized cue duration before muxing. Place each cue within its matching action
+  window, apply only bounded audio normalization needed for intelligibility/no clipping, and remove
+  all untracked intermediate audio after final verification.
+- Use media probes and independent packet/frame hashes to compare the silent and voiced video
+  streams. Inspect representative frames and listen to representative cue boundaries from the final
+  derivative; compare normalized spoken script, WebVTT, and transcript text exactly.
+- Run Prettier only on changed Markdown/HTML, validate local links, strict text encoding/EOL,
+  `git diff --check`, the exact path allowlist, added-line secret/private-path/email/conflict/debug
+  scans, media metadata strings, task residue/processes, and ports `3001`/`5173`. Reuse all unchanged
+  Phase 8.9/main greens; do not run the full suite, build, smoke, or evaluation.
+
+Deferred: ElevenLabs/account/consent/paid-service actions unless the local voice gate genuinely
+fails; any new UI capture or incident; source/runtime/API/workflow/package/workspace/lock change;
+GCP/deployment/billing; Devpost registration/form/save/submit; YouTube/Vimeo/Youku upload or link;
+entrant identity/IP/rights attestations; version/tag/Release; full validation; PR Ready; merge; and
+every post-publication voice or submission action.
+
+Local result:
+
+- No callable Codex/ChatGPT speech-export capability was available. The selected narrator is the
+  installed **Microsoft Mark — English (United States)** Adult/Male Windows OneCore voice, used
+  offline through SAPI at default rate and volume with no account, credential, network call,
+  subscription, per-use charge, or ElevenLabs access. The installed component remains governed by
+  the host Microsoft/Windows licence; no voice model or tool binary is redistributed and final
+  entrant media-rights review remains open.
+- `docs/demo-video/phase-8-9a-demo-voiceover.webm` is a separate 13,185,933-byte WebM derivative:
+  1440 × 900 VP8 at 25 fps plus 48 kHz mono Opus, `170.20 s`, SHA-256
+  `f52daa606f3cf9f627909e23422ca2d14fd92db1f5c4ed6ca304744c5608ab33`, and prospective Git blob
+  `30a1f2b768a85599d0dfd0bdb95c0170ed4b2e4f`. Its extracted 11,043,338-byte VP8 packet stream is
+  byte-identical to the silent source at SHA-256
+  `a1f8e79698cf8857fb48d25ce7370def3ad689569bac80b31be02db0dcb0dfea`; all 4,255 source/derivative
+  copy-timestamp framehash rows also match at SHA-256
+  `3bdd38f1026dca7dc670b967231418df2d168158d1093b57f1ee8d9467a0dd6e`, so no frame was generated,
+  re-encoded, inserted, removed, or retimed.
+- Independent final-Opus decoding measured 48 kHz mono audio at `-18.0 LUFS`, `7.1 LU`,
+  `-1.0 dBTP`, sample peak `-1.046 dBFS`, and zero clipped samples. All eleven measured speech
+  activity windows start near their action/caption boundary and finish before the next boundary.
+  The exact speech-friendly English text is preserved in the new WebVTT and transcript.
+- Phase 8.9A created no incident, made no request to the public service, and did not alter the
+  authentic source media. Representative derivative frames at `00:05`, `01:10`, and `02:49` and
+  decoded cues 1, 6, and 11 passed visual/audio review. C18 remains
+  `PARTIAL — LOCAL CANDIDATE`; C19 remains `OPEN`.
