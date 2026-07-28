@@ -1,21 +1,36 @@
 # Repository map
 
-Last verified: 2026-07-28 for Phase 8.10 from exact `origin/main`
-`b4f9e360e22baba3cab60710a65ea5c0e0555369` (tree
-`29f51960e9a772b8c331b427943920f296031bbe`). Phase 8.9A is integrated and retains the authentic
+Last verified: 2026-07-28 for released exact `origin/main`
+`a28e21c06ad623f1547c02a6d65fd900fa8472a4` (tree
+`e0594ddecbe9d82f30e7b3005a51cb8df9283bf8`). Annotated tag object
+`eb26bc54fccd4cc0ebeacfb14539008a03da687a` (`v1.0.0`) resolves to that merge; the matching
+GitHub Release is Published/Latest and exact-main CI is successful. Phase 8.9A retains the authentic
 silent WebM/caption/transcript packet plus a separate exact-video-stream synthetic male-voice
 derivative with matching captions/transcript. These are Public GitHub repository assets on merged
-`main`, not YouTube/Vimeo/Youku-hosted or Devpost-linked media. The Phase 8.10 preparation branch
-aligns the root and six private Apache-2.0 manifests to `1.0.0`, updates the MCP client protocol
-identity to the same version, and applies only the two transitive denial-of-service patches required
-by the final production audit. It changes no investigation behavior, workflow, fixture, media, tag,
-Release, deployment, or submission state.
+`main`; the male-voice derivative is also Public at <https://youtu.be/D5mvMqrhyDc> with its authored
+English captions. Devpost registration, individual Join, and the entrant-operated final action are
+complete for project `1117401`; the signed-in finalization screen reports **Project submitted!**,
+**Submitted**, and **5/5**. The submitted entry contains the verified Public
+video/app/repository links, English copy, five captioned fixture screenshots, a thumbnail,
+**Open / Wildcard**, and judge information. This is submission evidence, not organizer acceptance,
+eligibility approval, prize status, or an independent ownership/rights attestation; exact gate state
+is tracked in the submission documents.
+Phase 8.10 aligned the root and six private Apache-2.0 manifests to `1.0.0`, updated the MCP client
+protocol identity to the same version, and applied only the two transitive denial-of-service patches
+required by the final production audit. It changed no investigation behavior, workflow, fixture,
+media, deployment, or submission state.
+The active Phase 8.11 source candidate keeps the same API/contracts and makes the existing seven
+canonical scenarios visible as incident playbooks. `apps/web/src/App.tsx` also renders a
+validated-response-only verdict dashboard and evidence path (incident → selected entity → factual
+evidence → top hypothesis → supported/explicitly unverified impact). These are presentation
+components, not a workflow builder, write-back system, or new provider claim. This revision is not in
+the released/Public deployment until separately merged and deployed.
 
 ## Directories
 
 | Path                      | Responsibility                                                              | Important entrypoints                                                                                                                                                             |
 | ------------------------- | --------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/web`                | React/Vite user interface                                                   | `src/App.tsx`, `src/main.tsx`, `vite.config.ts`                                                                                                                                   |
+| `apps/web`                | React/Vite intake, visible playbooks, evidence-first report UI              | `src/App.tsx`, `src/styles.css`, `src/main.tsx`, `vite.config.ts`                                                                                                                 |
 | `apps/api`                | Fastify HTTP API                                                            | `src/index.ts`                                                                                                                                                                    |
 | `packages/shared-types`   | Zod schemas and shared types                                                | `src/index.ts`                                                                                                                                                                    |
 | `packages/datahub-client` | Provider-neutral contract plus fixture, GraphQL, and MCP adapters           | `src/index.ts`, `src/datahub-mcp.ts`                                                                                                                                              |
@@ -103,7 +118,8 @@ responses, stable API error, entity, evidence, hypothesis, and report schemas.
 fixture implementation, and the DataHub GraphQL implementation for health, search, lineage, and recent
 changes. `packages/datahub-client/src/datahub-mcp.ts` adds the explicit Streamable HTTP DataHub MCP
 Server provider: fixed read-only `search`/`get_lineage`, strict protocol/metadata contracts, bounded
-timeouts/bytes/entities/lineage, and an explicit unsupported recent-changes capability.
+timeouts/bytes/entities/lineage, the official bounded string-or-descriptor lineage platform shape,
+and an explicit unsupported recent-changes capability.
 `packages/agent-core/src/index.ts` runs deterministic evidence-linked investigations through the
 selected adapter without a model call.
 

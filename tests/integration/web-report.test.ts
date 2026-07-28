@@ -2,8 +2,12 @@ import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import {
+  App,
+  CompletedReport,
+  getCompletedReportDashboard,
   getCompletedReportContent,
   getDegradedInvestigationPresentation,
+  getEvidencePathNodes,
   BlastRadiusSection,
   FailedInvestigation,
   InvestigationActivity,
@@ -43,6 +47,29 @@ const unknownBlastRadius = BlastRadiusAnalysisSchema.parse({
     truncatedGraphs: 0,
     appliedLimits: { maxDepth: 3, maxEntities: 25, maxRootEntities: 3 },
   },
+});
+
+describe('primary investigation layout', () => {
+  it('places the incident workflow before the optional explorer with one concise announcement', () => {
+    const markup = renderToStaticMarkup(createElement(App));
+
+    expect(markup).toContain('Trace the change. <span>Prove the impact.</span>');
+    expect(markup).toContain('Read-only investigation contract');
+    expect(markup).toContain('From incident signal to auditable answer');
+    expect(markup.match(/class="scenario-preset"/g) ?? []).toHaveLength(7);
+    expect(markup.indexOf('id="investigation-contract-heading"')).toBeLessThan(
+      markup.indexOf('id="incident-heading"'),
+    );
+    expect(markup.indexOf('id="incident-heading"')).toBeLessThan(
+      markup.indexOf('id="metadata-search-heading"'),
+    );
+    expect(markup).toContain('Optional metadata explorer');
+    expect(markup).toContain(
+      'class="submission-announcement" role="status" aria-live="polite" aria-atomic="true"',
+    );
+    expect(markup).toContain('<div class="submission-status">');
+    expect(markup).not.toContain('class="submission-status" aria-live=');
+  });
 });
 
 describe('investigation activity presentation', () => {
@@ -132,7 +159,7 @@ describe('investigation activity presentation', () => {
     if (incident.status !== 'failed') throw new Error('Expected failed incident fixture.');
 
     const markup = renderToStaticMarkup(createElement(FailedInvestigation, { incident }));
-    expect(markup).toContain('role="alert"');
+    expect(markup).not.toContain('role="alert"');
     expect(markup).toContain('The investigation did not complete');
     expect(markup).toContain('tool_call_limit_reached');
     expect(markup).toContain('Investigation activity');
@@ -368,6 +395,175 @@ describe('completed report presentation', () => {
       recommendations: ['Restore or intentionally replace the source field.'],
       assumptions: ['The fixture snapshot covers the incident window.'],
       missingInformation: ['Runtime query logs are unavailable.'],
+    });
+    expect(getCompletedReportDashboard(incident)).toEqual({
+      verdict: 'A schema change is a plausible contributor.',
+      confidenceLabel: 'Not scored',
+      confidenceScore: undefined,
+      confidenceDetail: 'Confidence was not scored because validated evidence was insufficient.',
+      evidenceCount: 2,
+      impactCount: 0,
+      blastRadiusStatus: 'unknown',
+      toolCalls: 8,
+      agentSteps: 5,
+    });
+    expect(getEvidencePathNodes(incident)).toEqual([
+      {
+        type: 'Incident',
+        label: 'Why did revenue drop?',
+        detail: 'Normalized operator question',
+        tone: 'signal',
+      },
+      {
+        type: 'dataset',
+        label: 'analytics.daily_revenue',
+        detail: 'Adapter-selected entity',
+        tone: 'entity',
+      },
+      {
+        type: 'schema-change',
+        label: 'The fixture records a removed source column.',
+        detail: 'Observed on raw.orders',
+        tone: 'evidence',
+      },
+      {
+        type: 'Hypothesis',
+        label: 'A schema change is a plausible contributor.',
+        detail: 'Confidence not scored',
+        tone: 'hypothesis',
+      },
+      {
+        type: 'Downstream impact',
+        label: 'No top-hypothesis impact verified',
+        detail: 'Top-hypothesis impact remains unverified',
+        tone: 'unknown',
+      },
+    ]);
+    const markup = renderToStaticMarkup(createElement(CompletedReport, { incident }));
+    expect(markup.indexOf('id="report-summary-heading"')).toBeLessThan(
+      markup.indexOf('id="investigation-activity-heading"'),
+    );
+    expect(markup.indexOf('id="blast-radius-heading"')).toBeLessThan(
+      markup.indexOf('id="investigation-activity-heading"'),
+    );
+    expect(markup.match(/id="blast-radius-heading"/g)).toHaveLength(1);
+    expect(markup).toContain('id="evidence-path-heading"');
+    expect(markup.indexOf('id="report-summary-heading"')).toBeLessThan(
+      markup.indexOf('id="evidence-path-heading"'),
+    );
+    expect(markup.indexOf('id="evidence-path-heading"')).toBeLessThan(
+      markup.indexOf('id="blast-radius-heading"'),
+    );
+    expect(markup).toContain('Every node comes from the schema-validated terminal response');
+    expect(markup).toContain('No top-hypothesis impact verified');
+
+    const multiPathIncident = structuredClone(incident);
+    multiPathIncident.report.evidence.unshift({
+      id: 'metadata-seed',
+      category: 'metadata',
+      statement: 'An unrelated metadata seed appears first in report order.',
+      sourceEntity: {
+        urn: 'urn:li:dataset:(urn:li:dataPlatform:snowflake,raw.metadata,PROD)',
+        name: 'raw.metadata',
+        kind: 'dataset',
+      },
+    });
+    multiPathIncident.report.hypotheses.push({
+      id: 'hypothesis-other',
+      summary: 'An independent metadata hypothesis.',
+      confidence: {
+        status: 'not_scored',
+        reasonCode: 'insufficient_evidence',
+        explanation: 'Confidence was not scored because validated evidence was insufficient.',
+      },
+      evidenceIds: ['metadata-seed'],
+    });
+    multiPathIncident.report.blastRadius = BlastRadiusAnalysisSchema.parse({
+      analysisVersion: BLAST_RADIUS_ANALYSIS_VERSION,
+      status: 'complete',
+      explanation: BLAST_RADIUS_STATUS_EXPLANATIONS.complete,
+      impacts: [
+        {
+          entity: {
+            urn: 'urn:li:dataset:(urn:li:dataPlatform:snowflake,analytics.unrelated,PROD)',
+            name: 'analytics.unrelated',
+            kind: 'dataset',
+          },
+          relation: 'downstream',
+          distance: 1,
+          rootUrn: 'urn:li:dataset:(urn:li:dataPlatform:snowflake,raw.metadata,PROD)',
+          pathUrns: [
+            'urn:li:dataset:(urn:li:dataPlatform:snowflake,raw.metadata,PROD)',
+            'urn:li:dataset:(urn:li:dataPlatform:snowflake,analytics.unrelated,PROD)',
+          ],
+          hypothesisIds: ['hypothesis-other'],
+          evidenceIds: ['metadata-seed'],
+        },
+        {
+          entity: {
+            urn: 'urn:li:dashboard:(looker,revenue-overview)',
+            name: 'Revenue overview',
+            kind: 'dashboard',
+          },
+          relation: 'downstream',
+          distance: 2,
+          rootUrn: 'urn:li:dataset:(urn:li:dataPlatform:snowflake,raw.orders,PROD)',
+          pathUrns: [
+            'urn:li:dataset:(urn:li:dataPlatform:snowflake,raw.orders,PROD)',
+            'urn:li:dataset:(urn:li:dataPlatform:snowflake,analytics.daily_revenue,PROD)',
+            'urn:li:dashboard:(looker,revenue-overview)',
+          ],
+          hypothesisIds: ['hypothesis-1'],
+          evidenceIds: ['change-1'],
+        },
+      ],
+      summary: { total: 2, datasets: 1, pipelines: 0, dashboards: 1 },
+      coverage: {
+        reasonCodes: [],
+        rootsConsidered: 2,
+        rootsAnalyzed: 2,
+        visitedEntities: 5,
+        truncatedGraphs: 0,
+        appliedLimits: { maxDepth: 3, maxEntities: 25, maxRootEntities: 3 },
+      },
+    });
+
+    const multiPathNodes = getEvidencePathNodes(multiPathIncident);
+    expect(multiPathNodes[2]).toMatchObject({
+      type: 'schema-change',
+      label: 'The fixture records a removed source column.',
+    });
+    expect(multiPathNodes[4]).toMatchObject({
+      label: 'Revenue overview',
+      detail: 'dashboard · distance 2',
+      tone: 'impact',
+    });
+
+    const unlinkedPathIncident = structuredClone(multiPathIncident);
+    unlinkedPathIncident.report.hypotheses[0]!.evidenceIds = ['missing-top-evidence'];
+    unlinkedPathIncident.report.blastRadius.impacts =
+      unlinkedPathIncident.report.blastRadius.impacts.filter((impact) =>
+        impact.hypothesisIds.includes('hypothesis-other'),
+      );
+    unlinkedPathIncident.report.blastRadius.summary = {
+      total: 1,
+      datasets: 1,
+      pipelines: 0,
+      dashboards: 0,
+    };
+
+    const unlinkedPathNodes = getEvidencePathNodes(unlinkedPathIncident);
+    expect(unlinkedPathNodes[2]).toEqual({
+      type: 'Evidence',
+      label: 'No hypothesis-linked evidence verified',
+      detail: 'Other report evidence remains independent and unverified for this hypothesis',
+      tone: 'unknown',
+    });
+    expect(unlinkedPathNodes[4]).toEqual({
+      type: 'Downstream impact',
+      label: 'No top-hypothesis impact verified',
+      detail: 'Other reported impacts remain independent and unverified for this hypothesis',
+      tone: 'unknown',
     });
   });
 

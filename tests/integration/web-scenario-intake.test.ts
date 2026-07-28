@@ -80,7 +80,7 @@ describe('canonical scenario guided intake', () => {
     expect(createCanonicalScenarioFormState('manual')).toEqual(manual);
   });
 
-  it('renders a native single-select with a group label, help, status, and custom provenance', () => {
+  it('renders seven visible accessible playbooks with status and custom provenance', () => {
     const manualMarkup = renderToStaticMarkup(
       createElement(CanonicalScenarioSelector, {
         selection: { kind: 'manual' } satisfies CanonicalScenarioSelection,
@@ -90,17 +90,14 @@ describe('canonical scenario guided intake', () => {
     );
 
     expect(manualMarkup).toContain('<fieldset class="scenario-selector">');
-    expect(manualMarkup).toContain('<legend>Guided demo</legend>');
+    expect(manualMarkup).toContain('<legend>Incident playbooks</legend>');
     expect(manualMarkup).toContain(
-      '<label for="canonical-scenario">Canonical incident scenario</label>',
+      'only the removed-column path has the rich canonical browser fixture',
     );
-    expect(manualMarkup).toContain('<select id="canonical-scenario"');
-    expect(manualMarkup).toContain(
-      'aria-describedby="canonical-scenario-help canonical-scenario-status"',
-    );
-    expect(manualMarkup).toContain('Manual input (default)');
-    expect(manualMarkup.match(/<option/g) ?? []).toHaveLength(8);
-    expect(manualMarkup).toContain('Clear and use manual input');
+    expect(manualMarkup.match(/class="scenario-preset"/g) ?? []).toHaveLength(7);
+    expect(manualMarkup.match(/aria-pressed="false"/g) ?? []).toHaveLength(7);
+    expect(manualMarkup).toContain('Best demo path');
+    expect(manualMarkup).toContain('Use manual input');
     expect(manualMarkup).toContain('aria-live="polite"');
 
     const customMarkup = renderToStaticMarkup(
@@ -113,9 +110,11 @@ describe('canonical scenario guided intake', () => {
         onReset: () => undefined,
       }),
     );
-    expect(customMarkup).toContain('Custom values based on Removed schema column');
+    expect(customMarkup.match(/aria-pressed="true"/g) ?? []).toHaveLength(1);
     expect(customMarkup).toContain('Your edits will be submitted.');
-    expect(customMarkup).toContain('all fields remain editable');
+    expect(customMarkup).toContain(
+      'Selected playbook: <strong>Removed schema column</strong> · customized',
+    );
   });
 
   it('retains latest-request ownership when a newer guided or manual submission begins', () => {

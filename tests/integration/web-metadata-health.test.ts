@@ -45,6 +45,21 @@ describe('metadata health presentation', () => {
     });
   });
 
+  it('names the exact MCP source mode for users', () => {
+    const health = MetadataHealthResponseSchema.parse({
+      mode: 'datahub-mcp',
+      status: 'ready',
+      message: 'DataHub MCP Server is ready.',
+    });
+
+    expect(getMetadataHealthPresentation(health)).toEqual({
+      sourceLabel: 'DataHub MCP Server',
+      statusLabel: 'Ready',
+      message: 'DataHub MCP Server is ready.',
+      tone: 'ready',
+    });
+  });
+
   it('uses a safe fallback when the API response cannot be loaded', () => {
     expect(getMetadataHealthPresentation(null)).toEqual({
       sourceLabel: 'Metadata source',

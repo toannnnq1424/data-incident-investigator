@@ -667,8 +667,12 @@ unavoidable or non-refundable charge, mandatory paid plan, unclear price, uncont
 auto-conversion, or inability to enforce zero spend is `REJECT`. The historical preflight proposed a
 reminder/automation if a provider were later approved. Phase 8.7 then consumed the owner's separate
 explicit risk acceptance and deployed the approved GCP fixture service without creating a reminder.
-The recorded 2026-08-10 or 20%-remaining-credit stop, delete, and billing-detach boundary therefore
-remains a manual operator control rather than a hard spending cap.
+The historical 2026-08-10 or 20%-remaining-credit stop, delete, and billing-detach boundary was a
+manual operator control rather than a hard spending cap. Phase 8.11 supersedes only that timing:
+the owner authorizes public fixture operation through 2026-09-17 23:59 ICT, beyond judging, and a
+20%-remaining-credit signal now triggers monitoring/escalation rather than automatic pre-judging
+shutdown. Emergency security or uncontrolled-billing containment remains permitted. This operating
+commitment does not expand any licence, data, API, credential, or entrant-rights authorization.
 
 Within that fail-closed cost boundary, the owner records this operational disposition:
 

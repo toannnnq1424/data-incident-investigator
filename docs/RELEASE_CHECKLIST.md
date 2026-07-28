@@ -1,8 +1,9 @@
 # Release checklist
 
 This checklist is governed by [`VERSIONING.md`](VERSIONING.md). Phase 7.7 completed the immutable
-`v1.0.0-rc.1` tag and no-user-uploaded-asset Draft Release gates; the final-release and Devpost
-actions below remain separately scoped.
+`v1.0.0-rc.1` tag and no-user-uploaded-asset Draft Release gates. Phase 8 completed the final
+`v1.0.0` tag and Published/Latest Release; the remaining Devpost project-form and submission actions
+below remain separately scoped.
 
 ## Repository
 
@@ -94,14 +95,22 @@ actions below remain separately scoped.
       with successful exact-main CI and GitHub detected-license evidence.
 - [x] The independently approved Public transition is integrated; authenticated GitHub confirms
       Public visibility and enabled Private vulnerability reporting on exact current `main`.
-- [ ] An entrant gate verifies eligibility, team/representative mode, registration, live form fields,
-      disclosures, consent, and final submission receipt.
-- [ ] A judge-access gate supplies a free testable Project URL/path through
-      2026-08-31 17:00 EDT / 2026-09-01 04:00 ICT.
-- [ ] A media gate supplies a publicly visible functioning-project video on an accepted host, with
-      rights and English/translation checks; the script targets below 3:00 because the Rules recommend
-      it and judges need not watch beyond minute three, not because it is a separately worded hard
-      eligibility maximum.
+- [x] Devpost registration records **Working solo** and **Open / Wildcard** as the category of
+      interest.
+- [x] Inspect the live project form and save the approved English copy, URLs, screenshots, thumbnail,
+      challenge, DataHub technologies, residence, new-project selection, and feedback answers in
+      draft project `1117401`.
+- [ ] An entrant gate independently records the still-open eligibility/IP/rights facts, accepts the
+      final Rules/Terms only after review, submits, and captures the final receipt.
+- [x] The owner-authorized public Project URL operating window runs through
+      2026-09-17 23:59 ICT, beyond the 2026-08-31 17:00 EDT judging end; the Public repository is the
+      fallback.
+- [x] The authentic 2:50.20 male-voice functioning-project video is Public on YouTube with authored
+      English captions.
+- [x] Enter and preview the exact hosted-video URL in Devpost draft `1117401`; the below-3:00 target
+      is a Rules recommendation and judging-attention gate, not a separately worded hard eligibility
+      maximum.
+- [ ] Complete the entrant's final rights review before final Rules/Terms acceptance and submission.
 
 ## Phase 8.3 — public-source and Apache-2.0 decision preparation
 
@@ -385,7 +394,7 @@ The execution checklist above is historical and was found incomplete by independ
       evidence; keep the PR Draft and unmerged at that Phase 8.7 review gate. PR #56 later merged
       through current main; the running image remains bound to its earlier immutable source commit.
 
-## Phase 8 — `v1.0.0` final (preparation in progress; tag/Release not performed)
+## Phase 8 — `v1.0.0` final (released)
 
 - [x] Start from accepted exact main `b4f9e360e22baba3cab60710a65ea5c0e0555369`, confirm the
       bounded final-preparation scope, and verify that no `v1.0.0` tag, GitHub Release, duplicate
@@ -400,16 +409,19 @@ The execution checklist above is historical and was found incomplete by independ
 - [x] Run the dirty-tree-compatible pre-commit technical gates once: Level D, canonical evaluation,
       Browser fixture E2E, public root/health/readiness, production audit and its patched seam,
       runtime attribution, formatting, links, claims, secrets, residue, processes, and ports.
-- [ ] The exact `fc2ba2f…` archive passed structural verification and production frozen install but
+- [x] The exact `fc2ba2f…` archive passed structural verification and production frozen install but
       is rejected because packaged startup exposed an omitted DataHub MCP sibling module. After the
-      one authorized additive closure correction, build and verify the new exact clean-HEAD archive,
-      extracted runtime, and clean checkout once; record final identities/results in the mutable
-      Draft PR body so provenance remains bound to that commit without a third docs commit.
-- [ ] Complete independent Windows QA, normal merge, exact-main CI, and every still-open external
-      release/submission gate against the exact final commit. C14, live/judge DataHub MCP, C18/C19,
-      entrant/team/IP/media-rights/eligibility/consent, Rules-host video, and Devpost remain open.
-- [ ] After all gates pass, create and normally push immutable tag `v1.0.0`, create the matching GitHub
-      Release, and verify both resolve to the exact validated commit.
+      one authorized additive closure correction, the replacement exact clean-HEAD artifact,
+      extracted runtime, and focused clean checkout passed with provenance bound to final feature
+      commit `03f72172a9742b3f3f84b33c131cb0d4393a3193`.
+- [x] Complete independent Windows QA, normal merge, and exact-main CI against release merge
+      `a28e21c06ad623f1547c02a6d65fd900fa8472a4`, tree
+      `e0594ddecbe9d82f30e7b3005a51cb8df9283bf8`; CI run `30338530196`, job `90208641358`, is
+      successful. External submission gates remain separately tracked.
+- [x] Create and normally push immutable annotated tag `v1.0.0`; tag object
+      `eb26bc54fccd4cc0ebeacfb14539008a03da687a` resolves to the exact release merge. The matching
+      GitHub Release is Published/Latest. The historical `v1.0.0-rc.1` tag and Draft Release remain
+      untouched.
 
 ## Deployment
 
@@ -422,13 +434,24 @@ The execution checklist above is historical and was found incomplete by independ
 - [x] Previous immutable revision `data-incident-investigator-00001-jst` is retained only as a
       historical rollback candidate; it is not the current proven live or “last-known-good”
       revision.
+- [x] Phase 8.11 owner authorization supersedes the historical early-stop policy: keep the public
+      fixture available through 2026-09-17 23:59 ICT, beyond judging. A 20%-remaining-credit signal
+      now triggers monitoring/escalation instead of automatic pre-judging shutdown; retain emergency
+      containment and the Public-repository fallback.
 
 ## Submission
 
-- [ ] Devpost copy contains only verified claims.
-- [ ] Architecture diagram and DataHub/Codex explanations are complete.
-- [ ] Video publicly shows the functioning project and follows the sub-three-minute target because it
-      is the official recommendation and judging-attention/risk-reduction gate.
-- [ ] Screenshots cover input, progress, root cause, evidence, lineage, and actions.
-- [ ] Repository URL, deployment URL, video URL, limitations, and roadmap are present.
-- [ ] Final release commit and tag are pushed.
+- [x] Repository Devpost draft copy contains only verified claims and explicit limitations.
+- [x] Architecture diagram and DataHub/Codex explanations are complete.
+- [x] The exact 2:50.20 male-voice functioning demo is Public at
+      <https://youtu.be/D5mvMqrhyDc> with authored English captions and no upload-check copyright
+      issue.
+- [x] Screenshots cover input, progress, root cause, evidence, lineage, and actions.
+- [x] Repository URL, deployment URL, video URL, limitations, and roadmap are present.
+- [x] Final release commit and tag are pushed.
+- [x] Devpost registration and individual Join are complete, with Open / Wildcard recorded as the
+      registration category of interest.
+- [x] Create and review draft project `1117401`; save and preview the verified URLs, English copy,
+      five captioned screenshots, thumbnail, challenge, technologies, and optional feedback answers.
+- [ ] Complete entrant-owned eligibility/IP/rights review, explicitly accept the final Rules/Terms,
+      and submit only after separate final authorization; preserve the receipt.

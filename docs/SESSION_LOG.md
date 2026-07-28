@@ -6763,3 +6763,447 @@ production frozen-install and fixture runtime, and one focused fresh-checkout ar
 pass, push the two-commit branch normally, open one Draft PR against unchanged exact main, and require
 exact-head PR CI `SUCCESS`. Do not mark Ready, merge, tag, create/publish a Release, deploy, mutate
 GCP, host media externally, enter Devpost, or change C11/C14/live MCP/C18/C19 status.
+
+## 2026-07-28 — Phase 8.11 authorized submission-readiness reconciliation
+
+### Released-main baseline and bounded scope
+
+The slice started on `codex/phase-8-11-submission-readiness` from exact released `origin/main`
+`a28e21c06ad623f1547c02a6d65fd900fa8472a4`, tree
+`e0594ddecbe9d82f30e7b3005a51cb8df9283bf8`. Annotated tag object
+`eb26bc54fccd4cc0ebeacfb14539008a03da687a` (`v1.0.0`) resolves to that merge, the GitHub Release is
+Published/Latest, and exact-main CI run `30338530196` / job `90208641358` is `SUCCESS`. The slice
+changes submission/readiness documentation only; it does not alter application source, media bytes,
+runtime, workflow, package, lock, version, tag, Release, deployment, or GCP configuration.
+
+### C14 operating-window supersession
+
+Signed-in read-only Cloud Console evidence confirmed the existing `asia-southeast1` public service
+Ready at minimum `0` / maximum `1`, with a Paid billing account, July 1–28 net cost `₫0`, and active
+Welcome credit `₫7,886,121.22` of `₫7,889,850.00` through 2026-10-07. No scheduler or date-based
+Cloud Run control existed. The owner superseded the historical manual 2026-08-10/20%-credit stop:
+keep access through **2026-09-17 23:59 ICT / 16:59 UTC / 12:59 EDT**; treat 20% remaining as a
+monitor/escalate signal; retain emergency security, uncontrolled-billing, and provider-enforcement
+containment plus the Public-repository fallback. No GCP mutation occurred. C14 is
+`PASS — OWNER-AUTHORIZED OPERATING WINDOW`, not an absolute uptime or zero-cost promise.
+
+### Public male-voice demo
+
+The unchanged `docs/demo-video/phase-8-9a-demo-voiceover.webm`, 13,185,933 bytes at SHA-256
+`f52daa606f3cf9f627909e23422ca2d14fd92db1f5c4ed6ca304744c5608ab33` and Git blob
+`30a1f2b768a85599d0dfd0bdb95c0170ed4b2e4f`, was uploaded through the signed-in YouTube Studio
+session and published Public at <https://youtu.be/D5mvMqrhyDc>. Its exact title is **Data Incident
+Investigator — 2:50 Functioning Demo (Synthetic Fixture)**. The description links the public app,
+repository, judge quickstart, repository video packet, submission draft, `v1.0.0` Release, and
+challenge page while retaining fixture-only, no-model, no-live-DataHub, no-remediation limits.
+
+The authored `phase-8-9a-voiceover-captions.vtt` was uploaded with timing and YouTube Studio reports
+the English track published. The upload check reports no copyright issue. The viewer page resolves
+the exact public title and 2:50 duration and exposes the matching 11-entry timed transcript; Studio
+independently supplies the caption publication evidence. No claim is made that YouTube's transcode
+preserves the repository WebM byte hash or that an automated copyright check is blanket rights
+clearance. No new incident, frame, recording, speech, or media encoding occurred.
+
+### Devpost registration and remaining form boundary
+
+The existing signed-in Devpost account completed challenge registration and individual Join. The
+observed terminal page says **Thanks for registering!**, records **Working solo** and
+**Open / Wildcard** as the category of interest, and exposes **Start project**. The user performed
+the required eligibility/rules confirmations directly; the repository does not independently prove
+the underlying age, residence, sanctions, conflict, ownership, contributor, or media-rights facts.
+No project was started or imported, no project form was created or saved, no YouTube URL or draft
+copy was entered, and no submission or receipt exists.
+
+C18 advances to `PASS`; C19 is `PARTIAL — PUBLIC HOSTED / DEVPOST LINK OPEN`. Live/judge DataHub MCP
+validation remains `PARTIAL`, C11 remains its existing qualified immutable-deployment status, and
+entrant-owned IP/rights facts, project-form review, URL/copy entry, final submission authorization,
+submission, and receipt remain open.
+
+## 2026-07-28 — Phase 8.11 authorized Devpost project draft
+
+### Objective
+
+Use the existing signed-in Devpost account to create exactly one truthful project draft for the
+already-joined individual entry, save all repository-supported copy/media/judge fields, and record
+every external action. Stop before the binding final Rules/Terms agreement and **Submit project**.
+Do not create another incident, alter media, expose credentials, mutate GCP/runtime/release state, or
+claim organizer acceptance.
+
+### Completed
+
+- The first **Start project** attempt displayed a Google reCAPTCHA image challenge. The user solved
+  that challenge manually and replied `xong`; no CAPTCHA bypass or hidden-session inspection was
+  used.
+- Devpost created exactly one project: numeric ID `1117401`, slug
+  `1117401-data-incident-investigator`, title **Data Incident Investigator**, status **Draft**. No
+  duplicate project, import, or submission was created.
+- Saved **Project overview** with the exact title and this elevator pitch:
+
+  > An evidence-first data incident agent that traces metadata changes through lineage and turns
+  > them into an auditable report with transparent confidence, blast radius, and safe human next
+  > steps.
+
+- Saved **Project details** after removing Devpost's default heading template from the story. The
+  final English story is 4,898 characters and retains fixture-only, plausible-contributor,
+  confidence, blast-radius, no-model, no-write-back, and live-MCP-partial boundaries. Built With is
+  `TypeScript, React, Vitest, DataHub, Node.js`.
+- Saved the Public app and repository as Try it out links and
+  <https://youtu.be/D5mvMqrhyDc> as the exact video link.
+- Uploaded only the five existing authentic 1440 × 900 fixture PNGs. Devpost media IDs and exact
+  caption mapping are:
+  - `5030739`: guided synthetic Removed schema column intake before Start;
+  - `5030741`: completed fixture report, deterministic Markdown export, and activity trail;
+  - `5030742`: plausible-contributor hypothesis with visible 81% confidence factors;
+  - `5030743`: bounded blast radius with two supported downstream impacts; and
+  - `5030740`: evidence view separating metadata/lineage facts from inference.
+- Uploaded the existing completed report/export PNG as the project thumbnail. A reloaded finalization
+  view no longer showed the thumbnail placeholder. No image was cropped, generated, re-encoded, or
+  recaptured.
+- Saved **Additional info** with **Open / Wildcard**, the Public repository URL, Public app URL,
+  repository demo-assets folder, **DataHub MCP Server**, and **DataHub OSS / Core Platform**. The
+  open-source contribution field remains blank because no DataHub contribution is claimed.
+- The entrant supplied `Vietnam`; that exact residence selection is saved. The form selection says
+  **Yes, newly created during the Submission Period**, supported by the first repository commit on
+  2026-07-18. The conditional pre-existing-work field remains blank; full off-repository/IP
+  confirmation remains an entrant gate.
+- Opted into the optional $50 Feedback Prize and saved four complete English answers:
+
+  1. the official MCP guide and read-only `search`/`get_lineage` surface mapped cleanly into a
+     bounded provider adapter and stable URNs/direction preserved provenance;
+  2. the missing recent-changes timeline tool was the largest gap and forced an explicit unsupported
+     state rather than emulated live evidence;
+  3. the requested improvement is a typed bounded recent-changes tool with schema/tag/ownership/
+     lineage events, time, actor/source IDs, pagination, and capability metadata; and
+  4. no reproducible DataHub product bug was confirmed; the capability gap and pending authorized
+     live-endpoint validation remain disclosed.
+
+- Saved this solo contribution note:
+
+  > Solo entrant: I directed the project and used Codex as an AI coding assistant to design,
+  > implement, validate, document, deploy, and rehearse the TypeScript investigation workflow and
+  > its public fixture demo.
+
+- The signed-in draft preview renders the Public YouTube embed, all five images with aligned captions,
+  the clean story, Built With tags, and both Try it out links. It labels the entry
+  **Incomplete submission**.
+- The reloaded finalization page reports **4/5 steps done** and exposes one unchecked agreement to
+  the Official Rules and Devpost Terms plus **Submit project**. The checkbox remains unchecked and
+  the button was not clicked; no submission, receipt, or organizer acceptance exists.
+
+### Files changed
+
+- `README.md`
+- `docs/CLAIM_TO_DEMO_MATRIX.md`
+- `docs/DEMO_SCRIPT.md`
+- `docs/DEVPOST_REQUIREMENTS.md`
+- `docs/DEVPOST_SUBMISSION.md`
+- `docs/IMPLEMENTATION_PLAN.md`
+- `docs/JUDGE_QUICKSTART.md`
+- `docs/KNOWN_ISSUES.md`
+- `docs/RELEASE_CHECKLIST.md`
+- `docs/REPOSITORY_MAP.md`
+- `docs/SESSION_LOG.md`
+- `docs/demo-video/README.md`
+
+No application source, runtime, workflow, package, lock, version, release, deployment, GCP, or media
+file changed.
+
+### Decisions
+
+- Treat C08, C16, C19, C21, and C25 as `PASS` because the exact saved draft preview now verifies
+  claim/video matching, complete English project copy, accepted-host video linkage, form-wide English
+  completeness, and authentic image/caption presentation.
+- Advance C22 from `OPEN` to `PARTIAL`: all content/judge steps are saved, but the final binding
+  Rules/Terms agreement, submission, and receipt remain open.
+- Keep C01 `OPEN`; keep C04, C05, C12, C20, C06/C07/C28/C29 `PARTIAL`; preserve C11 qualified,
+  C14 owner-authorized, C18 `PASS`, and C23 `PASS`. The saved residence/new-project selections are
+  evidence, not blanket eligibility, ownership, IP/media-rights, or live-MCP proof.
+- Keep C37 `NOT REQUIRED` because the prize survey is optional, while recording that its draft
+  answers are complete. Do not claim a feedback-prize result.
+
+### Validation performed
+
+- Browser checks verified one exact draft, 4/5 status, saved category/technology/country/new-project/
+  feedback values, five gallery assets with aligned captions, saved thumbnail, clean English story,
+  Public app/repository/video links, signed-in preview rendering, unchecked final Rules/Terms
+  control, and untouched **Submit project**.
+- No credential, account token, customer data, private endpoint, new incident, media mutation, GCP
+  action, or final Devpost submission occurred.
+- Bounded repository validation passes Prettier on all 12 changed Markdown files, 61 local Markdown
+  links, 37/37 requirement rows with exact totals
+  `12 PASS / 1 QUALIFIED PASS / 10 PARTIAL / 4 OPEN / 10 NOT REQUIRED`, exact changed-path scope,
+  `git diff --check`, current-claim consistency, UTF-8/LF/final-newline/no-BOM/no-binary checks,
+  added-line secret/conflict-marker checks, and residue/process/port inspection. No task-owned helper
+  or listener remains.
+
+### Validation intentionally deferred
+
+All unchanged full validation, evaluation, media hash/codec review, release artifact, deployment,
+public incident, and runtime/source gates are reused. Final eligibility/IP/media-rights review,
+Rules/Terms acceptance, submission/receipt, and authorized live/judge DataHub MCP validation remain
+separately gated.
+
+### Known issues
+
+Live/judge DataHub MCP evidence remains `PARTIAL`. The repository does not independently prove the
+entrant's remaining age/sanctions/conflict, off-repository/new-work, ownership/IP/media-rights, or
+organizer-response facts. The project is still an incomplete 4/5-step draft.
+
+### Exact next step
+
+Run the bounded affected-document format/link/claim/status-total/diff/path/encoding/secret/residue/
+process/port checks. Create one additive conventional commit on the existing branch, push normally,
+update the same Draft PR #61, require exact-new-head PR CI `SUCCESS`, and return for independent
+review. Do not mark Ready, merge, accept the final Rules/Terms, or submit the Devpost project.
+
+## 2026-07-28 — Phase 8.11 real local MCP and judge-UX follow-up
+
+### Objective
+
+Reconcile the entrant-operated Devpost submission, exhaust the smallest safe real DataHub MCP
+validation path, and implement only UI/provider corrections supported by direct evidence on the
+existing `codex/phase-8-11-submission-readiness` branch and Draft PR #61. Preserve the public
+fixture deployment, submitted media/form, release state, and all external accounts.
+
+### Completed
+
+- Current official DataHub MCP guide/repository/package metadata were re-read read-only at
+  `2026-07-28 19:20 ICT / 12:20 UTC`. The guide still identifies DataHub Core `1.6.0`, documents
+  self-hosted Core MCP, separates read-only and opt-in mutation tools, and lists no recent-change
+  tool.
+- Ran a localhost-only official DataHub Core `1.6.0` quickstart with the official synthetic
+  `showcase-ecommerce` pack and official `mcp-server-datahub` `0.6.0` over Streamable HTTP. Mutation,
+  user, data-quality, and telemetry surfaces were disabled. No token, DataHub Cloud account, public
+  tunnel, paid service, or remote judge credential was used.
+- Discovery returned exactly `search`, `get_entities`, `list_schema_fields`, `get_lineage`,
+  `get_lineage_paths_between`, `get_dataset_queries`, `search_documents`, and `grep_documents`.
+  Direct calls against synthetic
+  `urn:li:dataset:(urn:li:dataPlatform:dbt,b2fd91.order_entry_db.order_entry.orders,PROD)` returned
+  five search candidates in the protocol probe, fifteen schema fields, five upstream results, and
+  twenty downstream results. Sanitized response SHA-256 values are
+  `bfe8d46c4c3e7d58cac57bc406217f68cd2ef435a724825a24dee12587e6b6f6`,
+  `cb7a833a4cb6dffe9ad6d1804ba4204822829e03f37559aed7d612d45406ec04`,
+  `58f1b6b4e76f0cc5430f2babeb5ef43a0007de56e0ed6022d33ca2fd70b80977`,
+  `da1abbf3c03dbde0e7655ad5df5e57671d960d119540335df48f6b64a125b8da`, and
+  `fe08b91916608913303fb98c1e7cf1d35598e6dcba044be2c9e8dbe40d92fa83`.
+- Application `datahub-mcp` readiness, health, search, bounded lineage, and explicit unsupported
+  recent-change routes passed. The first lineage call reproduced a real compatibility defect:
+  official MCP lineage used a nested `platform` descriptor where the adapter allowed only a string.
+  The smallest correction accepts string or bounded `{ urn, name? }` without widening the exact
+  read-only tool allowlist, supported entity kinds, timeout/byte/entity/lineage bounds, or
+  fail-closed behavior.
+- Exactly one local synthetic incident terminated as designed with status `degraded`, four
+  candidates, four visited lineage nodes, `lineage_truncated`, unsupported recent changes, eight tool
+  calls, six steps, zero retries, and no hypothesis. The technical gate is
+  **PASS — LOCAL OSS**; no durable remote judge endpoint or safe judge-auth path exists, so
+  public/judge MCP access remains `PARTIAL`.
+- The web source now puts the primary investigation before the optional explorer, the summary/top
+  hypothesis/blast radius before execution detail, and one concise terminal announcement before
+  heading focus. It labels the source **DataHub MCP Server** and distinguishes unsupported history
+  from a supported empty window without inferring evidence.
+- One official Browser review at 1440 × 900 confirmed the local fixture intake order, readable
+  hierarchy, exact accessible region order, and zero warning/error console entries. It did not click
+  **Start investigation** or create another incident; completed/degraded ordering remains covered by
+  focused static-render contracts.
+- Reconciled current Devpost state after the entrant personally used the final gate. Project
+  `1117401` reports **Project submitted!**, **Submitted**, and **5/5**. C02, C22, and C27 advance to
+  `PASS`; totals are
+  `15 PASS / 1 QUALIFIED PASS — OWNER-AUTHORIZED SCOPE / 8 PARTIAL / 3 OPEN / 10 NOT REQUIRED`.
+  Submission is not organizer acceptance, eligibility approval, or a prize result.
+
+### Files changed
+
+- `README.md`
+- `apps/web/src/App.tsx`
+- `apps/web/src/styles.css`
+- `docs/CLAIM_TO_DEMO_MATRIX.md`
+- `docs/DEMO_SCRIPT.md`
+- `docs/DEVPOST_REQUIREMENTS.md`
+- `docs/DEVPOST_SUBMISSION.md`
+- `docs/IMPLEMENTATION_PLAN.md`
+- `docs/JUDGE_QUICKSTART.md`
+- `docs/KNOWN_ISSUES.md`
+- `docs/REPOSITORY_MAP.md`
+- `docs/SESSION_LOG.md`
+- `docs/demo-video/README.md`
+- `packages/datahub-client/src/datahub-mcp.ts`
+- `tests/integration/datahub-mcp.test.ts`
+- `tests/integration/web-metadata-health.test.ts`
+- `tests/integration/web-metadata-recent-changes.test.ts`
+- `tests/integration/web-report.test.ts`
+
+No fixture, API/orchestration behavior, public deployment/GCP resource, workflow, package, lockfile,
+version, tag, Release, media byte, YouTube asset, or Devpost form field changed in this follow-up.
+
+### Decisions
+
+- Treat the real integration as **PASS — LOCAL OSS**, not as a public live DataHub or durable
+  judge-access claim.
+- Keep compliance rows C06, C07, C28, and C29 `PARTIAL` because the submitted public app remains
+  fixture-only and no authorized remote endpoint/auth path is available.
+- Implement the three bounded UX corrections supported by source/visual review: primary-task-first
+  intake, answer-first terminal report, and one concise accessible result handoff. Do not redeploy
+  them in this slice.
+- Record the entrant-operated Devpost state without self-attesting age, eligibility, ownership,
+  contributor, IP/media-rights, organizer acceptance, or prize facts.
+
+### Validation performed
+
+- Changed-file Prettier and affected ESLint passed.
+- Web and datahub-client type checks passed.
+- `tests/integration/datahub-mcp.test.ts`: `28/28` passed.
+- Web metadata-health/recent-change/report tests: `19/19` passed.
+- Datahub-client compiled build passed.
+- Web Vite production build passed with `109` modules. The first corrected sandboxed invocation
+  reproduced the known managed-worktree ancestor-read denial; its one exact elevated recovery
+  passed. A preceding wrong root-module-path invocation was an environment command error, not a
+  product failure.
+- Ten changed Markdown files exposed `57` repository-local links; zero target was missing.
+- `git diff --check`, claim/status-total review, and the 1440 × 900 local Browser intake review
+  passed with zero warning/error console entry.
+- Task-owned API/MCP/UI processes and listeners were stopped. All temporary DataHub containers and
+  network were removed. Three Docker volumes containing only rebuildable task-created synthetic
+  quickstart state were removed.
+
+### Validation intentionally deferred
+
+All unchanged full Level D, 7/7 evaluation, release artifact/provenance, media, exact-main CI,
+public-fixture incident/smoke, and deployment gates are reused. No second incident, public
+deployment, DataHub Cloud/OAuth/PAT, remote judge endpoint, Devpost edit/resubmission, or external
+publication was performed.
+
+### Known issues
+
+The submitted public demo remains fixture-only. Technical MCP validation is real local OSS evidence,
+but no durable remote judge endpoint or judge authentication path exists. The current source/UX
+correction is not deployed. Repository evidence does not independently prove entrant
+eligibility/IP/media-rights facts, organizer acceptance, or a prize result.
+
+### Exact next step
+
+Finish the exact diff/path/encoding/secret/residue checks, remove ignored task-only tools/logs,
+create one additive conventional commit, push the same branch, update only Draft PR #61, and require
+exact-new-head PR CI `SUCCESS`. Do not mark Ready, merge, redeploy, mutate Devpost/YouTube/GCP, or
+create another incident.
+
+## 2026-07-28 — Phase 8.11 competitive judge UX and organizer OSS clarification
+
+### Objective
+
+Strengthen the existing judge interface on the same
+`codex/phase-8-11-submission-readiness` branch/Draft PR #61 after competitive UI review, while
+preserving all API/provider/runtime behavior and the fixture-only Public deployment. Reconcile the
+entrant-reported organizer confirmation that local DataHub OSS plus the Public fixture/repository path
+satisfies access/integration without remote DataHub/MCP hosting.
+
+### Completed
+
+- Replaced the compact scenario select in current source with seven visible, keyboard-accessible
+  incident playbooks backed by the unchanged shared canonical catalog. The removed-column playbook is
+  marked as the best demo path; all fields remain editable, custom/manual provenance remains explicit,
+  and the six non-rich cases are not presented as additional browser fixtures.
+- Added a clearer product headline, four explicit product-boundary chips, a four-step read-only
+  investigation contract, stronger primary action, answer-first terminal verdict dashboard, and an
+  Evidence Path Map derived only from the schema-validated terminal response. Its five nodes are
+  incident question, selected entity, factual evidence, top hypothesis, and supported or explicitly
+  unverified downstream impact. Connectors describe sequence, not causality.
+- Preserved detailed context/change/scoring/remediation/activity/evidence sections, deterministic
+  Markdown export, focus handoff, escaping, no-model/no-write-back boundaries, and all existing API
+  requests. No fixture, scenario payload, incident, provider call, or runtime contract was added.
+- Re-read official DataHub Quickstart, Metadata Service Authentication, PAT, and MCP documentation at
+  `2026-07-28 23:15 ICT / 16:15 UTC`. The optional hardened local recipe now uses the current
+  `--quickstart-compose-file` flag, enables `METADATA_SERVICE_AUTH_ENABLED=true` for both GMS and
+  frontend, and passes a generated PAT only to the MCP process as `DATAHUB_GMS_TOKEN`. No token was
+  generated, read, logged, or committed; the already-proven unauthenticated loopback stack was not
+  rerun.
+- Recorded the entrant-reported DataHub representative clarification as general organizer guidance,
+  not submission acceptance or a judging result. C06, C07, and C28 advance to `PASS`; C29 remains
+  `PARTIAL` until judging. The 37-row total is now
+  `18 PASS / 1 QUALIFIED PASS — OWNER-AUTHORIZED SCOPE / 5 PARTIAL / 3 OPEN / 10 NOT REQUIRED`,
+  where the 18 PASS count includes C14's separately labelled owner-authorized operating-window pass.
+- Kept the Public Cloud Run app explicitly fixture-only and unchanged. The new UI is a local/source
+  candidate only until separately merged and deployed; no Devpost field, YouTube asset, GCP resource,
+  media file, package, lockfile, workflow, version, tag, or Release changed.
+
+### Validation performed
+
+- Changed-file Prettier passes; affected App/test ESLint passes; web TypeScript strict typecheck
+  passes.
+- Focused `web-scenario-intake` and `web-report` contracts pass `11/11`. They cover seven visible
+  playbooks, one selected state, custom provenance, product/region ordering, verdict metrics,
+  not-scored confidence, evidence-path node order, unknown-impact wording, and escaped report labels.
+- Affected Vite production build passes with `109` modules. The first sandboxed build reproduced the
+  known managed-worktree ancestor-read denial; one incorrect root-cwd retry transformed zero modules;
+  the exact package-cwd elevated recovery passed.
+- One official Browser review used the local fixture service without starting an incident. At
+  `1440 × 900`, the product promise, source status, four-step contract, and seven-playbook grid were
+  readable with zero horizontal overflow. At `390 × 844`, the contract and playbooks collapsed to one
+  column with zero horizontal overflow. Selecting the removed-column playbook set
+  `aria-pressed=true`, populated the exact canonical question, retained one primary action, and
+  collapsed editable details without submission. Browser warning/error logs were empty.
+- Official-source claim review, requirement-status recount (`37/37`), changed-path review,
+  `git diff --check`, local-link/secret/encoding/residue/process/port checks complete in the terminal
+  handoff. Task-owned local API/Vite processes were stopped and ports `3001`/`5173` were clean.
+
+### Validation intentionally deferred
+
+Reuse unchanged prior full Level D, 7/7 evaluation, media, release-artifact, deployment, public smoke,
+and exact-main evidence. No new local/public incident, authenticated PAT run, Public deployment,
+Devpost edit/resubmission, media recapture, video upload, DataHub Cloud/remote MCP, Ready/merge, or
+full-suite rerun is authorized here.
+
+### Known issues
+
+The enhanced UI is not yet in the Public Cloud Run deployment. Only `removed-schema-column` has the
+rich canonical browser fixture. MCP recent-change evidence remains unsupported by the official tool
+surface. C29 judging outcome, entrant eligibility/IP/media-rights verification, organizer acceptance,
+and prize status remain unresolved.
+
+### Exact next step
+
+Finish bounded diff/path/link/secret/encoding/residue checks, create one additive conventional commit,
+push the same branch, update only Draft PR #61, and require exact-new-head PR CI `SUCCESS`. Do not
+mark Ready, merge, deploy, mutate Devpost/YouTube/GCP, or create another incident.
+
+## 2026-07-29 — Phase 8.11 QA evidence-path provenance correction
+
+### Objective
+
+Correct the canonical QA finding on the same
+`codex/phase-8-11-submission-readiness` branch/Draft PR #61: the Evidence Path Map must follow the
+displayed top hypothesis's evidence and impact references, not independent array positions.
+
+### Completed
+
+- Replaced report-order evidence selection with deterministic lookup through the top hypothesis's
+  ordered `evidenceIds`, retaining the existing preference for a linked non-lineage fact.
+- Replaced first-impact selection with the first deterministic blast-radius impact whose
+  `hypothesisIds` contains the top hypothesis ID.
+- Added explicit independent/unverified nodes when either relationship cannot be resolved, so the UI
+  cannot attribute another hypothesis's evidence or impact to the top hypothesis.
+- Relabelled the map as a schema-validated response graph and described its source as the
+  schema-validated terminal response because question/entity context is outside the report object.
+- Added a focused multiple-hypothesis/evidence/impact regression with unrelated first entries plus
+  defensive missing-link assertions.
+
+### Validation performed
+
+- Changed-file Prettier and affected App/report-test ESLint passed.
+- Web strict TypeScript typecheck passed.
+- Focused `web-report` and `web-scenario-intake` tests passed `11/11`.
+- Affected Vite production build passed with `109` modules.
+- The initial Vitest invocation reproduced the known managed-worktree ancestor-read denial; its exact
+  elevated recovery passed. One build invocation used a nonexistent root Vite path and stopped before
+  build; the corrected package-local command passed.
+
+### Validation intentionally deferred
+
+Reuse all unchanged canonical QA, Level D, evaluation, release, artifact, media, deployment, and
+public-smoke greens. No API/provider/runtime behavior, deployment, public incident, Devpost/video
+state, package/lock/workflow/version/tag/Release state, or PR readiness changed.
+
+### Exact next step
+
+Complete bounded diff/path/secret/encoding/residue/process/port checks, create one additive commit,
+push the same branch, update only Draft PR #61 with exact new identities, and require exact-head CI
+`SUCCESS`. Keep the PR Draft; do not merge.

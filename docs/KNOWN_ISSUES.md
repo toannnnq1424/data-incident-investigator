@@ -2,12 +2,14 @@
 
 Last updated: 2026-07-28.
 
-- Current main is exact normal merge
-  `b4f9e360e22baba3cab60710a65ea5c0e0555369`, tree
-  `29f51960e9a772b8c331b427943920f296031bbe`, with ordered parents
-  `ceaed0a3f5a277884bf03eb2605c3dd5f70b4afe` then
-  `efd64bc9da58e20399b877685aa7224357272d87`. PR #59 is merged historical and its branch/
-  conversation remain retained. Exact-main CI run `30329118539`, job `90180425391`, is `SUCCESS`.
+- Current released main is exact normal merge
+  `a28e21c06ad623f1547c02a6d65fd900fa8472a4`, tree
+  `e0594ddecbe9d82f30e7b3005a51cb8df9283bf8`, with ordered parents
+  `b4f9e360e22baba3cab60710a65ea5c0e0555369` then
+  `03f72172a9742b3f3f84b33c131cb0d4393a3193`. PR #60 is merged historical and its branch/
+  conversation remain retained. Exact-main CI run `30338530196`, job `90208641358`, is `SUCCESS`.
+  Annotated tag object `eb26bc54fccd4cc0ebeacfb14539008a03da687a` (`v1.0.0`) resolves to that
+  exact merge, and the matching GitHub Release is Published/Latest.
   The
   prior Phase 8.6 main, main CI run `30188091600`, and job `89756253516` remain historical
   Phase 8.5/8.6 evidence. Phase 8.6 records C11 as
@@ -23,18 +25,45 @@ Last updated: 2026-07-28.
   and all 4,255 source PTS/DTS/duration/content hashes retained, plus locally synthesized Microsoft
   Mark Adult/Male English narration: Opus 48 kHz mono, `-18.0 LUFS`, `-1.0 dBTP`, zero clipped
   samples, and all 11 utterances inside their scene boundaries. Microsoft Mark is an installed
-  Windows voice used offline without network, account,
-  credential, paid service, or ElevenLabs; no voice model/tool is redistributed and final entrant
-  rights review remains open. Neither variant is hosted on YouTube/Vimeo/Youku, linked in Devpost,
-  accepted, or submitted; GitHub access does not satisfy the Rules' video-host/form-link condition.
-  C18 remains only `PARTIAL — LOCAL CANDIDATE`; C19 remains `OPEN`. Key-frame review found only the
-  application and synthetic fixture data, with no browser/Windows/account chrome, credentials,
-  private endpoints, external media, or visible runtime failure. The Phase 8.9 capture script emitted
-  one non-visual instrumentation page error when its scrollbar style ran before the initial document
+  Windows voice used offline without network, account, credential, paid service, or ElevenLabs; no
+  voice model/tool is redistributed and final entrant rights review remains open. The voiced
+  derivative is Public at <https://youtu.be/D5mvMqrhyDc> with the authored English WebVTT published,
+  exact title **Data Incident Investigator — 2:50 Functioning Demo (Synthetic Fixture)**, and no
+  copyright issue detected by YouTube's upload check. C18 and C19 are `PASS`: the exact URL is saved
+  in Devpost draft `1117401` and appears in its signed-in preview. Key-frame review found only the
+  application and synthetic fixture data, with no browser/Windows/account chrome, credentials, private
+  endpoints, external media, or visible runtime failure. The Phase 8.9 capture script emitted one
+  non-visual instrumentation page error when its scrollbar style ran before the initial document
   element existed; no app-console-clean claim is made for the take.
 
-- Phase 8.10 prepares coordinated `1.0.0` metadata without creating a `v1.0.0` tag or GitHub
-  Release. All seven private Apache-2.0 manifests are aligned, and a release preflight found and
+- The entrant's Devpost account is registered for the challenge as **Working solo**. The entrant
+  personally operated the final agreement/submission gate for project `1117401`; the signed-in
+  finalization screen reports **Project submitted!**, **Submitted**, and **5/5**. The entry retains
+  **Open / Wildcard**, Vietnam, the new-project selection, the Public demo/repository/video links,
+  English story/feedback, a completed-report thumbnail, and five truthful captioned fixture PNGs.
+  Repository evidence does not independently prove the remaining eligibility, ownership, or rights
+  facts, and submission does not imply organizer acceptance or a prize result.
+
+- Phase 8.11 now has a real localhost-only DataHub integration proof: official DataHub Core `1.6.0`
+  with official synthetic `showcase-ecommerce` data, plus official `mcp-server-datahub` `0.6.0`
+  over loopback Streamable HTTP. Mutation, user, data-quality, and telemetry surfaces were disabled.
+  Eight tools were discovered; application readiness/search/bounded lineage/unsupported recent
+  changes passed, and exactly one local synthetic incident degraded safely on truncated lineage and
+  unavailable change history with no invented hypothesis. The first app lineage call exposed that
+  official MCP `entity.platform` can be `{ urn, name? }`, not only a string. This Phase 8.11 branch
+  accepts that exact bounded union and adds focused coverage without widening its read-only allowlist
+  or resource bounds. Technical status is **PASS — LOCAL OSS**. The entrant reports that a DataHub
+  hackathon representative confirmed local OSS as the intended path and answered **yes** to the
+  Public fixture plus reproducible local MCP access model, so a durable remote endpoint is no longer
+  tracked as a requirement. No OAuth/PAT, public tunnel, DataHub Cloud account, or MCP deployment was
+  created. The Public Cloud Run service remains fixture-only. Current official docs support optional
+  PAT hardening by enabling Metadata Service Authentication for both local GMS and frontend, then
+  passing the PAT only to the MCP process as `DATAHUB_GMS_TOKEN`; that token path was documented but
+  not rerun in this follow-up.
+
+- Phase 8.10 completed coordinated `1.0.0` metadata, full validation, normal merge, annotated
+  `v1.0.0` tag, and Published/Latest GitHub Release. All seven private Apache-2.0 manifests are
+  aligned, and a release preflight found and
   corrected the stale `1.0.0-rc.1` DataHub MCP client protocol identity with focused coverage. The
   version-only pnpm `11.9.0` lockfile step initially preserved SHA-256 `eeec795d…84b2`; the final
   production audit then proved two high-severity denial-of-service release blockers. Narrow
@@ -45,10 +74,10 @@ Last updated: 2026-07-28.
   has not been deployed. The exact `fc2ba2f…` archive passed structural verification and production
   frozen install but is rejected local evidence: packaged startup failed because its
   `datahub-client/dist/index.js` re-exported an omitted `datahub-mcp.js`. The targeted follow-up uses
-  a closed four-file DataHub client runtime list and matching independent verifier contract; a new
-  clean-HEAD archive, extracted runtime, and fresh-checkout proof remain pending until the additive
-  correction commit. No rejected archive was uploaded or retained. The existing `v1.0.0-rc.1`
-  annotated tag and unpublished Draft Release remain untouched.
+  a closed four-file DataHub client runtime list and matching independent verifier contract. The
+  replacement artifact, extracted runtime, focused fresh-checkout proof, PR CI, exact-main CI, tag,
+  and Published/Latest Release all passed. No rejected archive was uploaded or retained. The
+  existing `v1.0.0-rc.1` annotated tag and unpublished Draft Release remain untouched.
 - The Phase 8.9 repository fallback rehearsal used the bundled Node `24.14.0` and pnpm `11.9.0`.
   With the existing frozen install, Vite reported ready in `549 ms`; API `/health`, fixture `/ready`,
   and web `/` all returned successfully by the bounded `10.1 s` probe. No local incident was started.
@@ -88,8 +117,12 @@ Last updated: 2026-07-28.
   `7ad5ea5d-c7f2-4999-ada4-175b94d56fd9` produced immutable digest
   `sha256:fe56a3dc7c8c4fb6e11b329adb107fb7efd8e4de0bece8820027f324d4f36afd`.
   Bangkok has a lower published Tier 1 unit price, but the owner explicitly chose to keep the healthy
-  Singapore service. Stop/delete/detach billing by 2026-08-10 or at 20% reported credit remaining,
-  whichever occurs first. This does not guarantee access through the 2026-08-31 judging end.
+  Singapore service. Phase 8.11 supersedes the historical stop policy: keep public access through
+  2026-09-17 23:59 ICT, beyond judging; a 20%-remaining-credit signal now triggers monitoring and
+  owner escalation rather than automatic pre-judging shutdown. Signed-in read-only Console evidence
+  on 2026-07-28 showed the service ready at minimum `0` / maximum `1`, July net cost `₫0`, and active
+  credit `100%` / `₫7,886,121.22` remaining through 2026-10-07. Emergency security or uncontrolled-
+  billing containment remains possible, so the repository fallback is retained.
 
 - Phase 8.4A is integrated through exact normal merge
   `36d4205806597ae14b7306c74e1527c284202023`, tree
@@ -483,9 +516,11 @@ Last updated: 2026-07-28.
   PR #53 conversation remain retained after merge.
 - Slice 1.2 stores incident lifecycle and completed reports only in API process memory. Restarting the
   API removes existing incident IDs; durable persistence remains deferred.
-- The UI exposes seven guided presets, but only `removed-schema-column` has the rich checked-in
-  incident/metadata fixture pair and canonical browser E2E. The other six are guided form inputs and
-  deterministic evaluation cases, not additional rich E2E metadata fixtures.
+- Current source exposes seven visible incident playbooks and a report-derived evidence-path view,
+  but only `removed-schema-column` has the rich checked-in incident/metadata fixture pair and
+  canonical browser E2E. The other six are guided form inputs and deterministic evaluation cases,
+  not additional rich E2E metadata fixtures. The Public service retains the earlier compact selector
+  until this source revision is separately merged and deployed.
 - Slice 2.4 adds bounded recent metadata facts from search results or lineage nodes through
   deterministic fixtures and DataHub GraphQL `getTimeline`. The official DataHub timeline input has no
   time-range, count, page-token, or cursor field and the resolver caps results at 100 transactions, so
@@ -494,9 +529,9 @@ Last updated: 2026-07-28.
   an empty result. Live DataHub-backed incident orchestration, impact analysis, change-to-incident
   correlation, ownership enrichment, schema diff, model reasoning, evaluation CLI, broader
   cross-browser automation, and public deployment remain deferred. A live DataHub smoke is
-  credential-gated and is not required for the existing fixture/local fake-provider validation, but
-  Devpost compliance separately requires a working named DataHub integration and judge-verifiable
-  evidence before submission.
+  credential-gated and is not required for fixture validation. Phase 8.11 later proves the real local
+  OSS/MCP path; user-reported organizer guidance confirms remote hosting is not required for the
+  submitted Public fixture/repository access model.
 - Stitch MCP configuration is tracked without a key. A rotated `STITCH_API_KEY` must be set in the Codex
   process environment on each machine, then Codex must reload the trusted project.
 - Stitch tools are not expected in the current task because project-scoped MCP configuration loads when

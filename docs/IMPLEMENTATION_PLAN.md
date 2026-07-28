@@ -7211,3 +7211,356 @@ Local focused pre-commit result:
 Deferred: every unchanged external and entrant gate listed above, plus tag/Release, deployment,
 media hosting, Devpost, another incident/public workflow, dependency change, full Level D rerun, and
 all post-merge actions.
+
+### Phase 8.11 — authorized submission-readiness reconciliation
+
+Status: started on `codex/phase-8-11-submission-readiness` from exact released `origin/main`
+`a28e21c06ad623f1547c02a6d65fd900fa8472a4` (tree
+`e0594ddecbe9d82f30e7b3005a51cb8df9283bf8`). The annotated `v1.0.0` tag object
+`eb26bc54fccd4cc0ebeacfb14539008a03da687a` resolves to that exact merge; the Published/Latest
+Release and exact-main CI run `30338530196` / job `90208641358` are successful.
+
+Objective: consume only the owner's newly explicit external-action authorizations needed to remove
+the remaining submission-readiness mismatches: extend the public fixture operating window through
+2026-09-17, select and host the already verified male-voice functioning demo, and join the DataHub
+hackathon as an individual through the signed-in Google session. Reconcile persistent claims with
+the resulting evidence without changing the application, release, deployment configuration, media
+bytes, or prior historical records.
+
+Minimum files:
+
+- `README.md`, `docs/DEPLOYMENT.md`, `docs/DEVPOST_REQUIREMENTS.md`,
+  `docs/DEVPOST_SUBMISSION.md`, `docs/JUDGE_QUICKSTART.md`, and
+  `docs/CLAIM_TO_DEMO_MATRIX.md` for the superseding C14 operating window and final hosted-video
+  evidence.
+- `docs/demo-video/README.md` for the selected male-voice derivative, unchanged source/hash, and
+  exact YouTube hosting/caption state.
+- `docs/RELEASE_CHECKLIST.md`, `docs/KNOWN_ISSUES.md`, `docs/REPOSITORY_MAP.md`, and `CHANGELOG.md`
+  only to correct stale pre-publication `v1.0.0` wording and append the superseding external-gate
+  state without rewriting historical checklist evidence.
+- `docs/PUBLIC_SOURCE_APACHE_READINESS.md`, this plan, and `docs/SESSION_LOG.md` only where the new
+  operating authorization or external evidence directly changes the current claim.
+
+Acceptance criteria:
+
+- Reconfirm the current public service is ready with minimum `0` and maximum `1`, the Paid billing
+  account still has sufficient unexpired credit, and no scheduler currently enforces the historical
+  2026-08-10 stop. Record the owner's superseding commitment to keep public access through
+  **2026-09-17 23:59 ICT / 2026-09-17 16:59 UTC / 2026-09-17 12:59 EDT**. The historical 20%-credit
+  condition becomes a monitor-and-escalate trigger, not an automatic pre-judging stop; emergency
+  security or uncontrolled-billing response remains allowed. Do not redeploy or increase capacity.
+- Select only `docs/demo-video/phase-8-9a-demo-voiceover.webm`, preserving its exact
+  `f52daa606f3cf9f627909e23422ca2d14fd92db1f5c4ed6ca304744c5608ab33` SHA-256 and its matching
+  English WebVTT. Use a truthful judge-facing title/description, choose Public visibility, and
+  verify the final YouTube URL, processing, copyright checks, playback, and caption availability.
+- Use the signed-in Google session to create or reuse the entrant's Devpost account and execute
+  **Join Hackathon** as an individual. Open / Wildcard remains the primary challenge positioning.
+  Do not invent or self-attest age, residence, sanctions/conflicts, ownership, contributor/off-repo
+  work, IP/media rights, publicity/data consent, or other personal/legal facts that cannot be
+  derived from repository evidence. Stop at any such required control and request the entrant's
+  exact confirmation.
+- Preserve live/judge DataHub MCP as `PARTIAL`, C11 as its existing qualified immutable-deployment
+  status, and final Devpost submission/receipt as open until independently completed. Do not create
+  another incident, alter media, deploy, add a credential, enter payment/card data, or submit the
+  project form.
+- Run only changed-document Prettier/format/link/claim consistency plus exact diff/path,
+  UTF-8/LF/no-BOM, secret/private-data/conflict/debug, residue/process/port checks. Reuse all
+  unchanged release, CI, media, evaluation, browser-E2E, and deployment greens.
+
+Deferred: authorized live DataHub endpoint/credential validation; every entrant-specific fact or
+legal attestation not expressly supplied; project-form completion and final submission/receipt;
+new application/runtime/workflow/package/lock/version/tag/Release/deployment changes; another
+incident or full validation; and any destructive GCP cleanup before the new operating boundary.
+
+Result:
+
+- Signed-in read-only Cloud Console evidence confirmed the existing public service Ready at minimum
+  `0` / maximum `1`, July net cost `₫0`, and active Welcome credit
+  `₫7,886,121.22` through 2026-10-07. No scheduler or date-based control existed to change, and no
+  GCP mutation occurred. C14 advances to `PASS — OWNER-AUTHORIZED OPERATING WINDOW`.
+- The exact unchanged male-voice derivative, 13,185,933 bytes at SHA-256
+  `f52daa606f3cf9f627909e23422ca2d14fd92db1f5c4ed6ca304744c5608ab33`, was published Public at
+  <https://youtu.be/D5mvMqrhyDc> under **Data Incident Investigator — 2:50 Functioning Demo
+  (Synthetic Fixture)**. The authored English WebVTT was uploaded and YouTube Studio reports the
+  English track published; the upload copyright check found no issue, and the public watch page
+  exposes the matching 11-entry timed transcript. The public description links the app, repository,
+  judge quickstart, repository media packet, submission draft, `v1.0.0` Release, and challenge page.
+  YouTube's hosted transcode is not represented as byte-identical to the repository WebM.
+- The signed-in Devpost account completed challenge registration and individual Join. The observed
+  success page says **Thanks for registering!** and exposes **Start project**; the registration
+  records **Working solo** and **Open / Wildcard** as the challenge category of interest. The user
+  performed the required registration confirmations directly. No project was started or imported,
+  no project form was created or saved, no video URL was entered, and no submission was made.
+- C18 advances to `PASS`. C19 is `PARTIAL — PUBLIC HOSTED / DEVPOST LINK OPEN`. Live/judge DataHub
+  MCP validation, independent entrant ownership/rights facts, project-form completion, final
+  submission, and receipt remain separate gates.
+
+#### Phase 8.11 authorized Devpost project-draft follow-up
+
+Status: user-authorized continuation on the same branch and Draft PR #61 after exact head
+`5217d61d002c86de25d76cde3222bffda80f1e3b` (tree
+`47bb2d003a7c0d74fada998fe67eba54cb97caae`). The entrant authorized creation and saving of the
+Devpost project and asked for a durable action log. The entrant separately supplied `Vietnam` for
+the required residence field.
+
+Objective: create exactly one truthful project draft, reuse the already-published verified
+male-voice video and existing synthetic fixture media, save all repository-supported project and
+judge fields, inspect the signed-in preview/final gate, and stop without final Rules/Terms acceptance
+or submission.
+
+Minimum files:
+
+- `docs/DEVPOST_SUBMISSION.md` and `docs/DEVPOST_REQUIREMENTS.md` for exact saved form fields, status,
+  and C08/C16/C19/C21/C22/C23/C25/C37 reconciliation.
+- README, quickstart, claim matrix, demo/video notes, release checklist, known issues, repository
+  map, this plan, and session log only where the previous no-project/no-link statement became stale.
+- No application source, runtime, workflow, package, lock, version, release, deployment, or media
+  file may change.
+
+Acceptance and validation:
+
+- Exactly one Devpost project exists; no duplicate, import, or additional public incident is created.
+- Saved copy states fixture-only, zero-model, no-write-back, bounded MCP, live/judge MCP `PARTIAL`,
+  C11 qualified scope, and the owner-authorized public operating window truthfully.
+- Reuse the exact Public YouTube URL and the five existing authentic 1440 × 900 fixture PNGs. Add
+  aligned English captions and a real existing screenshot thumbnail; do not synthesize or re-encode
+  media.
+- Save the strongest truthful **Open / Wildcard** category, the Public repository/app/evidence
+  links, the implemented DataHub OSS/Core and MCP technologies, the evidence-backed new-project
+  selection, user-supplied residence, and complete actionable feedback without claiming a bonus
+  result.
+- Verify the signed-in preview and finalization page. Leave the binding Rules/Terms agreement
+  unchecked and do not click **Submit project**; preserve eligibility, IP/rights, live MCP,
+  submission, receipt, and organizer acceptance as separate gates.
+- Run only affected Markdown formatting, local-link, claim/status-total, diff/path, UTF-8/LF/no-BOM,
+  secret/private-data/conflict, residue/process/port checks. Reuse all unchanged CI, media,
+  evaluation, release, deployment, and browser greens.
+
+Result:
+
+- Devpost created exactly one draft, numeric ID `1117401`, slug
+  `1117401-data-incident-investigator`, and saved it at **4/5 steps**.
+- Overview, the clean 4,898-character English story, Built With tags, Public app/repository/video
+  URLs, five aligned captioned fixture PNGs, and the completed report/export thumbnail are saved.
+- Additional info saves **Open / Wildcard**, DataHub OSS / Core Platform, DataHub MCP Server,
+  repository/app/evidence links, `Vietnam`, **Yes, newly created during the Submission Period**, and
+  four actionable Feedback Prize answers. The solo contribution note explicitly discloses Codex as
+  an AI coding assistant.
+- The signed-in preview renders the Public video, all five captions/images, clean story, tags, and
+  Try it out links and labels the project **Incomplete submission**. The final Rules/Terms checkbox
+  remains unchecked; no submission, receipt, or organizer acceptance exists.
+- C08, C16, C19, C21, and C25 advance to `PASS`; C22 advances from `OPEN` to `PARTIAL`. C18, C23,
+  C14, and C11 retain their prior exact statuses. Live/judge MCP, eligibility, ownership/IP/media
+  rights, final Terms acceptance, submission, receipt, and organizer acceptance remain unresolved
+  exactly as recorded.
+
+Deferred: final eligibility/IP/media-rights review and durable attestations; explicit final
+Rules/Terms acceptance; final submission and receipt; authorized live/judge DataHub MCP endpoint
+validation; another public incident or media mutation; any source/runtime/workflow/package/lock/
+version/tag/Release/deployment/GCP change; full validation; PR Ready; and merge.
+
+#### Phase 8.11 post-submission live-MCP and judge-UX follow-up
+
+Status: user-authorized continuation on the same branch and Draft PR #61 after the entrant submitted
+the existing Devpost project through the signed-in browser. The previous 4/5-step draft result remains
+historical evidence; current submission state must be reconciled without claiming organizer
+acceptance.
+
+Objective: exhaust the smallest safe path for a real DataHub MCP validation and improve only the
+judge-facing UI seams supported by direct source/public-page evidence. Preserve the released fixture
+demo, public deployment, submitted media, package graph, and external accounts.
+
+Minimum files:
+
+- `apps/web/src/App.tsx` and the directly affected focused web tests for truthful unsupported-
+  capability presentation, answer-first report ordering, primary-investigation ordering, and a
+  bounded result focus/live-region handoff.
+- `packages/datahub-client/src/datahub-mcp.ts` and its exact integration contract tests only if the
+  real official server exposes a concrete compatibility defect. Accept the smallest documented
+  official entity shape required for read-only lineage without relaxing tool allowlists, response
+  bounds, annotations, or provider-failure behavior.
+- Existing web styles only if the unchanged components require a minimal layout adjustment.
+- `README.md`, `docs/DEVPOST_REQUIREMENTS.md`, `docs/DEVPOST_SUBMISSION.md`,
+  `docs/JUDGE_QUICKSTART.md`, `docs/KNOWN_ISSUES.md`, this plan, and `docs/SESSION_LOG.md` only where
+  actual submission or real MCP evidence changes current state.
+
+Acceptance and validation:
+
+- Prefer an official DataHub Core `1.6.0` localhost-only quickstart with synthetic data and official
+  `mcp-server-datahub` `0.6.0`, mutation tools disabled. Record exact versions, auth boundary,
+  discovered tools, sanitized URNs, and real read-only `search`/entity/schema/lineage evidence.
+- Exercise the application adapter end to end only if an official or faithfully bridged
+  Streamable-HTTP endpoint can be provided without changing application behavior. A successful
+  localhost proof may advance live integration to `PASS — LOCAL OSS`; it must not be represented as
+  a durable remotely reachable judge endpoint.
+- Keep public/judge live MCP `PARTIAL/OPEN` unless an authorized remote DataHub tenant/Core endpoint
+  and safe judge auth path are actually supplied and validated. Do not create an external account,
+  token, paid resource, public tunnel, or deployment.
+- Render “recent changes unsupported” distinctly from “no changes” and state that the application
+  does not infer missing history. Put the investigation task before the optional metadata explorer,
+  put the report answer before execution detail, and announce only a concise terminal status before
+  moving keyboard focus to the terminal result.
+- Run focused format/lint/typecheck/tests/build and local browser accessibility/order checks for the
+  changed web seam. Reuse unchanged Level D, evaluation, media, release, artifact, deployment, and
+  public-incident greens. Audit exact diff/path, secrets, encoding, residue, processes, and ports.
+
+Deferred: any public deployment/GCP mutation; a new public incident, screenshot, recording, or media
+change; DataHub Cloud registration/OAuth/PAT; durable judge endpoint provisioning; package/lock/
+workflow/version/tag/Release changes; full validation rerun; Devpost resubmission/edit; PR Ready; and
+merge.
+
+Result:
+
+- Current official DataHub MCP documentation/repository/package metadata were re-read read-only at
+  `2026-07-28 19:20 ICT / 12:20 UTC`. The official guide still identifies DataHub Core `1.6.0`,
+  distinguishes read-only from opt-in mutation tools, documents self-hosted Core operation, and lists
+  no recent-change/timeline tool.
+- A localhost-only official DataHub Core `1.6.0` quickstart loaded the official synthetic
+  `showcase-ecommerce` pack. Official `mcp-server-datahub` `0.6.0` ran on loopback Streamable HTTP
+  with mutation, user, data-quality, and telemetry surfaces disabled; no token, DataHub Cloud
+  account, public tunnel, paid resource, or remote credential was used.
+- Discovery returned exactly eight tools: `search`, `get_entities`, `list_schema_fields`,
+  `get_lineage`, `get_lineage_paths_between`, `get_dataset_queries`, `search_documents`, and
+  `grep_documents`. Read-only calls returned four application search results for the selected
+  synthetic orders dataset, fifteen schema fields, five upstream and twenty downstream direct MCP
+  results, and bounded application lineage.
+- Application `datahub-mcp` readiness/health/search/lineage/recent-changes passed. The first lineage
+  call reproduced one concrete compatibility defect: official MCP lineage represents
+  `entity.platform` as a descriptor object, while the adapter allowed only a string. The smallest
+  correction accepts string or bounded `{ urn, name? }` without widening the read-only tool allowlist,
+  supported entity kinds, timeout/byte/entity/lineage bounds, or fail-closed behavior.
+- Exactly one local synthetic MCP incident completed in the designed `degraded` state: four
+  candidates, four lineage nodes, unsupported recent changes, `lineage_truncated`, eight tool calls,
+  six steps, zero retries, and no hypothesis. The technical gate is **PASS — LOCAL OSS**; durable
+  remote judge access remains `PARTIAL`.
+- The source UI now puts the primary investigation before the optional explorer, puts summary/top
+  hypothesis/blast radius before execution detail, labels the source **DataHub MCP Server**, separates
+  unsupported history from an empty supported window, and uses one concise terminal announcement
+  plus focus handoff. A 1440 × 900 official Browser review of the local fixture intake confirmed the
+  intended visual hierarchy, exact accessible region order, and zero warning/error console entries
+  without creating another incident.
+- Devpost documentation now records the entrant-operated submitted state truthfully:
+  **Project submitted!**, **Submitted**, and **5/5** for project `1117401`. C02, C22, and C27 advance
+  to `PASS`; totals become
+  `15 PASS / 1 QUALIFIED PASS — OWNER-AUTHORIZED SCOPE / 8 PARTIAL / 3 OPEN / 10 NOT REQUIRED`.
+  Submission is not organizer acceptance, eligibility approval, or a prize result.
+- Focused validation passed: changed-file Prettier and ESLint; web/datahub-client type checks;
+  datahub-client integration `28/28`; web health/recent-change/report integration `19/19`;
+  datahub-client compiled build; web Vite production build (`109` modules); ten changed Markdown
+  files with `57` local links and zero missing target; diff whitespace and exact current
+  source/claim review. The first Vite invocation used the wrong workspace module path; the corrected
+  sandboxed invocation reproduced the known managed-worktree ancestor-read denial, and its one exact
+  elevated recovery passed. No implementation change was made for either environment failure.
+- All task-owned API/MCP/UI helpers, listener ports, Docker containers/network, and three synthetic
+  Docker volumes were stopped and removed after evidence capture. The deleted volumes contained only
+  rebuildable task-created synthetic quickstart state. Public Cloud Run, GCP, Devpost, YouTube,
+  released media, manifests, lockfile, workflows, tag, and Release were unchanged.
+
+Deferred after result: an authorized durable remote DataHub MCP/judge endpoint and safe
+authentication path; any Devpost correction/resubmission; public deployment of the source/UI
+correction; PR Ready/merge; organizer acceptance; entrant eligibility/IP/media-rights verification;
+and any prize outcome.
+
+#### Phase 8.11 competitive judge UX and organizer OSS clarification
+
+Status: started on the same `codex/phase-8-11-submission-readiness` branch and Draft PR #61 after
+exact pushed head `e0d22783d819d25f6c9ecab62d90717d054a11c9`. The entrant reports that a DataHub
+hackathon representative answered **yes** when asked whether a Public credential-free synthetic
+fixture demo plus an exact repository-local DataHub OSS/MCP reproduction path satisfies project
+access and DataHub integration expectations without a remotely hosted DataHub or MCP service.
+
+Objective: turn the existing technically complete interface into a stronger judge-facing product
+story without borrowing another entrant's visual identity or inventing capabilities. Make canonical
+incident playbooks, the bounded investigation path, the evidence-backed verdict, transparent
+confidence, and supported blast radius immediately visible. Reconcile remote MCP hosting as
+optional/not required for this entry while preserving the explicit fixture-only Public deployment
+boundary.
+
+Minimum files:
+
+- `apps/web/src/App.tsx` and `apps/web/src/styles.css` for a stronger product hero, visible canonical
+  playbooks, compact editable intake, a truthful investigation contract, and a validated-report-only
+  verdict dashboard.
+- `tests/integration/web-scenario-intake.test.ts` and
+  `tests/integration/web-report.test.ts` for accessible selection, ordering, escaping, and
+  report-derived metric contracts.
+- `README.md`, `docs/CLAIM_TO_DEMO_MATRIX.md`, `docs/DEVPOST_REQUIREMENTS.md`,
+  `docs/DEVPOST_SUBMISSION.md`, `docs/JUDGE_QUICKSTART.md`, `docs/KNOWN_ISSUES.md`, this plan,
+  `docs/REPOSITORY_MAP.md`, and `docs/SESSION_LOG.md` only where organizer guidance or the new
+  judge-facing UI changes current evidence.
+
+Acceptance criteria:
+
+- Expose all seven existing shared canonical scenarios as keyboard-accessible visible playbooks,
+  retain manual/custom provenance, and keep every submitted field editable. Do not add a new fixture,
+  scenario payload, API call, hidden request field, or implied rich fixture result for the six
+  non-canonical-browser scenarios.
+- State the product promise in one judge-readable headline and show the exact read-only investigation
+  path before submission. Do not claim an LLM, autonomous remediation, DataHub write-back, audit
+  ledger, or remotely hosted MCP.
+- Derive the completed verdict dashboard only from the validated incident response: top hypothesis,
+  scored/not-scored confidence, evidence count, supported impact count, and execution bounds. Escape
+  provider labels and preserve the existing detailed report, evidence links, deterministic Markdown
+  export, accessible terminal focus handoff, and reduced-motion/mobile behavior.
+- Record the entrant-reported organizer confirmation as general access/integration guidance, not
+  organizer acceptance of the submission or a judging result. Advance only requirements whose
+  factual local OSS/access conditions are now satisfied; remote hosting becomes optional rather than
+  a blocker, while the Public app remains explicitly fixture-only.
+- Verify the organizer-supplied hardened local GMS recipe against current official documentation and
+  document it as an optional operator path: preserve a separate quickstart Compose copy, enable
+  `METADATA_SERVICE_AUTH_ENABLED=true` for both GMS and frontend, recreate from that exact copy,
+  generate a local PAT in Settings, and pass it only as `DATAHUB_GMS_TOKEN` to the MCP process. Keep
+  the app-to-MCP hop on trusted loopback with `DATAHUB_MCP_AUTH_MODE=none`; never place the PAT in the
+  app frontend, repository, command output, screenshots, or logs. Do not modify the already-proven
+  stack or generate a token in this slice.
+- Run changed-file Prettier/ESLint, web typecheck, focused scenario/report tests, affected web build,
+  and one local official Browser visual/accessibility/overflow review at stable desktop and mobile
+  dimensions. Create no additional incident during visual review; use static fixture rendering and
+  existing focused contracts for terminal report layout.
+
+Deferred: Devpost editing/resubmission, a new screenshot/video/public incident, Public Cloud Run
+deployment, DataHub Cloud/remote MCP, mutation/write-back, package/lock/workflow/version/tag/Release
+changes, full Level D/evaluation rerun, PR Ready/merge, organizer acceptance, and prize outcome.
+
+#### Phase 8.11 QA correction — evidence-path provenance binding
+
+Status: targeted additive correction on the same
+`codex/phase-8-11-submission-readiness` branch and Draft PR #61 after canonical QA found that the
+Evidence Path Map selected evidence and impact by report-array position rather than by the displayed
+top hypothesis.
+
+Objective: bind the graph deterministically to `topHypothesis.evidenceIds` and to an impact whose
+`hypothesisIds` contains the top hypothesis. If either link cannot be resolved, render an explicit
+independent/unverified state instead of borrowing another hypothesis's provenance. Describe the graph
+as a schema-validated terminal response because the incident question and selected entity originate
+in the validated context stage.
+
+Minimum files: `apps/web/src/App.tsx`, `tests/integration/web-report.test.ts`, this plan, and
+`docs/SESSION_LOG.md`.
+
+Acceptance: a multiple-hypothesis/evidence/impact regression must reject an unrelated first evidence
+and first impact, while a defensive missing-link case must remain visibly unverified. Run only
+changed-file formatting/lint/typecheck, focused web report/scenario tests, the affected web build,
+and bounded diff/path/secret/encoding/residue/process/port checks. Reuse all unchanged QA greens.
+
+Deferred: all API/provider/runtime behavior; deployment; public incident; Devpost/video mutation;
+full-suite/evaluation reruns; PR Ready; and merge.
+
+Result:
+
+- Evidence selection now follows the top hypothesis's ordered `evidenceIds`, preferring a linked
+  non-lineage fact and otherwise its first linked fact. It never borrows unrelated report evidence.
+- Impact selection now requires the impact's `hypothesisIds` to contain the displayed top hypothesis.
+  Missing links render explicit independent/unverified evidence and impact states.
+- The graph label and explanation now describe the full schema-validated terminal response and its
+  provenance sequence without implying causality.
+- The focused multi-hypothesis regression places unrelated evidence and impact first, verifies the
+  linked later entries are selected, and verifies both defensive unlinked fallbacks.
+- Changed-file Prettier, affected ESLint, web strict typecheck, focused web report/scenario tests
+  (`11/11`), `git diff --check`, and the affected Vite production build (`109` modules) pass. The
+  initial test invocation reproduced the known managed-worktree ancestor-read denial; its exact
+  elevated recovery passed. One build command used the wrong package binary path and stopped before
+  build; the corrected package-local build passed.
+
+Deferred after result: all unchanged QA greens; deployment; public incident; Devpost/video mutation;
+full-suite/evaluation reruns; PR Ready; and merge.

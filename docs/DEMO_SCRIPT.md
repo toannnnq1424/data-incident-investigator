@@ -1,19 +1,25 @@
 # Under-three-minute demo script
 
-Status: one authentic English-captioned silent source has been recorded, reviewed, and merged. Phase
-8.9A adds a separate derivative with synchronized synthetic male English narration while stream-
-copying the exact video. Both are Public GitHub repository assets; neither has been uploaded to or
-made publicly visible on YouTube, Vimeo, or Youku, linked or entered in Devpost, accepted by an
-organizer, or submitted. GitHub access is not the Rules-required video-host/form-link gate.
+Status: Phase 8.9 recorded, reviewed, and merged one authentic English-captioned silent source.
+Phase 8.9A added a separate derivative with synchronized synthetic male English narration while
+stream-copying the exact video. Both remain Public GitHub repository assets. The exact male-voice
+derivative is now publicly visible on YouTube as
+[Data Incident Investigator — 2:50 Functioning Demo (Synthetic Fixture)](https://youtu.be/D5mvMqrhyDc),
+with the authored English WebVTT uploaded and published; YouTube reported no copyright issue during
+upload processing. Devpost registration and **Join Hackathon** succeeded for an individual entrant.
+The entrant then completed the final action for project `1117401`; the signed-in finalization screen
+reports **Project submitted!**, **Submitted**, and **5/5**, with the exact video link, English
+copy/media, and **Open / Wildcard**. No organizer acceptance or prize result is claimed.
 
 Candidate running time: **2:50.20**. The Rules recommend less than three minutes, and judges are not
 required to watch beyond minute three. Review the local packet at
 [`demo-video/README.md`](demo-video/README.md).
 
-The preferred review derivative uses **Microsoft Mark — English (United States)**, an installed
+The selected hosted derivative uses **Microsoft Mark — English (United States)**, an installed
 Microsoft Windows Adult/Male synthetic voice operating offline at its default rate. It is framed as
-an AI narrator, not the entrant or a named real person. Its WebVTT and transcript contain the exact
-spoken text. The unchanged silent source remains available with its original captions/transcript.
+an AI narrator, not the entrant or a named real person. Its authored WebVTT and transcript contain
+the exact spoken text. The unchanged silent source remains available with its original
+captions/transcript.
 
 ## Recording setup
 
@@ -104,8 +110,12 @@ Phase 8.9A voiced-derivative result:
       explicit.
 - [x] The public demo is not described as live DataHub. Local bounded MCP integration and live/judge
       validation `PARTIAL` are kept separate.
-- [x] No Devpost registration, challenge selection, YouTube/Vimeo/Youku upload or form link, or
-      submission is implied.
+- [x] Current distribution is explicit: the exact male-voice derivative is Public on YouTube with
+      authored English captions; the silent source remains a repository provenance asset.
+- [x] Devpost registration and **Join Hackathon** are distinguished from submitted project
+      `1117401`. Additional info selects **Open / Wildcard**, the exact YouTube URL is included, and
+      the signed-in finalization screen reports **Project submitted!**, **Submitted**, and **5/5**.
+      Organizer acceptance and a prize result are not implied.
 
 ### Accessibility and English
 
@@ -128,8 +138,15 @@ Phase 8.9A voiced-derivative result:
 - [x] Third-party product names are used only as factual text; no
       unlicensed logos, clips, stock images, or trademarks as decoration.
 - [x] Key frames at eleven timestamps were reviewed for accidental identifiers and claim accuracy.
-- [ ] The entrant must review the exact chosen export again before any separately authorized
-      YouTube/Vimeo/Youku upload.
+- [x] The selected repository WebM was uploaded without changing its
+      `f52daa606f3cf9f627909e23422ca2d14fd92db1f5c4ed6ca304744c5608ab33` SHA-256 source identity,
+      video packets, or frames.
+- [x] The authored English WebVTT is published on the YouTube video, and YouTube reported no
+      copyright issue during upload processing.
+- [x] The entrant personally operated the final Devpost agreement/submission gate; the project-form
+      video link is complete and the signed-in UI reports submission.
+- [ ] Independent repository proof of entrant eligibility, IP/media-rights facts, organizer
+      acceptance, and any prize result remains unavailable.
 
 The recording script emitted one non-visual capture-instrumentation page error because its
 scrollbar-hiding style ran before the first document element existed. The application interaction and
@@ -140,3 +157,10 @@ Phase 8.9A independently measured the final Opus narration at `-18.0 LUFS`, `-1.
 clipped samples, and exact cue completion before every next boundary. The extracted VP8 payload and
 all 4,255 copy-timestamp framehash rows match the silent source, so the voice-over adds no synthetic
 or retimed UI frame.
+
+Phase 8.11 hosting evidence binds the selected source to the Public YouTube URL
+<https://youtu.be/D5mvMqrhyDc> under the exact title above. YouTube playback may use platform
+transcodes; no claim is made that streamed renditions retain the repository file hash. C18 and C19
+are `PASS`. The exact URL is included in submitted Devpost project `1117401`; the signed-in
+finalization screen reports **Project submitted!**, **Submitted**, and **5/5**. That state is not
+organizer acceptance, eligibility approval, or a prize result.

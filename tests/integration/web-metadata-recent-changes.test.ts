@@ -83,6 +83,32 @@ describe('metadata recent changes presentation', () => {
     });
   });
 
+  it('distinguishes unsupported MCP history from an empty supported window', () => {
+    const unsupported = {
+      kind: 'success',
+      response: MetadataRecentChangesResponseSchema.parse({
+        entityUrn,
+        window: {
+          startTime: '2026-07-12T08:30:00.000Z',
+          endTime: '2026-07-19T08:30:00.000Z',
+          hours: 168,
+        },
+        limit: 10,
+        returnedCount: 0,
+        truncated: false,
+        capability: 'unsupported',
+        changes: [],
+      }),
+    } satisfies MetadataRecentChangesState;
+
+    expect(getMetadataRecentChangesPresentation(unsupported)).toEqual({
+      heading: 'Recent-change history unavailable',
+      message:
+        'The official DataHub MCP Server does not expose recent-change history; no change evidence was returned or inferred.',
+      tone: 'empty',
+    });
+  });
+
   it('presents only safe API errors and rejects stale completion ownership', () => {
     expect(
       getMetadataRecentChangesPresentation({

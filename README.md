@@ -11,6 +11,7 @@ missing information, blast radius, and recommended human checks separate.
 
 [Try the public fixture demo](https://data-incident-investigator-1071683558688.asia-southeast1.run.app)
 · [Judge quickstart](docs/JUDGE_QUICKSTART.md) ·
+[2:50 functioning demo](https://youtu.be/D5mvMqrhyDc) ·
 [Screenshot gallery](docs/demo-assets/README.md) ·
 [Public repository](https://github.com/toannnnq1424/data-incident-investigator)
 
@@ -19,7 +20,7 @@ missing information, blast radius, and recommended human checks separate.
 The public demo is credential-free and uses synthetic fixture data:
 
 1. Wait for **Fixture metadata · Ready**.
-2. Under **What changed?**, select **Removed schema column**.
+2. Under **What changed?**, choose **Removed schema column**.
 3. Keep the populated synthetic fields and choose **Start investigation**.
 4. After **Investigation completed**, inspect the ranked hypothesis, evidence, blast radius, and
    **Download Markdown report** link.
@@ -54,7 +55,7 @@ links every hypothesis and impact back to evidence IDs, and labels every recomme
 
 Fixture mode is deterministic for fixed inputs. Live DataHub inputs and provider state can vary.
 
-## DataHub integration: implemented, locally validated, not live in the public demo
+## DataHub integration: validated against local DataHub OSS, not live in the public demo
 
 The repository contains two DataHub-backed adapter paths:
 
@@ -63,11 +64,45 @@ The repository contains two DataHub-backed adapter paths:
   endpoint. It discovers and calls only read-only `search` and `get_lineage`, bounds time/bytes/entity
   counts, and never falls back silently to fixtures.
 
-The bounded MCP protocol and product vertical slice pass locally. The current official MCP Server
-does not expose a recent-changes tool, so that capability is reported as unsupported. No authorized
-live/judge MCP endpoint has been validated, and the public Cloud Run service contains no DataHub or
-model credential. Hackathon named-integration evidence therefore remains **PARTIAL**, not a live
-DataHub claim.
+On 2026-07-28, the MCP path also passed a localhost-only integration against DataHub Core `1.6.0`
+loaded with the official synthetic ecommerce data pack and official `mcp-server-datahub` `0.6.0`.
+Mutation, user, and data-quality tools were disabled. The application passed MCP-backed readiness,
+search, bounded lineage, and explicit unsupported recent-change handling. One bounded incident
+returned the designed degraded result when lineage was truncated and recent-change history was
+unavailable; it did not invent a root cause.
+
+That real local OSS proof is **PASS — LOCAL OSS**. It also exposed an official nested lineage
+`platform` descriptor that the adapter now accepts under the existing bounded entity schema. It is
+not a durable remotely reachable endpoint: no DataHub Cloud tenant, public tunnel, or judge credential
+was created. The entrant reports that a DataHub hackathon representative confirmed that the intended
+hackathon path is DataHub OSS locally and answered **yes** when asked whether the credential-free
+Public fixture demo plus the reproducible local OSS/MCP path satisfies access and integration
+expectations without remote DataHub/MCP hosting. This records general organizer guidance, not
+submission acceptance or a judging result. The public Cloud Run service remains fixture-only.
+
+### Optional authenticated local OSS path
+
+DataHub Core can also protect the local MCP-to-GMS hop with a PAT. The current official
+[Metadata Service Authentication](https://docs.datahub.com/docs/authentication/introducing-metadata-service-authentication)
+and [PAT](https://docs.datahub.com/docs/authentication/personal-access-tokens) docs say authentication
+is opt-in and must be enabled for both GMS and the frontend. Keep a private copy of the
+[quickstart](https://docs.datahub.com/docs/quickstart) Compose file, set
+`METADATA_SERVICE_AUTH_ENABLED: 'true'` for
+`datahub-gms-quickstart` and `datahub-frontend-quickstart`, then restart from that copy:
+
+```bash
+cp ~/.datahub/quickstart/docker-compose.yml ~/datahub-auth-compose.yml
+# Edit ~/datahub-auth-compose.yml; never commit this operator-owned file or a generated token.
+datahub docker quickstart --stop
+datahub docker quickstart --quickstart-compose-file ~/datahub-auth-compose.yml
+```
+
+Sign in to local DataHub, open **Settings → Access Tokens**, generate a PAT, and expose it only to the
+self-hosted MCP process as `DATAHUB_GMS_TOKEN`; keep `DATAHUB_GMS_URL` pointed at local GMS. The app
+still connects to the trusted loopback MCP endpoint with `DATAHUB_MCP_AUTH_MODE=none`, so the PAT must
+never enter the frontend, repository, screenshots, logs, or `DATAHUB_TOKEN`. The unauthenticated
+localhost proof described above remains the actually executed evidence; this PAT recipe is a
+documented optional hardening path.
 
 ## Local judge fallback
 
@@ -103,8 +138,9 @@ For the shortest verified path and expected labels, use the
 ## Truthful limitations
 
 - The public service is credential-free **fixture mode**, not live DataHub evidence.
-- Seven guided presets are visible, but only **Removed schema column** has the rich checked-in
-  metadata/incident fixture and canonical browser flow.
+- Current source exposes seven incident playbooks, but only **Removed schema column** has the rich
+  checked-in metadata/incident fixture and canonical browser flow. Until this source revision is
+  separately deployed, the Public service retains the earlier compact scenario selector.
 - Incident state is process-local and disappears on restart or scale-to-zero; incident URLs are not
   durable.
 - Confidence is deterministic evidence scoring, not a probability from an LLM. The current workflow
@@ -113,11 +149,18 @@ For the shortest verified path and expected labels, use the
   pipelines, dashboards, or production data.
 - Blast-radius status is always bounded and explicit. `partial`, `unknown`, or `unavailable` must not
   be read as verified zero impact.
-- The Cloud Run cost-control stop boundary is 2026-08-10 or 20% reported credit remaining, whichever
-  occurs first, so availability through the 2026-08-31 judging end is not guaranteed. The Public
-  repository quickstart is the retained fallback.
-- Devpost registration, eligibility/ownership attestations, video upload, form completion, and
-  submission have not occurred.
+- The owner-authorized Cloud Run operating window now runs through **2026-09-17 23:59 ICT**,
+  beyond the 2026-08-31 judging end. A 20%-remaining-credit signal triggers monitoring and owner
+  escalation rather than an automatic pre-judging stop; emergency security or uncontrolled-billing
+  response remains possible. The Public repository quickstart remains the durable fallback.
+- Devpost registration, individual **Join Hackathon**, and the entrant-operated final submission are
+  complete for project `1117401`. The signed-in finalization screen reports **Project submitted!**,
+  **Submitted**, and **5/5**; the public project page is
+  <https://devpost.com/software/data-incident-investigator>. The entry retains **Open / Wildcard**,
+  the Public app/repository/video links, five real fixture screenshots with English captions, a
+  completed-report thumbnail, and truthful English project/judge copy. This records submission state,
+  not organizer acceptance, eligibility approval, prize status, or an independent repository
+  attestation of the entrant's ownership and rights facts.
 
 ## Validation and project documentation
 

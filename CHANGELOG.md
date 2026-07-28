@@ -4,12 +4,19 @@ This file records notable user-facing, operator-facing, security, reliability, a
 changes. It follows a Keep a Changelog-style structure and the repository's
 [versioning policy](docs/VERSIONING.md).
 
-Tag `v1.0.0-rc.1` exists, and its GitHub Draft Release exists but remains unpublished with only
-automatic source archives and no user-uploaded assets. This repository prepares the `1.0.0`
-metadata below; final `v1.0.0` tagging and GitHub Release creation/publication remain separately
-authorized post-merge gates.
+Annotated tag `v1.0.0` resolves to the exact validated release merge, and its GitHub Release is
+Published/Latest with only GitHub-generated source archives. Historical tag `v1.0.0-rc.1` and its
+unpublished Draft Release remain untouched.
 
 ## [Unreleased]
+
+### Changed
+
+- Extended the owner-authorized public fixture operating window through 2026-09-17 23:59 ICT,
+  beyond judging, while retaining emergency containment and the Public-repository fallback.
+- Published the existing verified 2:50.20 male-voice fixture demo on YouTube with authored English
+  captions, and completed individual Devpost registration/Join with Open / Wildcard as the category
+  of interest. The project form, video-link entry, and submission remain unperformed.
 
 ## [1.0.0] - 2026-07-28
 
