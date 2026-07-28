@@ -97,16 +97,20 @@ below remain separately scoped.
       Public visibility and enabled Private vulnerability reporting on exact current `main`.
 - [x] Devpost registration records **Working solo** and **Open / Wildcard** as the category of
       interest.
-- [ ] An entrant gate independently records the still-open eligibility/IP/rights facts, reviews the
-      live project form, enters the approved disclosures, and captures the final submission receipt.
+- [x] Inspect the live project form and save the approved English copy, URLs, screenshots, thumbnail,
+      challenge, DataHub technologies, residence, new-project selection, and feedback answers in
+      draft project `1117401`.
+- [ ] An entrant gate independently records the still-open eligibility/IP/rights facts, accepts the
+      final Rules/Terms only after review, submits, and captures the final receipt.
 - [x] The owner-authorized public Project URL operating window runs through
       2026-09-17 23:59 ICT, beyond the 2026-08-31 17:00 EDT judging end; the Public repository is the
       fallback.
 - [x] The authentic 2:50.20 male-voice functioning-project video is Public on YouTube with authored
       English captions.
-- [ ] Complete the entrant's final rights review and enter the exact hosted-video URL in the Devpost
-      project form; the below-3:00 target is a Rules recommendation and judging-attention gate, not a
-      separately worded hard eligibility maximum.
+- [x] Enter and preview the exact hosted-video URL in Devpost draft `1117401`; the below-3:00 target
+      is a Rules recommendation and judging-attention gate, not a separately worded hard eligibility
+      maximum.
+- [ ] Complete the entrant's final rights review before final Rules/Terms acceptance and submission.
 
 ## Phase 8.3 — public-source and Apache-2.0 decision preparation
 
@@ -447,6 +451,7 @@ The execution checklist above is historical and was found incomplete by independ
 - [x] Final release commit and tag are pushed.
 - [x] Devpost registration and individual Join are complete, with Open / Wildcard recorded as the
       registration category of interest.
-- [ ] Create and review the project form, enter the verified URLs/copy, complete entrant-owned
-      eligibility/IP/rights disclosures, and submit only after the entrant authorizes that final
-      action.
+- [x] Create and review draft project `1117401`; save and preview the verified URLs, English copy,
+      five captioned screenshots, thumbnail, challenge, technologies, and optional feedback answers.
+- [ ] Complete entrant-owned eligibility/IP/rights review, explicitly accept the final Rules/Terms,
+      and submit only after separate final authorization; preserve the receipt.

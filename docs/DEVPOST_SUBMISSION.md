@@ -1,8 +1,9 @@
 # Devpost submission draft
 
-> Draft project-form copy only. Devpost registration and individual **Join Hackathon** are complete,
-> but no project form has been created, saved, or submitted, and no copy or link from this file has
-> been entered in a project form.
+> Devpost draft `1117401` is saved at **4/5 steps** after registration and individual
+> **Join Hackathon**. Verified English copy, links, media, and judge fields from this packet are in
+> the draft and match its signed-in preview. The final Rules/Terms checkbox is unchecked and
+> **Submit project** has not been clicked; no submission, receipt, or organizer acceptance exists.
 
 ## Title
 
@@ -24,6 +25,8 @@ an auditable report with transparent confidence, blast radius, and safe human ne
 - Judge instructions: [`JUDGE_QUICKSTART.md`](JUDGE_QUICKSTART.md)
 - Screenshot gallery: [`demo-assets/README.md`](demo-assets/README.md)
 - Public 2:50 functioning demo: <https://youtu.be/D5mvMqrhyDc>
+- Devpost draft preview route (incomplete; not a submission):
+  <https://devpost.com/software/data-incident-investigator>
 - Repository silent/voiced video candidates and review packet:
   [`demo-video/README.md`](demo-video/README.md)
 
@@ -32,8 +35,42 @@ unavailable. The exact authentic 2:50.20 silent source is public on merged `main
 8.9A derivative stream-copies the same real video and adds synchronized Microsoft Mark synthetic
 male English narration plus matching captions/transcript. The voiced derivative is now Public on
 YouTube under **Data Incident Investigator — 2:50 Functioning Demo (Synthetic Fixture)** with the
-authored English WebVTT published. The YouTube URL has not been entered in a Devpost project form,
-accepted by an organizer, or submitted.
+authored English WebVTT published. The exact YouTube URL is saved in draft `1117401` and embedded in
+its signed-in preview. The draft has not been submitted or accepted by an organizer.
+
+## Saved Devpost draft state
+
+Observed and saved through the signed-in Devpost account at **2026-07-28 17:18 ICT
+(UTC+07:00) / 2026-07-28 10:18 UTC**:
+
+- Exactly one project draft exists: numeric ID `1117401`, slug
+  `1117401-data-incident-investigator`, title **Data Incident Investigator**, status **Draft**, and
+  progress **4/5 steps done**.
+- **Project overview:** the title and one-line description above are saved. The completed
+  report/export PNG is uploaded as the project thumbnail.
+- **Project details:** the 4,898-character English story below is saved without the Devpost template
+  prefix. Built With records TypeScript, React, Vitest, DataHub, and Node.js. The Public app and
+  repository URLs plus the exact Public YouTube URL are saved. Five authentic 1440 × 900 fixture PNGs
+  are uploaded with English captions aligned to intake, completion/export, confidence, blast radius,
+  and evidence/lineage.
+- **Additional info:** **Open / Wildcard** is selected; DataHub OSS / Core Platform and DataHub MCP
+  Server are selected; the Public repository, app, and repository demo-assets folder are linked;
+  residence is `Vietnam` as supplied by the entrant; and the saved new-project selection says
+  **Yes, newly created during the Submission Period**. The optional Feedback Prize selection is
+  `Yes`, with four complete English answers about the useful MCP surface, the absent recent-changes
+  tool, a proposed typed bounded recent-changes capability, and the absence of a confirmed
+  reproducible DataHub bug.
+- **Solo contribution:** the preview records that the solo entrant directed the project and used
+  Codex as an AI coding assistant across design, implementation, validation, documentation,
+  deployment, and rehearsal.
+- **Preview:** the signed-in draft preview renders the Public YouTube embed, all five captioned PNGs,
+  the clean English story, Built With tags, and both Try it out links. It labels the entry
+  **Incomplete submission**.
+- **Final gate:** the only final control shown is agreement to the Official Rules and Devpost Terms
+  of Service. It remains unchecked, and **Submit project** was not clicked.
+
+No credential, account token, private endpoint, customer data, additional public incident, new media
+encoding, Devpost submission, or organizer acceptance was created by this form pass.
 
 ## Inspiration
 
@@ -143,8 +180,8 @@ read-only investigation work and produces a report, but it does not write result
 execute remediation. Do not represent that challenge as selected unless an authorized entrant
 actually selects it in the form.
 
-The entrant's Join registration records **Open / Wildcard** as the challenge category of interest.
-No project-form category control has been inspected or selected.
+The entrant's Join registration and the saved project-form category both record
+**Open / Wildcard**. No form selection was made for **Agents That Do Real Work**.
 
 ## Current limitations and what is next
 
@@ -160,15 +197,16 @@ No project-form category control has been inspected or selected.
 - One authentic 2:50.20 app-only video source now exists in both silent and synchronized English
   male-voice repository variants. The voiced derivative changes no video packet/frame, uses only an
   offline installed Windows AI voice, and is Public on YouTube with authored English captions. Its
-  URL is not yet entered in the Devpost project form.
-- Devpost registration and individual Join are complete. The project form has not been created,
-  saved, or submitted. Repository evidence does not independently establish the entrant's underlying
-  eligibility, ownership, contributor, or media-rights facts.
+  exact URL is saved and embedded in the signed-in Devpost draft preview.
+- Devpost registration and individual Join are complete, and draft `1117401` is saved at 4/5 steps
+  with the fields described above. The final Rules/Terms checkbox and submission remain open.
+  Repository evidence does not independently establish the entrant's remaining eligibility,
+  ownership, contributor, or media-rights facts.
 
 Next work is operational rather than a new product claim: obtain authorized live/judge MCP evidence,
-complete the entrant's final media/rights review, enter the verified YouTube URL and approved copy in
-the project form, complete all entrant-owned disclosures, and verify the final form before the
-deadline.
+complete the entrant's eligibility/IP/media-rights review, review and explicitly accept the final
+Rules/Terms gate, reverify the Public app/video/repository, and perform the separately authorized
+final submission before the deadline while preserving the receipt.
 
 ## Codex usage
 

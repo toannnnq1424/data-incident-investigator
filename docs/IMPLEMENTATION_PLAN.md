@@ -7294,3 +7294,67 @@ Result:
 - C18 advances to `PASS`. C19 is `PARTIAL — PUBLIC HOSTED / DEVPOST LINK OPEN`. Live/judge DataHub
   MCP validation, independent entrant ownership/rights facts, project-form completion, final
   submission, and receipt remain separate gates.
+
+#### Phase 8.11 authorized Devpost project-draft follow-up
+
+Status: user-authorized continuation on the same branch and Draft PR #61 after exact head
+`5217d61d002c86de25d76cde3222bffda80f1e3b` (tree
+`47bb2d003a7c0d74fada998fe67eba54cb97caae`). The entrant authorized creation and saving of the
+Devpost project and asked for a durable action log. The entrant separately supplied `Vietnam` for
+the required residence field.
+
+Objective: create exactly one truthful project draft, reuse the already-published verified
+male-voice video and existing synthetic fixture media, save all repository-supported project and
+judge fields, inspect the signed-in preview/final gate, and stop without final Rules/Terms acceptance
+or submission.
+
+Minimum files:
+
+- `docs/DEVPOST_SUBMISSION.md` and `docs/DEVPOST_REQUIREMENTS.md` for exact saved form fields, status,
+  and C08/C16/C19/C21/C22/C23/C25/C37 reconciliation.
+- README, quickstart, claim matrix, demo/video notes, release checklist, known issues, repository
+  map, this plan, and session log only where the previous no-project/no-link statement became stale.
+- No application source, runtime, workflow, package, lock, version, release, deployment, or media
+  file may change.
+
+Acceptance and validation:
+
+- Exactly one Devpost project exists; no duplicate, import, or additional public incident is created.
+- Saved copy states fixture-only, zero-model, no-write-back, bounded MCP, live/judge MCP `PARTIAL`,
+  C11 qualified scope, and the owner-authorized public operating window truthfully.
+- Reuse the exact Public YouTube URL and the five existing authentic 1440 × 900 fixture PNGs. Add
+  aligned English captions and a real existing screenshot thumbnail; do not synthesize or re-encode
+  media.
+- Save the strongest truthful **Open / Wildcard** category, the Public repository/app/evidence
+  links, the implemented DataHub OSS/Core and MCP technologies, the evidence-backed new-project
+  selection, user-supplied residence, and complete actionable feedback without claiming a bonus
+  result.
+- Verify the signed-in preview and finalization page. Leave the binding Rules/Terms agreement
+  unchecked and do not click **Submit project**; preserve eligibility, IP/rights, live MCP,
+  submission, receipt, and organizer acceptance as separate gates.
+- Run only affected Markdown formatting, local-link, claim/status-total, diff/path, UTF-8/LF/no-BOM,
+  secret/private-data/conflict, residue/process/port checks. Reuse all unchanged CI, media,
+  evaluation, release, deployment, and browser greens.
+
+Result:
+
+- Devpost created exactly one draft, numeric ID `1117401`, slug
+  `1117401-data-incident-investigator`, and saved it at **4/5 steps**.
+- Overview, the clean 4,898-character English story, Built With tags, Public app/repository/video
+  URLs, five aligned captioned fixture PNGs, and the completed report/export thumbnail are saved.
+- Additional info saves **Open / Wildcard**, DataHub OSS / Core Platform, DataHub MCP Server,
+  repository/app/evidence links, `Vietnam`, **Yes, newly created during the Submission Period**, and
+  four actionable Feedback Prize answers. The solo contribution note explicitly discloses Codex as
+  an AI coding assistant.
+- The signed-in preview renders the Public video, all five captions/images, clean story, tags, and
+  Try it out links and labels the project **Incomplete submission**. The final Rules/Terms checkbox
+  remains unchecked; no submission, receipt, or organizer acceptance exists.
+- C08, C16, C19, C21, and C25 advance to `PASS`; C22 advances from `OPEN` to `PARTIAL`. C18, C23,
+  C14, and C11 retain their prior exact statuses. Live/judge MCP, eligibility, ownership/IP/media
+  rights, final Terms acceptance, submission, receipt, and organizer acceptance remain unresolved
+  exactly as recorded.
+
+Deferred: final eligibility/IP/media-rights review and durable attestations; explicit final
+Rules/Terms acceptance; final submission and receipt; authorized live/judge DataHub MCP endpoint
+validation; another public incident or media mutation; any source/runtime/workflow/package/lock/
+version/tag/Release/deployment/GCP change; full validation; PR Ready; and merge.

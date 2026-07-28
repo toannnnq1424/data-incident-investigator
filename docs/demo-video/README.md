@@ -1,14 +1,15 @@
 # Phase 8.9 / 8.9A demo-video packet
 
-Status: **Public YouTube functioning demo / C18 PASS; C19 PARTIAL until Devpost form linkage**. The
+Status: **Public YouTube functioning demo / C18 PASS / C19 PASS**. The
 authentic silent source remains publicly accessible on the Public GitHub `main` branch after merged
 PR #58. Phase 8.9A added a separate synchronized English male-voice derivative as another Public
 GitHub repository asset. That exact voiced derivative is now publicly visible on YouTube as
 [Data Incident Investigator — 2:50 Functioning Demo (Synthetic Fixture)](https://youtu.be/D5mvMqrhyDc).
 The authored English WebVTT captions are uploaded and published, and YouTube reported no copyright
 issue during upload processing. Devpost registration and **Join Hackathon** have succeeded for an
-individual entrant, but the project form, video-link entry, and submission have not started; no
-organizer acceptance is claimed.
+individual entrant. The exact URL is saved in draft project `1117401` and appears in its signed-in
+preview, but the project remains incomplete at 4/5 steps; no final Terms acceptance, submission,
+receipt, or organizer acceptance is claimed.
 
 ## Review
 
@@ -153,10 +154,10 @@ continued normally; Phase 8.9A changes no frames and makes no application-consol
       authored English WebVTT captions are uploaded and published.
 - [x] YouTube reported no copyright issue during upload processing. This is platform evidence, not a
       blanket legal or ownership attestation.
-- [ ] Entrant identity/IP/media-rights attestations and the final Devpost project form, video link,
-      and submission remain separate open actions.
+- [ ] Entrant identity/IP/media-rights attestations, final Rules/Terms acceptance, submission, and
+      receipt remain separate open actions. The Devpost project-form video link is complete.
 
-The public functioning-project video satisfies C18, which is now `PASS`. C19 is
-**PARTIAL — PUBLIC HOSTED / DEVPOST LINK OPEN** because the accepted-host visibility requirement is
-met but the YouTube URL has not been entered in the Devpost project form. Registration and
-**Join Hackathon** do not constitute form completion or submission.
+The public functioning-project video satisfies C18, which is `PASS`. C19 is also `PASS` because the
+accepted-host visibility requirement is met and the exact YouTube URL is saved in Devpost draft
+`1117401`. Registration, **Join Hackathon**, and a saved 4/5-step draft do not constitute final
+Terms acceptance, submission, a receipt, or organizer acceptance.

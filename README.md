@@ -118,11 +118,13 @@ For the shortest verified path and expected labels, use the
   beyond the 2026-08-31 judging end. A 20%-remaining-credit signal triggers monitoring and owner
   escalation rather than an automatic pre-judging stop; emergency security or uncontrolled-billing
   response remains possible. The Public repository quickstart remains the durable fallback.
-- Devpost registration and individual **Join Hackathon** are complete, with **Open / Wildcard**
-  recorded as the registration category of interest. The verified male-voice demo is Public on
-  YouTube with authored English captions. Its URL has not been entered in a project form; no project
-  draft has been created, saved, or submitted, and repository evidence does not independently prove
-  entrant eligibility, ownership, or rights facts.
+- Devpost registration and individual **Join Hackathon** are complete. Draft project `1117401` is
+  saved at **4/5 steps** with **Open / Wildcard**, the Public app/repository/video links, five real
+  fixture screenshots with English captions, a completed-report thumbnail, and truthful English
+  project/judge copy. Its signed-in preview matches the repository evidence. The Rules/Terms
+  checkbox remains unchecked and **Submit project** has not been clicked, so there is no submission,
+  receipt, or organizer acceptance; repository evidence also does not independently prove the
+  entrant's remaining eligibility, ownership, or rights facts.
 
 ## Validation and project documentation
 

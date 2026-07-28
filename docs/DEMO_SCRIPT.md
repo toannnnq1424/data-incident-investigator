@@ -6,9 +6,10 @@ stream-copying the exact video. Both remain Public GitHub repository assets. The
 derivative is now publicly visible on YouTube as
 [Data Incident Investigator — 2:50 Functioning Demo (Synthetic Fixture)](https://youtu.be/D5mvMqrhyDc),
 with the authored English WebVTT uploaded and published; YouTube reported no copyright issue during
-upload processing. Devpost registration and **Join Hackathon** succeeded for an individual entrant,
-but the project form, video-link entry, and submission have not started, and no organizer acceptance
-is claimed.
+upload processing. Devpost registration and **Join Hackathon** succeeded for an individual entrant.
+Draft project `1117401` is saved at 4/5 steps with the exact video link, English copy/media, and
+**Open / Wildcard**; the final Rules/Terms checkbox remains unchecked, **Submit project** has not
+been clicked, and no organizer acceptance is claimed.
 
 Candidate running time: **2:50.20**. The Rules recommend less than three minutes, and judges are not
 required to watch beyond minute three. Review the local packet at
@@ -111,10 +112,10 @@ Phase 8.9A voiced-derivative result:
       validation `PARTIAL` are kept separate.
 - [x] Current distribution is explicit: the exact male-voice derivative is Public on YouTube with
       authored English captions; the silent source remains a repository provenance asset.
-- [x] Devpost registration and **Join Hackathon** are distinguished from the project form. No
-      project-form challenge selection, video-link entry, form save/completion, submission, or
-      organizer acceptance is implied; Join registration records Open / Wildcard as the category of
-      interest.
+- [x] Devpost registration and **Join Hackathon** are distinguished from saved draft `1117401`.
+      Additional info selects **Open / Wildcard**, and the exact YouTube URL is saved and previewed.
+      The draft remains 4/5; final Terms acceptance, submission, receipt, and organizer acceptance are
+      not implied.
 
 ### Accessibility and English
 
@@ -142,8 +143,8 @@ Phase 8.9A voiced-derivative result:
       video packets, or frames.
 - [x] The authored English WebVTT is published on the YouTube video, and YouTube reported no
       copyright issue during upload processing.
-- [ ] Entrant legal/IP/media-rights attestations and the Devpost project-form video link and
-      submission remain open.
+- [ ] Entrant legal/IP/media-rights attestations, final Rules/Terms acceptance, submission, and
+      receipt remain open. The Devpost project-form video link is complete.
 
 The recording script emitted one non-visual capture-instrumentation page error because its
 scrollbar-hiding style ran before the first document element existed. The application interaction and
@@ -158,5 +159,6 @@ or retimed UI frame.
 Phase 8.11 hosting evidence binds the selected source to the Public YouTube URL
 <https://youtu.be/D5mvMqrhyDc> under the exact title above. YouTube playback may use platform
 transcodes; no claim is made that streamed renditions retain the repository file hash. C18 is
-`PASS`. C19 is **PARTIAL — PUBLIC HOSTED / DEVPOST LINK OPEN** until that URL is entered in the
-Devpost project form; registration and **Join Hackathon** alone do not complete or submit the form.
+`PASS`. The exact URL is saved in Devpost draft `1117401` and visible in its signed-in preview, so
+C19 is also `PASS`. Registration, **Join Hackathon**, and a 4/5-step saved draft still do not
+constitute final Terms acceptance, submission, a receipt, or organizer acceptance.

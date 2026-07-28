@@ -6818,3 +6818,140 @@ C18 advances to `PASS`; C19 is `PARTIAL — PUBLIC HOSTED / DEVPOST LINK OPEN`. 
 validation remains `PARTIAL`, C11 remains its existing qualified immutable-deployment status, and
 entrant-owned IP/rights facts, project-form review, URL/copy entry, final submission authorization,
 submission, and receipt remain open.
+
+## 2026-07-28 — Phase 8.11 authorized Devpost project draft
+
+### Objective
+
+Use the existing signed-in Devpost account to create exactly one truthful project draft for the
+already-joined individual entry, save all repository-supported copy/media/judge fields, and record
+every external action. Stop before the binding final Rules/Terms agreement and **Submit project**.
+Do not create another incident, alter media, expose credentials, mutate GCP/runtime/release state, or
+claim organizer acceptance.
+
+### Completed
+
+- The first **Start project** attempt displayed a Google reCAPTCHA image challenge. The user solved
+  that challenge manually and replied `xong`; no CAPTCHA bypass or hidden-session inspection was
+  used.
+- Devpost created exactly one project: numeric ID `1117401`, slug
+  `1117401-data-incident-investigator`, title **Data Incident Investigator**, status **Draft**. No
+  duplicate project, import, or submission was created.
+- Saved **Project overview** with the exact title and this elevator pitch:
+
+  > An evidence-first data incident agent that traces metadata changes through lineage and turns
+  > them into an auditable report with transparent confidence, blast radius, and safe human next
+  > steps.
+
+- Saved **Project details** after removing Devpost's default heading template from the story. The
+  final English story is 4,898 characters and retains fixture-only, plausible-contributor,
+  confidence, blast-radius, no-model, no-write-back, and live-MCP-partial boundaries. Built With is
+  `TypeScript, React, Vitest, DataHub, Node.js`.
+- Saved the Public app and repository as Try it out links and
+  <https://youtu.be/D5mvMqrhyDc> as the exact video link.
+- Uploaded only the five existing authentic 1440 × 900 fixture PNGs. Devpost media IDs and exact
+  caption mapping are:
+  - `5030739`: guided synthetic Removed schema column intake before Start;
+  - `5030741`: completed fixture report, deterministic Markdown export, and activity trail;
+  - `5030742`: plausible-contributor hypothesis with visible 81% confidence factors;
+  - `5030743`: bounded blast radius with two supported downstream impacts; and
+  - `5030740`: evidence view separating metadata/lineage facts from inference.
+- Uploaded the existing completed report/export PNG as the project thumbnail. A reloaded finalization
+  view no longer showed the thumbnail placeholder. No image was cropped, generated, re-encoded, or
+  recaptured.
+- Saved **Additional info** with **Open / Wildcard**, the Public repository URL, Public app URL,
+  repository demo-assets folder, **DataHub MCP Server**, and **DataHub OSS / Core Platform**. The
+  open-source contribution field remains blank because no DataHub contribution is claimed.
+- The entrant supplied `Vietnam`; that exact residence selection is saved. The form selection says
+  **Yes, newly created during the Submission Period**, supported by the first repository commit on
+  2026-07-18. The conditional pre-existing-work field remains blank; full off-repository/IP
+  confirmation remains an entrant gate.
+- Opted into the optional $50 Feedback Prize and saved four complete English answers:
+
+  1. the official MCP guide and read-only `search`/`get_lineage` surface mapped cleanly into a
+     bounded provider adapter and stable URNs/direction preserved provenance;
+  2. the missing recent-changes timeline tool was the largest gap and forced an explicit unsupported
+     state rather than emulated live evidence;
+  3. the requested improvement is a typed bounded recent-changes tool with schema/tag/ownership/
+     lineage events, time, actor/source IDs, pagination, and capability metadata; and
+  4. no reproducible DataHub product bug was confirmed; the capability gap and pending authorized
+     live-endpoint validation remain disclosed.
+
+- Saved this solo contribution note:
+
+  > Solo entrant: I directed the project and used Codex as an AI coding assistant to design,
+  > implement, validate, document, deploy, and rehearse the TypeScript investigation workflow and
+  > its public fixture demo.
+
+- The signed-in draft preview renders the Public YouTube embed, all five images with aligned captions,
+  the clean story, Built With tags, and both Try it out links. It labels the entry
+  **Incomplete submission**.
+- The reloaded finalization page reports **4/5 steps done** and exposes one unchecked agreement to
+  the Official Rules and Devpost Terms plus **Submit project**. The checkbox remains unchecked and
+  the button was not clicked; no submission, receipt, or organizer acceptance exists.
+
+### Files changed
+
+- `README.md`
+- `docs/CLAIM_TO_DEMO_MATRIX.md`
+- `docs/DEMO_SCRIPT.md`
+- `docs/DEVPOST_REQUIREMENTS.md`
+- `docs/DEVPOST_SUBMISSION.md`
+- `docs/IMPLEMENTATION_PLAN.md`
+- `docs/JUDGE_QUICKSTART.md`
+- `docs/KNOWN_ISSUES.md`
+- `docs/RELEASE_CHECKLIST.md`
+- `docs/REPOSITORY_MAP.md`
+- `docs/SESSION_LOG.md`
+- `docs/demo-video/README.md`
+
+No application source, runtime, workflow, package, lock, version, release, deployment, GCP, or media
+file changed.
+
+### Decisions
+
+- Treat C08, C16, C19, C21, and C25 as `PASS` because the exact saved draft preview now verifies
+  claim/video matching, complete English project copy, accepted-host video linkage, form-wide English
+  completeness, and authentic image/caption presentation.
+- Advance C22 from `OPEN` to `PARTIAL`: all content/judge steps are saved, but the final binding
+  Rules/Terms agreement, submission, and receipt remain open.
+- Keep C01 `OPEN`; keep C04, C05, C12, C20, C06/C07/C28/C29 `PARTIAL`; preserve C11 qualified,
+  C14 owner-authorized, C18 `PASS`, and C23 `PASS`. The saved residence/new-project selections are
+  evidence, not blanket eligibility, ownership, IP/media-rights, or live-MCP proof.
+- Keep C37 `NOT REQUIRED` because the prize survey is optional, while recording that its draft
+  answers are complete. Do not claim a feedback-prize result.
+
+### Validation performed
+
+- Browser checks verified one exact draft, 4/5 status, saved category/technology/country/new-project/
+  feedback values, five gallery assets with aligned captions, saved thumbnail, clean English story,
+  Public app/repository/video links, signed-in preview rendering, unchecked final Rules/Terms
+  control, and untouched **Submit project**.
+- No credential, account token, customer data, private endpoint, new incident, media mutation, GCP
+  action, or final Devpost submission occurred.
+- Bounded repository validation passes Prettier on all 12 changed Markdown files, 61 local Markdown
+  links, 37/37 requirement rows with exact totals
+  `12 PASS / 1 QUALIFIED PASS / 10 PARTIAL / 4 OPEN / 10 NOT REQUIRED`, exact changed-path scope,
+  `git diff --check`, current-claim consistency, UTF-8/LF/final-newline/no-BOM/no-binary checks,
+  added-line secret/conflict-marker checks, and residue/process/port inspection. No task-owned helper
+  or listener remains.
+
+### Validation intentionally deferred
+
+All unchanged full validation, evaluation, media hash/codec review, release artifact, deployment,
+public incident, and runtime/source gates are reused. Final eligibility/IP/media-rights review,
+Rules/Terms acceptance, submission/receipt, and authorized live/judge DataHub MCP validation remain
+separately gated.
+
+### Known issues
+
+Live/judge DataHub MCP evidence remains `PARTIAL`. The repository does not independently prove the
+entrant's remaining age/sanctions/conflict, off-repository/new-work, ownership/IP/media-rights, or
+organizer-response facts. The project is still an incomplete 4/5-step draft.
+
+### Exact next step
+
+Run the bounded affected-document format/link/claim/status-total/diff/path/encoding/secret/residue/
+process/port checks. Create one additive conventional commit on the existing branch, push normally,
+update the same Draft PR #61, require exact-new-head PR CI `SUCCESS`, and return for independent
+review. Do not mark Ready, merge, accept the final Rules/Terms, or submit the Devpost project.

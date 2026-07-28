@@ -29,18 +29,20 @@ Last updated: 2026-07-28.
   voice model/tool is redistributed and final entrant rights review remains open. The voiced
   derivative is Public at <https://youtu.be/D5mvMqrhyDc> with the authored English WebVTT published,
   exact title **Data Incident Investigator — 2:50 Functioning Demo (Synthetic Fixture)**, and no
-  copyright issue detected by YouTube's upload check. C18 is `PASS`; C19 is `PARTIAL` because the
-  URL has not been entered in a Devpost project form. Key-frame review found only the application
-  and synthetic fixture data, with no browser/Windows/account chrome, credentials, private
+  copyright issue detected by YouTube's upload check. C18 and C19 are `PASS`: the exact URL is saved
+  in Devpost draft `1117401` and appears in its signed-in preview. Key-frame review found only the
+  application and synthetic fixture data, with no browser/Windows/account chrome, credentials, private
   endpoints, external media, or visible runtime failure. The Phase 8.9 capture script emitted one
   non-visual instrumentation page error when its scrollbar style ran before the initial document
   element existed; no app-console-clean claim is made for the take.
 
-- The entrant's Devpost account is registered for the challenge as **Working solo**, and Join records
-  **Open / Wildcard** as the category of interest. The user personally completed the registration
-  controls; the repository does not independently prove the underlying eligibility, ownership, or
-  rights facts. No project form has been created, saved, or submitted, and the YouTube URL has not
-  been entered in Devpost.
+- The entrant's Devpost account is registered for the challenge as **Working solo**. Draft project
+  `1117401` is saved at 4/5 steps: **Open / Wildcard**, Vietnam, the new-project selection, the
+  Public demo/repository/video links, English story/feedback, a completed-report thumbnail, and five
+  truthful captioned fixture PNGs are present. The user personally supplied the residence country,
+  but repository evidence still does not independently prove the remaining eligibility, ownership,
+  or rights facts. The final Rules/Terms checkbox is unchecked and no submission, receipt, or
+  organizer acceptance exists.
 
 - Phase 8.10 completed coordinated `1.0.0` metadata, full validation, normal merge, annotated
   `v1.0.0` tag, and Published/Latest GitHub Release. All seven private Apache-2.0 manifests are

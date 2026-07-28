@@ -42,8 +42,9 @@ For a non-interactive preview of the same authentic flow, review the
 [Public 2:50 functioning demo](https://youtu.be/D5mvMqrhyDc). It uses the synchronized synthetic
 male English-voice derivative with the authored English WebVTT published; the
 [repository video packet](demo-video/README.md) retains the unchanged silent source and exact media
-identity for provenance. The YouTube URL has not been entered in a Devpost project form, accepted by
-an organizer, or submitted.
+identity for provenance. The exact YouTube URL is saved in Devpost draft `1117401` and appears in its
+signed-in preview. The project remains incomplete at 4/5 steps and has not been submitted or accepted
+by an organizer.
 
 ## Repository-local fallback
 
