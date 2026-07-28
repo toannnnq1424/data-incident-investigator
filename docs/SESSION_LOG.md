@@ -7292,3 +7292,64 @@ checks; create one additive conventional commit; push
 `codex/phase-8-11-runtime-attribution-fix`; open exactly one Draft PR against exact main
 `813621802628b94580c7fb69043e2369760cea3d`; require exact-head PR CI `SUCCESS`; and return
 `READY FOR SAME CANONICAL QA`. Do not mark Ready, merge, deploy, or mutate Devpost/video/GCP.
+
+## 2026-07-29 — Phase 8.12 submission synchronization and `v1.0.1` preparation
+
+### Objective
+
+Prepare, without publication or submission mutation, a truthful under-three-minute male-voice demo,
+five judge-facing screenshots, exact Devpost synchronization change set, and SemVer PATCH candidate
+for the deployed Phase 8.11 experience. Start from exact deployed main
+`0ac3b8180cebdccd8c4b914443ebafa6831a112d`, tree
+`d4c621e981bf11e97513bbc49de3eb589eca33b3`, with exact-main CI run `30390755820` / job
+`90381434069` successful.
+
+### Completed
+
+- Recorded exactly one synthetic Removed schema column incident at 1440 × 900 from Public revision
+  `data-incident-investigator-src-0ac3b8180ceb`. The 168.92-second silent source remains ignored
+  local QA provenance; it was not added to the repository.
+- Added one 168.91-second, 25,837,838-byte WebM derivative with VP8 video, Opus 48 kHz stereo audio,
+  and SHA-256 `fea72b6552be3483c7905cb282f79f89823427583101f9d4de5e31b910454fa2`.
+  Offline Microsoft David Desktop narration supplies 11 action-matched English cues. Added the exact
+  WebVTT and transcript plus five clean app-only 1440 × 900 PNGs covering the product contract,
+  seven playbooks, verdict/confidence, evidence path, and export context.
+- Prepared the exact YouTube title/description/caption gate and Devpost field/media replacement set
+  with a placeholder that must not be replaced before canonical QA and a separately authorized
+  upload. The current YouTube URL and submitted project `1117401` remain unchanged.
+- Aligned the root and six private workspace manifests at `1.0.1`; updated only the matching MCP
+  client protocol identity and focused test expectation; curated `[1.0.1] - 2026-07-29`. The
+  pnpm `11.9.0` lockfile-only step produced no lockfile change. No `v1.0.1` tag or Release exists
+  locally or on the remote tag refs.
+- Reconciled current deployment/repository/submission evidence to exact source `0ac3b818…a112d`,
+  revision `data-incident-investigator-src-0ac3b8180ceb`, and image digest
+  `sha256:0ea3381f…87286`. C18/C19 remain `PASS` through the existing YouTube/Devpost linkage; C29
+  remains `PARTIAL` until judging.
+
+### Validation performed
+
+- Node `24.14.0` / pnpm `11.9.0` frozen install passed after a clean project-local recovery from an
+  interrupted sandbox junction reconstruction; lock Git object remains
+  `dac9e386b4ba7d19454b6e128dc3acdb60a46297`.
+- Changed-file Prettier and ESLint pass. Direct datahub-client typecheck/build pass. Focused DataHub
+  MCP integration tests pass `28/28`, including the exact `1.0.1` initialize metadata.
+- The repository WebM has signature `1a45dfa3` and contains VP8/Opus tracks. Independently decoded
+  audio has peak `-1.83 dBFS`, integrated RMS `-24.06 dBFS`, active RMS `-21.27 dBFS`, and zero
+  clipped samples. All 11 cue windows are ordered, end before 168.91 seconds, and match the exact
+  transcript.
+- Each selected PNG has signature `89504e470d0a1a0a`, dimensions 1440 × 900, only
+  `IHDR`/`IDAT`/`IEND` chunks, and no metadata chunks. The five SHA-256 identities and caption/alt
+  mappings match `docs/PHASE_8_12_SUBMISSION_SYNC.md` and `docs/demo-assets/README.md`.
+- Checked 105 local links with zero broken targets, UTF-8/LF/no-BOM/final-newline policy, diff
+  whitespace, secret patterns, ignored local provenance, task processes/listeners, and exact path
+  scope. Unchanged full-suite/evaluation/artifact/Docker/deployment/public-smoke evidence was reused.
+
+### Deferred and exact next step
+
+The repository candidate becomes publicly accessible on its Public GitHub feature branch/PR after
+push, but that is not Rules-listed YouTube/Vimeo/Youku hosting. Do not upload the replacement,
+publish captions, edit/save/resubmit Devpost, create `v1.0.1`, deploy, or change account/consent
+state in this preparation slice. Create one additive commit, push
+`codex/phase-8-12-submission-sync-v1-0-1`, open exactly one Draft PR against exact base
+`0ac3b8180cebdccd8c4b914443ebafa6831a112d`, require exact-head PR CI `SUCCESS`, and return
+`READY FOR SAME CANONICAL QA`. Keep the PR Draft; do not mark Ready or merge.

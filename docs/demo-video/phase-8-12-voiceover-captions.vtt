@@ -1,0 +1,49 @@
+WEBVTT
+
+NOTE
+Exact English text supplied to the offline Microsoft David synthetic narrator. Cue windows include
+small leading and trailing padding around independently decoded spoken activity.
+
+1
+00:00:03.000 --> 00:00:10.100
+Data Incident Investigator turns a broken metric into an auditable, read-only report with bounded evidence and impact.
+
+2
+00:00:14.000 --> 00:00:22.640
+Seven visible playbooks cover common data incidents. Every field remains editable, and Removed schema column is the best judge path.
+
+3
+00:00:28.000 --> 00:00:35.340
+We select Removed schema column. The canonical fixture prefills a focused question while keeping the inputs reviewable.
+
+4
+00:00:41.500 --> 00:00:50.760
+Start investigation runs one bounded synthetic case. The public build is credential-free fixture mode, with no model call or production write.
+
+5
+00:00:52.500 --> 00:01:05.060
+The completed verdict says plausible contributor, not proven cause. Confidence is eighty-one percent, backed by four facts, two impacts, nine calls, and six steps.
+
+6
+00:01:10.500 --> 00:01:24.300
+The evidence path follows the top hypothesis's own references: incident, selected dataset, removed-column fact, hypothesis, and linked downstream impact. Connectors show provenance, not causality.
+
+7
+00:01:30.500 --> 00:01:38.660
+Blast radius is complete within explicit limits: one downstream dataset and one dashboard, each carrying evidence provenance.
+
+8
+00:01:48.500 --> 00:01:58.700
+The activity trail exposes only observable operations, from normalized intake through metadata health, search, lineage, evidence testing, and bounded completion.
+
+9
+00:02:04.500 --> 00:02:13.320
+Ranked hypotheses use transparent code-owned scoring factors and resolved evidence links. No hidden chain of thought is captured or claimed.
+
+10
+00:02:21.500 --> 00:02:31.980
+Recommendations remain not executed. A human can validate upstream schema contracts, repair dependencies, and monitor recovery without automated remediation.
+
+11
+00:02:36.000 --> 00:02:47.520
+Export produces deterministic U T F eight Markdown. DataHub O S S plus official M C P is validated locally. The public judge service remains fixture-only.

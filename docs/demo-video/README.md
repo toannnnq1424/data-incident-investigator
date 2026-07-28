@@ -1,25 +1,29 @@
-# Phase 8.9 / 8.9A demo-video packet
+# Demo-video packet
 
-Status: **Public YouTube functioning demo / C18 PASS / C19 PASS**. The
-authentic silent source remains publicly accessible on the Public GitHub `main` branch after merged
-PR #58. Phase 8.9A added a separate synchronized English male-voice derivative as another Public
-GitHub repository asset. That exact voiced derivative is now publicly visible on YouTube as
-[Data Incident Investigator — 2:50 Functioning Demo (Synthetic Fixture)](https://youtu.be/D5mvMqrhyDc).
-The authored English WebVTT captions are uploaded and published, and YouTube reported no copyright
-issue during upload processing. Devpost registration and **Join Hackathon** have succeeded for an
-individual entrant. The exact URL is included in submitted project `1117401`; the signed-in
-finalization screen reports **Project submitted!**, **Submitted**, and **5/5**. Submission does not
-mean organizer acceptance, eligibility approval, or a prize result.
+Status: **Phase 8.12 repository QA candidate prepared; no Rules-listed upload or Devpost edit yet**.
+After push, the candidate is publicly accessible as a repository asset on the Public GitHub feature
+branch/PR; that does not satisfy YouTube/Vimeo/Youku hosting. The existing
+Phase 8.9/8.9A derivative remains Public on YouTube as
+[Data Incident Investigator — 2:50 Functioning Demo (Synthetic Fixture)](https://youtu.be/D5mvMqrhyDc),
+with published English captions, and remains linked in submitted project `1117401`. C18 and C19
+therefore remain `PASS`. Phase 8.12 adds a separate deployed-UI candidate; it is not hosted on a
+Rules-listed video service, linked in Devpost, or resubmitted. Submission does not mean organizer
+acceptance, eligibility approval, or a prize result.
 
 ## Review
 
-Watch the [Public YouTube functioning demo](https://youtu.be/D5mvMqrhyDc), or open
-[`review.html`](review.html) in a browser for repository-local provenance review. The local review
-surface presents the voiced derivative first with its default external English captions, followed by
-the unchanged silent source.
+Open [`review.html`](review.html) for repository-local review of the Phase 8.12 candidate and both
+historical sources, or watch the unchanged [Public YouTube demo](https://youtu.be/D5mvMqrhyDc).
 
 Files:
 
+- [`phase-8-12-demo-voiceover.webm`](phase-8-12-demo-voiceover.webm) — selected new QA candidate:
+  one real deployed Phase 8.11 fixture interaction with synchronized offline Microsoft David male
+  narration.
+- [`phase-8-12-voiceover-captions.vtt`](phase-8-12-voiceover-captions.vtt) — exact authored English
+  captions for all 11 spoken action windows.
+- [`PHASE_8_12_TRANSCRIPT.md`](PHASE_8_12_TRANSCRIPT.md) — exact spoken text, decoded activity
+  windows, and voice boundary.
 - [`phase-8-9a-demo-voiceover.webm`](phase-8-9a-demo-voiceover.webm) — the selected source uploaded
   to YouTube: the real Phase 8.9 video frames with synchronized synthetic male English narration.
 - [`phase-8-9a-voiceover-captions.vtt`](phase-8-9a-voiceover-captions.vtt) — exact voice-matched
@@ -31,6 +35,28 @@ Files:
 - [`phase-8-9-demo-captions.vtt`](phase-8-9-demo-captions.vtt) and
   [`TRANSCRIPT.md`](TRANSCRIPT.md) — unchanged Phase 8.9 silent-source narrative.
 - [`review.html`](review.html) — repository review surface using native video and caption controls.
+
+## Phase 8.12 media identity
+
+| Property             | Phase 8.12 candidate                                                                                                   |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Container / duration | WebM / `168.91 s`                                                                                                      |
+| Video                | VP8, 1440 × 900, square pixels                                                                                         |
+| Audio                | Opus, 48 kHz stereo                                                                                                    |
+| Size                 | `25,837,838` bytes                                                                                                     |
+| SHA-256              | `fea72b6552be3483c7905cb282f79f89823427583101f9d4de5e31b910454fa2`                                                     |
+| Narrator             | Microsoft David Desktop, Adult/Male, offline Windows SAPI, rate `0`                                                    |
+| Decoded levels       | Peak `-1.83 dBFS`; integrated RMS `-24.06 dBFS`; active RMS `-21.27 dBFS`; `0` clipped samples                         |
+| Source               | Exact deployed `0ac3b8180cebdccd8c4b914443ebafa6831a112d`; one synthetic fixture incident                              |
+| Source provenance    | Local-only silent WebM: `11,616,240` bytes, SHA-256 `283137442816c59ea606d682c39387b7cd56e1e134b1e37a93bea75169c76f9b` |
+| Frame review         | Nine source/final pairs at key actions: PSNR `44.68–52.92 dB`; no inserted or generated scene                          |
+
+All 11 decoded speech ranges fall inside their caption/action windows and end before the next scene;
+the final range ends at `167.40 s`, leaving `0.90 s`. Chrome MediaRecorder re-encoded the authentic
+VP8 frames while adding Opus because no already-installed stream-copy audio muxer supported this
+path. The high-PSNR frame comparison and representative full-resolution review establish that this
+introduced only codec-level differences, not a fabricated, inserted, removed, or retimed UI scene.
+The silent capture stays local for QA provenance rather than adding another 11.6 MB repository asset.
 
 ## Media identity
 
@@ -119,8 +145,9 @@ meaning of the identifiers visibly shown on screen.
 - The incident UUID and activity timestamps visible in the application are run-specific,
   process-local output. They are not durable links or submission identifiers.
 - The public service remains fixture-only, makes zero model calls, does not write to DataHub or
-  production, and performs no automatic remediation. Local bounded DataHub MCP support and
-  authorized live/judge validation remain separate; the latter is `PARTIAL`.
+  production, and performs no automatic remediation. The real read-only path is **PASS — LOCAL OSS**
+  against DataHub Core `1.6.0` plus official MCP Server `0.6.0`; this is separate from the Public
+  fixture and does not become Public live-DataHub evidence.
 
 ## Representative frame and playback review
 

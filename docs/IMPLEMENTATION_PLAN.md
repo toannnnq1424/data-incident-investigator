@@ -7636,3 +7636,103 @@ Result:
 Deferred after result: canonical QA, PR Ready/merge, exact merged-main deployment and one bounded
 public smoke. No GCP resource, public revision/traffic, Devpost/video, version/tag/Release, manifest,
 lockfile, workflow, or application behavior changed.
+
+### Phase 8.12 — submission synchronization and `v1.0.1` preparation
+
+Status: in progress on `codex/phase-8-12-submission-sync-v1-0-1` from exact deployed
+`origin/main` `0ac3b8180cebdccd8c4b914443ebafa6831a112d`, tree
+`d4c621e981bf11e97513bbc49de3eb589eca33b3`. Exact-main CI run `30390755820` / job
+`90381434069` is `SUCCESS`; Cloud Build `554516c8-da9d-4cc2-b55b-4d1bbf38b84e` deployed source
+revision `data-incident-investigator-src-0ac3b8180ceb` at 100% traffic in credential-free fixture
+mode.
+
+Objective: prepare, without publishing, a truthful under-three-minute male-voice demo and exact
+submission/release synchronization packet for the deployed Phase 8.11 experience. Preserve the
+existing Public YouTube video and submitted Devpost project. Treat the Public service as synthetic
+fixture mode and the repository-local DataHub OSS/MCP proof as the validated real integration path;
+do not claim a Public live MCP service, hidden reasoning, remediation, organizer acceptance, or a
+judging result.
+
+Minimum files:
+
+- Root plus six private workspace manifests, `pnpm-lock.yaml`, and `CHANGELOG.md` only as required by
+  the repository PATCH-release policy for `1.0.1`.
+- A separate Phase 8.12 WebM, exact English WebVTT, voice-matched transcript, repository review
+  surface, and selected app-only PNG frames derived from that authentic recording where they
+  materially support the Devpost replacement set. Preserve every Phase 8.9/8.9A media file.
+- `README.md`, `docs/DEMO_SCRIPT.md`, `docs/JUDGE_QUICKSTART.md`,
+  `docs/CLAIM_TO_DEMO_MATRIX.md`, `docs/DEVPOST_SUBMISSION.md`,
+  `docs/DEVPOST_REQUIREMENTS.md`, `docs/demo-video/README.md`, and the minimum persistent state
+  needed to bind the new candidate, deployed revision, proposed hosted-video replacement, and exact
+  Devpost change set.
+
+Acceptance criteria:
+
+- Record at most one new synthetic **Removed schema column** incident from the exact Public deployed
+  revision. The continuous app-only 1440 × 900 flow must visibly cover the seven playbooks, selected
+  intake, investigation completion, top-hypothesis-linked evidence path, confidence, bounded blast
+  radius, and export context without browser/Windows/account chrome or private data.
+- Add clear offline male synthetic narration synchronized to the actual visible actions, exact
+  authored English captions/transcript, no music, no imitated person, no fee/new account/credential,
+  and no unsupported live-DataHub statement. Duration must remain below 180 seconds with readable
+  pacing and no fabricated or generated UI frame.
+- Independently probe container/video/audio properties, duration, frame rate, sample rate/channels,
+  loudness/peak/clipping/silence, caption order/bounds/text identity, representative frames, media
+  hashes, privacy/secrets, and accessibility/rights boundaries. Retain deterministic local evidence
+  sufficient for canonical QA.
+- Prepare `1.0.1` as a SemVer PATCH for the backward-compatible Phase 8.11 judge-UX/provenance and
+  deployment-attribution corrections plus synchronized demo packet. Keep all seven manifests
+  identical, apply the exact pnpm `11.9.0` lockfile-only step, curate the dated changelog, and do not
+  create the immutable tag or GitHub Release until the future approved normal merge and exact-main
+  CI succeed.
+- Produce an exact proposed Devpost edit set with a not-yet-hosted video URL placeholder, current
+  deployed URL, concise judge path, truthful DataHub OSS/MCP boundary, and proposed screenshot
+  replacements. Do not edit/save/resubmit Devpost, upload/publish video, or mutate YouTube in this
+  preparation slice.
+- Finish one additive conventional commit and one Draft PR against exact base
+  `0ac3b8180cebdccd8c4b914443ebafa6831a112d`; require exact-head CI `SUCCESS` and stop for the same
+  canonical QA. No Ready/merge occurs here.
+
+Validation:
+
+- Run changed-file Prettier/ESLint/typecheck and only focused tests/builds affected by version or
+  review-surface changes. Run the deterministic lockfile-only step and frozen install/version
+  contracts required by the release policy; reuse unchanged Phase 8.10/8.11 full-suite, evaluation,
+  artifact, Docker, deployment, and smoke greens.
+- Run media probe/hash/caption/audio/frame checks, Markdown/local-link/claim consistency, exact
+  path/diff, UTF-8/LF/no-BOM, secret/private-data, residue/process/port, and clean-upstream checks.
+
+Deferred: all YouTube upload/publication and caption mutation; all Devpost edit/save/resubmission;
+the `v1.0.1` tag and GitHub Release; PR Ready/merge; any new Cloud Run/GCP mutation; DataHub Cloud or
+remote MCP; organizer acceptance, judging outcome, entrant eligibility/IP/media-rights attestation,
+and prize outcome.
+
+Preparation result:
+
+- Captured exactly one new synthetic Removed schema column incident from deployed source
+  `0ac3b818…a112d`. The retained repository derivative is 168.91 seconds, 1440 × 900 WebM with VP8
+  video and Opus 48 kHz stereo audio; its exact size is 25,837,838 bytes and SHA-256 is
+  `fea72b6552be3483c7905cb282f79f89823427583101f9d4de5e31b910454fa2`. The silent source remains
+  ignored local QA provenance and is not committed.
+- Microsoft David Desktop supplied 11 offline Adult/Male English cues. Independently decoded output
+  has peak `-1.83 dBFS`, integrated RMS `-24.06 dBFS`, active RMS `-21.27 dBFS`, zero clipped
+  samples, and all spoken activity inside the matching action/caption boundaries. The 11 ordered
+  WebVTT cues end at 167.52 seconds and match the transcript text exactly.
+- Five selected app-only PNGs are each true 1440 × 900 PNGs with only `IHDR`/`IDAT`/`IEND` chunks,
+  no metadata chunks, descriptive alt text, and exact captions. Representative source/final frame
+  review at nine action points measured PSNR `44.68–52.92 dB`; no generated, inserted, removed, or
+  retimed UI scene was found.
+- All seven private Apache-2.0 manifests align at `1.0.1`; the only product-source/test change is the
+  matching MCP client protocol version and its focused expectation. The pnpm `11.9.0` lockfile-only
+  step produced no lockfile diff; Node `24.14.0` with pnpm `11.9.0` completed a frozen install after
+  a clean project-local recovery from an interrupted sandbox junction reconstruction.
+- Changed-file Prettier and ESLint, datahub-client typecheck/build, and the focused DataHub MCP suite
+  pass (`28/28`). Media/hash/signature/chunk/caption checks, 105 local links, five alt-text mappings,
+  UTF-8/LF/no-BOM, diff whitespace, secret patterns, ignored-provenance, process, and task-port checks
+  pass. Unchanged Level D, evaluation, release-artifact, Docker, deployment, and public-smoke greens
+  were not rerun.
+- The replacement video and screenshots are repository QA assets and become publicly accessible on
+  the Public GitHub feature branch/PR after push. GitHub visibility does not satisfy the Rules-listed
+  video-host requirement. The existing Public YouTube video and submitted Devpost media remain
+  authoritative; no YouTube/Vimeo/Youku, Devpost, tag/Release, deploy, GCP, account, payment, or
+  consent mutation occurred in preparation.

@@ -1,11 +1,11 @@
 # Repository map
 
 Last verified: 2026-07-29 for exact `origin/main`
-`813621802628b94580c7fb69043e2369760cea3d` (tree
-`9966965ad3416261367fd7e813d1bcb664bff296`; ordered parents
-`a28e21c06ad623f1547c02a6d65fd900fa8472a4` then
-`b2be659e03638cb030d2ad59e2bb95a83aaf0829`). PR #61 normal-merged and exact-main CI run
-`30383803889`, job `90357919592`, is successful. Annotated tag object
+`0ac3b8180cebdccd8c4b914443ebafa6831a112d` (tree
+`d4c621e981bf11e97513bbc49de3eb589eca33b3`; ordered parents
+`813621802628b94580c7fb69043e2369760cea3d` then
+`bf0922e952e3d83a71034c96c46d77aefd6ecdea`). PR #62 normal-merged and exact-main CI run
+`30390755820`, job `90381434069`, is successful. Annotated tag object
 `eb26bc54fccd4cc0ebeacfb14539008a03da687a` (`v1.0.0`) remains on the earlier exact merge
 `a28e21c06ad623f1547c02a6d65fd900fa8472a4`; its matching GitHub Release remains
 Published/Latest. Phase 8.9A retains the authentic
@@ -27,10 +27,18 @@ Merged Phase 8.11 keeps the same API/contracts and makes the existing seven
 canonical scenarios visible as incident playbooks. `apps/web/src/App.tsx` also renders a
 validated-response-only verdict dashboard and evidence path (incident → selected entity → factual
 evidence → top hypothesis → supported/explicitly unverified impact). These are presentation
-components, not a workflow builder, write-back system, or new provider claim. The first exact-main
-Cloud Run build stopped before deployment because tracked runtime attribution was stale; no revision
-or traffic changed. The targeted attribution correction is not in `main` or the Public deployment
-until separately reviewed, merged, and deployed.
+components, not a workflow builder, write-back system, or new provider claim. The targeted
+runtime-attribution convergence correction merged through PR #62. Cloud Build
+`554516c8-da9d-4cc2-b55b-4d1bbf38b84e` deployed exact current source as revision
+`data-incident-investigator-src-0ac3b8180ceb`, immutable image digest
+`sha256:0ea3381f635a97812181f14448df9c7939f7c02d2a824724403e3b8a0d087286`, with 100% traffic and
+`APP_MODE=fixture`.
+
+Phase 8.12 prepares a separate 2:48.91 deployed-UI WebM with offline Microsoft David narration,
+matching English WebVTT/transcript, and five app-only 1440 × 900 replacement screenshots. These are
+repository QA assets only until later authorization: the existing YouTube video and submitted
+Devpost media remain authoritative. Root plus six private manifests are prepared at `1.0.1`; no
+`v1.0.1` tag or GitHub Release exists in this slice.
 
 ## Directories
 
@@ -52,10 +60,8 @@ until separately reviewed, merged, and deployed.
 | `.codex`                  | Trusted project-scoped Codex settings without secrets                       | `config.toml`                                                                                                                                                                     |
 
 Phase 8.7 added `scripts/runtime-attribution.mjs` and `scripts/prepare-runtime-manifests.mjs` for the
-container-only production/legal boundary and is integrated through exact main
-`b4f9e360e22baba3cab60710a65ea5c0e0555369`. The running Cloud Run image remains independently bound
-to immutable source commit `3653cf6b591eed76ad6276d07b1ea08e88d7fa4f`; later Phase 8.8–8.10
-repository evidence does not rebuild or redeploy it.
+container-only production/legal boundary. The current Cloud Run image is independently bound to
+exact source `0ac3b8180cebdccd8c4b914443ebafa6831a112d` after the Phase 8.11 convergence correction.
 
 ## Root configuration
 
@@ -172,11 +178,14 @@ Execution and quality: `IMPLEMENTATION_PLAN.md`, `TEST_STRATEGY.md`, `SECURITY.m
 `VERSIONING.md`.
 
 Submission: `DEVPOST_REQUIREMENTS.md`, `DEVPOST_SUBMISSION.md`, `JUDGE_QUICKSTART.md`,
-`CLAIM_TO_DEMO_MATRIX.md`, `DEMO_SCRIPT.md`, `demo-assets/README.md`,
+`CLAIM_TO_DEMO_MATRIX.md`, `DEMO_SCRIPT.md`, `PHASE_8_12_SUBMISSION_SYNC.md`,
+`demo-assets/README.md`,
 `demo-video/README.md`, `demo-video/review.html`, `demo-video/TRANSCRIPT.md`,
 `demo-video/phase-8-9-demo-captions.vtt`, `demo-video/phase-8-9-demo-candidate.webm`,
 `demo-video/VOICEOVER_TRANSCRIPT.md`, `demo-video/phase-8-9a-voiceover-captions.vtt`,
-`demo-video/phase-8-9a-demo-voiceover.webm`,
+`demo-video/phase-8-9a-demo-voiceover.webm`, `demo-video/PHASE_8_12_TRANSCRIPT.md`,
+`demo-video/phase-8-12-voiceover-captions.vtt`,
+`demo-video/phase-8-12-demo-voiceover.webm`,
 `PUBLIC_SOURCE_APACHE_READINESS.md`, `RELEASE_CHECKLIST.md`.
 
 ## Rescan triggers

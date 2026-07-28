@@ -3,11 +3,11 @@
 Last updated: 2026-07-29.
 
 - Current source main is exact normal merge
-  `813621802628b94580c7fb69043e2369760cea3d`, tree
-  `9966965ad3416261367fd7e813d1bcb664bff296`, with ordered parents
-  `a28e21c06ad623f1547c02a6d65fd900fa8472a4` then
-  `b2be659e03638cb030d2ad59e2bb95a83aaf0829`. PR #61 is merged historical and its branch/
-  conversation remain retained. Exact-main CI run `30383803889`, job `90357919592`, is `SUCCESS`.
+  `0ac3b8180cebdccd8c4b914443ebafa6831a112d`, tree
+  `d4c621e981bf11e97513bbc49de3eb589eca33b3`, with ordered parents
+  `813621802628b94580c7fb69043e2369760cea3d` then
+  `bf0922e952e3d83a71034c96c46d77aefd6ecdea`. PR #62 is merged historical and its branch/
+  conversation remain retained. Exact-main CI run `30390755820`, job `90381434069`, is `SUCCESS`.
   Annotated tag object `eb26bc54fccd4cc0ebeacfb14539008a03da687a` (`v1.0.0`) resolves to that
   earlier exact merge `a28e21c06ad623f1547c02a6d65fd900fa8472a4`, and the matching GitHub Release is
   Published/Latest.
@@ -37,6 +37,16 @@ Last updated: 2026-07-29.
   non-visual instrumentation page error when its scrollbar style ran before the initial document
   element existed; no app-console-clean claim is made for the take.
 
+- Phase 8.12 prepares a separate authentic 2:48.91, 1440 × 900 VP8 + Opus derivative of exact
+  deployed source `0ac3b818…a112d`, narrated offline by Microsoft David Desktop with authored English
+  WebVTT and transcript. It shows the seven playbooks, Removed schema column flow,
+  top-hypothesis-linked evidence/impact path, confidence, bounded blast radius, and export context.
+  Five app-only PNG replacement candidates come from the same one new synthetic fixture incident.
+  The WebM is a repository review asset, not yet uploaded to YouTube/Vimeo/Youku or linked in Devpost;
+  the current Public YouTube video and submitted five-image set remain authoritative until later
+  QA-approved synchronization. The `1.0.1` PATCH metadata is preparation only: no tag or Release
+  exists from this slice.
+
 - The entrant's Devpost account is registered for the challenge as **Working solo**. The entrant
   personally operated the final agreement/submission gate for project `1117401`; the signed-in
   finalization screen reports **Project submitted!**, **Submitted**, and **5/5**. The entry retains
@@ -65,14 +75,15 @@ Last updated: 2026-07-29.
 - The first post-merge Phase 8.11 deployment attempt, Cloud Build
   `382d4515-a40b-4c6e-aab7-e1b29f4e63b3`, stopped in the Docker build before a new Cloud Run revision
   because `RUNTIME-ATTRIBUTION.json` was stale for the merged source/build/lock graph. Live revision
-  `data-incident-investigator-src-3653cf6b591e` remains at 100% traffic in `APP_MODE=fixture`.
+  `data-incident-investigator-src-3653cf6b591e` remained at 100% traffic in `APP_MODE=fixture`.
   Diagnosis proved the lock, 152-package full-production closure, 149-package runtime closure,
   legal evidence, and rewritten manifests unchanged; only eight compiled runtime-file entries and
   five bundled-web provenance records changed. The targeted correction regenerates the paired
   attribution/notice evidence and makes one `generate` invocation converge the notice-bound manifest
   while restoring the prior notice if generation fails. Local source verification, runtime contracts,
-  Docker source/runtime verification, and packaged `/health` pass. This is a QA candidate, not a
-  successful public deployment; C29 remains `PARTIAL`.
+  Docker source/runtime verification, and packaged `/health` passed. The correction later merged
+  through PR #62 and Cloud Build `554516c8-da9d-4cc2-b55b-4d1bbf38b84e` successfully deployed the
+  exact corrected source; C29 remains `PARTIAL` until judging.
 
 - Phase 8.10 completed coordinated `1.0.0` metadata, full validation, normal merge, annotated
   `v1.0.0` tag, and Published/Latest GitHub Release. All seven private Apache-2.0 manifests are
@@ -83,8 +94,9 @@ Last updated: 2026-07-29.
   overrides now select `find-my-way@9.7.0` and `brace-expansion@5.0.8`; the final frozen lock is
   113,649 bytes at SHA-256 `6194526652ac34a3f3b06e16fd8a055ff88cdbd77c51c8e6e3695b4b5611bf1d`,
   and the recovered production audit reports no known vulnerabilities. Deterministic source
-  runtime attribution was regenerated and verified for that graph; this release-preparation graph
-  has not been deployed. The exact `fc2ba2f…` archive passed structural verification and production
+  runtime attribution was regenerated and verified for that graph. Phase 8.11 subsequently deployed
+  its descendant exact source after the same attribution contract converged. The exact `fc2ba2f…`
+  archive passed structural verification and production
   frozen install but is rejected local evidence: packaged startup failed because its
   `datahub-client/dist/index.js` re-exported an omitted `datahub-mcp.js`. The targeted follow-up uses
   a closed four-file DataHub client runtime list and matching independent verifier contract. The
@@ -121,14 +133,14 @@ Last updated: 2026-07-29.
   Public service `data-incident-investigator` now runs in `asia-southeast1` (Singapore) at
   <https://data-incident-investigator-1071683558688.asia-southeast1.run.app>. Historical revision
   `data-incident-investigator-00002-pdq` and its smoke are superseded because independent QA found
-  service-level `maxScale=100`. Corrected revision
-  `data-incident-investigator-src-3653cf6b591e` receives 100% traffic and is labeled with source
-  commit `3653cf6b591eed76ad6276d07b1ea08e88d7fa4f`. Live read-back verifies request-based billing,
+  service-level `maxScale=100`. Current revision
+  `data-incident-investigator-src-0ac3b8180ceb` receives 100% traffic and is labeled with source
+  commit `0ac3b8180cebdccd8c4b914443ebafa6831a112d`. Live read-back preserves request-based billing,
   first-generation execution, `0.08` vCPU, `256 MiB`, concurrency `1`, minimum instances `0`, both
   service and revision maximum instances `1`, request timeout `100s` above the `90s` application
   deadline, CPU throttling on, startup CPU boost off, and fixture mode. Build
-  `7ad5ea5d-c7f2-4999-ada4-175b94d56fd9` produced immutable digest
-  `sha256:fe56a3dc7c8c4fb6e11b329adb107fb7efd8e4de0bece8820027f324d4f36afd`.
+  `554516c8-da9d-4cc2-b55b-4d1bbf38b84e` produced immutable digest
+  `sha256:0ea3381f635a97812181f14448df9c7939f7c02d2a824724403e3b8a0d087286`.
   Bangkok has a lower published Tier 1 unit price, but the owner explicitly chose to keep the healthy
   Singapore service. Phase 8.11 supersedes the historical stop policy: keep public access through
   2026-09-17 23:59 ICT, beyond judging; a 20%-remaining-credit signal now triggers monitoring and
@@ -154,10 +166,10 @@ Last updated: 2026-07-29.
   tag and unpublished Draft Release with zero user-uploaded assets remain retained. At that
   historical Phase 8.4B GitHub-only checkpoint, GitHub Pages was disabled and no GitHub Pages or
   GitHub Environment deployment was claimed. GitHub Pages remains disabled; separately, the
-  owner-approved external public Cloud Run deployment was built from immutable source
-  `3653cf6b591eed76ad6276d07b1ea08e88d7fa4f`. Phase 8.7 source/evidence later merged through current
-  main, while the running image remains bound to that earlier source commit and governed by the
-  Phase 8.7 Paid-account cost and shutdown boundaries.
+  owner-approved external public Cloud Run deployment was first built from immutable source
+  `3653cf6b591eed76ad6276d07b1ea08e88d7fa4f`. Phase 8.11 later deployed exact current source
+  `0ac3b8180cebdccd8c4b914443ebafa6831a112d`; the same Paid-account cost and operating-window
+  boundaries remain in force.
 
   The prior GitHub private-reporting blocker is closed. At 2026-07-26 05:22 ICT, authenticated
   Settings showed the enabled control as `Disable private vulnerability reporting`, Security overview
@@ -186,18 +198,21 @@ Last updated: 2026-07-29.
   `RUNTIME-ATTRIBUTION.json`/`THIRD_PARTY_NOTICES.txt`, Apache `LICENSE`, project `NOTICE`, and a
   truthfully labeled upstream fallback for `abstract-logging@2.0.1` at exact tag commit
   `80dfaef91ee87008f4ed2b6e78921d383bccd406`. Source, local production-image, and exact live-digest
-  verification pass: all 8 runtime files, 149 package manifests/roots, and 149 package legal files
-  matched the evidence at immutable deployed source `3653cf6b…7fa4f`. C11 is restored to
-  `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE` for the exact `fe56a3dc…36afd` live digest. Phase 8.2
+  verification pass: all 8 historical runtime files, 149 package manifests/roots, and 149 package
+  legal files matched the evidence at immutable source `3653cf6b…7fa4f`. Phase 8.11 regenerated and
+  converged the same guarded attribution contract for current deployed source `0ac3b818…a112d`.
+  C11 remains `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE` for exact current digest
+  `sha256:0ea3381f…87286`. Phase 8.2
   remains `PARTIAL`; captured declarations/texts are engineering evidence, not compatibility or
   legal approval. The newer
   Phase 8.6 qualified owner disposition supersedes the historical C11 `PARTIAL/BLOCKED` state only
   within its exact zero-cost artifact/data/API scope. See
   [`PUBLIC_SOURCE_APACHE_READINESS.md`](PUBLIC_SOURCE_APACHE_READINESS.md).
-  The eight-file/schema-v1 statement is immutable evidence from live-image source commit
+  The eight-file/schema-v1 statement is immutable historical evidence from source commit
   `3653cf6b591eed76ad6276d07b1ea08e88d7fa4f`. The later verifier/docs head binds the complete
   23-file build-output set, required legal-file content, and rewritten workspace manifests under
-  schema v2, but it was not rebuilt or redeployed and is not the source of the running image.
+  schema v2. Its later current-source descendant was rebuilt and deployed only after exact source
+  verification passed.
 
   Independent Windows QA returned `FAIL / DO NOT MERGE` on Phase 8.5 head
   `bde288112f504c2067ff85499337d9315c30c432`: package identity was not yet bound to the frozen virtual
@@ -205,7 +220,7 @@ Last updated: 2026-07-29.
   narrow, and three Phase 8.4B state documents remained stale. This is historical: the additive
   correction passed independent QA and PR #54 merged through historical main
   `73172b7e8e8b02ab9629019eac298b89e02895c2`. PR #55 then merged through historical main
-  `c7abc652c23b532e90091b377490b27eadd7e084`, and PR #56 subsequently merged as current main
+  `c7abc652c23b532e90091b377490b27eadd7e084`, and PR #56 subsequently merged as historical main
   `b5b394b31ec626bb4ecc175975ca9869e475054e`. The verified RC archive remains unpublished, while the
   separate Cloud Run fixture demo described above is deployed.
 
