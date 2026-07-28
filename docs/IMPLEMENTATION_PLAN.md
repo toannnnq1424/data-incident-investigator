@@ -7736,3 +7736,72 @@ Preparation result:
   video-host requirement. The existing Public YouTube video and submitted Devpost media remain
   authoritative; no YouTube/Vimeo/Youku, Devpost, tag/Release, deploy, GCP, account, payment, or
   consent mutation occurred in preparation.
+
+#### Phase 8.12 canonical QA correction — runtime attribution refresh
+
+Status: targeted additive correction on the existing
+`codex/phase-8-12-submission-sync-v1-0-1` branch and Draft PR #63 after canonical QA proved that the
+tracked runtime attribution still bound the prior `1.0.0` workspace-manifest content.
+
+Objective: regenerate the deterministic `RUNTIME-ATTRIBUTION.json` and
+`THIRD_PARTY_NOTICES.txt` pair for the exact prepared `1.0.1` source/build/lock graph without
+weakening the Phase 8.11 two-pass convergence, rollback, frozen-lock, containment, legal-evidence,
+exact-file-set, or rewritten-manifest contracts.
+
+Minimum files:
+
+- `RUNTIME-ATTRIBUTION.json` and `THIRD_PARTY_NOTICES.txt`;
+- this plan and `docs/SESSION_LOG.md` for the exact QA blocker, corrected identities, validation, and
+  same-PR handoff.
+
+Acceptance criteria:
+
+- The canonical generator emits a converged notice-bound manifest whose workspace hashes match all
+  current `1.0.1` manifests, and deterministic regeneration plus `verify-source` pass against one
+  exact affected API/web build provenance file.
+- Runtime-attribution contracts pass unchanged. Docker build-stage `verify-source`,
+  production-dependencies `verify-runtime`, and packaged fixture `/health` pass without a verifier
+  bypass.
+- The additive correction changes no manifest, lockfile, application behavior, media, caption,
+  transcript, screenshot, submission packet, workflow, deployment, tag, Release, YouTube, or Devpost
+  state.
+- Create exactly one additional conventional commit on the same branch, update only Draft PR #63,
+  and require exact-new-head PR CI `SUCCESS`.
+
+Validation:
+
+- Run the canonical two-pass `generate`, repeat generation to prove byte stability, and run
+  `verify-source` using the same affected build provenance.
+- Run `pnpm test:runtime-attribution`, focused formatting/JSON/secret/diff checks, and one Docker
+  source/runtime/packaged-health seam. Reuse every unchanged media, visual, release, Devpost,
+  full-suite, evaluation, deployment, and public-smoke green.
+
+Result:
+
+- The exact Node `24.14.0` affected build produced a 9,210-byte Vite provenance file at SHA-256
+  `b47bb4b02bf5ddd003ba0d51208e33ba4741dfa26b27170340f56953ce2743f1`.
+  Canonical two-pass generation converged twice to byte-identical output, then `verify-source`
+  passed with lock SHA-256 `6194526652ac34a3f3b06e16fd8a055ff88cdbd77c51c8e6e3695b4b5611bf1d`,
+  152 full-production identities, 149 runtime identities/roots, and five bundled-web packages.
+- `RUNTIME-ATTRIBUTION.json` is 438,230 bytes at SHA-256
+  `059bc878316e371872c42c9e1addeccc4f15ee03f4ebaa871d007058165550d7`.
+  It now binds the rewritten `1.0.1` runtime manifests at hashes `09205f2c…413d`,
+  `6ac68f1c…389d`, and `336d28dd…21ea8`, plus the rebuilt DataHub MCP output at
+  `72af76a5…71ec`.
+- The paired 402,446-byte `THIRD_PARTY_NOTICES.txt` was regenerated and remained byte-identical at
+  SHA-256 `d5fd8497cf8cd41aab12f2e3e8af2e3a3057b2bec75927b4ee5be46b236f06c6`,
+  as expected because the dependency/legal graph did not change. There are therefore no notice bytes
+  to commit.
+- Runtime-attribution contracts pass `10/10`; the plan passes focused Prettier; canonical JSON and
+  diff whitespace checks pass. One Docker build passes build-stage `verify-source` and
+  production-dependencies `verify-runtime`; image
+  `sha256:5ee08db5e1c8ad141cc358222dc3f4beb57edee282899b8fce076612f97ae3bd`
+  is 86,198,637 bytes with `APP_MODE=fixture`, and packaged `/health` returns
+  `200 {"status":"ok"}`. The task-owned container, image tag, and port `18082` were cleaned.
+- The first build probe exposed that the host shell defaulted to Node `22.22.3`; that output was not
+  used for generation. The exact recovery used bundled Node `24.14.0`. The first sandboxed generator
+  attempt stopped before writing on pnpm-store `EPERM`; its single scoped recovery produced the
+  verified pair without a code change.
+
+Deferred: PR Ready/merge, `v1.0.1` tag/Release, Cloud Run/GCP mutation, video upload/publication,
+Devpost edit/save/resubmission, another incident or media capture, and unrelated validation.
