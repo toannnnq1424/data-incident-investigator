@@ -52,8 +52,11 @@ The deterministic archive contains one equivalently named root directory. Its
 frozen lockfile inventory, and the size and SHA-256 of every other file. The bundle contains:
 
 - built `apps/api/dist/*.js` and the complete `apps/web/dist`;
-- the API/web manifests and each runtime workspace's compiled `dist/index.js` plus declaration file;
-  the archived copies of the three runtime workspace manifests point only to those compiled files;
+- the API/web manifests and an exact compiled runtime-workspace closure: `agent-core` and
+  `shared-types` each contribute `dist/index.js` plus `dist/index.d.ts`; `datahub-client` contributes
+  those index files plus the statically re-exported `dist/datahub-mcp.js` and
+  `dist/datahub-mcp.d.ts`; the archived runtime manifests still export only their compiled index
+  entry points, and the independent verifier requires this closed file set;
 - the canonical removed-schema-column metadata and incident fixtures;
 - root `package.json`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`, blank `.env.example`, and `LICENSE`;
 - deterministic `THIRD_PARTY_NOTICES.txt`, generated from exact positive rendered-module

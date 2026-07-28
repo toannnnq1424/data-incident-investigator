@@ -44,6 +44,9 @@ authorized post-merge gates.
 
 - Hardened MCP transport handling against unsafe URLs, oversized responses, invalid optional tool
   inputs, late/aborted responses, ambiguous tool output, and unsupported schema-change claims.
+- Closed the release artifact's compiled DataHub MCP sibling-module seam: builder and verifier now
+  require the exact `index`/`datahub-mcp` JavaScript and declaration closure, reject unexpected
+  runtime outputs, and record `datahub-mcp` truthfully in the supported-mode manifest.
 - Bound release and deployed-runtime attribution to exact lock, source, tree, image, bundled-module,
   package, notice, and legal-file identities with fail-closed verification and Windows path safety.
 

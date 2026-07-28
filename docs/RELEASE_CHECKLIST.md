@@ -400,9 +400,11 @@ The execution checklist above is historical and was found incomplete by independ
 - [x] Run the dirty-tree-compatible pre-commit technical gates once: Level D, canonical evaluation,
       Browser fixture E2E, public root/health/readiness, production audit and its patched seam,
       runtime attribution, formatting, links, claims, secrets, residue, processes, and ports.
-- [ ] After the single implementation commit, build and verify the exact clean-HEAD artifact,
-      extracted runtime, and clean checkout once; record identities/results in the mutable Draft PR
-      body so provenance remains bound to that commit without a second docs commit.
+- [ ] The exact `fc2ba2f…` archive passed structural verification and production frozen install but
+      is rejected because packaged startup exposed an omitted DataHub MCP sibling module. After the
+      one authorized additive closure correction, build and verify the new exact clean-HEAD archive,
+      extracted runtime, and clean checkout once; record final identities/results in the mutable
+      Draft PR body so provenance remains bound to that commit without a third docs commit.
 - [ ] Complete independent Windows QA, normal merge, exact-main CI, and every still-open external
       release/submission gate against the exact final commit. C14, live/judge DataHub MCP, C18/C19,
       entrant/team/IP/media-rights/eligibility/consent, Rules-host video, and Devpost remain open.

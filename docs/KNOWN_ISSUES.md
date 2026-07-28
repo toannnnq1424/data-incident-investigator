@@ -42,10 +42,13 @@ Last updated: 2026-07-28.
   113,649 bytes at SHA-256 `6194526652ac34a3f3b06e16fd8a055ff88cdbd77c51c8e6e3695b4b5611bf1d`,
   and the recovered production audit reports no known vulnerabilities. Deterministic source
   runtime attribution was regenerated and verified for that graph; this release-preparation graph
-  has not been deployed. Exact clean-commit artifact/fresh-checkout evidence is intentionally
-  recorded after the single implementation commit in the Draft PR to keep artifact provenance bound
-  to that commit. The existing `v1.0.0-rc.1` annotated tag and unpublished Draft Release remain
-  untouched.
+  has not been deployed. The exact `fc2ba2f…` archive passed structural verification and production
+  frozen install but is rejected local evidence: packaged startup failed because its
+  `datahub-client/dist/index.js` re-exported an omitted `datahub-mcp.js`. The targeted follow-up uses
+  a closed four-file DataHub client runtime list and matching independent verifier contract; a new
+  clean-HEAD archive, extracted runtime, and fresh-checkout proof remain pending until the additive
+  correction commit. No rejected archive was uploaded or retained. The existing `v1.0.0-rc.1`
+  annotated tag and unpublished Draft Release remain untouched.
 - The Phase 8.9 repository fallback rehearsal used the bundled Node `24.14.0` and pnpm `11.9.0`.
   With the existing frozen install, Vite reported ready in `549 ms`; API `/health`, fixture `/ready`,
   and web `/` all returned successfully by the bounded `10.1 s` probe. No local incident was started.

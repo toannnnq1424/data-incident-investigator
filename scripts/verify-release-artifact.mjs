@@ -39,7 +39,7 @@ const forbiddenPathSegments = new Set([
   'tests',
   'work',
 ]);
-const requiredStaticFiles = [
+export const requiredStaticFiles = Object.freeze([
   '.env.example',
   'LICENSE',
   'README.md',
@@ -60,6 +60,8 @@ const requiredStaticFiles = [
   'packages/agent-core/dist/index.d.ts',
   'packages/agent-core/dist/index.js',
   'packages/agent-core/package.json',
+  'packages/datahub-client/dist/datahub-mcp.d.ts',
+  'packages/datahub-client/dist/datahub-mcp.js',
   'packages/datahub-client/dist/index.d.ts',
   'packages/datahub-client/dist/index.js',
   'packages/datahub-client/package.json',
@@ -69,7 +71,7 @@ const requiredStaticFiles = [
   'scripts/verify-release-artifact.mjs',
   'scripts/pnpm-lock-identity.mjs',
   'scripts/release-path-safety.mjs',
-];
+]);
 const exactDependencyManifests = [
   'apps/api/package.json',
   'apps/web/package.json',
@@ -547,7 +549,8 @@ function parseManifest(buffer) {
   assert(manifest.runtime.target === 'generic-node-host', 'unexpected deployment target');
   assert(manifest.runtime.defaultMode === 'fixture', 'unexpected default mode');
   assert(
-    JSON.stringify(manifest.runtime.supportedModes) === JSON.stringify(['fixture', 'datahub']),
+    JSON.stringify(manifest.runtime.supportedModes) ===
+      JSON.stringify(['fixture', 'datahub', 'datahub-mcp']),
     'unexpected supported modes',
   );
   assert(manifest.runtime.state === 'process-local', 'unexpected state contract');

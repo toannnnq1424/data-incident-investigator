@@ -78,14 +78,34 @@ export const releaseBuildOutputRoots = Object.freeze([
   'packages/datahub-client/dist',
   'packages/shared-types/dist',
 ]);
-const runtimeFileInclude = (filePath) =>
-  filePath.endsWith('/index.js') || filePath.endsWith('/index.d.ts');
+const releaseRuntimeOutputRoots = Object.freeze([
+  'packages/agent-core/dist',
+  'packages/datahub-client/dist',
+  'packages/shared-types/dist',
+]);
+export const releaseRuntimeFiles = Object.freeze([
+  'packages/agent-core/dist/index.d.ts',
+  'packages/agent-core/dist/index.js',
+  'packages/datahub-client/dist/datahub-mcp.d.ts',
+  'packages/datahub-client/dist/datahub-mcp.js',
+  'packages/datahub-client/dist/index.d.ts',
+  'packages/datahub-client/dist/index.js',
+  'packages/shared-types/dist/index.d.ts',
+  'packages/shared-types/dist/index.js',
+]);
+const releaseRuntimeFileSet = new Set(releaseRuntimeFiles);
+const ignoredRuntimeMapFileSet = new Set(releaseRuntimeFiles.map((filePath) => `${filePath}.map`));
+export function includeReleaseRuntimeFile(filePath) {
+  if (releaseRuntimeFileSet.has(filePath)) return true;
+  if (ignoredRuntimeMapFileSet.has(filePath)) return false;
+  fail(`unexpected compiled runtime output: ${filePath}`);
+}
 const buildOutputIncludes = new Map([
   ['apps/api/dist', (filePath) => filePath.endsWith('.js')],
   ['apps/web/dist', () => true],
-  ['packages/agent-core/dist', runtimeFileInclude],
-  ['packages/datahub-client/dist', runtimeFileInclude],
-  ['packages/shared-types/dist', runtimeFileInclude],
+  ['packages/agent-core/dist', includeReleaseRuntimeFile],
+  ['packages/datahub-client/dist', includeReleaseRuntimeFile],
+  ['packages/shared-types/dist', includeReleaseRuntimeFile],
 ]);
 const directorySelections = releaseBuildOutputRoots.map((directory) => ({
   directory,
@@ -475,11 +495,16 @@ async function main() {
     !sortedPaths.some((filePath) => filePath.endsWith('.map')),
     'source maps must not be packaged',
   );
-  for (const runtimePackageDirectory of [
-    'packages/agent-core',
-    'packages/datahub-client',
-    'packages/shared-types',
-  ]) {
+  const selectedRuntimeFiles = sortedPaths.filter((filePath) =>
+    releaseRuntimeOutputRoots.some((root) => filePath.startsWith(`${root}/`)),
+  );
+  assert(
+    JSON.stringify(selectedRuntimeFiles) === JSON.stringify(releaseRuntimeFiles),
+    'compiled runtime selection differs from the exact allowlist',
+  );
+  for (const runtimePackageDirectory of releaseRuntimeOutputRoots.map((root) =>
+    root.slice(0, -'/dist'.length),
+  )) {
     assert(
       sortedPaths.includes(`${runtimePackageDirectory}/dist/index.js`) &&
         sortedPaths.includes(`${runtimePackageDirectory}/dist/index.d.ts`),
@@ -522,7 +547,7 @@ async function main() {
       node: rootPackage.engines.node,
       target: 'generic-node-host',
       defaultMode: 'fixture',
-      supportedModes: ['fixture', 'datahub'],
+      supportedModes: ['fixture', 'datahub', 'datahub-mcp'],
       state: 'process-local',
       webApiBasePath: '/api',
     },

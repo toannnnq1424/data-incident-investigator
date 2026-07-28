@@ -7146,3 +7146,68 @@ Local pre-commit result:
   runtime, and clean-checkout reproducibility checks immediately after the sole commit; their exact
   identities/results belong in the mutable Draft PR body and terminal evidence, with no second docs
   commit. Every unchanged external gate remains deferred exactly as listed above.
+
+#### Phase 8.10 targeted artifact-closure follow-up
+
+Status: authorized after exact local commit `fc2ba2f119a54df9b173c5e1c9ad776040ab0c23`
+produced a structurally verified archive whose packaged API failed before listening. The archive's
+`packages/datahub-client/dist/index.js` statically exports `./datahub-mcp.js`, but the release
+builder selected only that workspace's `index.js` and `index.d.ts`; Node therefore reported
+`ERR_MODULE_NOT_FOUND` for `packages/datahub-client/dist/datahub-mcp.js`. The failed PID, logs,
+archive, extraction, and fresh-checkout directories were removed, with no listener or residue left.
+
+Objective: repair only the proven compiled-runtime closure seam while preserving the original
+commit, exact version/lock/attribution identities, Windows-safe containment, and every unrelated
+green. This follow-up permits exactly one additive correction commit; it does not authorize history
+rewriting, a third commit, tag/Release creation, publication, deployment, or submission.
+
+Minimum files:
+
+- `scripts/build-release-artifact.mjs`: select an explicit, sorted, finite runtime-workspace file
+  closure rather than admitting arbitrary compiled files.
+- `scripts/verify-release-artifact.mjs`: independently require and allow the same exact current
+  runtime closure while retaining path, link/reparse, hash, manifest, provenance, and source-map
+  rejection.
+- `tests/release-artifact.contract.mjs`: hard-code the expected closure and prove both independent
+  lists admit every required file but reject unexpected runtime JavaScript, declarations, maps, and
+  source.
+- Persistent release evidence only where the failed post-commit result or its recovered result would
+  otherwise be stale. No manifest, lock, source package, dependency, workflow, fixture, media,
+  deployment, or submission change.
+
+Acceptance and validation:
+
+- The compiled local import/export closure remains exactly two files for `agent-core`, four for
+  `datahub-client`, and two for `shared-types`; builder and verifier contracts are independently
+  explicit and no broader directory/glob admission is added.
+- Run formatter, targeted lint, the release-artifact contract file, focused script syntax/type
+  checks, and the directly affected build only. Do not rerun full Level D, evaluation, audit,
+  Browser E2E, public smoke, or unrelated test suites.
+- From the clean new HEAD, build one new deterministic archive; independently verify its paths,
+  checksum, manifest, source commit/tree/version, production frozen install, and packaged fixture
+  `/health` and `/ready`. Then use one new no-hardlink fresh checkout to verify the same archive and
+  only the directly related artifact contract/build/runtime seam.
+- Finish exact diff/path/format/link/encoding/secret/residue/process/port checks, create the one
+  additive follow-up commit, push normally, open one Draft PR against unchanged exact main, and
+  require exact-head PR CI `SUCCESS`. Do not mark Ready or merge.
+
+Local focused pre-commit result:
+
+- Builder and verifier now carry separate exact eight-file runtime closure lists. Builder includes
+  only those files, ignores only their exact compiler map companions, and fails on every other
+  regular output under the three runtime `dist` roots. Verifier independently requires those eight
+  files and admits no other runtime-workspace payload path. The manifest now lists the three actual
+  software modes—`fixture`, `datahub`, and `datahub-mcp`—without changing the still-partial live MCP
+  validation status.
+- Prettier, targeted ESLint, Node syntax checks, the recovered 15/15 release-artifact contracts, the
+  four-workspace API dependency-closure typecheck, and the matching focused build pass. The compiled
+  outputs are exactly eight selected files plus their eight exact map companions; relative
+  import/export inspection finds only the closed `datahub-client` index/MCP cycle and no unexpected
+  runtime output.
+- The rejected `fc2ba2f…` archive remains failure evidence only and was removed. One replacement
+  archive and its extracted-runtime/fresh-checkout verification remain intentionally post-commit so
+  provenance can bind the new clean exact HEAD. Unchanged full-validation greens are reused.
+
+Deferred: every unchanged external and entrant gate listed above, plus tag/Release, deployment,
+media hosting, Devpost, another incident/public workflow, dependency change, full Level D rerun, and
+all post-merge actions.

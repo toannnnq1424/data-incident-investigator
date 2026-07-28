@@ -6703,3 +6703,63 @@ a clean exact HEAD, run the post-commit artifact/fresh-checkout gates once, push
 Draft PR against the unchanged starting main, require exact-head PR CI `SUCCESS`, and return
 `READY FOR INDEPENDENT WINDOWS QA`. Do not mark Ready, merge, tag, create/publish a Release, deploy,
 host media externally, or enter Devpost.
+
+## 2026-07-28 — Phase 8.10 targeted release-artifact closure correction
+
+### Trigger and authorization
+
+The clean exact commit `fc2ba2f119a54df9b173c5e1c9ad776040ab0c23` produced local archive
+`data-incident-investigator-v1.0.0-fc2ba2f119a5.tar.gz`: 352,827 bytes, 32 files, SHA-256
+`6dc337d30838632c59cf30ebacabb051cd68c80df7c350276cb2e5bd4914ff89`. Archive and extracted-
+directory verification, provenance, sidecar, manifest, and `pnpm install --prod --frozen-lockfile
+--ignore-scripts` passed. Direct fixture startup then failed before listening with
+`ERR_MODULE_NOT_FOUND` for `packages/datahub-client/dist/datahub-mcp.js`, imported by the archived
+`dist/index.js`. The exact PID/logs, rejected archive, extraction, and fresh-checkout directories
+were removed; no port or helper remained. This is a compiled artifact-closure defect, not a package-
+lock, environment, public-service, deployment, or DataHub credential failure.
+
+The controller authorized exactly one additive follow-up commit on the same branch. Commit
+`fc2ba2f…` remains unchanged; amend, rebase, reset, squash, force-push, history rewrite, and a third
+commit remain forbidden.
+
+### Targeted correction
+
+- Confirmed the compiled closure: `agent-core` and `shared-types` each require only index JavaScript
+  and declarations; `datahub-client/index.js` and `index.d.ts` export `./datahub-mcp.js`, whose
+  JavaScript and declaration import the index module, so that workspace requires exactly four files.
+- `scripts/build-release-artifact.mjs` now selects the exact sorted eight-file runtime closure,
+  ignores only the corresponding eight compiler map files, and fails closed on every other regular
+  runtime output. Existing canonical containment, link/reparse rejection, cleanup transaction,
+  source exclusion, file limits, and provenance remain unchanged.
+- `scripts/verify-release-artifact.mjs` independently requires the same exact eight payload files and
+  rejects any other runtime-workspace file. Its runtime manifest now records all three implemented
+  modes: `fixture`, `datahub`, and `datahub-mcp`; this does not advance authorized live/judge MCP
+  validation beyond `PARTIAL`.
+- `tests/release-artifact.contract.mjs` hard-codes both lists, proves exact required files are
+  admitted, exact map companions are excluded, and arbitrary JS/DTS/maps/source paths fail. Only
+  directly affected release/deployment/persistent wording changes; manifests, lock, attribution,
+  runtime source, dependencies, workflows, fixtures, media, deployment, and submission state do not.
+
+### Focused pre-commit validation
+
+- Prettier, targeted ESLint, and Node syntax checks pass for the changed scripts/contracts/docs. The
+  first contract run passed 14/15 and exposed only an incorrect test expectation that an exact map
+  companion should throw rather than return excluded; after separating exact ignored maps from
+  unexpected outputs, the recovered release-artifact contract run passes 15/15.
+- Focused `@dii/api...` typecheck and build pass across `shared-types`, `datahub-client`,
+  `agent-core`, and the API. The compiled runtime inventory is exactly eight selected files plus
+  eight exact map companions, with no unexpected output; relative import/export inspection confirms
+  only the closed DataHub client index/MCP cycle.
+- Full Level D, 7/7 evaluation, production audit, Browser E2E/public health-readiness, and unrelated
+  tests remain reused unchanged. A new clean-HEAD artifact, extracted production runtime, and one
+  directly related no-hardlink fresh-checkout artifact seam remain post-commit gates; exact results
+  belong in the Draft PR body and terminal handoff to preserve provenance without a third commit.
+
+### Deferred and next step
+
+Run final bounded format/link/diff/path/encoding/secret/residue/process/port checks, create the one
+additive correction commit, then from its clean exact HEAD build and verify one replacement archive,
+production frozen-install and fixture runtime, and one focused fresh-checkout artifact seam. If all
+pass, push the two-commit branch normally, open one Draft PR against unchanged exact main, and require
+exact-head PR CI `SUCCESS`. Do not mark Ready, merge, tag, create/publish a Release, deploy, mutate
+GCP, host media externally, enter Devpost, or change C11/C14/live MCP/C18/C19 status.
