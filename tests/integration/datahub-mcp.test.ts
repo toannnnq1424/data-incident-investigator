@@ -291,7 +291,7 @@ describe('DataHub MCP Server provider', () => {
     });
     expect(requests.find(({ method }) => method === 'initialize')).toEqual({
       method: 'initialize',
-      clientInfo: { name: 'data-incident-investigator', version: '1.0.0' },
+      clientInfo: { name: 'data-incident-investigator', version: '1.0.1' },
     });
   });
 

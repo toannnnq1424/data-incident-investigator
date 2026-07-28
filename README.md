@@ -12,6 +12,7 @@ missing information, blast radius, and recommended human checks separate.
 [Try the public fixture demo](https://data-incident-investigator-1071683558688.asia-southeast1.run.app)
 · [Judge quickstart](docs/JUDGE_QUICKSTART.md) ·
 [2:50 functioning demo](https://youtu.be/D5mvMqrhyDc) ·
+[2:49 Phase 8.12 QA candidate](docs/demo-video/README.md) ·
 [Screenshot gallery](docs/demo-assets/README.md) ·
 [Public repository](https://github.com/toannnnq1424/data-incident-investigator)
 
@@ -25,7 +26,7 @@ The public demo is credential-free and uses synthetic fixture data:
 4. After **Investigation completed**, inspect the ranked hypothesis, evidence, blast radius, and
    **Download Markdown report** link.
 
-![Ranked evidence-linked hypothesis showing an 81% high-confidence plausible contributor and transparent score factors](docs/demo-assets/03-ranked-hypothesis-confidence.png)
+![Completed evidence-backed verdict showing plausible-contributor wording, 81-percent confidence, four facts, two impacts, and bounded execution](docs/demo-assets/phase-8-12-03-verdict-confidence.png)
 
 The canonical result identifies the removed `gross_revenue` column on upstream `raw.orders` as a
 **plausible contributor**, not a confirmed cause. Its `81% · high` confidence is the exact sum of
@@ -139,8 +140,8 @@ For the shortest verified path and expected labels, use the
 
 - The public service is credential-free **fixture mode**, not live DataHub evidence.
 - Current source exposes seven incident playbooks, but only **Removed schema column** has the rich
-  checked-in metadata/incident fixture and canonical browser flow. Until this source revision is
-  separately deployed, the Public service retains the earlier compact scenario selector.
+  checked-in metadata/incident fixture and canonical browser flow. The seven-playbook UI is deployed,
+  but the six other playbooks do not imply six additional rich fixture result sets.
 - Incident state is process-local and disappears on restart or scale-to-zero; incident URLs are not
   durable.
 - Confidence is deterministic evidence scoring, not a probability from an LLM. The current workflow
@@ -161,6 +162,10 @@ For the shortest verified path and expected labels, use the
   completed-report thumbnail, and truthful English project/judge copy. This records submission state,
   not organizer acceptance, eligibility approval, prize status, or an independent repository
   attestation of the entrant's ownership and rights facts.
+- Phase 8.12 prepares `1.0.1`, a new 2:48.91 voiced video, exact captions/transcript, and five
+  deployed-UI screenshots. The new media is a repository QA asset and may be publicly accessible on
+  its feature branch/PR; it is not yet uploaded to YouTube/Vimeo/Youku or linked in Devpost, and no
+  `v1.0.1` tag or GitHub Release exists before QA and normal merge.
 
 ## Validation and project documentation
 

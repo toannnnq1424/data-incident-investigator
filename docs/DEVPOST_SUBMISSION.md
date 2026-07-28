@@ -6,6 +6,11 @@
 > are in the submitted entry. This is submission evidence, not organizer acceptance, eligibility
 > approval, or a prize result.
 
+> **Phase 8.12 preparation:** a new 2:48.91 deployed-UI candidate, captions/transcript, and five
+> replacement PNGs are locally ready for QA, but the current YouTube URL and submitted Devpost entry
+> remain unchanged. Apply only the exact post-QA field diff in
+> [`PHASE_8_12_SUBMISSION_SYNC.md`](PHASE_8_12_SUBMISSION_SYNC.md).
+
 ## Title
 
 Data Incident Investigator
@@ -23,6 +28,8 @@ an auditable report with transparent confidence, blast radius, and safe human ne
   <https://github.com/toannnnq1424/data-incident-investigator>
 - Published `v1.0.0` release:
   <https://github.com/toannnnq1424/data-incident-investigator/releases/tag/v1.0.0>
+- Proposed `v1.0.1`: preparation candidate only; tag/Release target is the future approved normal
+  merge, not the feature head.
 - Judge instructions: [`JUDGE_QUICKSTART.md`](JUDGE_QUICKSTART.md)
 - Screenshot gallery: [`demo-assets/README.md`](demo-assets/README.md)
 - Public 2:50 functioning demo: <https://youtu.be/D5mvMqrhyDc>
@@ -74,8 +81,10 @@ personally completed the final agreement/submission action; the post-action sign
   controls. Repository evidence records the resulting submitted UI state but does not self-certify
   the underlying eligibility, ownership, or media-rights facts.
 
-No credential, account token, private endpoint, customer data, additional public incident, new media
-encoding, organizer acceptance, or prize result was created by the later local technical follow-up.
+Phase 8.12 later created exactly one additional synthetic Public fixture incident for the new
+deployed-UI recording. It created no credential, account token, private endpoint, customer data,
+organizer acceptance, or prize result; the resulting candidate has not been uploaded or entered in
+Devpost.
 
 ## Inspiration
 
@@ -122,6 +131,9 @@ The project is a TypeScript pnpm monorepo:
 - The repository review derivative uses the installed Microsoft Mark English synthetic male voice
   offline; it requires no speech account, API key, network call, or paid service and does not change
   the authentic video frames.
+- The Phase 8.12 replacement candidate uses installed Microsoft David Desktop offline and shows the
+  deployed seven-playbook/evidence-path UI. Its authentic frames were re-encoded with Opus; nine
+  source/final comparisons measure PSNR `44.68–52.92 dB` with no inserted/generated scene.
 - Vitest, browser regression, TypeScript, ESLint, Prettier, artifact/runtime attribution contracts,
   and GitHub Actions provide validation.
 - The public credential-free fixture is deployed on Google Cloud Run with synthetic, process-local

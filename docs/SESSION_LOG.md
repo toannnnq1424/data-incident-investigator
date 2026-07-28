@@ -7292,3 +7292,144 @@ checks; create one additive conventional commit; push
 `codex/phase-8-11-runtime-attribution-fix`; open exactly one Draft PR against exact main
 `813621802628b94580c7fb69043e2369760cea3d`; require exact-head PR CI `SUCCESS`; and return
 `READY FOR SAME CANONICAL QA`. Do not mark Ready, merge, deploy, or mutate Devpost/video/GCP.
+
+## 2026-07-29 — Phase 8.12 submission synchronization and `v1.0.1` preparation
+
+### Objective
+
+Prepare, without publication or submission mutation, a truthful under-three-minute male-voice demo,
+five judge-facing screenshots, exact Devpost synchronization change set, and SemVer PATCH candidate
+for the deployed Phase 8.11 experience. Start from exact deployed main
+`0ac3b8180cebdccd8c4b914443ebafa6831a112d`, tree
+`d4c621e981bf11e97513bbc49de3eb589eca33b3`, with exact-main CI run `30390755820` / job
+`90381434069` successful.
+
+### Completed
+
+- Recorded exactly one synthetic Removed schema column incident at 1440 × 900 from Public revision
+  `data-incident-investigator-src-0ac3b8180ceb`. The 168.92-second silent source remains ignored
+  local QA provenance; it was not added to the repository.
+- Added one 168.91-second, 25,837,838-byte WebM derivative with VP8 video, Opus 48 kHz stereo audio,
+  and SHA-256 `fea72b6552be3483c7905cb282f79f89823427583101f9d4de5e31b910454fa2`.
+  Offline Microsoft David Desktop narration supplies 11 action-matched English cues. Added the exact
+  WebVTT and transcript plus five clean app-only 1440 × 900 PNGs covering the product contract,
+  seven playbooks, verdict/confidence, evidence path, and export context.
+- Prepared the exact YouTube title/description/caption gate and Devpost field/media replacement set
+  with a placeholder that must not be replaced before canonical QA and a separately authorized
+  upload. The current YouTube URL and submitted project `1117401` remain unchanged.
+- Aligned the root and six private workspace manifests at `1.0.1`; updated only the matching MCP
+  client protocol identity and focused test expectation; curated `[1.0.1] - 2026-07-29`. The
+  pnpm `11.9.0` lockfile-only step produced no lockfile change. No `v1.0.1` tag or Release exists
+  locally or on the remote tag refs.
+- Reconciled current deployment/repository/submission evidence to exact source `0ac3b818…a112d`,
+  revision `data-incident-investigator-src-0ac3b8180ceb`, and image digest
+  `sha256:0ea3381f…87286`. C18/C19 remain `PASS` through the existing YouTube/Devpost linkage; C29
+  remains `PARTIAL` until judging.
+
+### Validation performed
+
+- Node `24.14.0` / pnpm `11.9.0` frozen install passed after a clean project-local recovery from an
+  interrupted sandbox junction reconstruction; lock Git object remains
+  `dac9e386b4ba7d19454b6e128dc3acdb60a46297`.
+- Changed-file Prettier and ESLint pass. Direct datahub-client typecheck/build pass. Focused DataHub
+  MCP integration tests pass `28/28`, including the exact `1.0.1` initialize metadata.
+- The repository WebM has signature `1a45dfa3` and contains VP8/Opus tracks. Independently decoded
+  audio has peak `-1.83 dBFS`, integrated RMS `-24.06 dBFS`, active RMS `-21.27 dBFS`, and zero
+  clipped samples. All 11 cue windows are ordered, end before 168.91 seconds, and match the exact
+  transcript.
+- Each selected PNG has signature `89504e470d0a1a0a`, dimensions 1440 × 900, only
+  `IHDR`/`IDAT`/`IEND` chunks, and no metadata chunks. The five SHA-256 identities and caption/alt
+  mappings match `docs/PHASE_8_12_SUBMISSION_SYNC.md` and `docs/demo-assets/README.md`.
+- Checked 105 local links with zero broken targets, UTF-8/LF/no-BOM/final-newline policy, diff
+  whitespace, secret patterns, ignored local provenance, task processes/listeners, and exact path
+  scope. Unchanged full-suite/evaluation/artifact/Docker/deployment/public-smoke evidence was reused.
+
+### Deferred and exact next step
+
+The repository candidate becomes publicly accessible on its Public GitHub feature branch/PR after
+push, but that is not Rules-listed YouTube/Vimeo/Youku hosting. Do not upload the replacement,
+publish captions, edit/save/resubmit Devpost, create `v1.0.1`, deploy, or change account/consent
+state in this preparation slice. Create one additive commit, push
+`codex/phase-8-12-submission-sync-v1-0-1`, open exactly one Draft PR against exact base
+`0ac3b8180cebdccd8c4b914443ebafa6831a112d`, require exact-head PR CI `SUCCESS`, and return
+`READY FOR SAME CANONICAL QA`. Keep the PR Draft; do not mark Ready or merge.
+
+## 2026-07-29 — Phase 8.12 QA runtime-attribution correction
+
+### Objective
+
+Correct the single canonical QA blocker on existing branch
+`codex/phase-8-12-submission-sync-v1-0-1` and Draft PR #63: regenerate the deterministic runtime
+attribution/notice pair for the prepared `1.0.1` source graph without changing or weakening any
+generator, verifier, packaging, path-safety, legal-evidence, media, release, or submission contract.
+
+### Completed
+
+- Built the affected API/web closure with exact bundled Node `24.14.0`, pnpm `11.9.0`, and the
+  release-only Vite provenance hook. The 9,210-byte provenance file has SHA-256
+  `b47bb4b02bf5ddd003ba0d51208e33ba4741dfa26b27170340f56953ce2743f1`.
+- Ran the existing Phase 8.11 two-pass/rollback generator twice. Both invocations produced exact
+  byte-identical evidence, and `verify-source` accepted it.
+- Regenerated `RUNTIME-ATTRIBUTION.json` to 438,230 bytes, SHA-256
+  `059bc878316e371872c42c9e1addeccc4f15ee03f4ebaa871d007058165550d7`.
+  The rewritten `1.0.1` runtime workspace-manifest hashes are `09205f2c…413d`,
+  `6ac68f1c…389d`, and `336d28dd…21ea8`; the rebuilt DataHub MCP runtime module is
+  `72af76a5…71ec`.
+- Regenerated the paired 402,446-byte `THIRD_PARTY_NOTICES.txt`. Its bytes correctly remain
+  unchanged at SHA-256
+  `d5fd8497cf8cd41aab12f2e3e8af2e3a3057b2bec75927b4ee5be46b236f06c6`
+  because no dependency or legal-evidence input changed.
+
+### Files changed
+
+- `RUNTIME-ATTRIBUTION.json`
+- `docs/IMPLEMENTATION_PLAN.md`
+- `docs/SESSION_LOG.md`
+
+`THIRD_PARTY_NOTICES.txt` was canonically regenerated but has no byte diff. No manifest, lockfile,
+media, caption, transcript, screenshot, submission packet, application source, workflow, deployment,
+tag, Release, YouTube, or Devpost state changed.
+
+### Decisions
+
+- Keep the Phase 8.11 generator/verifier implementation unchanged; the blocker is stale generated
+  evidence after the prepared version/source update, not a contract defect.
+- Commit every changed byte and no unchanged generated file. Retain the notice hash as explicit proof
+  that the dependency/legal closure did not drift.
+- Reuse all unchanged media, visual, release, Devpost, Level D, evaluation, deployment, and public
+  smoke greens.
+
+### Validation performed
+
+- Canonical generation twice plus `verify-source`: PASS; lock SHA-256
+  `6194526652ac34a3f3b06e16fd8a055ff88cdbd77c51c8e6e3695b4b5611bf1d`,
+  152 full-production identities, 149 runtime identities/roots, five bundled-web packages.
+- `pnpm test:runtime-attribution`: `10/10` PASS.
+- Focused plan Prettier, canonical JSON parse, and `git diff --check`: PASS.
+- One Docker build passes build-stage `verify-source` and production-dependencies
+  `verify-runtime`. The 86,198,637-byte fixture image ID is
+  `sha256:5ee08db5e1c8ad141cc358222dc3f4beb57edee282899b8fce076612f97ae3bd`;
+  packaged `/health` returns `200 {"status":"ok"}`. The exact task container, image tag, and port
+  `18082` were removed/clean afterward.
+- The first build probe reported host Node `22.22.3`; its provenance was discarded before
+  generation. Exact recovery used Node `24.14.0`. The first sandboxed generator attempt stopped
+  before writing on pnpm-store `EPERM`; one scoped recovery passed.
+
+### Validation intentionally deferred
+
+No unchanged media/visual/voice/caption, full suite/evaluation, release-artifact, deployment/public
+smoke, YouTube, or Devpost gate was rerun. No new incident, capture, upload, publication, tag,
+Release, deploy, Ready action, or merge is authorized in this correction.
+
+### Known issues
+
+C29 remains `PARTIAL` until judging. The new video remains only a Public GitHub repository/PR asset;
+the existing YouTube/Devpost submission remains authoritative until separately authorized
+synchronization after QA.
+
+### Exact next step
+
+Complete bounded path/secret/encoding/residue/process/port checks, create exactly one additive
+conventional commit, push the same branch, update only Draft PR #63, and require exact-new-head PR CI
+`SUCCESS`. Return `READY FOR SAME QA RE-REVIEW`; do not mark Ready, merge, tag, release, deploy,
+upload, or edit Devpost.

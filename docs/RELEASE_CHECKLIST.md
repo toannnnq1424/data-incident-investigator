@@ -423,14 +423,36 @@ The execution checklist above is historical and was found incomplete by independ
       GitHub Release is Published/Latest. The historical `v1.0.0-rc.1` tag and Draft Release remain
       untouched.
 
+## Phase 8.12 — `v1.0.1` submission-synchronization candidate
+
+- [x] Start from exact deployed main `0ac3b8180cebdccd8c4b914443ebafa6831a112d`, tree
+      `d4c621e981bf11e97513bbc49de3eb589eca33b3`; exact-main CI run `30390755820`, job
+      `90381434069`, is `SUCCESS`. Confirm no existing `v1.0.1` tag/Release or duplicate branch/PR.
+- [x] Align the root and six private workspace manifests at `1.0.1`; update only the MCP client/test
+      product-version metadata; run exact pnpm `11.9.0` lockfile-only and frozen-install checks.
+- [x] Curate `[1.0.1] - 2026-07-29` and retain a new empty `Unreleased` section. Do not add a tag or
+      comparison link before the immutable Git ref exists.
+- [x] Produce one 2:48.91 app-only Phase 8.11 candidate from exactly one synthetic fixture incident,
+      with offline Microsoft David male narration, exact English captions/transcript, five truthful
+      PNGs, hashes/probes, and no browser/account chrome or hidden/live-MCP claim. Keep the new silent
+      capture only as local QA provenance and preserve all prior media.
+- [ ] Independent canonical QA must pass the exact Draft-PR head. Then normal-merge only, require
+      exact-main CI success, and separately authorize immutable `v1.0.1` tag/Published Release at the
+      exact normal-merge SHA. Never tag the feature head; do not touch `v1.0.0` or `v1.0.0-rc.1`.
+- [ ] After separate post-QA authorization, upload the reviewed derivative/captions, obtain the final
+      Rules-listed URL, update/save/resubmit Devpost project `1117401`, and preserve the receipt. No
+      upload, Devpost edit, or resubmission occurs in the preparation PR.
+
 ## Deployment
 
 - [x] Production API starts and `/health` succeeds.
 - [x] Web artifact uses the same-origin production `/api` boundary.
 - [x] Public fixture demo completes end-to-end.
 - [x] Timeout/provider error states are user-friendly.
-- [x] Current proven live revision `data-incident-investigator-src-3653cf6b591e`, built from
-      immutable source commit `3653cf6b591eed76ad6276d07b1ea08e88d7fa4f`, receives 100% traffic.
+- [x] Current proven live revision `data-incident-investigator-src-0ac3b8180ceb`, built from
+      immutable source commit `0ac3b8180cebdccd8c4b914443ebafa6831a112d`, receives 100% traffic in
+      `APP_MODE=fixture`; image digest is
+      `sha256:0ea3381f635a97812181f14448df9c7939f7c02d2a824724403e3b8a0d087286`.
 - [x] Previous immutable revision `data-incident-investigator-00001-jst` is retained only as a
       historical rollback candidate; it is not the current proven live or “last-known-good”
       revision.
@@ -453,5 +475,8 @@ The execution checklist above is historical and was found incomplete by independ
       registration category of interest.
 - [x] Create and review draft project `1117401`; save and preview the verified URLs, English copy,
       five captioned screenshots, thumbnail, challenge, technologies, and optional feedback answers.
-- [ ] Complete entrant-owned eligibility/IP/rights review, explicitly accept the final Rules/Terms,
-      and submit only after separate final authorization; preserve the receipt.
+- [x] The entrant personally operated the legal confirmation/submission gate; signed-in evidence
+      reported **Project submitted!**, **Submitted**, and **5/5**. This is not organizer acceptance.
+- [ ] Repository evidence cannot independently attest age/eligibility, sanctions/conflicts,
+      ownership/IP/media rights, or organizer acceptance; the entrant must answer any verification
+      request truthfully.

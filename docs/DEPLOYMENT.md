@@ -766,6 +766,23 @@ does not change traffic, image, revision, capacity, region, APIs, billing associ
 C14 is therefore **PASS — OWNER-AUTHORIZED OPERATING WINDOW** as an operating commitment; it is not
 an absolute uptime or zero-cost guarantee.
 
+## Phase 8.11 exact-current deployment supersession
+
+The prior `3653cf6b…7fa4f` revision and digest remain historical provenance, not the current service
+identity. Exact main `0ac3b8180cebdccd8c4b914443ebafa6831a112d`, tree
+`d4c621e981bf11e97513bbc49de3eb589eca33b3`, passed exact-main CI run `30390755820` / job
+`90381434069`. Cloud Build `554516c8-da9d-4cc2-b55b-4d1bbf38b84e` then completed successfully after
+the guarded runtime-attribution/notices convergence correction.
+
+Current revision `data-incident-investigator-src-0ac3b8180ceb` receives 100% traffic with
+`APP_MODE=fixture`; immutable image digest is
+`sha256:0ea3381f635a97812181f14448df9c7939f7c02d2a824724403e3b8a0d087286`. The existing public URL,
+region, capacity/cost boundaries, owner-authorized operating window, and repository fallback remain
+unchanged. This deployed source includes the seven visible incident playbooks, answer-first report
+surface, and top-hypothesis-linked evidence/impact path. The Public service still uses only the
+credential-free synthetic fixture; real DataHub OSS/MCP validation remains the reproducible
+localhost path, not a Public live-MCP claim.
+
 Official sources accessed 2026-07-26:
 
 - [Google Cloud Free Program](https://docs.cloud.google.com/free/docs/free-cloud-features)

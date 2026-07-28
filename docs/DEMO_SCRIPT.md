@@ -1,166 +1,106 @@
-# Under-three-minute demo script
+# Under-three-minute Phase 8.12 demo script
 
-Status: Phase 8.9 recorded, reviewed, and merged one authentic English-captioned silent source.
-Phase 8.9A added a separate derivative with synchronized synthetic male English narration while
-stream-copying the exact video. Both remain Public GitHub repository assets. The exact male-voice
-derivative is now publicly visible on YouTube as
-[Data Incident Investigator — 2:50 Functioning Demo (Synthetic Fixture)](https://youtu.be/D5mvMqrhyDc),
-with the authored English WebVTT uploaded and published; YouTube reported no copyright issue during
-upload processing. Devpost registration and **Join Hackathon** succeeded for an individual entrant.
-The entrant then completed the final action for project `1117401`; the signed-in finalization screen
-reports **Project submitted!**, **Submitted**, and **5/5**, with the exact video link, English
-copy/media, and **Open / Wildcard**. No organizer acceptance or prize result is claimed.
+Status: **repository QA candidate; not yet uploaded to YouTube/Vimeo/Youku or linked in Devpost**.
+The candidate is publicly accessible as a repository asset on its feature branch/PR after push; that
+does not satisfy Rules-listed video hosting. The candidate is
+[`phase-8-12-demo-voiceover.webm`](demo-video/phase-8-12-demo-voiceover.webm), recorded from exact
+deployed source `0ac3b8180cebdccd8c4b914443ebafa6831a112d`. It is 2:48.91, 1440 × 900, VP8 plus
+Opus, and uses offline Microsoft David male narration. The existing Public
+[2:50 demo](https://youtu.be/D5mvMqrhyDc) and submitted Devpost project remain unchanged until a
+separate post-QA synchronization gate.
 
-Candidate running time: **2:50.20**. The Rules recommend less than three minutes, and judges are not
-required to watch beyond minute three. Review the local packet at
-[`demo-video/README.md`](demo-video/README.md).
+Exact spoken text and timing:
+[`PHASE_8_12_TRANSCRIPT.md`](demo-video/PHASE_8_12_TRANSCRIPT.md) and
+[`phase-8-12-voiceover-captions.vtt`](demo-video/phase-8-12-voiceover-captions.vtt).
 
-The selected hosted derivative uses **Microsoft Mark — English (United States)**, an installed
-Microsoft Windows Adult/Male synthetic voice operating offline at its default rate. It is framed as
-an AI narrator, not the entrant or a named real person. Its authored WebVTT and transcript contain
-the exact spoken text. The unchanged silent source remains available with its original
-captions/transcript.
+## Recording contract
 
-## Recording setup
-
-- Use the public credential-free fixture URL:
+- Public source:
   <https://data-incident-investigator-1071683558688.asia-southeast1.run.app>.
-- Pre-open the page only to absorb a possible Cloud Run cold start. Begin the recorded interaction at
-  the top of the app after **Fixture metadata · Ready** appears.
-- Keep the Public repository local fallback running at `http://localhost:5173`; if used, say clearly
-  that the recording switched to the repository-local fixture.
-- Capture only the app. Hide bookmarks, account avatars, notifications, other tabs, terminals with
-  private paths, and Cloud/GitHub account pages.
-- Use synthetic fixture data exactly as populated by **Removed schema column**. Do not enter a token,
-  endpoint, customer name, production incident, or personal identifier.
-- Record one continuous canonical incident. Do not splice in a different incident ID or imply that a
-  screenshot is a live result.
-- For Phase 8.9A, do not record another incident or UI take. Reuse the exact Phase 8.9 frame stream
-  and align each synthetic sentence to the existing action window.
+- App-only 1440 × 900 viewport; no browser/Windows/account chrome, credentials, private endpoints,
+  notifications, external media, or generated UI frames.
+- Exactly one synthetic **Removed schema column** incident. No second capture or incident is allowed
+  for this candidate.
+- The Public app is credential-free fixture mode, makes zero model calls, writes to no DataHub or
+  production system, and executes no recommendation.
+- The real DataHub integration claim is the separately validated repository-local DataHub Core
+  `1.6.0` plus official MCP Server `0.6.0` path. User-reported organizer guidance says this local OSS
+  path plus Public fixture/repository access is acceptable; this is not organizer acceptance or a
+  Public live-MCP claim.
 
-## Timed candidate storyboard and voiced narrative
+## Timed storyboard
 
-The exact spoken words are in
-[`demo-video/VOICEOVER_TRANSCRIPT.md`](demo-video/VOICEOVER_TRANSCRIPT.md) and the matching WebVTT.
-The table below is the concise scene-to-claim map.
+| Scene       | Visible interaction                                                   | Exact narration topic                                                  |
+| ----------- | --------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `0:03–0:10` | Product promise, fixture readiness, four-step read-only contract      | Auditable report with bounded evidence and impact                      |
+| `0:14–0:23` | All seven visible incident playbooks                                  | Editable scenarios; Removed schema column is the judge path            |
+| `0:28–0:36` | Select **Removed schema column** and show reviewable intake           | Canonical fixture prefills a focused question                          |
+| `0:41–0:51` | Choose **Start investigation** once; reach completion                 | One bounded synthetic case; no model call or production write          |
+| `0:52–1:05` | Verdict, `81% · high`, four facts, two impacts, nine calls, six steps | Plausible contributor, not proven cause                                |
+| `1:10–1:24` | Schema-validated evidence path                                        | Top hypothesis's own fact and impact; provenance, not causality        |
+| `1:30–1:39` | Blast radius and explicit bounds                                      | One dataset plus one dashboard within the displayed limits             |
+| `1:48–1:59` | Investigation activity                                                | Observable operations only, never hidden reasoning                     |
+| `2:04–2:13` | Ranked hypotheses, code-owned factors, resolved evidence              | Transparent deterministic scoring                                      |
+| `2:21–2:32` | Human-review recommendations                                          | `not_executed`; no automatic remediation                               |
+| `2:36–2:48` | Deterministic Markdown export context                                 | Local DataHub OSS/MCP proof; Public judge service remains fixture-only |
 
-| Time         | Visible interaction                                                         | Synchronized synthetic male narration boundary                                                                                   |
-| ------------ | --------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| 0:00–0:14    | Show the title and **Fixture metadata · Ready**.                            | The product assembles schema, lineage, and dashboard clues into one auditable report.                                            |
-| 0:14–0:31    | Scroll to **What changed?** and select **Removed schema column**.           | The public demo is a synthetic, credential-free fixture; the preset fills editable fields.                                       |
-| 0:31–0:43    | Show the question, `analytics.daily_revenue`, occurrence time, and symptom. | The question, affected dataset, and symptom are inputs; no production data is modified.                                          |
-| 0:43–0:51    | Choose **Start investigation** once.                                        | The agent performs bounded retrieval, deterministic scoring, and report composition.                                             |
-| 0:51–1:05    | Show **Investigation completed**, download context, and activity.           | Observable operations are not hidden reasoning; fixture execution makes zero model calls.                                        |
-| 1:05–1:31    | Show **Ranked evidence-linked hypotheses** and confidence factors.          | The result is a plausible contributor, not a confirmed cause; visible factors total `81% · high`.                                |
-| 1:31–1:51    | Show the resolved evidence IDs and **Evidence**.                            | Every hypothesis resolves to report evidence; schema-change and lineage facts remain separate.                                   |
-| 1:51–2:11    | Show **Blast radius** and both impacts.                                     | Within displayed bounds, the dataset is distance 1 and **Revenue overview** is distance 2, with paths and provenance.            |
-| 2:11–2:31    | Show **Safe recommendations for human review**.                             | Every proposal is **Not Executed**; the app never changes production or writes back.                                             |
-| 2:31–2:42    | Return to **Download Markdown report** and activity.                        | The deterministic sanitized UTF-8 report is downloadable; no server-side report file is stored.                                  |
-| 2:42–2:50.10 | Return to the clean app title and fixture-ready boundary.                   | The public service is fixture-only; local bounded MCP exists, while live judge validation and judging-window access remain open. |
+## Cold-start and repository fallback
 
-## Architecture frame
+1. Allow the Public page up to 30 seconds to show **Fixture metadata · Ready**.
+2. If unavailable, stop the take. Use the Node 24 / pnpm `11.9.0` repository-local fixture commands
+   in [`JUDGE_QUICKSTART.md`](JUDGE_QUICKSTART.md) and label it **repository-local fixture fallback**.
+3. Never splice a fallback result into the Public take or simulate a completed incident.
+4. If both paths fail, use the five verified screenshots only as a labeled storyboard; record a new
+   functioning take only in a separately authorized future gate.
 
-This remains a truthful rehearsal aid for a future entrant-edited take:
-
-```text
-React/Vite intake and report
-            |
-      Fastify + Zod
-            |
-Deterministic investigation runner
-            |
-MetadataAdapter: fixture | DataHub GraphQL | bounded DataHub MCP
-```
-
-The local candidate does not insert this as a synthetic frame; it closes on the real application
-title while the caption states the fixture/live-validation boundary. Do not animate or narrate a
-model, autonomous write-back, durable database, live DataHub connection, or hidden reasoning path;
-none exists in the public fixture.
-
-## Cold/unavailable fallback
-
-1. If the first public load is cold, allow up to 30 seconds for the page and
-   **Fixture metadata · Ready**. Narrate the cold start only if it remains in the final cut.
-2. If the public URL is unavailable, stop that take. Start the Public repository fallback using the
-   exact commands in [`JUDGE_QUICKSTART.md`](JUDGE_QUICKSTART.md), open
-   `http://localhost:5173`, and record the same scenario once.
-3. State “repository-local fixture fallback” on screen and in narration. Do not present local output
-   as a successful public Cloud Run run.
-4. If neither path works, do not simulate the UI. Use the verified screenshots only as a labeled
-   storyboard and record a new functioning-project take after access is restored.
-
-Phase 8.9 fallback rehearsal used an existing frozen Windows worktree with bundled Node `24.14.0`
-and pnpm `11.9.0`: Vite reported ready in `549 ms`, while `/health`, fixture `/ready`, and the web
-root passed by a bounded `10.1 s` probe. No local incident was started. Treat this as a
-warm-worktree rehearsal, not a clean-clone installation benchmark.
-
-## Rehearsal checklist
-
-Phase 8.9A voiced-derivative result:
+## Rehearsal and QA checklist
 
 ### Truth and interaction
 
-- [x] The take is below 3:00 and shows one real functioning incident from selection through result.
-- [x] Captions say **plausible contributor**, never “confirmed root cause.”
-- [x] `81% · high` is described as deterministic code-owned evidence scoring, not model probability.
-- [x] Blast radius is described as complete only **within the applied fixture bounds**.
-- [x] Recommendations are visibly and textually `not_executed`.
-- [x] The activity trail is described as observable operations, not hidden reasoning.
-- [x] Fixture mode, zero model calls, process-local incident state, and no production mutation are
-      explicit.
-- [x] The public demo is not described as live DataHub. Local bounded MCP integration and live/judge
-      validation `PARTIAL` are kept separate.
-- [x] Current distribution is explicit: the exact male-voice derivative is Public on YouTube with
-      authored English captions; the silent source remains a repository provenance asset.
-- [x] Devpost registration and **Join Hackathon** are distinguished from submitted project
-      `1117401`. Additional info selects **Open / Wildcard**, the exact YouTube URL is included, and
-      the signed-in finalization screen reports **Project submitted!**, **Submitted**, and **5/5**.
-      Organizer acceptance and a prize result are not implied.
+- [x] 2:48.91 and one continuous authentic functioning-project flow.
+- [x] Seven playbooks, selected intake, completion, verdict, confidence, linked evidence path,
+      blast radius, activity, hypotheses, safe recommendations, and export context are visible.
+- [x] “Plausible contributor” is never upgraded to confirmed cause.
+- [x] Evidence-path nodes follow the top hypothesis's `evidenceIds` and linked impact
+      `hypothesisIds`.
+- [x] `81% · high` is code-owned evidence scoring, not an LLM probability.
+- [x] Blast radius is complete only within explicit fixture bounds.
+- [x] Recommendations remain **Not Executed**.
+- [x] Public fixture and local real DataHub OSS/MCP proof are clearly separated.
 
-### Accessibility and English
+### Voice, captions, accessibility
 
-- [x] The AI narrator is identified as Microsoft Mark, not the entrant or a named real person.
-- [x] Exact English captions/transcript match the spoken words and their eleven action windows.
-- [x] An English transcript mirrors the captions; no auto-caption dependency exists.
-- [x] Captions preserve controls, evidence IDs, confidence, and blast-radius paths.
-- [x] The take uses readable zoom, a steady view, high-resolution capture, and no rapid flashing.
-- [x] Captions identify the selected scenario, completion state, confidence, and two downstream
-      impacts so the demo is understandable without color.
+- [x] Offline Microsoft David Desktop Adult/Male narration; no account, credential, network call,
+      subscription, fee, or imitation of the entrant/named person.
+- [x] Eleven authored English caption cues match the exact spoken text and visible scene.
+- [x] Decoded speech begins inside every cue and ends before the next scene; final margin is
+      `0.90 s`.
+- [x] Stable high-resolution framing, readable text, intentional silence, no rapid flashes, and no
+      reliance on color or sound alone.
 
-### Privacy and media rights
+### Media and rights
 
-- [x] Only synthetic fixture data and the app UI appear.
-- [x] No browser chrome, account/session surface, credential, private endpoint, billing identity,
-      terminal history, notification, or personal path is visible.
-- [x] Only project UI and project-authored captions appear.
-- [x] No music is present; the audio contains only the locally synthesized English narration and
-      intentional silence.
-- [x] Third-party product names are used only as factual text; no
-      unlicensed logos, clips, stock images, or trademarks as decoration.
-- [x] Key frames at eleven timestamps were reviewed for accidental identifiers and claim accuracy.
-- [x] The selected repository WebM was uploaded without changing its
-      `f52daa606f3cf9f627909e23422ca2d14fd92db1f5c4ed6ca304744c5608ab33` SHA-256 source identity,
-      video packets, or frames.
-- [x] The authored English WebVTT is published on the YouTube video, and YouTube reported no
-      copyright issue during upload processing.
-- [x] The entrant personally operated the final Devpost agreement/submission gate; the project-form
-      video link is complete and the signed-in UI reports submission.
-- [ ] Independent repository proof of entrant eligibility, IP/media-rights facts, organizer
-      acceptance, and any prize result remains unavailable.
+- [x] Final WebM: 168.91 s, 1440 × 900, VP8, Opus 48 kHz stereo.
+- [x] Decoded peak `-1.83 dBFS`, integrated RMS `-24.06 dBFS`, active-speech RMS `-21.27 dBFS`,
+      zero clipped samples, and digital silence before the first cue.
+- [x] Nine source/final frame pairs at representative actions measure PSNR `44.68–52.92 dB`;
+      re-encoding adds no inserted, deleted, or synthetic UI scene.
+- [x] Five app-only PNGs were visually inspected; no chrome, account/session surface, credential,
+      personal data, private endpoint, external clip, logo treatment, stock media, or music appears.
+- [x] Captions/transcript, local voice provenance, media hashes/probes, and synthetic-fixture
+      boundaries are available for independent QA.
+- [ ] Entrant eligibility, ownership/IP/media-rights facts, organizer acceptance, and any prize
+      result remain entrant/organizer facts not independently established by repository evidence.
 
-The recording script emitted one non-visual capture-instrumentation page error because its
-scrollbar-hiding style ran before the first document element existed. The application interaction and
-final video continued normally, no runtime failure is visible, and no app-console-clean claim is made
-for this take. See [`demo-video/README.md`](demo-video/README.md).
+## Post-QA synchronization gate
 
-Phase 8.9A independently measured the final Opus narration at `-18.0 LUFS`, `-1.0 dBTP`, zero
-clipped samples, and exact cue completion before every next boundary. The extracted VP8 payload and
-all 4,255 copy-timestamp framehash rows match the silent source, so the voice-over adds no synthetic
-or retimed UI frame.
+Only after canonical QA PASS may a separately authorized controller:
 
-Phase 8.11 hosting evidence binds the selected source to the Public YouTube URL
-<https://youtu.be/D5mvMqrhyDc> under the exact title above. YouTube playback may use platform
-transcodes; no claim is made that streamed renditions retain the repository file hash. C18 and C19
-are `PASS`. The exact URL is included in submitted Devpost project `1117401`; the signed-in
-finalization screen reports **Project submitted!**, **Submitted**, and **5/5**. That state is not
-organizer acceptance, eligibility approval, or a prize result.
+1. upload the exact reviewed WebM and VTT to a Rules-listed host without deleting/unlisting the old
+   video;
+2. capture the final Public URL and platform checks;
+3. replace the Devpost video URL/copy/gallery according to
+   [`PHASE_8_12_SUBMISSION_SYNC.md`](PHASE_8_12_SUBMISSION_SYNC.md);
+4. save/preview/resubmit project `1117401` and preserve the new receipt.
+
+This preparation PR performs none of those external mutations.

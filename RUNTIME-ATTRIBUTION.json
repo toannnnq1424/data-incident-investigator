@@ -3911,7 +3911,7 @@
     },
     {
       "path": "packages/datahub-client/dist/datahub-mcp.js",
-      "sha256": "2da4ba88c4fa284443709574b85d946f787a6ca2556ad7903145d8cd929d5f4f",
+      "sha256": "72af76a58f25d1727c78725e27648de31aa8339051746a2c429a6e9a24eb71ec",
       "size": 28713
     },
     {
@@ -3980,17 +3980,17 @@
   "runtimeWorkspaceManifests": [
     {
       "path": "packages/agent-core/package.json",
-      "sha256": "21753784bacba86006adc601f00caf9779936e78a4a820ebd21166f992b97dc2",
+      "sha256": "09205f2c4939151a13285601028ff793637531f6f7c9b51a0e2946878c31413d",
       "size": 422
     },
     {
       "path": "packages/datahub-client/package.json",
-      "sha256": "ed59213c12cb629f52b97e49fa4b5d0db19b67c686435b5ad053c9b1f8fc1eac",
+      "sha256": "6ac68f1c8e76866f280ecc7c8aa414a7fb3385d390725f542c236f48bdc8389d",
       "size": 448
     },
     {
       "path": "packages/shared-types/package.json",
-      "sha256": "a3f4dfc9ebe91d7b018c297a1d485b25f38efb4d0a97ea1bcccc98c00a9eddd5",
+      "sha256": "336d28dd07fba433497b6c3ad6d9593c25476bd8ae655bf49c1d1836ca121ea8",
       "size": 363
     }
   ]

@@ -4,19 +4,43 @@ This file records notable user-facing, operator-facing, security, reliability, a
 changes. It follows a Keep a Changelog-style structure and the repository's
 [versioning policy](docs/VERSIONING.md).
 
-Annotated tag `v1.0.0` resolves to the exact validated release merge, and its GitHub Release is
+Annotated tag `v1.0.0` resolves to the exact validated release merge, and its GitHub Release remains
 Published/Latest with only GitHub-generated source archives. Historical tag `v1.0.0-rc.1` and its
-unpublished Draft Release remain untouched.
+unpublished Draft Release remain untouched. Version `1.0.1` below is a preparation candidate only;
+no `v1.0.1` tag or GitHub Release exists yet.
 
 ## [Unreleased]
+
+## [1.0.1] - 2026-07-29
+
+### Added
+
+- Added seven visible, editable incident playbooks, an answer-first verdict dashboard, and a
+  schema-validated evidence-path view that maps the top hypothesis to its own evidence and supported
+  impact.
+- Validated the real read-only integration locally against DataHub Core `1.6.0` and the official MCP
+  Server `0.6.0`, while retaining the credential-free Public fixture and documented local OSS/MCP
+  reproduction path.
+- Prepared a separate 2:48.91 deployed-UI demo candidate with synchronized offline Microsoft David
+  male narration, exact English captions/transcript, and five app-only judge screenshots. This new
+  candidate is not yet uploaded, linked in Devpost, or submitted.
 
 ### Changed
 
 - Extended the owner-authorized public fixture operating window through 2026-09-17 23:59 ICT,
   beyond judging, while retaining emergency containment and the Public-repository fallback.
 - Published the existing verified 2:50.20 male-voice fixture demo on YouTube with authored English
-  captions, and completed individual Devpost registration/Join with Open / Wildcard as the category
-  of interest. The project form, video-link entry, and submission remain unperformed.
+  captions, completed individual Devpost registration/Join, and submitted project `1117401` at 5/5
+  with **Open / Wildcard**, the exact Public app/repository/video links, and five truthful images.
+- Deployed the Phase 8.11 judge-facing UI and runtime-attribution correction as exact source
+  `0ac3b8180cebdccd8c4b914443ebafa6831a112d` in credential-free fixture mode.
+
+### Fixed
+
+- Bound Evidence Path selection deterministically to the displayed top hypothesis's `evidenceIds`
+  and linked impact `hypothesisIds`; missing links now remain explicitly independent/unverified.
+- Made runtime-attribution regeneration converge the derived notice before committing its manifest,
+  preventing an immediately stale Docker source-verification pair without weakening verification.
 
 ## [1.0.0] - 2026-07-28
 

@@ -10,7 +10,7 @@ Open:
 1. Allow a possible Cloud Run cold start. Continue when the top status reads
    **Fixture metadata · Ready**.
 2. Scroll to **What changed?**.
-3. In **Canonical incident scenario**, select **Removed schema column**.
+3. In **Incident playbooks**, select **Removed schema column**.
 4. Keep the populated synthetic values:
    - question: **Why did revenue drop after the morning warehouse refresh?**
    - dataset: `analytics.daily_revenue`
@@ -24,6 +24,9 @@ Open:
   `gross_revenue` from upstream `raw.orders` may have contributed to the incident.
 - **Confidence:** `81% · high`, followed by visible ordered factors under
   `evidence-confidence-v1`. This is deterministic code-owned scoring, not an LLM probability.
+- **Evidence path:** the schema-validated graph follows the displayed top hypothesis's own
+  `change-removed-gross-revenue` fact and linked `analytics.daily_revenue` impact. Its connectors
+  show provenance sequence, not causality.
 - **Evidence:** `change-removed-gross-revenue` and `lineage-upstream-1` resolve in the report. Facts and
   inferences remain separate.
 - **Blast radius:** status **complete** within the displayed fixture bounds, with two impacts:
@@ -39,10 +42,13 @@ Screenshots of the expected surfaces are in the
 run-specific and process-local; do not use them as durable links.
 
 For a non-interactive preview of the same authentic flow, review the
-[Public 2:50 functioning demo](https://youtu.be/D5mvMqrhyDc). It uses the synchronized synthetic
-male English-voice derivative with the authored English WebVTT published; the
-[repository video packet](demo-video/README.md) retains the unchanged silent source and exact media
-identity for provenance. The exact YouTube URL is part of submitted Devpost project `1117401`, whose
+[Public 2:50 functioning demo](https://youtu.be/D5mvMqrhyDc). A new
+[2:48.91 deployed-UI QA candidate](demo-video/README.md) shows the seven-playbook interface,
+top-hypothesis evidence path, and current export context with exact offline male narration and
+captions. It is a repository QA asset, not yet uploaded to YouTube/Vimeo/Youku or linked in Devpost;
+its GitHub feature-branch/PR accessibility does not satisfy Rules-listed video hosting. The existing
+YouTube URL remains part of
+submitted project `1117401`, whose
 signed-in finalization screen reports **Project submitted!**, **Submitted**, and **5/5**. The public
 project page is <https://devpost.com/software/data-incident-investigator>. Submission does not imply
 organizer acceptance, eligibility approval, or a prize result.
