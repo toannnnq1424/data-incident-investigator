@@ -16,6 +16,7 @@ import {
 
 interface RecordedProtocolRequest {
   method: string;
+  clientInfo?: Record<string, unknown>;
   toolName?: string;
   arguments?: Record<string, unknown>;
 }
@@ -144,7 +145,9 @@ class DataHubMcpProtocolTransport {
 
     const params = isRecord(message.params) ? message.params : {};
     const request: RecordedProtocolRequest = { method: message.method };
-    if (message.method === 'tools/call') {
+    if (message.method === 'initialize') {
+      request.clientInfo = isRecord(params.clientInfo) ? params.clientInfo : undefined;
+    } else if (message.method === 'tools/call') {
       request.toolName = typeof params.name === 'string' ? params.name : undefined;
       request.arguments = isRecord(params.arguments) ? params.arguments : undefined;
     }
@@ -270,6 +273,19 @@ async function completedIncident(server: ReturnType<typeof buildServer>, inciden
 }
 
 describe('DataHub MCP Server provider', () => {
+  it('advertises the final product version in MCP client metadata', async () => {
+    const requests: RecordedProtocolRequest[] = [];
+
+    await expect(testAdapter(requests).healthCheck()).resolves.toEqual({
+      status: 'ready',
+      message: 'DataHub MCP Server is ready.',
+    });
+    expect(requests.find(({ method }) => method === 'initialize')).toEqual({
+      method: 'initialize',
+      clientInfo: { name: 'data-incident-investigator', version: '1.0.0' },
+    });
+  });
+
   it('requires an explicit safe endpoint/auth configuration and never falls back to fixtures', () => {
     expect(() =>
       createDataHubMcpMetadataAdapter({

@@ -385,15 +385,29 @@ The execution checklist above is historical and was found incomplete by independ
       evidence; keep the PR Draft and unmerged at that Phase 8.7 review gate. PR #56 later merged
       through current main; the running image remains bound to its earlier immutable source commit.
 
-## Phase 8 — `v1.0.0` final (not performed)
+## Phase 8 — `v1.0.0` final (preparation in progress; tag/Release not performed)
 
-- [ ] Confirm the accepted candidate, final scope, clean current `main`, and absence of an existing
-      `v1.0.0` tag or GitHub Release.
-- [ ] Set the root and all six private workspace manifests to `1.0.0`; perform the same deterministic
-      lockfile/frozen-install check.
-- [ ] Record only the changes since the candidate in a `1.0.0` changelog section with the actual cut
-      date, retain `Unreleased`, and use only links backed by existing Git refs.
-- [ ] Complete the final Phase 8 release/submission gates against the exact final commit.
+- [x] Start from accepted exact main `b4f9e360e22baba3cab60710a65ea5c0e0555369`, confirm the
+      bounded final-preparation scope, and verify that no `v1.0.0` tag, GitHub Release, duplicate
+      implementation branch, or duplicate PR exists. Preserve the existing `v1.0.0-rc.1` tag and
+      unpublished Draft Release unchanged.
+- [x] Set the root and all six private workspace manifests to `1.0.0`. Exact pnpm `11.9.0`
+      lockfile-only/frozen-install checks pass; the final production audit required only
+      `find-my-way@9.7.0` and `brace-expansion@5.0.8` transitive security overrides, producing final
+      lock SHA-256 `6194526652ac34a3f3b06e16fd8a055ff88cdbd77c51c8e6e3695b4b5611bf1d`.
+- [x] Record only verified changes since the candidate in `[1.0.0] - 2026-07-28`, retain a new empty
+      `Unreleased`, and add no comparison/tag/Release link before the final Git ref exists.
+- [x] Run the dirty-tree-compatible pre-commit technical gates once: Level D, canonical evaluation,
+      Browser fixture E2E, public root/health/readiness, production audit and its patched seam,
+      runtime attribution, formatting, links, claims, secrets, residue, processes, and ports.
+- [ ] The exact `fc2ba2f…` archive passed structural verification and production frozen install but
+      is rejected because packaged startup exposed an omitted DataHub MCP sibling module. After the
+      one authorized additive closure correction, build and verify the new exact clean-HEAD archive,
+      extracted runtime, and clean checkout once; record final identities/results in the mutable
+      Draft PR body so provenance remains bound to that commit without a third docs commit.
+- [ ] Complete independent Windows QA, normal merge, exact-main CI, and every still-open external
+      release/submission gate against the exact final commit. C14, live/judge DataHub MCP, C18/C19,
+      entrant/team/IP/media-rights/eligibility/consent, Rules-host video, and Devpost remain open.
 - [ ] After all gates pass, create and normally push immutable tag `v1.0.0`, create the matching GitHub
       Release, and verify both resolve to the exact validated commit.
 

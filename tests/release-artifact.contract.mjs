@@ -23,7 +23,9 @@ import {
 } from '../scripts/bundle-attribution.mjs';
 import {
   cleanReleaseBuildOutputs,
+  includeReleaseRuntimeFile,
   releaseBuildOutputRoots,
+  releaseRuntimeFiles,
   writeArtifactTransaction,
 } from '../scripts/build-release-artifact.mjs';
 import {
@@ -36,6 +38,7 @@ import {
   isAllowedPayloadPath,
   isSafeReleasePath,
   parseReleaseArchive,
+  requiredStaticFiles,
   validateThirdPartyAttribution,
   validateThirdPartyNotice,
   verifyArtifact,
@@ -137,11 +140,45 @@ test('release paths allow only canonical non-secret payload locations', () => {
   );
 });
 
-test('release payload allows compiled runtime workspaces and excludes their source', () => {
-  for (const packageName of ['agent-core', 'datahub-client', 'shared-types']) {
-    assert.equal(isAllowedPayloadPath(`packages/${packageName}/dist/index.js`), true);
-    assert.equal(isAllowedPayloadPath(`packages/${packageName}/dist/index.d.ts`), true);
-    assert.equal(isAllowedPayloadPath(`packages/${packageName}/src/index.ts`), false);
+test('release payload admits only the exact compiled runtime workspace closure', () => {
+  const expectedRuntimeFiles = [
+    'packages/agent-core/dist/index.d.ts',
+    'packages/agent-core/dist/index.js',
+    'packages/datahub-client/dist/datahub-mcp.d.ts',
+    'packages/datahub-client/dist/datahub-mcp.js',
+    'packages/datahub-client/dist/index.d.ts',
+    'packages/datahub-client/dist/index.js',
+    'packages/shared-types/dist/index.d.ts',
+    'packages/shared-types/dist/index.js',
+  ];
+  const verifierRuntimeFiles = requiredStaticFiles.filter(
+    (filePath) => filePath.startsWith('packages/') && filePath.includes('/dist/'),
+  );
+
+  assert.deepEqual(releaseRuntimeFiles, expectedRuntimeFiles);
+  assert.deepEqual(verifierRuntimeFiles, expectedRuntimeFiles);
+  assert.equal(expectedRuntimeFiles.every(isAllowedPayloadPath), true);
+  assert.equal(expectedRuntimeFiles.every(includeReleaseRuntimeFile), true);
+  for (const filePath of expectedRuntimeFiles.map((runtimePath) => `${runtimePath}.map`)) {
+    assert.equal(isAllowedPayloadPath(filePath), false);
+    assert.equal(includeReleaseRuntimeFile(filePath), false);
+  }
+
+  for (const forbiddenPath of [
+    'packages/agent-core/dist/helper.js',
+    'packages/datahub-client/dist/evil/index.js',
+    'packages/datahub-client/dist/arbitrary.js.map',
+    'packages/datahub-client/dist/unexpected.js',
+    'packages/DataHub-client/dist/index.js',
+    'packages\\datahub-client\\dist\\index.js',
+    'packages/shared-types/dist/private.d.ts',
+    'packages/datahub-client/src/datahub-mcp.ts',
+  ]) {
+    assert.equal(isAllowedPayloadPath(forbiddenPath), false);
+    assert.throws(
+      () => includeReleaseRuntimeFile(forbiddenPath),
+      /unexpected compiled runtime output/,
+    );
   }
 });
 

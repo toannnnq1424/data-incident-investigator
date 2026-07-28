@@ -7027,3 +7027,187 @@ Local result:
   authentic source media. Representative derivative frames at `00:05`, `01:10`, and `02:49` and
   decoded cues 1, 6, and 11 passed visual/audio review. C18 remains
   `PARTIAL — LOCAL CANDIDATE`; C19 remains `OPEN`.
+
+### Phase 8.10 — final validation and v1.0.0 release preparation
+
+Status: started on `codex/phase-8-10-final-validation-v1` from exact merged `origin/main`
+`b4f9e360e22baba3cab60710a65ea5c0e0555369` (tree
+`29f51960e9a772b8c331b427943920f296031bbe`; ordered parents
+`ceaed0a3f5a277884bf03eb2605c3dd5f70b4afe` and
+`efd64bc9da58e20399b877685aa7224357272d87`). Exact-main CI run `30329118539`, job
+`90180425391`, was `SUCCESS`. Read-only local, remote, and GitHub checks found no existing Phase
+8.10 branch or PR, no `v1.0.0` tag or Release, and only the untouched `v1.0.0-rc.1` annotated tag
+and Draft Release.
+
+Objective: run the roadmap's one final full validation checkpoint on the coordinated release
+candidate, then prepare the smallest truthful `1.0.0` metadata/doc change for independent review.
+This implementation slice ends at an exact-head green Draft PR; it does not create a tag or GitHub
+Release, publish media, mutate production, or take any Devpost action.
+
+Minimum files:
+
+- Root `package.json` plus the six private workspace `package.json` manifests, aligned to `1.0.0`
+  without changing dependency ranges, workspace links, privacy, licences, scripts, or behavior.
+- `pnpm-lock.yaml` only if exact pnpm `11.9.0` lockfile-only normalization changes its bytes.
+- `CHANGELOG.md` for a dated `1.0.0` section containing only verified changes since the release
+  candidate and a new empty `Unreleased` section, with no final tag/Release comparison link or
+  publication claim.
+- `docs/RELEASE_CHECKLIST.md`, `docs/IMPLEMENTATION_PLAN.md`, `docs/SESSION_LOG.md`,
+  `docs/REPOSITORY_MAP.md`, and `docs/KNOWN_ISSUES.md` only for directly affected release and
+  validation state. Update submission, deployment, or version-policy documents only if fresh
+  evidence materially changes their existing truthful claims.
+- No product source, tests, workflow, dependency, runtime, fixture, media, deployment, or GCP change
+  unless the full checkpoint first proves a genuine release blocker.
+
+Acceptance criteria:
+
+- All seven private Apache-2.0 manifests report `1.0.0`; exact pnpm `11.9.0` lockfile-only and
+  frozen-install checks pass, with a recorded before/after lock identity and no dependency change
+  except exact advisory-bounded overrides proven necessary by the final production audit.
+- Run Level D once on the coherent release-preparation tree: canonical repository validation,
+  canonical evaluation, fixture Browser E2E, production-dependency audit, release artifact
+  build/verify/provenance/checksums, extracted-artifact runtime checks, and an isolated clean-checkout
+  reproducibility gate. Recover and rerun only a failed seam; never rerun an unchanged green.
+- Check the supported public fixture deployment only through bounded root, `/health`, and `/ready`
+  requests. Create no incident and make no deployment, billing, access, credential, or GCP mutation.
+- Verify final version/changelog/manifest/lock consistency; absence of `v1.0.0` tag/Release; unchanged
+  `v1.0.0-rc.1` tag/Draft Release; artifact source/provenance/checksums; local links and formatting;
+  UTF-8/LF/final-newline/no-BOM; exact paths/diff; secrets/private-data/conflict/debug residue;
+  processes; and ports `3001`/`5173`.
+- Preserve C11 as qualified to its recorded immutable deployment scope, C14 as `OPEN`, live/judge
+  DataHub MCP validation as `PARTIAL`, C18 as `PARTIAL — LOCAL CANDIDATE`, and C19 as `OPEN`.
+  Entrant, team, IP, media-rights, eligibility, consent, judging-window access, Rules-host video, and
+  exact Devpost form gates remain explicitly unresolved where currently recorded.
+- Create one additive conventional commit, push normally, open exactly one Draft PR against the
+  exact starting `main`, require exact-head PR CI `SUCCESS`, and leave the branch/upstream clean.
+  Do not mark Ready, merge, tag, create/publish a Release, or alter the existing RC tag/Draft Release.
+
+Validation plan:
+
+- Bootstrap with `scripts/bootstrap-worktree.ps1`; run exact pnpm `11.9.0` lockfile-only and frozen
+  install checks, record manifest/lock identities, then run `pnpm validate` exactly once.
+- Build the evaluation package and run the canonical evaluation once; run
+  `pnpm test:e2e:report` once; and run the production dependency audit once.
+- Build one release archive with `pnpm release:artifact`; verify it with
+  `pnpm release:verify`; independently verify archive paths, provenance, checksums, extraction,
+  production frozen install, and supported packaged runtime health/readiness behavior.
+- Exercise a clean isolated checkout of the exact prepared commit with the repository bootstrap and
+  bounded reproducibility/essential release gates. Keep all temporary artifacts outside tracked
+  paths and remove them after evidence capture.
+- Use the official in-app Browser for the bounded public fixture route/health review and later for
+  unique Draft-PR creation/verification if required. Run final Markdown/local-link/claim/diff/path/
+  encoding/secret/residue/process/port checks only on the final changed set and reuse every unchanged
+  historical green.
+
+Deferred: any product feature/refactor/dependency upgrade without a proven blocker; another public
+incident or full smoke; live DataHub credentials/endpoint validation; deployment/GCP/billing/access
+extension; Devpost registration/form inspection/save/upload/submit; YouTube/Vimeo/Youku hosting or
+linkage; entrant/team/IP/media-rights/eligibility/consent attestation; `v1.0.0` tag or GitHub Release;
+versioned publication; PR Ready; merge; and all post-merge release actions.
+
+Local pre-commit result:
+
+- All seven private Apache-2.0 manifests now report `1.0.0`. Version preflight also found one stale
+  runtime identity: the DataHub MCP client still advertised `1.0.0-rc.1`. The smallest correction
+  changes only that initialization value and adds one protocol-fixture assertion; its focused file
+  passes 27/27 tests, and no other non-document RC identity remains.
+- The version-only pnpm `11.9.0` lockfile step initially left the 113,585-byte lock byte-identical at
+  SHA-256 `eeec795d5a09d5e8865b54bfbd95fb3557cce421c5369d99b6e2f89a472484b2`.
+  The required final production audit then failed on two high-severity denial-of-service advisories:
+  `find-my-way<=9.6.0` and `brace-expansion<=5.0.7`. Narrow workspace overrides select published
+  patched versions `9.7.0` and `5.0.8`; final frozen repository/installed lock bytes match at 113,649
+  bytes and SHA-256 `6194526652ac34a3f3b06e16fd8a055ff88cdbd77c51c8e6e3695b4b5611bf1d`.
+  The recovered production audit reports no known vulnerabilities.
+- Canonical `pnpm validate` ran once before that audit seam and passed formatting, lint, all six
+  workspace typechecks, 40 Vitest files / 381 tests, 15 release-artifact contracts, 10 runtime-
+  attribution contracts, all builds, and compiled `/health`/`/ready` smoke. After the two transitive
+  patches, only affected seams were repeated: 4 Fastify/static/runtime files / 35 tests, compiled
+  smoke, 15 release contracts, 10 runtime-attribution contracts, and Browser E2E all pass.
+- Canonical evaluation completed 7/7 cases with 0 failures, 1.0 retrieval precision/recall, 1.0
+  plausible top-1/top-3, 1.0 evidence precision/recall, 110/110 reference support, 0/18 unsupported
+  claims, 168 ms total recorded case latency, 26 tool calls, and zero model tokens. The dependency
+  security seam does not alter evaluation code or outputs, so that green was not rerun.
+- Local Browser E2E passed before the audit in 11.934 seconds and, because the Fastify/static graph
+  changed, passed the affected seam again in 22.541 seconds on dynamic task-owned ports. The official
+  in-app Browser's first public root navigation encountered only a Cloud Run cold-start timeout; the
+  same navigation then loaded the intake UI with Fixture metadata `Ready`. Read-only `/health`
+  returned `{"status":"ok"}` and `/ready` returned fixture `ready`. No public incident, credential,
+  private endpoint, deployment, or GCP mutation occurred.
+- Deterministic source runtime evidence was regenerated for the patched lock and source-verified:
+  152 full-production identities, 149 runtime identities/roots, and five bundled web packages.
+  `RUNTIME-ATTRIBUTION.json` SHA-256 is
+  `15a43d142771fceb7379c79459c385bc3af00e607ef0f53a914da6a95438776c`; the matching
+  `THIRD_PARTY_NOTICES.txt` SHA-256 is
+  `ce6e13e7d0378b20fa46de6492bd97e39b16aa7b3b6cb24bce218a3303ffc82b`.
+  This graph is not deployed; C11 remains qualified only for the immutable historical live source,
+  lock, evidence, and digest already recorded.
+- The release artifact builder requires a completely clean worktree and binds the exact commit/tree
+  into the archive. Therefore the one-commit contract requires artifact build/verify, extracted
+  runtime, and clean-checkout reproducibility checks immediately after the sole commit; their exact
+  identities/results belong in the mutable Draft PR body and terminal evidence, with no second docs
+  commit. Every unchanged external gate remains deferred exactly as listed above.
+
+#### Phase 8.10 targeted artifact-closure follow-up
+
+Status: authorized after exact local commit `fc2ba2f119a54df9b173c5e1c9ad776040ab0c23`
+produced a structurally verified archive whose packaged API failed before listening. The archive's
+`packages/datahub-client/dist/index.js` statically exports `./datahub-mcp.js`, but the release
+builder selected only that workspace's `index.js` and `index.d.ts`; Node therefore reported
+`ERR_MODULE_NOT_FOUND` for `packages/datahub-client/dist/datahub-mcp.js`. The failed PID, logs,
+archive, extraction, and fresh-checkout directories were removed, with no listener or residue left.
+
+Objective: repair only the proven compiled-runtime closure seam while preserving the original
+commit, exact version/lock/attribution identities, Windows-safe containment, and every unrelated
+green. This follow-up permits exactly one additive correction commit; it does not authorize history
+rewriting, a third commit, tag/Release creation, publication, deployment, or submission.
+
+Minimum files:
+
+- `scripts/build-release-artifact.mjs`: select an explicit, sorted, finite runtime-workspace file
+  closure rather than admitting arbitrary compiled files.
+- `scripts/verify-release-artifact.mjs`: independently require and allow the same exact current
+  runtime closure while retaining path, link/reparse, hash, manifest, provenance, and source-map
+  rejection.
+- `tests/release-artifact.contract.mjs`: hard-code the expected closure and prove both independent
+  lists admit every required file but reject unexpected runtime JavaScript, declarations, maps, and
+  source.
+- Persistent release evidence only where the failed post-commit result or its recovered result would
+  otherwise be stale. No manifest, lock, source package, dependency, workflow, fixture, media,
+  deployment, or submission change.
+
+Acceptance and validation:
+
+- The compiled local import/export closure remains exactly two files for `agent-core`, four for
+  `datahub-client`, and two for `shared-types`; builder and verifier contracts are independently
+  explicit and no broader directory/glob admission is added.
+- Run formatter, targeted lint, the release-artifact contract file, focused script syntax/type
+  checks, and the directly affected build only. Do not rerun full Level D, evaluation, audit,
+  Browser E2E, public smoke, or unrelated test suites.
+- From the clean new HEAD, build one new deterministic archive; independently verify its paths,
+  checksum, manifest, source commit/tree/version, production frozen install, and packaged fixture
+  `/health` and `/ready`. Then use one new no-hardlink fresh checkout to verify the same archive and
+  only the directly related artifact contract/build/runtime seam.
+- Finish exact diff/path/format/link/encoding/secret/residue/process/port checks, create the one
+  additive follow-up commit, push normally, open one Draft PR against unchanged exact main, and
+  require exact-head PR CI `SUCCESS`. Do not mark Ready or merge.
+
+Local focused pre-commit result:
+
+- Builder and verifier now carry separate exact eight-file runtime closure lists. Builder includes
+  only those files, ignores only their exact compiler map companions, and fails on every other
+  regular output under the three runtime `dist` roots. Verifier independently requires those eight
+  files and admits no other runtime-workspace payload path. The manifest now lists the three actual
+  software modes—`fixture`, `datahub`, and `datahub-mcp`—without changing the still-partial live MCP
+  validation status.
+- Prettier, targeted ESLint, Node syntax checks, the recovered 15/15 release-artifact contracts, the
+  four-workspace API dependency-closure typecheck, and the matching focused build pass. The compiled
+  outputs are exactly eight selected files plus their eight exact map companions; relative
+  import/export inspection finds only the closed `datahub-client` index/MCP cycle and no unexpected
+  runtime output.
+- The rejected `fc2ba2f…` archive remains failure evidence only and was removed. One replacement
+  archive and its extracted-runtime/fresh-checkout verification remain intentionally post-commit so
+  provenance can bind the new clean exact HEAD. Unchanged full-validation greens are reused.
+
+Deferred: every unchanged external and entrant gate listed above, plus tag/Release, deployment,
+media hosting, Devpost, another incident/public workflow, dependency change, full Level D rerun, and
+all post-merge actions.

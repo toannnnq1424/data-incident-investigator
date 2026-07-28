@@ -4,7 +4,7 @@
   "baseImage": "node:24-bookworm-slim@sha256:6f7b03f7c2c8e2e784dcf9295400527b9b1270fd37b7e9a7285cf83b6951452d",
   "lockfile": {
     "path": "pnpm-lock.yaml",
-    "sha256": "eeec795d5a09d5e8865b54bfbd95fb3557cce421c5369d99b6e2f89a472484b2",
+    "sha256": "6194526652ac34a3f3b06e16fd8a055ff88cdbd77c51c8e6e3695b4b5611bf1d",
     "packageEntries": 397,
     "snapshotEntries": 397,
     "distinctPackageNames": 377
@@ -32,7 +32,7 @@
       "avvio@9.3.0",
       "balanced-match@4.0.4",
       "body-parser@2.3.0",
-      "brace-expansion@5.0.7",
+      "brace-expansion@5.0.8",
       "bytes@3.1.2",
       "call-bind-apply-helpers@1.0.2",
       "call-bound@1.0.4",
@@ -70,7 +70,7 @@
       "fastify@5.10.0",
       "fastq@1.20.1",
       "finalhandler@2.1.1",
-      "find-my-way@9.6.0",
+      "find-my-way@9.7.0",
       "forwarded@0.2.0",
       "fresh@2.0.0",
       "function-bind@1.1.2",
@@ -190,7 +190,7 @@
       "avvio@9.3.0",
       "balanced-match@4.0.4",
       "body-parser@2.3.0",
-      "brace-expansion@5.0.7",
+      "brace-expansion@5.0.8",
       "bytes@3.1.2",
       "call-bind-apply-helpers@1.0.2",
       "call-bound@1.0.4",
@@ -228,7 +228,7 @@
       "fastify@5.10.0",
       "fastq@1.20.1",
       "finalhandler@2.1.1",
-      "find-my-way@9.6.0",
+      "find-my-way@9.7.0",
       "forwarded@0.2.0",
       "fresh@2.0.0",
       "function-bind@1.1.2",
@@ -771,21 +771,21 @@
         "legalFiles": [
           {
             "kind": "license",
-            "path": "node_modules/.pnpm/brace-expansion@5.0.7/node_modules/brace-expansion/LICENSE",
+            "path": "node_modules/.pnpm/brace-expansion@5.0.8/node_modules/brace-expansion/LICENSE",
             "sha256": "9c63a23124d68cd30cd316a94a1a0bca34f032786df6df69fc4b5f136bac8d2e",
             "source": "package",
             "text": "MIT License\n\nCopyright Julian Gruber <julian@juliangruber.com>\n\nTypeScript port Copyright Isaac Z. Schlueter <i@izs.me>\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.\n"
           }
         ],
-        "lockPackage": "brace-expansion@5.0.7",
-        "lockSnapshot": "brace-expansion@5.0.7",
+        "lockPackage": "brace-expansion@5.0.8",
+        "lockSnapshot": "brace-expansion@5.0.8",
         "name": "brace-expansion",
         "packageManifest": {
-          "path": "node_modules/.pnpm/brace-expansion@5.0.7/node_modules/brace-expansion/package.json",
-          "sha256": "f792e76015d954c06e8ac42cfa5664820126b2ecce01c987fe59de65bea57ab4"
+          "path": "node_modules/.pnpm/brace-expansion@5.0.8/node_modules/brace-expansion/package.json",
+          "sha256": "4d079b0aafed063861201a3ea955b3e1d08b93f0876860d4f8028efac496b57a"
         },
-        "packageRoot": "node_modules/.pnpm/brace-expansion@5.0.7/node_modules/brace-expansion",
-        "version": "5.0.7"
+        "packageRoot": "node_modules/.pnpm/brace-expansion@5.0.8/node_modules/brace-expansion",
+        "version": "5.0.8"
       },
       {
         "declaredLicense": "MIT",
@@ -1569,21 +1569,21 @@
         "legalFiles": [
           {
             "kind": "license",
-            "path": "node_modules/.pnpm/find-my-way@9.6.0/node_modules/find-my-way/LICENSE",
+            "path": "node_modules/.pnpm/find-my-way@9.7.0/node_modules/find-my-way/LICENSE",
             "sha256": "693f9539655acc1847add1ccd364312ba570bf8ce84706b6059e7e0b5ceb90e6",
             "source": "package",
             "text": "MIT License\n\nCopyright (c) 2017-2019 Tomas Della Vedova\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.\n"
           }
         ],
-        "lockPackage": "find-my-way@9.6.0",
-        "lockSnapshot": "find-my-way@9.6.0",
+        "lockPackage": "find-my-way@9.7.0",
+        "lockSnapshot": "find-my-way@9.7.0",
         "name": "find-my-way",
         "packageManifest": {
-          "path": "node_modules/.pnpm/find-my-way@9.6.0/node_modules/find-my-way/package.json",
-          "sha256": "e02a41e66a831eb5218c734b214e9a0fa453694b5730e0a588ff6ce805eeb80f"
+          "path": "node_modules/.pnpm/find-my-way@9.7.0/node_modules/find-my-way/package.json",
+          "sha256": "16f6c2ef9580032884b7f52cdbd672996305460518a757bfd493672e2479703b"
         },
-        "packageRoot": "node_modules/.pnpm/find-my-way@9.6.0/node_modules/find-my-way",
-        "version": "9.6.0"
+        "packageRoot": "node_modules/.pnpm/find-my-way@9.7.0/node_modules/find-my-way",
+        "version": "9.7.0"
       },
       {
         "declaredLicense": "MIT",
@@ -3911,12 +3911,12 @@
     },
     {
       "path": "packages/datahub-client/dist/datahub-mcp.js",
-      "sha256": "9ecd49672c562338de4325f20e39bb64ec4061ee63fe3a90a870d549f50cceaa",
-      "size": 28500
+      "sha256": "0e2cd803788fcc5693d4fe68544420d50c6faa96a06453219fd7e6b2b28010a2",
+      "size": 28495
     },
     {
       "path": "packages/datahub-client/dist/datahub-mcp.js.map",
-      "sha256": "4d1ea305bb335835d1f2609cab3331d0f2ef3819998cbb491fe5647667850ac8",
+      "sha256": "f6aa4f36a15b75905364f92f39e4d1ff9e70f6fecbaac3049b5c33d66b959fe6",
       "size": 27051
     },
     {
@@ -3973,25 +3973,25 @@
     },
     {
       "path": "THIRD_PARTY_NOTICES.txt",
-      "sha256": "9cc0b8b55f4a78435cf4d25b7f7f5aa05a981ee041963d38ab82e2afdcebccab",
+      "sha256": "ce6e13e7d0378b20fa46de6492bd97e39b16aa7b3b6cb24bce218a3303ffc82b",
       "size": 402446
     }
   ],
   "runtimeWorkspaceManifests": [
     {
       "path": "packages/agent-core/package.json",
-      "sha256": "27c023c132cd7ec7fbff25edc895980d14306b8c6132890338e58cc7a95808ae",
-      "size": 427
+      "sha256": "21753784bacba86006adc601f00caf9779936e78a4a820ebd21166f992b97dc2",
+      "size": 422
     },
     {
       "path": "packages/datahub-client/package.json",
-      "sha256": "ee5c9f4a5aa7dab034cc9463cab7d7cb7bf047c16b1c6f2ce9752a3d0f8ff298",
-      "size": 453
+      "sha256": "ed59213c12cb629f52b97e49fa4b5d0db19b67c686435b5ad053c9b1f8fc1eac",
+      "size": 448
     },
     {
       "path": "packages/shared-types/package.json",
-      "sha256": "2a9fb5ec460933b2f9c29776ad791a17e7739a92ff5df0a9ba3b72e3489bcd6d",
-      "size": 368
+      "sha256": "a3f4dfc9ebe91d7b018c297a1d485b25f38efb4d0a97ea1bcccc98c00a9eddd5",
+      "size": 363
     }
   ]
 }

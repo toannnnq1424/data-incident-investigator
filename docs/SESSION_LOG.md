@@ -6614,3 +6614,152 @@ open.
 Create one additive commit and normal push, open exactly one Draft PR against exact current `main`,
 require exact-head PR CI `SUCCESS`, and return the clean branch for independent Windows QA. Do not
 mark Ready, merge, host externally, or enter Devpost.
+
+## 2026-07-28 — Phase 8.10 final validation and v1.0.0 release preparation
+
+### Objective
+
+Prepare coordinated `1.0.0` metadata and execute the roadmap's single final full technical
+checkpoint from exact main `b4f9e360e22baba3cab60710a65ea5c0e0555369`, tree
+`29f51960e9a772b8c331b427943920f296031bbe`, without tagging, creating/publishing a GitHub Release,
+mutating the deployed fixture, hosting video externally, or taking any Devpost action.
+
+### Completed locally before the single commit
+
+- Proved exact starting parents `ceaed0a3f5a277884bf03eb2605c3dd5f70b4afe` then
+  `efd64bc9da58e20399b877685aa7224357272d87`, exact-main CI `30329118539` / `90180425391`
+  `SUCCESS`, no duplicate local/remote Phase 8.10 branch, no matching open/closed GitHub PR, no
+  `v1.0.0` tag or Release, and only the retained `v1.0.0-rc.1` annotated tag/unpublished Draft
+  Release.
+- Aligned the root plus six private Apache-2.0 workspace manifests to `1.0.0`. Version preflight
+  found a genuine release blocker in the runtime MCP initialization identity; corrected only its
+  stale `1.0.0-rc.1` value and added one focused client-metadata assertion. The focused MCP file
+  passes 27/27 tests.
+- Ran exact pnpm `11.9.0` lockfile-only and frozen-install checks under Node `24.14.0`. The first
+  version-only pass preserved the 113,585-byte lock at SHA-256 `eeec795d…84b2`. The required
+  production audit then identified high-severity denial-of-service advisories on
+  `find-my-way<=9.6.0` and `brace-expansion<=5.0.7`, proving the permitted dependency blocker.
+  Narrow overrides select `find-my-way@9.7.0` and `brace-expansion@5.0.8`; final repository and
+  installed locks byte-match at 113,649 bytes and SHA-256
+  `6194526652ac34a3f3b06e16fd8a055ff88cdbd77c51c8e6e3695b4b5611bf1d`. Recovered
+  `pnpm audit --prod --audit-level=low` reports no known vulnerabilities. `docs/SECURITY.md`
+  records each override's removal condition and the exact frozen-install, path, affected-test,
+  smoke/E2E, attribution, and audit revalidation required after removal.
+- Regenerated deterministic runtime attribution/notices for the patched graph and source-verified
+  152 full-production identities, 149 packaged/runtime identities/roots, and five bundled web
+  packages. `RUNTIME-ATTRIBUTION.json` is SHA-256
+  `15a43d142771fceb7379c79459c385bc3af00e607ef0f53a914da6a95438776c`; the matching
+  `THIRD_PARTY_NOTICES.txt` is SHA-256
+  `ce6e13e7d0378b20fa46de6492bd97e39b16aa7b3b6cb24bce218a3303ffc82b`. This future-release
+  graph is not deployed; the public service/C11 evidence remains bound to immutable source
+  `3653cf6b…7fa4f`, lock `eeec795d…84b2`, and digest `fe56a3dc…36afd`.
+- Curated `[1.0.0] - 2026-07-28` with only integrated changes since RC, retained an empty
+  `Unreleased`, and added no final comparison link, tag, Release, publication, or submission claim.
+  Updated only directly affected release, deployment-boundary, repository-map, known-issue, and
+  judge-state wording. C11/C14/MCP/C18/C19 and all entrant/external gates retain their prior statuses.
+
+### Validation performed
+
+- Canonical `pnpm validate` ran once and passed Prettier, ESLint, all six workspace typechecks, 40
+  Vitest files / 381 tests, 15 release-artifact contracts, 10 runtime-attribution contracts, all
+  builds, and compiled fixture `/health`/`/ready` smoke.
+- Canonical evaluation completed all 7 cases with 0 failures: retrieval/evidence/top-1/top-3 metrics
+  are 1.0, reference support is 110/110, unsupported claims are 0/18, total recorded case latency is
+  168 ms, tool calls are 26, and token use is zero.
+- Browser report E2E passed in 11.934 seconds before the audit. After the Fastify/static transitive
+  graph changed, only the affected seams were rerun: Browser E2E passed in 22.541 seconds; 4 focused
+  runtime files / 35 tests, compiled smoke, 15 release contracts, 10 runtime-attribution contracts,
+  source attribution verification, and the recovered production audit all pass.
+- The official in-app Browser's first public root navigation hit only the expected Cloud Run cold-
+  start timeout; the same tab then loaded the real app intake with Fixture metadata `Ready`.
+  `/health` returned `{"status":"ok"}` and `/ready` returned fixture mode `ready`. No public incident
+  or write request was created.
+- The closing bounded pre-commit pass covers all seven manifest identities, final lock/installed-
+  lock bytes, changelog/date/tag boundaries, judge claims, local links, formatting, UTF-8/LF/final-
+  newline/no-BOM, exact changed paths, added-line secret/private-data/conflict/debug patterns,
+  residue, processes, and ports. Full unchanged gates are not rerun after docs-only evidence updates.
+
+### Validation intentionally deferred until the exact clean commit
+
+The release builder refuses a dirty worktree and binds exact `HEAD`/tree into its archive. To satisfy
+the user's one-commit requirement without circular provenance, build/verify the one release archive,
+independently verify checksums/manifest/tree, extract and production-frozen-install it, run packaged
+fixture health/readiness, and exercise a no-hardlink clean checkout immediately after the sole
+commit. Record exact post-commit evidence in the mutable Draft PR body and terminal handoff; do not
+create a second docs commit.
+
+### Known issues and deferred external gates
+
+C11 remains `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE` only for its recorded live digest; C14 remains
+`OPEN`; live/judge DataHub MCP remains `PARTIAL`; C18 remains `PARTIAL — LOCAL CANDIDATE`; C19
+remains `OPEN`. Entrant/team/IP/media-rights/eligibility/consent, judging-period access, Rules-listed
+YouTube/Vimeo/Youku hosting/linkage, Devpost registration/form/submission, `v1.0.0` tag, GitHub
+Release, publication, independent QA, Ready, and merge all remain separate gates.
+
+### Exact next step
+
+Create the one conventional commit after the closing bounded docs/path/secret/residue pass, require
+a clean exact HEAD, run the post-commit artifact/fresh-checkout gates once, push normally, open exactly one
+Draft PR against the unchanged starting main, require exact-head PR CI `SUCCESS`, and return
+`READY FOR INDEPENDENT WINDOWS QA`. Do not mark Ready, merge, tag, create/publish a Release, deploy,
+host media externally, or enter Devpost.
+
+## 2026-07-28 — Phase 8.10 targeted release-artifact closure correction
+
+### Trigger and authorization
+
+The clean exact commit `fc2ba2f119a54df9b173c5e1c9ad776040ab0c23` produced local archive
+`data-incident-investigator-v1.0.0-fc2ba2f119a5.tar.gz`: 352,827 bytes, 32 files, SHA-256
+`6dc337d30838632c59cf30ebacabb051cd68c80df7c350276cb2e5bd4914ff89`. Archive and extracted-
+directory verification, provenance, sidecar, manifest, and `pnpm install --prod --frozen-lockfile
+--ignore-scripts` passed. Direct fixture startup then failed before listening with
+`ERR_MODULE_NOT_FOUND` for `packages/datahub-client/dist/datahub-mcp.js`, imported by the archived
+`dist/index.js`. The exact PID/logs, rejected archive, extraction, and fresh-checkout directories
+were removed; no port or helper remained. This is a compiled artifact-closure defect, not a package-
+lock, environment, public-service, deployment, or DataHub credential failure.
+
+The controller authorized exactly one additive follow-up commit on the same branch. Commit
+`fc2ba2f…` remains unchanged; amend, rebase, reset, squash, force-push, history rewrite, and a third
+commit remain forbidden.
+
+### Targeted correction
+
+- Confirmed the compiled closure: `agent-core` and `shared-types` each require only index JavaScript
+  and declarations; `datahub-client/index.js` and `index.d.ts` export `./datahub-mcp.js`, whose
+  JavaScript and declaration import the index module, so that workspace requires exactly four files.
+- `scripts/build-release-artifact.mjs` now selects the exact sorted eight-file runtime closure,
+  ignores only the corresponding eight compiler map files, and fails closed on every other regular
+  runtime output. Existing canonical containment, link/reparse rejection, cleanup transaction,
+  source exclusion, file limits, and provenance remain unchanged.
+- `scripts/verify-release-artifact.mjs` independently requires the same exact eight payload files and
+  rejects any other runtime-workspace file. Its runtime manifest now records all three implemented
+  modes: `fixture`, `datahub`, and `datahub-mcp`; this does not advance authorized live/judge MCP
+  validation beyond `PARTIAL`.
+- `tests/release-artifact.contract.mjs` hard-codes both lists, proves exact required files are
+  admitted, exact map companions are excluded, and arbitrary JS/DTS/maps/source paths fail. Only
+  directly affected release/deployment/persistent wording changes; manifests, lock, attribution,
+  runtime source, dependencies, workflows, fixtures, media, deployment, and submission state do not.
+
+### Focused pre-commit validation
+
+- Prettier, targeted ESLint, and Node syntax checks pass for the changed scripts/contracts/docs. The
+  first contract run passed 14/15 and exposed only an incorrect test expectation that an exact map
+  companion should throw rather than return excluded; after separating exact ignored maps from
+  unexpected outputs, the recovered release-artifact contract run passes 15/15.
+- Focused `@dii/api...` typecheck and build pass across `shared-types`, `datahub-client`,
+  `agent-core`, and the API. The compiled runtime inventory is exactly eight selected files plus
+  eight exact map companions, with no unexpected output; relative import/export inspection confirms
+  only the closed DataHub client index/MCP cycle.
+- Full Level D, 7/7 evaluation, production audit, Browser E2E/public health-readiness, and unrelated
+  tests remain reused unchanged. A new clean-HEAD artifact, extracted production runtime, and one
+  directly related no-hardlink fresh-checkout artifact seam remain post-commit gates; exact results
+  belong in the Draft PR body and terminal handoff to preserve provenance without a third commit.
+
+### Deferred and next step
+
+Run final bounded format/link/diff/path/encoding/secret/residue/process/port checks, create the one
+additive correction commit, then from its clean exact HEAD build and verify one replacement archive,
+production frozen-install and fixture runtime, and one focused fresh-checkout artifact seam. If all
+pass, push the two-commit branch normally, open one Draft PR against unchanged exact main, and require
+exact-head PR CI `SUCCESS`. Do not mark Ready, merge, tag, create/publish a Release, deploy, mutate
+GCP, host media externally, enter Devpost, or change C11/C14/live MCP/C18/C19 status.

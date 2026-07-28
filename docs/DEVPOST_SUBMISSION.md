@@ -151,7 +151,8 @@ No Devpost challenge control has been selected.
   precedes it; the Public repository fallback remains essential.
 - One authentic 2:50.20 app-only video source now exists in both silent and synchronized English
   male-voice repository variants. The voiced derivative changes no video packet/frame, uses only an
-  offline installed Windows AI voice, and remains only a Public GitHub repository/PR asset—not a
+  offline installed Windows AI voice, and remains only a Public GitHub repository asset on merged
+  `main`—not a
   Rules-compliant hosted-and-linked Devpost video.
 - Registration, entrant eligibility, ownership/rights attestations, YouTube/Vimeo/Youku hosting and
   Devpost linking, final form review, and submission remain undone.

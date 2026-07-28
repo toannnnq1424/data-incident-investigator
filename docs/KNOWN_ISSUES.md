@@ -1,13 +1,13 @@
 # Known issues
 
-Last updated: 2026-07-27.
+Last updated: 2026-07-28.
 
 - Current main is exact normal merge
-  `ceaed0a3f5a277884bf03eb2605c3dd5f70b4afe`, tree
-  `0d38dd187fc6f3cd166d88287112f1dc3a46f867`, with ordered parents
-  `082d617cab203393f87d0cc3b97aff5ca2b3a3dc` then
-  `d8756edcfe53356b41f227f6c4a655f11748feab`. PR #58 is merged historical and its branch/
-  conversation remain retained. Exact-main CI run `30232489891`, job `89873846528`, is `SUCCESS`.
+  `b4f9e360e22baba3cab60710a65ea5c0e0555369`, tree
+  `29f51960e9a772b8c331b427943920f296031bbe`, with ordered parents
+  `ceaed0a3f5a277884bf03eb2605c3dd5f70b4afe` then
+  `efd64bc9da58e20399b877685aa7224357272d87`. PR #59 is merged historical and its branch/
+  conversation remain retained. Exact-main CI run `30329118539`, job `90180425391`, is `SUCCESS`.
   The
   prior Phase 8.6 main, main CI run `30188091600`, and job `89756253516` remain historical
   Phase 8.5/8.6 evidence. Phase 8.6 records C11 as
@@ -32,6 +32,23 @@ Last updated: 2026-07-27.
   private endpoints, external media, or visible runtime failure. The Phase 8.9 capture script emitted
   one non-visual instrumentation page error when its scrollbar style ran before the initial document
   element existed; no app-console-clean claim is made for the take.
+
+- Phase 8.10 prepares coordinated `1.0.0` metadata without creating a `v1.0.0` tag or GitHub
+  Release. All seven private Apache-2.0 manifests are aligned, and a release preflight found and
+  corrected the stale `1.0.0-rc.1` DataHub MCP client protocol identity with focused coverage. The
+  version-only pnpm `11.9.0` lockfile step initially preserved SHA-256 `eeec795d…84b2`; the final
+  production audit then proved two high-severity denial-of-service release blockers. Narrow
+  overrides now select `find-my-way@9.7.0` and `brace-expansion@5.0.8`; the final frozen lock is
+  113,649 bytes at SHA-256 `6194526652ac34a3f3b06e16fd8a055ff88cdbd77c51c8e6e3695b4b5611bf1d`,
+  and the recovered production audit reports no known vulnerabilities. Deterministic source
+  runtime attribution was regenerated and verified for that graph; this release-preparation graph
+  has not been deployed. The exact `fc2ba2f…` archive passed structural verification and production
+  frozen install but is rejected local evidence: packaged startup failed because its
+  `datahub-client/dist/index.js` re-exported an omitted `datahub-mcp.js`. The targeted follow-up uses
+  a closed four-file DataHub client runtime list and matching independent verifier contract; a new
+  clean-HEAD archive, extracted runtime, and fresh-checkout proof remain pending until the additive
+  correction commit. No rejected archive was uploaded or retained. The existing `v1.0.0-rc.1`
+  annotated tag and unpublished Draft Release remain untouched.
 - The Phase 8.9 repository fallback rehearsal used the bundled Node `24.14.0` and pnpm `11.9.0`.
   With the existing frozen install, Vite reported ready in `549 ms`; API `/health`, fixture `/ready`,
   and web `/` all returned successfully by the bounded `10.1 s` probe. No local incident was started.
@@ -124,7 +141,7 @@ Last updated: 2026-07-27.
   truthfully labeled upstream fallback for `abstract-logging@2.0.1` at exact tag commit
   `80dfaef91ee87008f4ed2b6e78921d383bccd406`. Source, local production-image, and exact live-digest
   verification pass: all 8 runtime files, 149 package manifests/roots, and 149 package legal files
-  matched the tracked evidence. C11 is restored to
+  matched the evidence at immutable deployed source `3653cf6b…7fa4f`. C11 is restored to
   `QUALIFIED PASS — OWNER-AUTHORIZED SCOPE` for the exact `fe56a3dc…36afd` live digest. Phase 8.2
   remains `PARTIAL`; captured declarations/texts are engineering evidence, not compatibility or
   legal approval. The newer
