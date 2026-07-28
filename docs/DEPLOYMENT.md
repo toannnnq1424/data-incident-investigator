@@ -741,6 +741,31 @@ under a separate exact cleanup check, then preserve the 2026-08-10 or 20%-remain
 stop/delete/detach boundary. Any later documentation-only commit records evidence only: the running
 revision remains bound to source commit `3653cf6b…7fa4f`, not that later repository HEAD.
 
+## Phase 8.11 superseding judge-access operating window
+
+Access date: **2026-07-28**. This is an owner-authorized operating-policy supersession, not a
+redeploy or Cloud Run configuration change. Signed-in read-only Console evidence showed the existing
+`data-incident-investigator` service ready in `asia-southeast1`, still public at the documented URL,
+with automatic scaling minimum `0` and maximum `1`. The billing account remains a Paid account; its
+July 1–28 cost summary showed `₫0` net cost after `₫3.78K` savings. The active Welcome credit showed
+`100%` and `₫7,886,121.22` remaining of `₫7,889,850.00`, expiring **2026-10-07**. Reporting and
+credit eligibility can lag or vary, and neither figure is a hard spending cap.
+
+The owner explicitly supersedes the historical manual 2026-08-10/20%-credit shutdown policy:
+
+- keep the public fixture available through **2026-09-17 23:59 ICT / 2026-09-17 16:59 UTC /
+  2026-09-17 12:59 EDT**, beyond the official judging end;
+- treat 20% reported credit remaining as a monitor-and-escalate signal, not an automatic
+  pre-judging stop;
+- retain emergency removal for a security incident, uncontrolled billing, provider enforcement, or
+  another material safety event; and
+- keep the Public repository quickstart as the durable judge fallback.
+
+No scheduler, reminder, billing cap, or date-based Cloud Run control existed to edit. This slice
+does not change traffic, image, revision, capacity, region, APIs, billing association, or runtime.
+C14 is therefore **PASS — OWNER-AUTHORIZED OPERATING WINDOW** as an operating commitment; it is not
+an absolute uptime or zero-cost guarantee.
+
 Official sources accessed 2026-07-26:
 
 - [Google Cloud Free Program](https://docs.cloud.google.com/free/docs/free-cloud-features)

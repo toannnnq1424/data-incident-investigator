@@ -2,12 +2,14 @@
 
 Last updated: 2026-07-28.
 
-- Current main is exact normal merge
-  `b4f9e360e22baba3cab60710a65ea5c0e0555369`, tree
-  `29f51960e9a772b8c331b427943920f296031bbe`, with ordered parents
-  `ceaed0a3f5a277884bf03eb2605c3dd5f70b4afe` then
-  `efd64bc9da58e20399b877685aa7224357272d87`. PR #59 is merged historical and its branch/
-  conversation remain retained. Exact-main CI run `30329118539`, job `90180425391`, is `SUCCESS`.
+- Current released main is exact normal merge
+  `a28e21c06ad623f1547c02a6d65fd900fa8472a4`, tree
+  `e0594ddecbe9d82f30e7b3005a51cb8df9283bf8`, with ordered parents
+  `b4f9e360e22baba3cab60710a65ea5c0e0555369` then
+  `03f72172a9742b3f3f84b33c131cb0d4393a3193`. PR #60 is merged historical and its branch/
+  conversation remain retained. Exact-main CI run `30338530196`, job `90208641358`, is `SUCCESS`.
+  Annotated tag object `eb26bc54fccd4cc0ebeacfb14539008a03da687a` (`v1.0.0`) resolves to that
+  exact merge, and the matching GitHub Release is Published/Latest.
   The
   prior Phase 8.6 main, main CI run `30188091600`, and job `89756253516` remain historical
   Phase 8.5/8.6 evidence. Phase 8.6 records C11 as
@@ -23,18 +25,26 @@ Last updated: 2026-07-28.
   and all 4,255 source PTS/DTS/duration/content hashes retained, plus locally synthesized Microsoft
   Mark Adult/Male English narration: Opus 48 kHz mono, `-18.0 LUFS`, `-1.0 dBTP`, zero clipped
   samples, and all 11 utterances inside their scene boundaries. Microsoft Mark is an installed
-  Windows voice used offline without network, account,
-  credential, paid service, or ElevenLabs; no voice model/tool is redistributed and final entrant
-  rights review remains open. Neither variant is hosted on YouTube/Vimeo/Youku, linked in Devpost,
-  accepted, or submitted; GitHub access does not satisfy the Rules' video-host/form-link condition.
-  C18 remains only `PARTIAL — LOCAL CANDIDATE`; C19 remains `OPEN`. Key-frame review found only the
-  application and synthetic fixture data, with no browser/Windows/account chrome, credentials,
-  private endpoints, external media, or visible runtime failure. The Phase 8.9 capture script emitted
-  one non-visual instrumentation page error when its scrollbar style ran before the initial document
+  Windows voice used offline without network, account, credential, paid service, or ElevenLabs; no
+  voice model/tool is redistributed and final entrant rights review remains open. The voiced
+  derivative is Public at <https://youtu.be/D5mvMqrhyDc> with the authored English WebVTT published,
+  exact title **Data Incident Investigator — 2:50 Functioning Demo (Synthetic Fixture)**, and no
+  copyright issue detected by YouTube's upload check. C18 is `PASS`; C19 is `PARTIAL` because the
+  URL has not been entered in a Devpost project form. Key-frame review found only the application
+  and synthetic fixture data, with no browser/Windows/account chrome, credentials, private
+  endpoints, external media, or visible runtime failure. The Phase 8.9 capture script emitted one
+  non-visual instrumentation page error when its scrollbar style ran before the initial document
   element existed; no app-console-clean claim is made for the take.
 
-- Phase 8.10 prepares coordinated `1.0.0` metadata without creating a `v1.0.0` tag or GitHub
-  Release. All seven private Apache-2.0 manifests are aligned, and a release preflight found and
+- The entrant's Devpost account is registered for the challenge as **Working solo**, and Join records
+  **Open / Wildcard** as the category of interest. The user personally completed the registration
+  controls; the repository does not independently prove the underlying eligibility, ownership, or
+  rights facts. No project form has been created, saved, or submitted, and the YouTube URL has not
+  been entered in Devpost.
+
+- Phase 8.10 completed coordinated `1.0.0` metadata, full validation, normal merge, annotated
+  `v1.0.0` tag, and Published/Latest GitHub Release. All seven private Apache-2.0 manifests are
+  aligned, and a release preflight found and
   corrected the stale `1.0.0-rc.1` DataHub MCP client protocol identity with focused coverage. The
   version-only pnpm `11.9.0` lockfile step initially preserved SHA-256 `eeec795d…84b2`; the final
   production audit then proved two high-severity denial-of-service release blockers. Narrow
@@ -45,10 +55,10 @@ Last updated: 2026-07-28.
   has not been deployed. The exact `fc2ba2f…` archive passed structural verification and production
   frozen install but is rejected local evidence: packaged startup failed because its
   `datahub-client/dist/index.js` re-exported an omitted `datahub-mcp.js`. The targeted follow-up uses
-  a closed four-file DataHub client runtime list and matching independent verifier contract; a new
-  clean-HEAD archive, extracted runtime, and fresh-checkout proof remain pending until the additive
-  correction commit. No rejected archive was uploaded or retained. The existing `v1.0.0-rc.1`
-  annotated tag and unpublished Draft Release remain untouched.
+  a closed four-file DataHub client runtime list and matching independent verifier contract. The
+  replacement artifact, extracted runtime, focused fresh-checkout proof, PR CI, exact-main CI, tag,
+  and Published/Latest Release all passed. No rejected archive was uploaded or retained. The
+  existing `v1.0.0-rc.1` annotated tag and unpublished Draft Release remain untouched.
 - The Phase 8.9 repository fallback rehearsal used the bundled Node `24.14.0` and pnpm `11.9.0`.
   With the existing frozen install, Vite reported ready in `549 ms`; API `/health`, fixture `/ready`,
   and web `/` all returned successfully by the bounded `10.1 s` probe. No local incident was started.
@@ -88,8 +98,12 @@ Last updated: 2026-07-28.
   `7ad5ea5d-c7f2-4999-ada4-175b94d56fd9` produced immutable digest
   `sha256:fe56a3dc7c8c4fb6e11b329adb107fb7efd8e4de0bece8820027f324d4f36afd`.
   Bangkok has a lower published Tier 1 unit price, but the owner explicitly chose to keep the healthy
-  Singapore service. Stop/delete/detach billing by 2026-08-10 or at 20% reported credit remaining,
-  whichever occurs first. This does not guarantee access through the 2026-08-31 judging end.
+  Singapore service. Phase 8.11 supersedes the historical stop policy: keep public access through
+  2026-09-17 23:59 ICT, beyond judging; a 20%-remaining-credit signal now triggers monitoring and
+  owner escalation rather than automatic pre-judging shutdown. Signed-in read-only Console evidence
+  on 2026-07-28 showed the service ready at minimum `0` / maximum `1`, July net cost `₫0`, and active
+  credit `100%` / `₫7,886,121.22` remaining through 2026-10-07. Emergency security or uncontrolled-
+  billing containment remains possible, so the repository fallback is retained.
 
 - Phase 8.4A is integrated through exact normal merge
   `36d4205806597ae14b7306c74e1527c284202023`, tree

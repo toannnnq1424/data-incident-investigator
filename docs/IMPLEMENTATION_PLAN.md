@@ -7211,3 +7211,86 @@ Local focused pre-commit result:
 Deferred: every unchanged external and entrant gate listed above, plus tag/Release, deployment,
 media hosting, Devpost, another incident/public workflow, dependency change, full Level D rerun, and
 all post-merge actions.
+
+### Phase 8.11 — authorized submission-readiness reconciliation
+
+Status: started on `codex/phase-8-11-submission-readiness` from exact released `origin/main`
+`a28e21c06ad623f1547c02a6d65fd900fa8472a4` (tree
+`e0594ddecbe9d82f30e7b3005a51cb8df9283bf8`). The annotated `v1.0.0` tag object
+`eb26bc54fccd4cc0ebeacfb14539008a03da687a` resolves to that exact merge; the Published/Latest
+Release and exact-main CI run `30338530196` / job `90208641358` are successful.
+
+Objective: consume only the owner's newly explicit external-action authorizations needed to remove
+the remaining submission-readiness mismatches: extend the public fixture operating window through
+2026-09-17, select and host the already verified male-voice functioning demo, and join the DataHub
+hackathon as an individual through the signed-in Google session. Reconcile persistent claims with
+the resulting evidence without changing the application, release, deployment configuration, media
+bytes, or prior historical records.
+
+Minimum files:
+
+- `README.md`, `docs/DEPLOYMENT.md`, `docs/DEVPOST_REQUIREMENTS.md`,
+  `docs/DEVPOST_SUBMISSION.md`, `docs/JUDGE_QUICKSTART.md`, and
+  `docs/CLAIM_TO_DEMO_MATRIX.md` for the superseding C14 operating window and final hosted-video
+  evidence.
+- `docs/demo-video/README.md` for the selected male-voice derivative, unchanged source/hash, and
+  exact YouTube hosting/caption state.
+- `docs/RELEASE_CHECKLIST.md`, `docs/KNOWN_ISSUES.md`, `docs/REPOSITORY_MAP.md`, and `CHANGELOG.md`
+  only to correct stale pre-publication `v1.0.0` wording and append the superseding external-gate
+  state without rewriting historical checklist evidence.
+- `docs/PUBLIC_SOURCE_APACHE_READINESS.md`, this plan, and `docs/SESSION_LOG.md` only where the new
+  operating authorization or external evidence directly changes the current claim.
+
+Acceptance criteria:
+
+- Reconfirm the current public service is ready with minimum `0` and maximum `1`, the Paid billing
+  account still has sufficient unexpired credit, and no scheduler currently enforces the historical
+  2026-08-10 stop. Record the owner's superseding commitment to keep public access through
+  **2026-09-17 23:59 ICT / 2026-09-17 16:59 UTC / 2026-09-17 12:59 EDT**. The historical 20%-credit
+  condition becomes a monitor-and-escalate trigger, not an automatic pre-judging stop; emergency
+  security or uncontrolled-billing response remains allowed. Do not redeploy or increase capacity.
+- Select only `docs/demo-video/phase-8-9a-demo-voiceover.webm`, preserving its exact
+  `f52daa606f3cf9f627909e23422ca2d14fd92db1f5c4ed6ca304744c5608ab33` SHA-256 and its matching
+  English WebVTT. Use a truthful judge-facing title/description, choose Public visibility, and
+  verify the final YouTube URL, processing, copyright checks, playback, and caption availability.
+- Use the signed-in Google session to create or reuse the entrant's Devpost account and execute
+  **Join Hackathon** as an individual. Open / Wildcard remains the primary challenge positioning.
+  Do not invent or self-attest age, residence, sanctions/conflicts, ownership, contributor/off-repo
+  work, IP/media rights, publicity/data consent, or other personal/legal facts that cannot be
+  derived from repository evidence. Stop at any such required control and request the entrant's
+  exact confirmation.
+- Preserve live/judge DataHub MCP as `PARTIAL`, C11 as its existing qualified immutable-deployment
+  status, and final Devpost submission/receipt as open until independently completed. Do not create
+  another incident, alter media, deploy, add a credential, enter payment/card data, or submit the
+  project form.
+- Run only changed-document Prettier/format/link/claim consistency plus exact diff/path,
+  UTF-8/LF/no-BOM, secret/private-data/conflict/debug, residue/process/port checks. Reuse all
+  unchanged release, CI, media, evaluation, browser-E2E, and deployment greens.
+
+Deferred: authorized live DataHub endpoint/credential validation; every entrant-specific fact or
+legal attestation not expressly supplied; project-form completion and final submission/receipt;
+new application/runtime/workflow/package/lock/version/tag/Release/deployment changes; another
+incident or full validation; and any destructive GCP cleanup before the new operating boundary.
+
+Result:
+
+- Signed-in read-only Cloud Console evidence confirmed the existing public service Ready at minimum
+  `0` / maximum `1`, July net cost `₫0`, and active Welcome credit
+  `₫7,886,121.22` through 2026-10-07. No scheduler or date-based control existed to change, and no
+  GCP mutation occurred. C14 advances to `PASS — OWNER-AUTHORIZED OPERATING WINDOW`.
+- The exact unchanged male-voice derivative, 13,185,933 bytes at SHA-256
+  `f52daa606f3cf9f627909e23422ca2d14fd92db1f5c4ed6ca304744c5608ab33`, was published Public at
+  <https://youtu.be/D5mvMqrhyDc> under **Data Incident Investigator — 2:50 Functioning Demo
+  (Synthetic Fixture)**. The authored English WebVTT was uploaded and YouTube Studio reports the
+  English track published; the upload copyright check found no issue, and the public watch page
+  exposes the matching 11-entry timed transcript. The public description links the app, repository,
+  judge quickstart, repository media packet, submission draft, `v1.0.0` Release, and challenge page.
+  YouTube's hosted transcode is not represented as byte-identical to the repository WebM.
+- The signed-in Devpost account completed challenge registration and individual Join. The observed
+  success page says **Thanks for registering!** and exposes **Start project**; the registration
+  records **Working solo** and **Open / Wildcard** as the challenge category of interest. The user
+  performed the required registration confirmations directly. No project was started or imported,
+  no project form was created or saved, no video URL was entered, and no submission was made.
+- C18 advances to `PASS`. C19 is `PARTIAL — PUBLIC HOSTED / DEVPOST LINK OPEN`. Live/judge DataHub
+  MCP validation, independent entrant ownership/rights facts, project-form completion, final
+  submission, and receipt remain separate gates.

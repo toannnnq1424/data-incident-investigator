@@ -1,6 +1,8 @@
 # Devpost submission draft
 
-> Draft copy only. No copy or link from this file has been entered, saved, or submitted in Devpost.
+> Draft project-form copy only. Devpost registration and individual **Join Hackathon** are complete,
+> but no project form has been created, saved, or submitted, and no copy or link from this file has
+> been entered in a project form.
 
 ## Title
 
@@ -17,17 +19,21 @@ an auditable report with transparent confidence, blast radius, and safe human ne
   <https://data-incident-investigator-1071683558688.asia-southeast1.run.app>
 - Public Apache-2.0 repository:
   <https://github.com/toannnnq1424/data-incident-investigator>
+- Published `v1.0.0` release:
+  <https://github.com/toannnnq1424/data-incident-investigator/releases/tag/v1.0.0>
 - Judge instructions: [`JUDGE_QUICKSTART.md`](JUDGE_QUICKSTART.md)
 - Screenshot gallery: [`demo-assets/README.md`](demo-assets/README.md)
+- Public 2:50 functioning demo: <https://youtu.be/D5mvMqrhyDc>
 - Repository silent/voiced video candidates and review packet:
   [`demo-video/README.md`](demo-video/README.md)
 
 The Public repository quickstart is the fallback if the Cloud Run fixture service is cold or
 unavailable. The exact authentic 2:50.20 silent source is public on merged `main`; a separate Phase
 8.9A derivative stream-copies the same real video and adds synchronized Microsoft Mark synthetic
-male English narration plus matching captions/transcript. These are Public GitHub repository assets,
-not Rules-listed hosted submission videos. Neither has been uploaded to or made publicly visible on
-YouTube, Vimeo, or Youku, linked or entered in Devpost, accepted by an organizer, or submitted.
+male English narration plus matching captions/transcript. The voiced derivative is now Public on
+YouTube under **Data Incident Investigator — 2:50 Functioning Demo (Synthetic Fixture)** with the
+authored English WebVTT published. The YouTube URL has not been entered in a Devpost project form,
+accepted by an organizer, or submitted.
 
 ## Inspiration
 
@@ -137,7 +143,8 @@ read-only investigation work and produces a report, but it does not write result
 execute remediation. Do not represent that challenge as selected unless an authorized entrant
 actually selects it in the form.
 
-No Devpost challenge control has been selected.
+The entrant's Join registration records **Open / Wildcard** as the challenge category of interest.
+No project-form category control has been inspected or selected.
 
 ## Current limitations and what is next
 
@@ -147,20 +154,21 @@ No Devpost challenge control has been selected.
 - The public demo is fixture-only. Authorized live/judge DataHub MCP validation remains open.
 - MCP recent-change evidence is unsupported by the current official tool surface.
 - The agent makes zero model calls and performs no automatic production change or DataHub write-back.
-- Cloud Run availability through the judging end is unresolved because the cost-control stop boundary
-  precedes it; the Public repository fallback remains essential.
+- The owner-authorized Cloud Run operating window runs through 2026-09-17 23:59 ICT, beyond the
+  judging end. The Public repository fallback remains essential for provider outages, cold starts,
+  or emergency containment.
 - One authentic 2:50.20 app-only video source now exists in both silent and synchronized English
   male-voice repository variants. The voiced derivative changes no video packet/frame, uses only an
-  offline installed Windows AI voice, and remains only a Public GitHub repository asset on merged
-  `main`—not a
-  Rules-compliant hosted-and-linked Devpost video.
-- Registration, entrant eligibility, ownership/rights attestations, YouTube/Vimeo/Youku hosting and
-  Devpost linking, final form review, and submission remain undone.
+  offline installed Windows AI voice, and is Public on YouTube with authored English captions. Its
+  URL is not yet entered in the Devpost project form.
+- Devpost registration and individual Join are complete. The project form has not been created,
+  saved, or submitted. Repository evidence does not independently establish the entrant's underlying
+  eligibility, ownership, contributor, or media-rights facts.
 
 Next work is operational rather than a new product claim: obtain authorized live/judge MCP evidence,
-resolve judging-period access, complete the entrant's final media/rights review and separately
-authorized YouTube/Vimeo/Youku upload plus Devpost link, complete entrant attestations, and verify the
-final form before the deadline.
+complete the entrant's final media/rights review, enter the verified YouTube URL and approved copy in
+the project form, complete all entrant-owned disclosures, and verify the final form before the
+deadline.
 
 ## Codex usage
 

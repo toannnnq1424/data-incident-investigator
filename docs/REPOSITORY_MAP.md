@@ -1,15 +1,20 @@
 # Repository map
 
-Last verified: 2026-07-28 for Phase 8.10 from exact `origin/main`
-`b4f9e360e22baba3cab60710a65ea5c0e0555369` (tree
-`29f51960e9a772b8c331b427943920f296031bbe`). Phase 8.9A is integrated and retains the authentic
+Last verified: 2026-07-28 for released exact `origin/main`
+`a28e21c06ad623f1547c02a6d65fd900fa8472a4` (tree
+`e0594ddecbe9d82f30e7b3005a51cb8df9283bf8`). Annotated tag object
+`eb26bc54fccd4cc0ebeacfb14539008a03da687a` (`v1.0.0`) resolves to that merge; the matching
+GitHub Release is Published/Latest and exact-main CI is successful. Phase 8.9A retains the authentic
 silent WebM/caption/transcript packet plus a separate exact-video-stream synthetic male-voice
 derivative with matching captions/transcript. These are Public GitHub repository assets on merged
-`main`, not YouTube/Vimeo/Youku-hosted or Devpost-linked media. The Phase 8.10 preparation branch
-aligns the root and six private Apache-2.0 manifests to `1.0.0`, updates the MCP client protocol
-identity to the same version, and applies only the two transitive denial-of-service patches required
-by the final production audit. It changes no investigation behavior, workflow, fixture, media, tag,
-Release, deployment, or submission state.
+`main`; the male-voice derivative is also Public at <https://youtu.be/D5mvMqrhyDc> with its authored
+English captions. Devpost registration and individual Join are complete, but the project form has
+not been created, saved, linked, or submitted; exact gate state is tracked in the submission
+documents.
+Phase 8.10 aligned the root and six private Apache-2.0 manifests to `1.0.0`, updated the MCP client
+protocol identity to the same version, and applied only the two transitive denial-of-service patches
+required by the final production audit. It changed no investigation behavior, workflow, fixture,
+media, deployment, or submission state.
 
 ## Directories
 

@@ -39,11 +39,11 @@ Screenshots of the expected surfaces are in the
 run-specific and process-local; do not use them as durable links.
 
 For a non-interactive preview of the same authentic flow, review the
-[2:50.20 app-only video packet](demo-video/README.md). It offers a synchronized synthetic male
-English-voice derivative with default captions and the unchanged silent source for provenance. These
-are publicly accessible Public GitHub repository/feature-PR assets, but neither has been uploaded to
-or made publicly visible on YouTube, Vimeo, or Youku, linked in Devpost, accepted, or submitted.
-GitHub blob/raw access does not satisfy the official video-hosting requirement.
+[Public 2:50 functioning demo](https://youtu.be/D5mvMqrhyDc). It uses the synchronized synthetic
+male English-voice derivative with the authored English WebVTT published; the
+[repository video packet](demo-video/README.md) retains the unchanged silent source and exact media
+identity for provenance. The YouTube URL has not been entered in a Devpost project form, accepted by
+an organizer, or submitted.
 
 ## Repository-local fallback
 
@@ -89,5 +89,6 @@ rehearsal, not a clean-clone install-time promise.
 - Only **Removed schema column** has the rich checked-in fixture and canonical browser path.
 - The app makes zero model calls and does not execute remediation or modify production data.
 - Incident state is in memory and disappears on restart or scale-to-zero.
-- Cloud Run availability through the end of judging is not guaranteed because the retained
-  cost-control stop boundary is earlier. The Public repository is the durable fallback.
+- The owner-authorized Cloud Run operating window runs through **2026-09-17 23:59 ICT /
+  2026-09-17 16:59 UTC / 2026-09-17 12:59 EDT**, beyond the judging end. The Public repository
+  remains the durable fallback for provider outages, cold starts, or emergency containment.

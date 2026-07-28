@@ -6763,3 +6763,58 @@ production frozen-install and fixture runtime, and one focused fresh-checkout ar
 pass, push the two-commit branch normally, open one Draft PR against unchanged exact main, and require
 exact-head PR CI `SUCCESS`. Do not mark Ready, merge, tag, create/publish a Release, deploy, mutate
 GCP, host media externally, enter Devpost, or change C11/C14/live MCP/C18/C19 status.
+
+## 2026-07-28 — Phase 8.11 authorized submission-readiness reconciliation
+
+### Released-main baseline and bounded scope
+
+The slice started on `codex/phase-8-11-submission-readiness` from exact released `origin/main`
+`a28e21c06ad623f1547c02a6d65fd900fa8472a4`, tree
+`e0594ddecbe9d82f30e7b3005a51cb8df9283bf8`. Annotated tag object
+`eb26bc54fccd4cc0ebeacfb14539008a03da687a` (`v1.0.0`) resolves to that merge, the GitHub Release is
+Published/Latest, and exact-main CI run `30338530196` / job `90208641358` is `SUCCESS`. The slice
+changes submission/readiness documentation only; it does not alter application source, media bytes,
+runtime, workflow, package, lock, version, tag, Release, deployment, or GCP configuration.
+
+### C14 operating-window supersession
+
+Signed-in read-only Cloud Console evidence confirmed the existing `asia-southeast1` public service
+Ready at minimum `0` / maximum `1`, with a Paid billing account, July 1–28 net cost `₫0`, and active
+Welcome credit `₫7,886,121.22` of `₫7,889,850.00` through 2026-10-07. No scheduler or date-based
+Cloud Run control existed. The owner superseded the historical manual 2026-08-10/20%-credit stop:
+keep access through **2026-09-17 23:59 ICT / 16:59 UTC / 12:59 EDT**; treat 20% remaining as a
+monitor/escalate signal; retain emergency security, uncontrolled-billing, and provider-enforcement
+containment plus the Public-repository fallback. No GCP mutation occurred. C14 is
+`PASS — OWNER-AUTHORIZED OPERATING WINDOW`, not an absolute uptime or zero-cost promise.
+
+### Public male-voice demo
+
+The unchanged `docs/demo-video/phase-8-9a-demo-voiceover.webm`, 13,185,933 bytes at SHA-256
+`f52daa606f3cf9f627909e23422ca2d14fd92db1f5c4ed6ca304744c5608ab33` and Git blob
+`30a1f2b768a85599d0dfd0bdb95c0170ed4b2e4f`, was uploaded through the signed-in YouTube Studio
+session and published Public at <https://youtu.be/D5mvMqrhyDc>. Its exact title is **Data Incident
+Investigator — 2:50 Functioning Demo (Synthetic Fixture)**. The description links the public app,
+repository, judge quickstart, repository video packet, submission draft, `v1.0.0` Release, and
+challenge page while retaining fixture-only, no-model, no-live-DataHub, no-remediation limits.
+
+The authored `phase-8-9a-voiceover-captions.vtt` was uploaded with timing and YouTube Studio reports
+the English track published. The upload check reports no copyright issue. The viewer page resolves
+the exact public title and 2:50 duration and exposes the matching 11-entry timed transcript; Studio
+independently supplies the caption publication evidence. No claim is made that YouTube's transcode
+preserves the repository WebM byte hash or that an automated copyright check is blanket rights
+clearance. No new incident, frame, recording, speech, or media encoding occurred.
+
+### Devpost registration and remaining form boundary
+
+The existing signed-in Devpost account completed challenge registration and individual Join. The
+observed terminal page says **Thanks for registering!**, records **Working solo** and
+**Open / Wildcard** as the category of interest, and exposes **Start project**. The user performed
+the required eligibility/rules confirmations directly; the repository does not independently prove
+the underlying age, residence, sanctions, conflict, ownership, contributor, or media-rights facts.
+No project was started or imported, no project form was created or saved, no YouTube URL or draft
+copy was entered, and no submission or receipt exists.
+
+C18 advances to `PASS`; C19 is `PARTIAL — PUBLIC HOSTED / DEVPOST LINK OPEN`. Live/judge DataHub MCP
+validation remains `PARTIAL`, C11 remains its existing qualified immutable-deployment status, and
+entrant-owned IP/rights facts, project-form review, URL/copy entry, final submission authorization,
+submission, and receipt remain open.

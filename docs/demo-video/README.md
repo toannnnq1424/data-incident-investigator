@@ -1,21 +1,26 @@
 # Phase 8.9 / 8.9A demo-video packet
 
-Status: **repository candidate / PARTIAL only**. The authentic silent source is publicly accessible
-on the Public GitHub `main` branch after merged PR #58. This Phase 8.9A feature branch/Draft PR adds
-a separate synchronized English male-voice derivative as another Public GitHub repository asset.
-Neither file has been uploaded to or made publicly visible on YouTube, Vimeo, or Youku, linked or
-entered in Devpost, accepted by an organizer, or submitted. GitHub repository access does not satisfy
-the Rules' required video-host and form-link condition.
+Status: **Public YouTube functioning demo / C18 PASS; C19 PARTIAL until Devpost form linkage**. The
+authentic silent source remains publicly accessible on the Public GitHub `main` branch after merged
+PR #58. Phase 8.9A added a separate synchronized English male-voice derivative as another Public
+GitHub repository asset. That exact voiced derivative is now publicly visible on YouTube as
+[Data Incident Investigator — 2:50 Functioning Demo (Synthetic Fixture)](https://youtu.be/D5mvMqrhyDc).
+The authored English WebVTT captions are uploaded and published, and YouTube reported no copyright
+issue during upload processing. Devpost registration and **Join Hackathon** have succeeded for an
+individual entrant, but the project form, video-link entry, and submission have not started; no
+organizer acceptance is claimed.
 
 ## Review
 
-Open [`review.html`](review.html) in a browser. It presents the voiced derivative first with its
-default external English captions, followed by the unchanged silent source for provenance.
+Watch the [Public YouTube functioning demo](https://youtu.be/D5mvMqrhyDc), or open
+[`review.html`](review.html) in a browser for repository-local provenance review. The local review
+surface presents the voiced derivative first with its default external English captions, followed by
+the unchanged silent source.
 
 Files:
 
-- [`phase-8-9a-demo-voiceover.webm`](phase-8-9a-demo-voiceover.webm) — the real Phase 8.9 video
-  frames with synchronized synthetic male English narration.
+- [`phase-8-9a-demo-voiceover.webm`](phase-8-9a-demo-voiceover.webm) — the selected source uploaded
+  to YouTube: the real Phase 8.9 video frames with synchronized synthetic male English narration.
 - [`phase-8-9a-voiceover-captions.vtt`](phase-8-9a-voiceover-captions.vtt) — exact voice-matched
   English captions.
 - [`VOICEOVER_TRANSCRIPT.md`](VOICEOVER_TRANSCRIPT.md) — exact spoken script and readable
@@ -44,6 +49,12 @@ Files:
 The matching extracted VP8 payload and copy-timestamp framehash identities prove that all 4,255
 video packets retain the source PTS, DTS, duration, size, and content hash. No application frame was
 generated, re-encoded, inserted, removed, or retimed for Phase 8.9A.
+
+The source file selected for YouTube retains SHA-256
+`f52daa606f3cf9f627909e23422ca2d14fd92db1f5c4ed6ca304744c5608ab33` and Git blob
+`30a1f2b768a85599d0dfd0bdb95c0170ed4b2e4f`. No repository media, video packet, frame, caption, or
+transcript was changed for hosting. YouTube creates its own playback renditions, so these identities
+bind the uploaded repository source rather than claiming byte identity for platform transcodes.
 
 ## Narrator, tooling, cost, and rights boundary
 
@@ -138,11 +149,14 @@ continued normally; Phase 8.9A changes no frames and makes no application-consol
       added.
 - [x] Video packet identity, audio codec/level/peak, cue alignment, representative frames/audio, and
       metadata/private-data boundaries were reviewed.
-- [ ] A human entrant must perform the final rights/privacy/accessibility review on the exact export
-      chosen for Rules-listed YouTube/Vimeo/Youku hosting.
-- [ ] Rules-listed YouTube/Vimeo/Youku public-host visibility, entrant identity/rights attestations,
-      and the final Devpost form remain separately authorized user actions.
+- [x] The exact male-voice source is publicly visible on YouTube under the reviewed title, and the
+      authored English WebVTT captions are uploaded and published.
+- [x] YouTube reported no copyright issue during upload processing. This is platform evidence, not a
+      blanket legal or ownership attestation.
+- [ ] Entrant identity/IP/media-rights attestations and the final Devpost project form, video link,
+      and submission remain separate open actions.
 
-The voiced derivative does not change the compliance gate: C18 remains
-**PARTIAL — LOCAL CANDIDATE**, and C19 remains `OPEN`. Public GitHub blob/raw access is not a
-Rules-listed hosted-and-linked Devpost video.
+The public functioning-project video satisfies C18, which is now `PASS`. C19 is
+**PARTIAL — PUBLIC HOSTED / DEVPOST LINK OPEN** because the accepted-host visibility requirement is
+met but the YouTube URL has not been entered in the Devpost project form. Registration and
+**Join Hackathon** do not constitute form completion or submission.

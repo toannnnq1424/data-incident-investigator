@@ -11,6 +11,7 @@ missing information, blast radius, and recommended human checks separate.
 
 [Try the public fixture demo](https://data-incident-investigator-1071683558688.asia-southeast1.run.app)
 · [Judge quickstart](docs/JUDGE_QUICKSTART.md) ·
+[2:50 functioning demo](https://youtu.be/D5mvMqrhyDc) ·
 [Screenshot gallery](docs/demo-assets/README.md) ·
 [Public repository](https://github.com/toannnnq1424/data-incident-investigator)
 
@@ -113,11 +114,15 @@ For the shortest verified path and expected labels, use the
   pipelines, dashboards, or production data.
 - Blast-radius status is always bounded and explicit. `partial`, `unknown`, or `unavailable` must not
   be read as verified zero impact.
-- The Cloud Run cost-control stop boundary is 2026-08-10 or 20% reported credit remaining, whichever
-  occurs first, so availability through the 2026-08-31 judging end is not guaranteed. The Public
-  repository quickstart is the retained fallback.
-- Devpost registration, eligibility/ownership attestations, video upload, form completion, and
-  submission have not occurred.
+- The owner-authorized Cloud Run operating window now runs through **2026-09-17 23:59 ICT**,
+  beyond the 2026-08-31 judging end. A 20%-remaining-credit signal triggers monitoring and owner
+  escalation rather than an automatic pre-judging stop; emergency security or uncontrolled-billing
+  response remains possible. The Public repository quickstart remains the durable fallback.
+- Devpost registration and individual **Join Hackathon** are complete, with **Open / Wildcard**
+  recorded as the registration category of interest. The verified male-voice demo is Public on
+  YouTube with authored English captions. Its URL has not been entered in a project form; no project
+  draft has been created, saved, or submitted, and repository evidence does not independently prove
+  entrant eligibility, ownership, or rights facts.
 
 ## Validation and project documentation
 
